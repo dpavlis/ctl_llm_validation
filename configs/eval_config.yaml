@@ -110,7 +110,7 @@ judge:
   # Uncomment to use OpenAI as judge:
   provider: openai
   model: gpt-5.4
-  api_key: ${OPEN_API_KEY}
+  api_key: ${OPENAI_API_KEY}
  
 
   # Optional base_url override for self-hosted OpenAI-compatible judge endpoint:
