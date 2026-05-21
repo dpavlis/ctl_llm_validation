@@ -1,0 +1,132 @@
+# =============================================================================
+# LlamaFactory SFT → DPO → Export pipeline config
+#
+# Usage:
+#   cd ~/LlamaFactory
+#   python ~/llama_train/train.py ~/llama_train/configs/example.yaml
+#   python ~/llama_train/train.py ~/llama_train/configs/example.yaml --dry-run
+#
+# The script merges the common section with each phase section, so any key
+# set here in the common area is inherited by both SFT and DPO unless
+# explicitly overridden in the sft: or dpo: subsections.
+# =============================================================================
+
+# --- Pipeline identity (not passed to LlamaFactory) -------------------------
+run_name: qwen35-9B-CTLv5
+output_base: saves          # All outputs land under saves/<run_name>/<timestamp>_<phase>/
+
+# =============================================================================
+# Common parameters — shared by both SFT and DPO phases
+# =============================================================================
+
+# Model
+model_name_or_path: Qwen/Qwen3.5-9B
+trust_remote_code: true
+
+# Architecture / efficiency
+finetuning_type: lora
+template: qwen3_nothink          # Use qwen3_5_nothink for Qwen3.5 variants
+flash_attn: auto
+preprocessing_num_workers: 16
+ddp_timeout: 180000000
+fp16: false                       # Switch to bf16: true for Ampere+ GPUs
+bf16: true                      # Only set to true if your GPU supports it; otherwise use fp16
+
+# LoRA (phase sections can override lora_rank / lora_alpha individually)
+lora_target: "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj"
+# additional_target: "embed_tokens, lm_head" #too aggresive
+lora_dropout: 0.05
+loraplus_lr_ratio: 8       # Scaled up, meaning ηB becomes 0.0008
+#loraplus_lr_embedding: 1e-6  # without additional_targets enable this has no effect # Standard fallback for token embedding stability
+
+
+# Training dynamics (shared defaults — phases override as needed)
+packing: false
+enable_thinking: false
+optim: adamw_torch
+weight_decay: 0.05
+max_grad_norm: 1.0
+lr_scheduler_type: constant_with_warmup
+warmup_steps: 80
+logging_steps: 25
+save_steps: 50
+save_strategy: steps
+save_total_limit: 8
+include_num_input_tokens_seen: true
+plot_loss: true
+
+# Reporting — set to "none" to disable
+report_to: wandb
+# Uncomment to also log to SwanLab:
+# use_swanlab: true
+# swanlab_project: llamafactory
+# swanlab_run_name: qwen3-clover
+# swanlab_mode: local
+
+# Dataset directory (relative to the directory you run the script from)
+dataset_dir: data
+
+# =============================================================================
+# SFT phase  (merged on top of common; these keys take precedence)
+# =============================================================================
+sft:
+  dataset: clover_ctl_trainign_data
+  eval_dataset: clover_ctl_eval_data
+  cutoff_len: 1860
+  learning_rate: 5.0e-5
+  num_train_epochs: 2.0
+  max_samples: 100000
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 6
+  per_device_eval_batch_size: 1
+
+  # LoRA dims for SFT
+  lora_rank: 64
+  lora_alpha: 128
+
+  # Evaluation during SFT
+  eval_strategy: steps
+  eval_steps: 50
+  load_best_model_at_end: true
+  metric_for_best_model: eval_loss
+
+  # create_new_adapter is forced True by the script; listed here for clarity
+  create_new_adapter: true
+
+# =============================================================================
+# DPO phase  (merged on top of common; adapter_name_or_path is set by script)
+# =============================================================================
+dpo:
+  dataset: clover_dpo_data
+  cutoff_len: 1850
+  learning_rate: 5.0e-6 #1.0e-6
+  lr_scheduler_type: cosine   # Ensures smooth decay over the shorter step count
+  warmup_ratio: 0.1       
+  num_train_epochs: 2.0
+  max_samples: 100000
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 6
+
+  # LoRA dims for DPO
+  lora_rank: 16
+  lora_alpha: 32 
+
+  # DPO objective
+  pref_beta: 0.075
+  pref_ftx: 0.1  #also 0.1  0.2
+  pref_loss: ipo #sigmoid            # choices: sigmoid (DPO), orpo, simpo
+
+  # To resume DPO from an existing adapter instead of the SFT output,
+  # set this and run with --skip-sft:
+  # adapter_name_or_path: saves/qwen3-clover/2026-05-10-12-00-00_sft
+
+# =============================================================================
+# Export phase  (merged into a minimal export config by the script)
+# =============================================================================
+export:
+  export_size: 5            # Shard size in GB
+  export_device: auto       # cpu or auto
+  export_legacy_format: false
+
+  # Override the auto-generated export path if you want a fixed location:
+  export_dir: /home/pavlisd/exports/qwen35-9B-CTLv10/

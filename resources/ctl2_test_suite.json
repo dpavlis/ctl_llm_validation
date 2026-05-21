@@ -1,0 +1,937 @@
+{
+  "version": "1.0",
+  "description": "CTL2 model evaluation test suite — 8 standard tests covering generation and validation quality.",
+  "judge_system_prompt": "You are an expert CTL2 code reviewer evaluating LLM responses against a rubric.\nFor each test you receive:\n  - The prompt sent to the model\n  - The model's response\n  - The evaluation rubric\n\nScore each required finding as: CAUGHT | MISSED | WRONG (caught but incorrect fix/explanation).\nScore forbidden content as: PRESENT (bad) | ABSENT (good).\nProvide a final verdict: PASS | PARTIAL | FAIL with a brief justification.",
+  "judge_instructions": "For each test, you will receive:\n  1. This test definition (system_prompt, user_message, rubric)\n  2. The model's actual response\n\nEvaluate the response against the rubric:\n  - For GENERATE tests: check each required item as PRESENT | MISSING | WRONG\n  - For VALIDATE tests: check each required finding as CAUGHT | MISSED | WRONG\n  - For VALIDATE tests: check each false-positive trap as TRIGGERED | AVOIDED\n  - Check all forbidden items as ABSENT (good) | PRESENT (bad)\n\nOutput a structured evaluation:\n  FINDINGS: [list each rubric item with its status]\n  FALSE_POSITIVES: [for validate tests — any wrong flags not in rubric]\n  VERDICT: PASS | PARTIAL | FAIL\n  SCORE: N/M (required items met)\n  NOTES: brief justification",
+  "tests": [
+    {
+      "test_id": "T1",
+      "type": "generate",
+      "component": "Reformat",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Reformat transform: copy all fields, then compute net_amount = gross_amount * (1 - discount_rate). discount_rate is nullable — treat as zero if null. Output net_amount as decimal. Also set processed_date to today's date.\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"Order\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"order_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_name\" type=\"string\"/>\n    <Field name=\"gross_amount\" type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"discount_rate\" type=\"number\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"OrderOut\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"order_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_name\" type=\"string\"/>\n    <Field name=\"gross_amount\" type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"discount_rate\" type=\"number\" nullable=\"true\"/>\n    <Field name=\"net_amount\" type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"processed_date\" type=\"date\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate a correct Reformat transform with wildcard copy, nullable handling, arithmetic, and today().",
+        "required": [
+          {
+            "id": "T1.1",
+            "check": "Wildcard copy: $out.0.* = $in.0.*;",
+            "rationale": "Idiomatic way to copy all matching fields in one statement."
+          },
+          {
+            "id": "T1.2",
+            "check": "Null guard on discount_rate using nvl() before using it in arithmetic.",
+            "rationale": "discount_rate is nullable=true; using it without nvl() will throw CTLException on null."
+          },
+          {
+            "id": "T1.3",
+            "check": "processed_date set to today().",
+            "rationale": "today() is the correct CTL2 function for current date."
+          },
+          {
+            "id": "T1.4",
+            "check": "net_amount computed as gross_amount * (1 - discount_rate) or equivalent arithmetic.",
+            "rationale": "Core business logic of the transform."
+          },
+          {
+            "id": "T1.5",
+            "check": "Function returns OK or ALL.",
+            "rationale": "Both are valid return values for Reformat transform()."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T1.F1",
+            "check": "Must not use double2decimal() — this function does not exist in CTL2.",
+            "rationale": "number to decimal is an automatic upcast; direct assignment is correct."
+          },
+          {
+            "id": "T1.F2",
+            "check": "Must not use convert() — does not exist in CTL2.",
+            "rationale": "Hallucinated conversion function."
+          },
+          {
+            "id": "T1.F3",
+            "check": "Must not use now() — does not exist; use today().",
+            "rationale": "now() is a common hallucination from other languages."
+          }
+        ],
+        "scoring": {
+          "PASS": "All 5 required items present, no forbidden items.",
+          "PARTIAL": "4/5 required present, or a required item present but with minor issues.",
+          "FAIL": "Missing wildcard copy OR missing nvl() on nullable field OR uses forbidden functions."
+        }
+      }
+    },
+    {
+      "test_id": "T2",
+      "type": "generate",
+      "component": "Denormalizer",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Denormalizer transform: group records by customer_id. Collect all order_ids into a comma-separated string and sum the amounts. Output one record per customer with: customer_id, order_count (integer), total_amount (decimal), order_ids (string, all order_ids joined by comma).\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"OrderLine\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"customer_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"order_id\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"amount\" type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"CustomerSummary\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"customer_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"order_count\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"total_amount\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"order_ids\" type=\"string\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate a correct Denormalizer with module-level accumulator variables, correct lifecycle functions, and proper $out.0 access.",
+        "required": [
+          {
+            "id": "T2.1",
+            "check": "All accumulation happens in module-level (global) variables, NOT in $out.0 fields inside append().",
+            "rationale": "$out.0 is only accessible in transform() and transformOnError(). Accessing it in append() throws NPE at runtime — the most critical Denormalizer correctness rule."
+          },
+          {
+            "id": "T2.2",
+            "check": "append() function present and returns OK.",
+            "rationale": "Required Denormalizer lifecycle function for per-record accumulation."
+          },
+          {
+            "id": "T2.3",
+            "check": "transform() function writes all output fields to $out.0 and returns OK.",
+            "rationale": "Only transform() may write to $out.0."
+          },
+          {
+            "id": "T2.4",
+            "check": "clean() function resets all module-level accumulator variables to their initial values.",
+            "rationale": "Without clean(), state from one group bleeds into the next."
+          },
+          {
+            "id": "T2.5",
+            "check": "$out.0 is not accessed in append() or clean().",
+            "rationale": "Accessing $out.0 outside transform() causes NPE at runtime."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T2.F1",
+            "check": "Must not access $out.0.* in append() body.",
+            "rationale": "NPE at runtime — the single most critical Denormalizer mistake."
+          },
+          {
+            "id": "T2.F2",
+            "check": "Must not access $out.0.* in clean() body.",
+            "rationale": "Same NPE issue."
+          },
+          {
+            "id": "T2.F3",
+            "check": "transform() must not return OK without writing any output fields (empty transform).",
+            "rationale": "Produces empty output records."
+          }
+        ],
+        "scoring": {
+          "PASS": "Module-level vars used, all lifecycle functions present, $out.0 only in transform(), clean() resets state.",
+          "PARTIAL": "Correct lifecycle structure but minor issues (e.g. no null guard on string concat, missing order_count).",
+          "FAIL": "$out.0 accessed in append() or clean() (NPE), OR transform() writes nothing."
+        }
+      }
+    },
+    {
+      "test_id": "T3",
+      "type": "generate",
+      "component": "Reformat",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Reformat: Input has a variant field 'payload' containing a JSON-like object. Extract: customer_name (string) from payload[\"customer\"][\"name\"], order_total (decimal) from payload[\"total\"], is_priority (boolean) from payload[\"priority\"]. Use cast() for all extractions. Handle null payload gracefully.\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"RawEvent\" type=\"delimited\">\n    <Field name=\"event_id\" type=\"long\" nullable=\"false\"/>\n    <Field name=\"payload\" type=\"variant\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"ParsedEvent\" type=\"delimited\">\n    <Field name=\"event_id\" type=\"long\" nullable=\"false\"/>\n    <Field name=\"customer_name\" type=\"string\"/>\n    <Field name=\"order_total\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n    <Field name=\"is_priority\" type=\"boolean\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate correct variant extraction using cast() with null payload handling.",
+        "required": [
+          {
+            "id": "T3.1",
+            "check": "isnull() or typeof guard on payload before accessing its fields.",
+            "rationale": "payload is nullable=true; accessing fields on null variant throws."
+          },
+          {
+            "id": "T3.2",
+            "check": "cast(v, string) used for string extraction from variant.",
+            "rationale": "cast(variant, string) is valid CTL2."
+          },
+          {
+            "id": "T3.3",
+            "check": "cast(v, boolean) used for boolean extraction from variant.",
+            "rationale": "cast(variant, boolean) is valid CTL2."
+          },
+          {
+            "id": "T3.4",
+            "check": "order_total extracted from payload[\"total\"] — may use cast(v, decimal), cast(v, number) with auto-upcast, or str2decimal workaround. All are acceptable.",
+            "rationale": "cast(variant, decimal) is valid per updated reference."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T3.F1",
+            "check": "Must not wrap $in.0.payload in parseJson() — payload is already variant, not a string.",
+            "rationale": "parseJson() parses a JSON string; variant field needs no parsing."
+          },
+          {
+            "id": "T3.F2",
+            "check": "Must not use double2long() on a numeric variant value intended for a decimal field.",
+            "rationale": "double2long() produces long (integer), losing decimal precision."
+          },
+          {
+            "id": "T3.F3",
+            "check": "Must not use cast() on $in.0.event_id (long field, not variant).",
+            "rationale": "cast() only valid for variant → strong type, not strong → strong."
+          }
+        ],
+        "scoring": {
+          "PASS": "Null guard present, correct cast() usage for all three fields, no parseJson() wrapper.",
+          "PARTIAL": "Null guard present and most casts correct, but minor type issue (e.g. cast(v, number) for decimal field with implicit upcast).",
+          "FAIL": "No null guard on nullable payload, OR parseJson() used on variant field, OR double2long() used."
+        }
+      }
+    },
+    {
+      "test_id": "T4",
+      "type": "validate",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Find all bugs: wrong function names, invalid cast usage, null comparison issues, invalid ++ usage on record fields.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    integer age = toInteger($in.0.age_string);\n    decimal price = cast($in.0.gross_price, decimal);\n    if ($in.0.score < null) { return SKIP; }\n    $out.0.counter++;\n    $out.0.age = age;\n    $out.0.price = price;\n    return ALL;\n}\n```\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"In\" type=\"delimited\"><Field name=\"age_string\" type=\"string\"/><Field name=\"gross_price\" type=\"number\" nullable=\"false\"/><Field name=\"score\" type=\"integer\" nullable=\"true\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"Out\" type=\"delimited\"><Field name=\"age\" type=\"integer\"/><Field name=\"price\" type=\"decimal\"/><Field name=\"counter\" type=\"integer\"/></Record></Metadata>",
+      "bugs": [
+        {
+          "id": "T4.B1",
+          "code": "toInteger($in.0.age_string)",
+          "description": "toInteger() does not exist in CTL2.",
+          "correct_fix": "str2integer($in.0.age_string)",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T4.B2",
+          "code": "cast($in.0.gross_price, decimal)",
+          "description": "cast() is only valid for variant→strong type. gross_price is number (strong type). Direct assignment is correct: decimal price = $in.0.gross_price; (number→decimal is automatic upcast).",
+          "correct_fix": "decimal price = $in.0.gross_price;",
+          "severity": "ERROR",
+          "note": "Fixes suggesting double2decimal() or convert() are WRONG — those functions do not exist."
+        },
+        {
+          "id": "T4.B3",
+          "code": "$in.0.score < null",
+          "description": "Relational operators throw CTLException when an operand is null. Use isnull($in.0.score).",
+          "correct_fix": "isnull($in.0.score)",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T4.B4",
+          "code": "$out.0.counter++",
+          "description": "++ operator is invalid on record fields ($out.0.*). Only valid on local and module-level variables (including record type variable).",
+          "correct_fix": [
+            "$out.0.counter = $out.0.counter + 1",
+            "$out.0.counter += 1"
+          ],
+          "severity": "ERROR"
+        }
+      ],
+      "rubric": {
+        "description": "Validator must identify all 4 bugs with correct severity and correct fix suggestions.",
+        "required_findings": [
+          "T4.B1",
+          "T4.B2",
+          "T4.B3",
+          "T4.B4"
+        ],
+        "fix_quality": {
+          "T4.B1": "Must suggest str2integer() specifically.",
+          "T4.B2": "Must suggest direct assignment (decimal price = $in.0.gross_price). Must NOT suggest double2decimal() or convert() — both are hallucinated functions.",
+          "T4.B3": "Must suggest isnull() check.",
+          "T4.B4": "Must suggest explicit addition assignment."
+        },
+        "verdict_expected": "FAIL",
+        "scoring": {
+          "PASS": "All 4 bugs caught, correct fixes for all (especially T4.B2 — direct assignment, not double2decimal).",
+          "PARTIAL": "3-4 bugs caught but T4.B2 fix is wrong (suggests double2decimal or convert).",
+          "FAIL": "2 or fewer bugs caught, or wrong PASS verdict."
+        }
+      }
+    },
+    {
+      "test_id": "T5",
+      "type": "validate",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Focus on: null string concatenation behavior, regex operator semantics (~= vs ?=), isnull vs isNull distinction, long literal syntax, conditional fail expression compatibility with compile mode.\n\n```ctl\n//#CTL2:COMPILE\nfunction integer transform() {\n    string result = $in.0.prefix + $in.0.suffix;\n    if ($in.0.email ~= \"gmail\") { $out.0.provider = \"google\"; }\n    if (isNull($in.0.amount)) {\n        $out.0.amount = 0D;\n    } else {\n        $out.0.amount = $in.0.amount;\n    }\n    long threshold = 7999999888;\n    date parsed = str2date($in.0.dateStr, \"yyyy-MM-dd\") : 1990-01-01;\n    $out.0.result = result;\n    $out.0.date_start = parsed;\n    return ALL;\n}\n```\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"In\" type=\"delimited\"><Field name=\"prefix\" type=\"string\" nullable=\"false\"/><Field name=\"suffix\" type=\"string\" nullable=\"true\"/><Field name=\"email\" type=\"string\" nullable=\"false\"/><Field name=\"amount\" type=\"decimal\" nullable=\"true\"/><Field name=\"dateStr\" type=\"string\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"Out\" type=\"delimited\"><Field name=\"result\" type=\"string\"/><Field name=\"provider\" type=\"string\"/><Field name=\"amount\" type=\"decimal\"/></Record></Metadata>",
+      "bugs": [
+        {
+          "id": "T5.B1",
+          "code": "$in.0.prefix + $in.0.suffix",
+          "description": "suffix is nullable=true. When suffix is null, CTL2 concatenates null as the literal string \"null\", producing \"prefixnull\" instead of \"prefix\".",
+          "correct_fix": "$in.0.prefix + nvl($in.0.suffix, \"\")",
+          "severity": "WARNING"
+        },
+        {
+          "id": "T5.B2",
+          "code": "$in.0.email ~= \"gmail\"",
+          "description": "~= is a whole-string regex match. The full email string must equal \"gmail\". Real emails like \"user@gmail.com\" will not match. Use ?= for contains match.",
+          "correct_fix": "$in.0.email ?= \"gmail\"",
+          "severity": "WARNING or ERROR"
+        },
+        {
+          "id": "T5.B3",
+          "code": "isNull($in.0.amount)",
+          "description": "isNull() (camelCase) requires two arguments: isNull(record, fieldIndex) or isNull(record, fieldName). Calling it with one argument is a compile error. Use isnull() (lowercase, 1 argument).",
+          "correct_fix": "isnull($in.0.amount)",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T5.B4",
+          "code": "long threshold = 9999999999",
+          "description": "The literal 9999999999 exceeds the 32-bit integer range (max 2,147,483,647). Without the L suffix it is parsed as integer and overflows. Long literals require the L suffix.",
+          "correct_fix": "long threshold = 9999999999L",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T5.B5",
+          "code": "str2date($in.0.dateStr, \"yyyy-MM-dd\") : 1990-01-01",
+          "description": "The conditional-fail expression (:) is not supported in //#CTL2:COMPILE mode. It is only valid in interpreted //#CTL2 mode. The correct fix for compiled mode is to wrap the call in a try-catch: on success assign the parsed date; in the catch block assign the default date 1990-01-01.",
+          "correct_fix": "try { parsed = str2date($in.0.dateStr, \"yyyy-MM-dd\"); } catch (CTLException ex) { parsed = 1990-01-01; }",
+          "severity": "ERROR"
+        }
+      ],
+      "rubric": {
+        "description": "Validator must identify all 5 subtle bugs. Key challenge: model often catches T5.B3/B4/B5 but misses T5.B1 (string+null) and T5.B2 (~= semantics).",
+        "required_findings": [
+          "T5.B1",
+          "T5.B2",
+          "T5.B3",
+          "T5.B4",
+          "T5.B5"
+        ],
+        "severity_notes": {
+          "T5.B1": "Must be flagged as WARNING minimum. If flagged as INFO and VERDICT is PASS, this is a failure — null string concat is a data quality bug.",
+          "T5.B2": "~= explanation must be CORRECT: ~= is whole-string match (not contains). If response says ~= is a contains operator, that explanation is wrong even if the fix (?=) is right.",
+          "T5.B5": "The correct fix is try-catch with CTLException as the catch type and a direct CTL2 date literal (1990-01-01) as the fallback — no str2date() needed for the fallback since date literals are first-class in CTL2. Suggesting to remove //#CTL2:COMPILE or to use isDate()+ternary are WRONG — the code is intentionally in compiled mode and must stay there. A model that flags the issue but suggests removing the COMPILE header should score WRONG for B5."
+        },
+        "fix_quality": {
+          "T5.B5": "Fix must use: (1) try-catch block, (2) CTLException as the catch type, (3) a direct date literal 1990-01-01 as the fallback — NOT str2date(\"1990-01-01\", \"yyyy-MM-dd\"). Using str2date() to parse a constant string fallback is unnecessarily verbose and demonstrates the model does not know that CTL2 supports date literals directly. Score the fix as WRONG if it wraps the constant fallback in str2date()."
+        },
+        "verdict_expected": "FAIL",
+        "scoring": {
+          "PASS": "All 5 bugs caught with correct explanations (especially T5.B1 null-concat, T5.B2 ~= semantics correctly explained, and T5.B5 fixed with try-catch).",
+          "PARTIAL": "3-4 bugs caught, or T5.B5 identified but fixed incorrectly (e.g. removing COMPILE header instead of using try-catch).",
+          "FAIL": "2 or fewer bugs caught, or T5.B2 explanation inverts ~= and ?= semantics, or wrong PASS verdict."
+        }
+      }
+    },
+    {
+      "test_id": "T6",
+      "type": "generate",
+      "component": "Rollup",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Rollup transform: group orders by region and product_category. For each group compute: total_revenue (decimal, sum of unit_price * quantity), order_count (integer), avg_order_value (number). The accumulator metadata is named GroupAcc with fields: total_revenue (decimal), order_count (integer), avg_order_value (number). Group key is region + product_category.\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"OrderLine\" type=\"delimited\">\n    <Field name=\"region\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"product_category\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"unit_price\" type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"quantity\" type=\"integer\" nullable=\"false\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"RegionSummary\" type=\"delimited\">\n    <Field name=\"region\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"product_category\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"total_revenue\" type=\"decimal\" length=\"14\" scale=\"2\"/>\n    <Field name=\"order_count\" type=\"integer\"/>\n    <Field name=\"avg_order_value\" type=\"number\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate a correct Rollup with full lifecycle functions. Must NOT reduce to a plain Reformat-style single transform().",
+        "required": [
+          {
+            "id": "T6.1",
+            "check": "initGroup(GroupAcc acc) or initGroup(GroupAcc accumulator) function present — initialises all accumulator fields.",
+            "rationale": "Required Rollup lifecycle: called before first record in each group."
+          },
+          {
+            "id": "T6.2",
+            "check": "updateGroup(GroupAcc acc) function present — accumulates total_revenue (unit_price * quantity) and order_count per record.",
+            "rationale": "Required Rollup lifecycle: called for each input record."
+          },
+          {
+            "id": "T6.3",
+            "check": "transform(integer counter, GroupAcc acc) function present — emits output with counter > 0 → SKIP guard to emit exactly one record per group.",
+            "rationale": "Without counter guard, N input records produce N output records."
+          },
+          {
+            "id": "T6.4",
+            "check": "counter > 0 → return SKIP pattern in transform().",
+            "rationale": "Critical guard for one-output-per-group semantics."
+          },
+          {
+            "id": "T6.5",
+            "check": "Zero typos in output field names: region, product_category, total_revenue, order_count, avg_order_value.",
+            "rationale": "Field name typos cause runtime field-not-found errors."
+          },
+          {
+            "id": "T6.6",
+            "check": "avg_order_value computed as total_revenue / order_count (in finishGroup or transform). Divide-by-zero guard preferred.",
+            "rationale": "Required output field computation."
+          }
+        ],
+        "optional": [
+          {
+            "id": "T6.O1",
+            "check": "finishGroup(GroupAcc acc) present — computes avg_order_value after all records processed.",
+            "rationale": "Not strictly required if avg is computed in transform(), but conventional."
+          },
+          {
+            "id": "T6.O2",
+            "check": "updateTransform(integer counter, GroupAcc acc) present returning SKIP.",
+            "rationale": "Valid Rollup lifecycle function for suppressing per-record output."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T6.F1",
+            "check": "Must not generate a plain Reformat-style single transform() with no accumulator parameter.",
+            "rationale": "This ignores the Rollup component contract entirely."
+          },
+          {
+            "id": "T6.F2",
+            "check": "Must not access $in.0.total_revenue, $in.0.order_count, or $in.0.avg_order_value — these fields do not exist on the input metadata.",
+            "rationale": "These are output fields, not input fields."
+          },
+          {
+            "id": "T6.F3",
+            "check": "Must not omit the counter > 0 → SKIP guard in transform().",
+            "rationale": "Without it, every input record produces an output record."
+          }
+        ],
+        "scoring": {
+          "PASS": "All 6 required items present, zero field name typos, no forbidden patterns.",
+          "PARTIAL": "initGroup/updateGroup/transform present with counter guard but missing avg computation or finishGroup.",
+          "FAIL": "Generated plain transform() only (no accumulator lifecycle), OR field name typos in multiple output fields, OR accesses non-existent input fields."
+        }
+      }
+    },
+    {
+      "test_id": "T7",
+      "type": "validate",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Verify this Normalizer is fully correct — lifecycle, null handling, types.\n\n```ctl\n//#CTL2\nstring[] tagParts;\n\nfunction integer count() {\n    if (isnull($in.0.tags) || isBlank($in.0.tags)) {\n        return 0;\n    }\n    tagParts = split($in.0.tags, \"\\|\");\n    return length(tagParts);\n}\n\nfunction integer transform(integer idx) {\n    $out.0.entity_id = $in.0.entity_id;\n    $out.0.tag = trim(tagParts[idx]);\n    $out.0.tag_index = idx;\n    return OK;\n}\n\nfunction void clean() {\n    clear(tagParts);\n}\n```\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"Entity\" type=\"delimited\"><Field name=\"entity_id\" type=\"long\" nullable=\"false\"/><Field name=\"tags\" type=\"string\" nullable=\"true\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"TagRecord\" type=\"delimited\"><Field name=\"entity_id\" type=\"long\" nullable=\"false\"/><Field name=\"tag\" type=\"string\"/><Field name=\"tag_index\" type=\"integer\"/></Record></Metadata>",
+      "correct_aspects": [
+        "isnull() + isBlank() double guard on nullable tags field — correct",
+        "tagParts is a module-level variable — correct Normalizer pattern",
+        "split($in.0.tags, \"\\\\|\") — \"\\\\|\" correctly escapes pipe for regex literal match",
+        "transform(integer idx) — correct signature with 0-based idx parameter",
+        "clear(tagParts) in clean() — correct reset between input records",
+        "isBlank() is a documented CTL2 built-in — must NOT be flagged as non-existent"
+      ],
+      "rubric": {
+        "description": "This code is FULLY CORRECT. Validator must return PASS with no ERROR issues. The key challenge: models frequently false-positive on isBlank() (claiming it doesn't exist) and split(\"\\\\|\") (claiming wrong escaping). Both are correct.",
+        "verdict_expected": "PASS",
+        "false_positive_traps": [
+          {
+            "id": "T7.FP1",
+            "trap": "Flagging isBlank($in.0.tags) as invalid or non-existent.",
+            "reality": "isBlank(string) is a documented CTL2 built-in. Returns true for null, empty, or whitespace-only strings."
+          },
+          {
+            "id": "T7.FP2",
+            "trap": "Flagging split($in.0.tags, \"\\\\|\") regex escaping as incorrect.",
+            "reality": "\"\\\\|\" in a CTL2 string literal produces the regex \\| which matches a literal pipe character. This is correct."
+          },
+          {
+            "id": "T7.FP3",
+            "trap": "Flagging entity_id, tag, or tag_index as missing from metadata.",
+            "reality": "All fields are declared in the metadata provided."
+          },
+          {
+            "id": "T7.FP4",
+            "trap": "Flagging clear(tagParts) as incorrect — claiming it should be tagParts = [].",
+            "reality": "clear(list) is the correct idiomatic CTL2 way to empty a list."
+          }
+        ],
+        "scoring": {
+          "PASS": "Returns PASS verdict. May include INFO-level observations (not errors) about style.",
+          "PARTIAL": "Returns PASS but with spurious WARNINGs on correct code (e.g. unnecessary warning about isBlank or split escaping).",
+          "FAIL": "Returns FAIL verdict, OR flags isBlank() / split escaping / field names as errors."
+        }
+      }
+    },
+    {
+      "test_id": "T8",
+      "type": "generate",
+      "component": "Reformat",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Reformat: Map a transaction record. Set valid_from to today. If transaction_date is before 2020-01-01 use category \"LEGACY\", if between 2020-01-01 and 2023-12-31 use \"STANDARD\", otherwise \"CURRENT\". Use date literals not str2date or createDate. Copy all other fields.\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"Transaction\" type=\"delimited\">\n    <Field name=\"txn_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"transaction_date\" type=\"date\" nullable=\"false\"/>\n    <Field name=\"amount\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"status\" type=\"string\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"TransactionOut\" type=\"delimited\">\n    <Field name=\"txn_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"transaction_date\" type=\"date\" nullable=\"false\"/>\n    <Field name=\"amount\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"status\" type=\"string\"/>\n    <Field name=\"category\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"valid_from\" type=\"date\" nullable=\"false\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate correct Reformat using date literals (not str2date or createDate) per explicit instruction.",
+        "required": [
+          {
+            "id": "T8.1",
+            "check": "Date literal 2020-01-01 used inline (not str2date(\"2020-01-01\", ...) and not createDate(2020, 1, 1)).",
+            "rationale": "Explicit instruction to use date literals."
+          },
+          {
+            "id": "T8.2",
+            "check": "Date literal 2023-12-31 used inline.",
+            "rationale": "Second boundary date as literal."
+          },
+          {
+            "id": "T8.3",
+            "check": "valid_from set to today().",
+            "rationale": "today() is the correct function for current date."
+          },
+          {
+            "id": "T8.4",
+            "check": "Three-way if/else produces LEGACY / STANDARD / CURRENT correctly with < and <= comparisons.",
+            "rationale": "Core classification logic."
+          },
+          {
+            "id": "T8.5",
+            "check": "All other fields copied (either via $out.0.* = $in.0.* or field-by-field).",
+            "rationale": "Instruction says copy all other fields."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T8.F1",
+            "check": "Must not use str2date() to create constant date boundaries.",
+            "rationale": "Explicit instruction: 'Use date literals not str2date'."
+          },
+          {
+            "id": "T8.F2",
+            "check": "Must not use createDate() to create constant date boundaries.",
+            "rationale": "Explicit instruction: 'not str2date or createDate'."
+          }
+        ],
+        "scoring": {
+          "PASS": "Date literals 2020-01-01 and 2023-12-31 used inline, today() present, correct three-way classification.",
+          "PARTIAL": "Logic correct but one boundary uses str2date or createDate.",
+          "FAIL": "Both boundaries use str2date or createDate — instruction completely ignored."
+        }
+      }
+    },
+    {
+      "test_id": "T9",
+      "type": "generate",
+      "component": "Join (Hash/Merge)",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Transform for a LEFT OUTER JOIN between orders (master, port 0) and customers (slave, port 1) on customer_id. Copy all order fields. Add customer_name and email from the slave side. When no matching customer exists, customer_name should be \"UNKNOWN\" and email should be null. Set a boolean flag customer_found to true when a match was found, false otherwise. Use a field-level sentinel to detect a missing match — not a whole-record null check.\n\nPort 0 (master — orders):\n<Metadata id=\"MetaOrders\">\n  <Record name=\"Order\" type=\"delimited\">\n    <Field name=\"order_id\"    type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"amount\"      type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"order_date\"  type=\"date\"    nullable=\"false\"/>\n  </Record>\n</Metadata>\n\nPort 1 (slave — customers):\n<Metadata id=\"MetaCustomers\">\n  <Record name=\"Customer\" type=\"delimited\">\n    <Field name=\"customer_id\"   type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_name\" type=\"string\"  nullable=\"false\"/>\n    <Field name=\"email\"         type=\"string\"  nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"EnrichedOrder\" type=\"delimited\">\n    <Field name=\"order_id\"       type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_id\"    type=\"integer\" nullable=\"false\"/>\n    <Field name=\"amount\"         type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"order_date\"     type=\"date\"    nullable=\"false\"/>\n    <Field name=\"customer_name\"  type=\"string\"/>\n    <Field name=\"email\"          type=\"string\"/>\n    <Field name=\"customer_found\" type=\"boolean\" nullable=\"false\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate a correct JOIN transform using $in.0 for master fields and $in.1 for slave fields, with a field-level sentinel for missing slave records.",
+        "required": [
+          {
+            "id": "T9.1",
+            "check": "$in.0 used for master (order) fields: order_id, customer_id, amount, order_date.",
+            "rationale": "Port 0 is master. Order fields come from $in.0."
+          },
+          {
+            "id": "T9.2",
+            "check": "$in.1 used for slave (customer) fields: customer_name, email.",
+            "rationale": "Port 1 is slave. Customer fields come from $in.1."
+          },
+          {
+            "id": "T9.3",
+            "check": "Field-level sentinel used to detect missing match — e.g. isnull($in.1.customer_name) or isnull($in.1.customer_id). NOT a whole-record check.",
+            "rationale": "The correct CTL2 pattern for detecting a no-match in a left outer join is checking a concrete field from the slave side, not the record itself."
+          },
+          {
+            "id": "T9.4",
+            "check": "customer_name set to \"UNKNOWN\" (or similar default) when no match, $in.1.customer_name when matched.",
+            "rationale": "Explicit null handling for missing slave record as specified."
+          },
+          {
+            "id": "T9.5",
+            "check": "customer_found boolean set correctly: true when match found (slave fields non-null), false otherwise.",
+            "rationale": "Required output field."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T9.F1",
+            "check": "Must not use $in.0 to access customer_name or email — these are slave (port 1) fields.",
+            "rationale": "Accessing slave fields via $in.0 produces wrong data."
+          },
+          {
+            "id": "T9.F2",
+            "check": "Must not use $out.0.* = $in.0.* without also setting customer_name, email, customer_found.",
+            "rationale": "Wildcard copy would not cover the enriched slave fields."
+          },
+          {
+            "id": "T9.F3",
+            "check": "Must not use a whole-record null check like isnull($in.1) — use a field-level sentinel instead.",
+            "rationale": "CTL2 join null detection should be field-based, not record-based."
+          }
+        ],
+        "scoring": {
+          "PASS": "All 5 required items present. $in.0 for master, $in.1 for slave, field-level sentinel, correct defaults, customer_found boolean.",
+          "PARTIAL": "Correct port usage and sentinel but missing customer_found, or uses whole-record null check instead of field sentinel.",
+          "FAIL": "Uses $in.0 for slave fields, OR no null handling for missing slave, OR whole-record null check only."
+        }
+      }
+    },
+    {
+      "test_id": "T10",
+      "type": "generate",
+      "component": "Filter",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Filter transform: keep records where ALL of the following are true:\n  1. amount is not null AND greater than zero\n  2. status is not \"CANCELLED\" and not blank\n  3. customer_id is not null\n\nProvide a CTL2 boolean expression (no function wrapper).\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"Transaction\" type=\"delimited\">\n    <Field name=\"txn_id\"      type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_id\" type=\"integer\" nullable=\"true\"/>\n    <Field name=\"amount\"      type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/>\n    <Field name=\"status\"      type=\"string\"  nullable=\"true\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Filter CTL2 is a bare boolean expression — no function declaration. Must NOT be wrapped in any function.",
+        "required": [
+          {
+            "id": "T10.1",
+            "check": "Response is a bare boolean expression with //#CTL2 header — no function() { } wrapper.",
+            "rationale": "Filter component takes a boolean expression directly, not a function."
+          },
+          {
+            "id": "T10.2",
+            "check": "Null guard on amount before > 0 comparison: isnull check combined with amount > 0D.",
+            "rationale": "amount is nullable=true; relational operator on null throws CTLException."
+          },
+          {
+            "id": "T10.3",
+            "check": "Null/blank guard on status before != \"CANCELLED\": isBlank() or isnull() check.",
+            "rationale": "status is nullable=true."
+          },
+          {
+            "id": "T10.4",
+            "check": "Null guard on customer_id: isnull($in.0.customer_id) check.",
+            "rationale": "customer_id is nullable=true."
+          },
+          {
+            "id": "T10.5",
+            "check": "Expression combines all three conditions with && (AND logic — all must be true).",
+            "rationale": "Spec says ALL conditions must hold."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T10.F1",
+            "check": "Must NOT wrap in `function integer transform()`.",
+            "rationale": "Filter uses a boolean expression, not a transform function."
+          },
+          {
+            "id": "T10.F2",
+            "check": "Must NOT wrap in `function boolean isValid()` or any other function declaration.",
+            "rationale": "No function wrapper at all — bare expression only."
+          },
+          {
+            "id": "T10.F3",
+            "check": "Must NOT use return ALL, return SKIP, return true, return false as statements — the expression itself IS the return value.",
+            "rationale": "Bare expression, no return statement needed."
+          }
+        ],
+        "scoring": {
+          "PASS": "Bare boolean expression, no function wrapper, all three nullable fields guarded, correct AND logic.",
+          "PARTIAL": "Correct boolean logic but wrapped in a function declaration.",
+          "FAIL": "Uses transform() or any function wrapper, OR compares nullable fields without null guards."
+        }
+      }
+    },
+    {
+      "test_id": "T11",
+      "type": "generate",
+      "component": "Partition",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Partition transform: route records to output ports based on region and priority.\n\nRouting rules:\n  - Null region OR null priority → port 3 (rejected/unroutable)\n  - region == \"EU\" → port 0\n  - region == \"US\" → port 1\n  - region == \"APAC\" → port 2\n  - Any other non-null region → port 3\n  - For EU and US only: if priority > 5, route to the next port (EU high-priority → port 0+1=1, US high-priority → port 2). APAC always routes to port 2 regardless of priority.\n\nSimplification: implement just the region-based routing with null guard. Ignore the priority override — that is a follow-up.\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"Event\" type=\"delimited\">\n    <Field name=\"event_id\"  type=\"long\"    nullable=\"false\"/>\n    <Field name=\"region\"    type=\"string\"  nullable=\"true\"/>\n    <Field name=\"priority\"  type=\"integer\" nullable=\"true\"/>\n    <Field name=\"payload\"   type=\"string\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate a correct Partition using getOutputPort() returning integer port number. Must NOT use transform().",
+        "required": [
+          {
+            "id": "T11.1",
+            "check": "Function signature is `function integer getOutputPort()` — returns integer.",
+            "rationale": "Partition component requires getOutputPort(). transform() is wrong."
+          },
+          {
+            "id": "T11.2",
+            "check": "Null guard on region before comparing: isnull() or isBlank() check returns port 3.",
+            "rationale": "The spec explicitly requires null region → port 3. While == is null-safe in CTL2 (null == 'EU' evaluates to false, not an exception), the guard is required here because the spec calls for it and makes the null routing intent explicit."
+          },
+          {
+            "id": "T11.3",
+            "check": "EU → port 0, US → port 1, APAC → port 2, default → port 3.",
+            "rationale": "Core routing logic."
+          },
+          {
+            "id": "T11.4",
+            "check": "Function returns an integer (port number) for all code paths.",
+            "rationale": "Every branch must return an integer. Missing return causes compile error."
+          }
+        ],
+        "optional": [
+          {
+            "id": "T11.O1",
+            "check": "Null guard on priority as well.",
+            "rationale": "priority is nullable but the spec says to ignore priority override — guarding it is defensive but not required."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T11.F1",
+            "check": "Must NOT use `function integer transform()` — Partition requires `function integer getOutputPort()`.",
+            "rationale": "transform() is the wrong entry point for Partition."
+          },
+          {
+            "id": "T11.F2",
+            "check": "Must NOT return ALL, SKIP, or OK — getOutputPort() returns an output port number (0, 1, 2, 3...).",
+            "rationale": "Integer constants ALL/SKIP/OK are for transform(), not getOutputPort()."
+          },
+          {
+            "id": "T11.F3",
+            "check": "Must NOT compare $in.0.region without a null guard (region is nullable=true).",
+            "rationale": "The spec requires explicit null routing to port 3. Note: == is null-safe in CTL2 (no exception), but the guard is required by the specification, not for safety reasons."
+          }
+        ],
+        "scoring": {
+          "PASS": "getOutputPort() returning port integer, null guard on region, correct EU/US/APAC/default routing, all paths return.",
+          "PARTIAL": "getOutputPort() present and correct routing but missing null guard on region.",
+          "FAIL": "Uses transform() instead of getOutputPort(), OR returns ALL/SKIP/OK, OR no null guard on nullable region."
+        }
+      }
+    },
+    {
+      "test_id": "T12",
+      "type": "validate",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Validate this JOIN transform. Port 0 (master) has: order_id, customer_id, amount. Port 1 (slave) has: customer_id, customer_name, email. It is a LEFT OUTER JOIN.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.order_id   = $in.0.order_id;\n    $out.0.amount     = $in.0.amount;\n    $out.0.cust_name  = $in.0.customer_name;\n    $out.0.email      = $in.1.email;\n    if (isnull($in.1)) {\n        $out.0.found = false;\n    } else {\n        $out.0.found = true;\n    }\n    return ALL;\n}\n```\n\nPort 0 (master — orders):\n<Metadata id=\"M0\"><Record name=\"Order\" type=\"delimited\"><Field name=\"order_id\"    type=\"integer\" nullable=\"false\"/><Field name=\"customer_id\" type=\"integer\" nullable=\"false\"/><Field name=\"amount\"      type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/></Record></Metadata>\n\nPort 1 (slave — customers):\n<Metadata id=\"M1\"><Record name=\"Customer\" type=\"delimited\"><Field name=\"customer_id\"   type=\"integer\" nullable=\"false\"/><Field name=\"customer_name\" type=\"string\"  nullable=\"false\"/><Field name=\"email\"         type=\"string\"  nullable=\"true\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M2\"><Record name=\"Out\" type=\"delimited\"><Field name=\"order_id\"  type=\"integer\" nullable=\"false\"/><Field name=\"amount\"    type=\"decimal\" length=\"10\" scale=\"2\"/><Field name=\"cust_name\" type=\"string\"/><Field name=\"email\"     type=\"string\"/><Field name=\"found\"     type=\"boolean\"/></Record></Metadata>",
+      "bugs": [
+        {
+          "id": "T12.B1",
+          "code": "$in.0.customer_name",
+          "description": "customer_name is a slave (port 1) field. Port 0 (master) has only order_id, customer_id, amount. Accessing $in.0.customer_name references a non-existent field on the master record.",
+          "correct_fix": "$out.0.cust_name = $in.1.customer_name;",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T12.B2",
+          "code": "isnull($in.1)",
+          "description": "Whole-record null check on $in.1 is a logical ERROR. In CTL2, port records themselves are never null — in a left outer join with no slave match, the slave record exists but all its fields are set to null. Therefore isnull($in.1) always evaluates to false and will never detect a missing join partner. The correct sentinel field to check is the join key field on the slave port: isnull($in.1.customer_id). The join key is guaranteed to be non-null when a match exists (it is declared nullable='false' in the slave metadata), so a null value definitively indicates no match. Other slave fields that are declared nullable='false' (such as customer_name) also work as sentinels. However, fields that are nullable='true' (such as email in this test) must NOT be used as sentinels — they can legitimately be null even when a match exists, making them unreliable for join-miss detection.",
+          "correct_fix": [
+            "isnull($in.1.customer_id)",
+            "isnull($in.1.customer_name)",
+            "isnull($in.1.customer_id) || isnull($in.1.customer_name)",
+            "isnull($in.1.customer_id) or isnull($in.1.customer_name)"
+          ],
+          "severity": "ERROR"
+        }
+      ],
+      "rubric": {
+        "description": "Validator must identify the wrong port usage (B1) and the whole-record null check anti-pattern (B2).",
+        "required_findings": [
+          "T12.B1",
+          "T12.B2"
+        ],
+        "fix_quality": {
+          "T12.B1": "Must identify that customer_name belongs to $in.1, not $in.0.",
+          "T12.B2": "Must flag as ERROR severity. Must explain that port records are never null in CTL2 — only fields can be null. Must recommend checking a non-nullable slave field as the sentinel, ideally the join key (isnull($in.1.customer_id)). Acceptable: any slave field declared nullable='false'. Not acceptable: isnull($in.1.email) — email is nullable='true' and can be null even with a match."
+        },
+        "verdict_expected": "FAIL",
+        "scoring": {
+          "PASS": "Both bugs caught with correct explanations and fixes. T12.B2 must be flagged as ERROR (logical error, not just style).",
+          "PARTIAL": "T12.B1 caught but T12.B2 missed or only flagged as WARNING; or fix for B2 does not use a field-level sentinel.",
+          "FAIL": "T12.B1 missed (wrong port usage not identified), or wrong PASS verdict."
+        }
+      }
+    },
+    {
+      "test_id": "T13",
+      "type": "validate",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Validate this Filter CTL2 transform.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    if (isnull($in.0.amount) || $in.0.amount <= 0D) {\n        return SKIP;\n    }\n    if (isBlank($in.0.status) || $in.0.status == \"CANCELLED\") {\n        return SKIP;\n    }\n    return ALL;\n}\n```\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"Txn\" type=\"delimited\"><Field name=\"txn_id\"  type=\"integer\" nullable=\"false\"/><Field name=\"amount\"  type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/><Field name=\"status\"  type=\"string\"  nullable=\"true\"/></Record></Metadata>",
+      "bugs": [
+        {
+          "id": "T13.B1",
+          "code": "function integer transform() { ... }",
+          "description": "Filter CTL2 is a bare boolean expression — no function wrapper. The entire function declaration must be removed and replaced with a boolean expression directly.",
+          "correct_fix": "//#CTL2\n!isnull($in.0.amount) && $in.0.amount > 0D && !isBlank($in.0.status) && $in.0.status != \"CANCELLED\"",
+          "severity": "ERROR"
+        }
+      ],
+      "rubric": {
+        "description": "Validator must identify that Filter CTL2 requires a bare boolean expression — no function wrapper of any kind. Since there is no function, there can be no return statements either; the validator need not call these out separately.",
+        "required_findings": [
+          "T13.B1"
+        ],
+        "notes": "The null guards and logic are actually correct — isnull() before comparison, isBlank() check on status. The ONLY problem is the wrong function wrapper. Return statements are a consequence of the function wrapper and do not need to be flagged separately. The validator must not flag the logic.",
+        "verdict_expected": "FAIL",
+        "scoring": {
+          "PASS": "T13.B1 caught: Filter must be a bare boolean expression (no function wrapper). Logic correctly identified as valid.",
+          "PARTIAL": "Validator flags the correct null guards as errors, or misidentifies the fix (e.g. suggests renaming to isValid()).",
+          "FAIL": "Wrong PASS verdict, or misses the function-wrapper bug entirely."
+        },
+        "fix_quality": {
+          "T13.B1": "Must say Filter uses a bare boolean expression, NOT a function wrapper. Must NOT suggest renaming to isValid() or filter() — those are also wrong."
+        }
+      }
+    },
+    {
+      "test_id": "T14",
+      "type": "validate",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Validate this Partition component CTL2 transform.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    if ($in.0.region == \"EU\") return 0;\n    if ($in.0.region == \"US\") return 1;\n    return 2;\n}\n```\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"Event\" type=\"delimited\"><Field name=\"event_id\" type=\"long\"   nullable=\"false\"/><Field name=\"region\"   type=\"string\" nullable=\"true\"/></Record></Metadata>",
+      "bugs": [
+        {
+          "id": "T14.B1",
+          "code": "function integer transform()",
+          "description": "Partition component requires `function integer getOutputPort()`, not `function integer transform()`. The entry point name is wrong.",
+          "correct_fix": "function integer getOutputPort() { ... }",
+          "severity": "ERROR"
+        }
+      ],
+      "rubric": {
+        "description": "Validator must catch the wrong entry point function name (transform vs getOutputPort). The null handling of region is NOT a bug: == and != are null-safe in CTL2 and evaluate to false when an operand is null, so null region correctly falls through to return 2.",
+        "required_findings": [
+          "T14.B1"
+        ],
+        "fix_quality": {
+          "T14.B1": "Must name getOutputPort() specifically as the correct function name."
+        },
+        "false_positive_traps": [
+          {
+            "id": "T14.FP1",
+            "trap": "Flagging '$in.0.region == \"EU\"' as unsafe or claiming that == throws CTLException when region is null.",
+            "reality": "In CTL2, == and != are null-safe: comparing null with == evaluates to false, not an exception. Only order comparisons (< <= > >=) throw CTLException on null. Null region causes both == comparisons to evaluate to false and execution reaches return 2, which is correct behaviour."
+          },
+          {
+            "id": "T14.FP2",
+            "trap": "Suggesting an isnull() guard is required before the == comparisons on region.",
+            "reality": "No null guard is needed. The code correctly handles null region without one."
+          }
+        ],
+        "verdict_expected": "FAIL",
+        "scoring": {
+          "PASS": "T14.B1 caught with correct fix (getOutputPort). No spurious issues raised about the null handling of region.",
+          "PARTIAL": "T14.B1 caught but model also raises a false null-guard issue about == comparisons on region.",
+          "FAIL": "T14.B1 missed, or wrong PASS verdict, or suggests wrong fix for the entry point."
+        }
+      }
+    },
+    {
+      "test_id": "T15",
+      "type": "generate",
+      "component": "Partition",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Partition transform: route records to output ports based on region and priority.\n\nRouting rules:\n  - Null region OR null priority → port 3 (rejected/unroutable)\n  - region == \"EU\", priority ≤ 5 → port 0\n  - region == \"EU\", priority > 5 → port 1  (high-priority EU)\n  - region == \"US\", priority ≤ 5 → port 1\n  - region == \"US\", priority > 5 → port 2  (high-priority US)\n  - region == \"APAC\" → port 2  (always, regardless of priority)\n  - Any other non-null region → port 3\n\nImplement the full routing including priority override.\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"Event\" type=\"delimited\">\n    <Field name=\"event_id\"  type=\"long\"    nullable=\"false\"/>\n    <Field name=\"region\"    type=\"string\"  nullable=\"true\"/>\n    <Field name=\"priority\"  type=\"integer\" nullable=\"true\"/>\n    <Field name=\"payload\"   type=\"string\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate a correct full Partition using getOutputPort(). Must handle null guards on both region and priority (priority > 5 uses order comparison which throws CTLException on null), implement the priority override for EU and US, and leave APAC unaffected by priority.",
+        "required": [
+          {
+            "id": "T15.1",
+            "check": "Function signature is `function integer getOutputPort()` — returns integer.",
+            "rationale": "Partition component requires getOutputPort(). transform() is wrong."
+          },
+          {
+            "id": "T15.2",
+            "check": "Null guard on both region and priority before any comparisons; returns port 3 for either null.",
+            "rationale": "Both fields are nullable=true. Critically, priority > 5 is an order comparison — unlike ==, order comparisons throw CTLException when an operand is null. The null guard on priority is therefore required for correctness, not just style."
+          },
+          {
+            "id": "T15.3",
+            "check": "Base region routing: EU, US, APAC mapped to correct base ports (0, 1, 2), other non-null region to port 3.",
+            "rationale": "Core routing table."
+          },
+          {
+            "id": "T15.4",
+            "check": "EU priority override: priority > 5 routes to port 1 instead of port 0.",
+            "rationale": "High-priority EU records go to the next port."
+          },
+          {
+            "id": "T15.5",
+            "check": "US priority override: priority > 5 routes to port 2 instead of port 1.",
+            "rationale": "High-priority US records go to the next port."
+          },
+          {
+            "id": "T15.6",
+            "check": "APAC always routes to port 2 regardless of priority value.",
+            "rationale": "The spec explicitly says APAC ignores priority. Applying the override to APAC is a logic error."
+          },
+          {
+            "id": "T15.7",
+            "check": "All code paths return an integer port number.",
+            "rationale": "Every branch must return. Missing return causes compile error."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T15.F1",
+            "check": "Must NOT use `function integer transform()` — Partition requires `function integer getOutputPort()`.",
+            "rationale": "transform() is the wrong entry point for Partition."
+          },
+          {
+            "id": "T15.F2",
+            "check": "Must NOT return ALL, SKIP, or OK.",
+            "rationale": "Integer constants ALL/SKIP/OK are for transform(), not getOutputPort()."
+          },
+          {
+            "id": "T15.F3",
+            "check": "Must NOT compare priority > 5 without a preceding null guard on priority.",
+            "rationale": "priority > 5 is an order comparison. Unlike ==, order comparisons throw CTLException when an operand is null. Omitting the null guard causes a runtime crash on records with null priority."
+          },
+          {
+            "id": "T15.F4",
+            "check": "Must NOT apply the priority override to APAC records.",
+            "rationale": "The spec says APAC always routes to port 2 regardless of priority."
+          }
+        ],
+        "scoring": {
+          "PASS": "getOutputPort(), null guards on both region and priority, correct base routing, correct priority override for EU and US, APAC unaffected, all paths return.",
+          "PARTIAL": "Correct entry point and base routing, but priority override missing, incomplete, or applied to APAC; OR null guard on priority missing.",
+          "FAIL": "Uses transform() instead of getOutputPort(), OR returns ALL/SKIP/OK, OR no null guard before priority > 5 comparison."
+        }
+      }
+    },
+    {
+      "test_id": "T16",
+      "type": "validate",
+      "component": "Partition",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Validate this Partition CTL2 transform.\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"Event\" type=\"delimited\"><Field name=\"event_id\" type=\"long\" nullable=\"true\"/><Field name=\"region\" type=\"string\" nullable=\"true\"/></Record></Metadata>\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    if (event_id > 1000) {\n        if ($in.0.region == \"EU\") return 0;\n        if ($in.0.region == \"US\") return 1;\n        return 2;\n    } else {\n        return 3;\n    }\n    return 2;\n}\n```",
+      "bugs": [
+        {
+          "id": "T16.B1",
+          "code": "function integer transform()",
+          "description": "Partition component requires `function integer getOutputPort()`, not `function integer transform()`. The entry point name is wrong.",
+          "correct_fix": "function integer getOutputPort() { ... }",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T16.B2",
+          "code": "if (event_id > 1000)",
+          "description": "`event_id` is used as a bare identifier but no local variable named event_id is declared. In CTL2, input record fields must always be addressed via port notation: `$in.0.event_id`. Using an undeclared identifier is a compile error.",
+          "correct_fix": "Replace `event_id` with `$in.0.event_id` throughout.",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T16.B3",
+          "code": "if ($in.0.event_id > 1000)",
+          "description": "$in.0.event_id is nullable=true (long nullable). The > operator is NOT null-safe in CTL2 — unlike == and !=, order comparisons (< <= > >=) throw CTLException at runtime when either operand is null. A null guard is required before the comparison.",
+          "correct_fix": [
+            "if (isnull($in.0.event_id)) return 3;  // before the > comparison",
+            "if (!isnull($in.0.event_id) && $in.0.event_id > 1000) { ... }"
+          ],
+          "severity": "WARNING"
+        },
+        {
+          "id": "T16.B4",
+          "code": "return 2;  // after the closing brace of the if/else block",
+          "description": "The final `return 2` after the if/else block is unreachable dead code. Every code path through the if/else already returns: the if-branch terminates with a `return 2` (non-EU/US case), and the else-branch returns 3. CTL2 (and the CloverDX compiler) reject unreachable statements — this is a compile error, not merely a style issue.",
+          "correct_fix": "Remove the trailing `return 2;`.",
+          "severity": "ERROR"
+        }
+      ],
+      "rubric": {
+        "description": "Validator must catch four bugs: wrong Partition entry point (ERROR), undeclared bare identifier `event_id` instead of `$in.0.event_id` (ERROR), missing null guard before an order comparison on a nullable field (WARNING), and unreachable dead code after a fully covered if/else (ERROR — CTL2 compiler rejects unreachable statements).",
+        "required_findings": [
+          "T16.B1",
+          "T16.B2",
+          "T16.B3",
+          "T16.B4"
+        ],
+        "fix_quality": {
+          "T16.B1": "Must name getOutputPort() specifically as the correct function name.",
+          "T16.B2": "Must identify that `event_id` is not a valid bare identifier — CTL2 input fields must be addressed as `$in.0.event_id`. Must flag as ERROR (compile error).",
+          "T16.B3": "Must identify that > is not null-safe (unlike ==) and that $in.0.event_id is nullable=true. Must suggest an isnull() guard before the comparison. Must flag as WARNING.",
+          "T16.B4": "Must identify the trailing return 2 as unreachable dead code. Must flag as ERROR — CTL2 does not compile code with unreachable statements."
+        },
+        "false_positive_traps": [
+          {
+            "id": "T16.FP1",
+            "trap": "Claiming that `$in.0.region == \"EU\"` throws CTLException when region is null.",
+            "reality": "== and != are null-safe in CTL2 — they evaluate to false when an operand is null. Only order comparisons (< <= > >=) throw on null. The region == comparisons are safe without a null guard."
+          }
+        ],
+        "verdict_expected": "FAIL",
+        "scoring": {
+          "PASS": "All four bugs caught with correct severities: B1 ERROR, B2 ERROR, B3 WARNING, B4 ERROR. No false claims about == null safety.",
+          "PARTIAL": "B1 caught but one or more of B2/B3/B4 missed; or a bug caught with wrong severity or explanation (e.g. B4 flagged as WARNING instead of ERROR).",
+          "FAIL": "B1 missed, or wrong PASS verdict, or model claims == throws on null (T16.FP1)."
+        }
+      }
+    }
+  ]
+}
