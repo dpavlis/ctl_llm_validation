@@ -1,0 +1,90 @@
+# =============================================================================
+# CTL2 chat config
+#
+# Usage:
+#   cd ~/llama_train
+#   python chat.py configs/chat_config.yaml
+#   python chat.py configs/chat_config.yaml --model /home/pavlisd/exports/qwen35-9B-CTLv11
+#   python chat.py configs/chat_config.yaml --temperature 0.7 --top-p 0.95
+#   python chat.py configs/chat_config.yaml --logfile logs/session.md
+#   python chat.py configs/chat_config.yaml --system "You are a helpful assistant."
+#
+# During chat:
+#   /reset    — clear conversation history
+#   /history  — print conversation so far
+#   /quit     — exit  (also Ctrl-D or Ctrl-C)
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Link to training config (enables export auto-discovery)
+# ---------------------------------------------------------------------------
+training_config: configs/qwen35-9B.yaml
+
+# ---------------------------------------------------------------------------
+# Model
+# ---------------------------------------------------------------------------
+model:
+  # "local"  — load exported safetensors directly via transformers (GPU required)
+  # "api"    — call an OpenAI-compatible endpoint (Ollama, vLLM, OpenAI, etc.)
+  mode: local
+
+  # Path to the exported model directory.
+  # Leave null (or omit) to auto-discover latest export from training_config.
+  model_path: null
+
+  # Data type for inference: float16 | bfloat16 | float32
+  # Use bfloat16 for Ampere+ (A100, RTX 30xx+), float16 for older GPUs.
+  dtype: bfloat16
+
+  # HuggingFace device map: "auto" distributes across all available GPUs/CPU
+  device_map: auto
+
+  # Maximum new tokens per response
+  max_new_tokens: 2048
+
+  # Whether to allow the model to produce chain-of-thought <think> tokens.
+  # Set false for models trained with a nothink template (qwen3_nothink etc.)
+  enable_thinking: false
+
+  # --- api mode ---
+  # base_url: "http://localhost:11434/v1"
+  # api_model: "qwen35-9B-CTLv11"
+  # api_key: "ollama"
+
+# ---------------------------------------------------------------------------
+# Generation settings
+# ---------------------------------------------------------------------------
+temperature: 0.3
+top_p: 0.95
+
+# ---------------------------------------------------------------------------
+# System prompt
+# ---------------------------------------------------------------------------
+system_prompt: |
+  You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+  Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+  Prefer correct, practical, minimal solutions.
+
+# ---------------------------------------------------------------------------
+# Chat template override (optional)
+# Leave commented out to use the tokenizer's built-in template.
+# Useful if you need to force a specific template regardless of what the
+# tokenizer ships with.
+# ---------------------------------------------------------------------------
+# chat_template: |
+#   {% for message in messages %}
+#   {% if message['role'] == 'system' %}<|im_start|>system
+#   {{ message['content'] }}<|im_end|>
+#   {% elif message['role'] == 'user' %}<|im_start|>user
+#   {{ message['content'] }}<|im_end|>
+#   <|im_start|>assistant
+#   {% elif message['role'] == 'assistant' %}{{ message['content'] }}<|im_end|>
+#   {% endif %}
+#   {% endfor %}
+
+# ---------------------------------------------------------------------------
+# Session logging
+# ---------------------------------------------------------------------------
+# If set, the full session (system prompt + all turns) is written to this file
+# as Markdown.  Can also be set on the command line with --logfile.
+# logfile: logs/chat_session.md
