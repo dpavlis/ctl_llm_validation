@@ -435,7 +435,7 @@ def run_chat(model, system_prompt: str, temperature: float, top_p: float,
             continue
 
         # --- built-in commands ---
-        if user_text.lower() in ("/quit", "/exit"):
+        if user_text.lower() in ("/quit", "/exit", "/bye"):
             _print("[dim]Goodbye.[/dim]")
             break
 

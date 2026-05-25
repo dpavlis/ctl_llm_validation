@@ -520,7 +520,6 @@ _JUDGE_SCHEMA = """\
 {
   "test_id": "<string>",
   "verdict": "PASS" | "PARTIAL" | "FAIL" | "ERROR",
-  "score": "<N/M>",
   "findings": [
     { "id": "<item_id>", "status": "PRESENT|MISSING|WRONG|CAUGHT|MISSED", "note": "<string>" }
   ],
@@ -557,7 +556,52 @@ def _normalise_bugs(bugs: list) -> list:
     return result
 
 
-def build_judge_user_message(test: dict, mut_response: str, judge_instructions: str) -> str:
+def build_judge_system_prompt(
+    judge_system_prompt: str,
+    judge_instructions: str,
+    ctl2_reference: Optional[str] = None,
+) -> str:
+    """Combine all static judge content into one system prompt.
+
+    Order (most-stable → least-stable, maximises cache prefix length):
+      1. CTL2 language reference  — never changes, longest stable block
+      2. Judge role description   — from suite JSON, static per project
+      3. Evaluation instructions  — from suite JSON, static per project
+      4. Required JSON schema     — defined in test.py, static per project
+
+    Keeping all static content here (rather than appending it to every user
+    message) maximises prompt-cache hits on both Anthropic and OpenAI providers:
+    the system prompt prefix is identical across all test evaluations in a run.
+    """
+    parts = []
+    if ctl2_reference:
+        parts += [
+            "# CTL2 Language Reference",
+            "",
+            ctl2_reference,
+            "",
+            "---",
+        ]
+    parts += [
+        judge_system_prompt,
+        "## Evaluation Instructions",
+        judge_instructions,
+        "## Required Output Format",
+        "Respond with a single raw JSON object exactly matching this schema "
+        "(no markdown fences, no prose before or after):",
+        _JUDGE_SCHEMA,
+    ]
+    return "\n\n".join(parts)
+
+
+def build_judge_user_message(test: dict, mut_response: str) -> str:
+    """Build the per-test user message for the judge.
+
+    Contains only the variable content that changes per test: the test definition
+    (system prompt + user message sent to MUT, rubric) and the model's response.
+    All static instructions and the output schema are in the system prompt so they
+    are cached and not repeated in every call.
+    """
     rubric = test.get("rubric", {})
     bugs = _normalise_bugs(test.get("bugs", []))
     component = test.get("component", "") or "—"
@@ -588,16 +632,6 @@ def build_judge_user_message(test: dict, mut_response: str, judge_instructions: 
         "## Model Response to Evaluate:",
         "",
         mut_response or "(empty response)",
-        "",
-        "---",
-        "",
-        "## Instructions:",
-        "",
-        judge_instructions,
-        "",
-        "Respond with a single raw JSON object exactly matching this schema "
-        "(no markdown fences, no prose before or after):",
-        _JUDGE_SCHEMA,
     ]
     return "\n".join(parts)
 
@@ -606,15 +640,35 @@ def build_judge_user_message(test: dict, mut_response: str, judge_instructions: 
 # Numeric scoring + critical failure detection
 # ---------------------------------------------------------------------------
 
+def compute_score_str(judge_result: dict) -> str:
+    """Return a human-readable 'N/M' fraction computed from judge findings.
+
+    N = number of required findings the judge reported as CAUGHT or PRESENT.
+    M = total required findings evaluated.
+
+    Computed entirely in code from the judge's per-finding statuses — the judge
+    is not asked to produce a score string itself, ensuring consistency.
+    Falls back to '?/?' if no findings are present.
+    """
+    findings = judge_result.get("findings") or []
+    if not findings:
+        return "?/?"
+    passed_statuses = {"PRESENT", "CAUGHT"}
+    passed = sum(1 for f in findings if f.get("status") in passed_statuses)
+    return f"{passed}/{len(findings)}"
+
+
 def compute_numeric_score(judge_result: dict, test: dict) -> float:
     """Return a [0.0, 1.0] score derived from judge findings.
 
+    All arithmetic is performed here in code — the judge supplies only
+    per-finding statuses, FP triggers, and forbidden-item presence flags.
+
     Base score = passed_required / total_required
-    Penalties:
-      -0.20 per forbidden item present
-      -0.25 per false-positive trap triggered (only on tests with rubric.false_positive_traps)
-      -0.10 for wrong fix on T4.B2 (hallucinated function suggested)
-    Clamped to [0.0, 1.0].
+    Penalties (applied after base, clamped to [0.0, 1.0]):
+      -0.20 per forbidden item reported PRESENT
+      -0.25 per false-positive trap reported TRIGGERED
+             (only on tests that define false_positive_traps in the rubric)
     """
     findings = judge_result.get("findings") or []
     forbidden_present = judge_result.get("forbidden_present") or []
@@ -627,6 +681,7 @@ def compute_numeric_score(judge_result: dict, test: dict) -> float:
     if total > 0:
         score = passed / total
     else:
+        # No findings to count — fall back to verdict-based score
         score = {"PASS": 1.0, "PARTIAL": 0.5, "FAIL": 0.0, "ERROR": 0.0}.get(
             judge_result.get("verdict", ""), 0.0
         )
@@ -641,72 +696,78 @@ def compute_numeric_score(judge_result: dict, test: dict) -> float:
             if item.get("triggered"):
                 score -= 0.25
 
-    if test.get("test_id") == "T4":
-        for f in findings:
-            if f.get("id") == "T4.B2" and f.get("status") == "WRONG":
-                note = (f.get("note") or "").lower()
-                if "double2decimal" in note or "convert(" in note:
-                    score -= 0.10
-
     return max(0.0, min(1.0, score))
 
 
 def detect_critical_failure(judge_result: dict, test: dict) -> Optional[str]:
     """Return a description of a critical failure, or None.
 
-    Critical failures cause automatic FAIL regardless of numeric score.
-    Rules from ctl2_test_suite_spec.md §Critical failures.
-    """
-    test_id = test.get("test_id", "")
-    verdict = judge_result.get("verdict", "")
-    notes = (judge_result.get("notes") or "").lower()
+    Driven entirely by the test's rubric — no test-ID-specific hardcoding.
 
-    fp_map = {
-        item["id"]: item.get("present", False)
+    Three rubric-level signals trigger a critical failure:
+
+    1. forbidden item with "critical": true  AND  judge reports it PRESENT
+       → single item is enough
+
+    2. rubric.critical_forbidden_all: [id, ...]  AND  judge reports ALL of
+       them PRESENT  →  combination rule (e.g. both date boundary styles used)
+
+    3. rubric.critical_wrong_verdict: true  AND  verdict_expected is set  AND
+       judge verdict contradicts it  →  e.g. FAIL on code that should be PASS
+
+    4. false_positive_trap with "critical": true  AND  judge reports it
+       TRIGGERED  →  inverted semantics that would mislead the user
+    """
+    rubric = test.get("rubric") or {}
+    verdict = judge_result.get("verdict", "")
+
+    # Build lookup maps from judge result
+    fp_present: dict[str, bool] = {
+        item["id"]: bool(item.get("present"))
         for item in (judge_result.get("forbidden_present") or [])
-        if isinstance(item, dict)
+        if isinstance(item, dict) and "id" in item
+    }
+    fp_triggered: dict[str, bool] = {
+        item["id"]: bool(item.get("triggered"))
+        for item in (judge_result.get("false_positives_triggered") or [])
+        if isinstance(item, dict) and "id" in item
     }
 
-    if test_id == "T2":
-        if fp_map.get("T2.F1") or fp_map.get("T2.F2"):
-            return "$out.0 accessed in append() or clean() — NPE at runtime"
-
-    if test_id == "T4":
-        for f in (judge_result.get("findings") or []):
-            if isinstance(f, dict) and f.get("id") == "T4.B2" and f.get("status") == "WRONG":
-                note = (f.get("note") or "").lower()
-                if "double2decimal" in note or "convert(" in note:
-                    return (
-                        "T4.B2 fix suggests hallucinated function "
-                        "(double2decimal or convert) — does not exist in CTL2"
-                    )
-
-    if test_id == "T5":
-        if "~= is a contains" in notes or "~= is contains" in notes:
-            return "~= semantics inverted — model claims ~= is a contains match (it is whole-string)"
-        for f in (judge_result.get("findings") or []):
-            if isinstance(f, dict) and f.get("id") == "T5.B2":
-                n = (f.get("note") or "").lower()
-                if "~= is a contains" in n or "~= is contains" in n:
-                    return "~= semantics inverted — model claims ~= is a contains match (it is whole-string)"
-
-    if test_id == "T6":
-        if fp_map.get("T6.F1"):
+    # 1. Individual critical forbidden items
+    for item in (rubric.get("forbidden") or []):
+        if isinstance(item, dict) and item.get("critical") and fp_present.get(item["id"]):
             return (
-                "Generated plain transform() with no accumulator lifecycle — "
-                "Reformat pattern used for Rollup component"
+                f"{item['id']} violated: {item.get('check', item['id'])} "
+                f"— {item.get('rationale', 'critical correctness failure')}"
             )
 
-    if test_id == "T7":
-        expected = (test.get("rubric") or {}).get("verdict_expected", "PASS")
-        if expected == "PASS" and verdict == "FAIL":
-            return "Returned FAIL verdict on fully correct code (false positive failure)"
+    # 2. Critical-if-ALL-present combination
+    critical_all: list = rubric.get("critical_forbidden_all") or []
+    if critical_all and all(fp_present.get(fid) for fid in critical_all):
+        ids = ", ".join(critical_all)
+        checks = [
+            item.get("check", fid)
+            for fid in critical_all
+            for item in (rubric.get("forbidden") or [])
+            if isinstance(item, dict) and item.get("id") == fid
+        ]
+        return f"All of [{ids}] violated: " + "; ".join(checks)
 
-    if test_id == "T8":
-        if fp_map.get("T8.F1") and fp_map.get("T8.F2"):
+    # 3. Wrong verdict on code with a known expected verdict
+    if rubric.get("critical_wrong_verdict"):
+        expected = rubric.get("verdict_expected")
+        if expected and verdict and verdict != expected:
             return (
-                "Both date boundaries use str2date() or createDate() — "
-                "explicit instruction to use date literals completely ignored"
+                f"Wrong verdict: expected {expected} but judge returned {verdict} — "
+                f"{'false positive failure on correct code' if expected == 'PASS' else 'missed critical bugs'}"
+            )
+
+    # 4. Critical false-positive traps triggered
+    for trap in (rubric.get("false_positive_traps") or []):
+        if isinstance(trap, dict) and trap.get("critical") and fp_triggered.get(trap["id"]):
+            return (
+                f"{trap['id']} triggered: {trap.get('trap', trap['id'])} "
+                f"— {trap.get('reality', 'critical semantic error')}"
             )
 
     return None
@@ -779,7 +840,7 @@ def append_eval_log(
         jr = r.get("judge_result", {})
         cell: dict = {
             "verdict": jr.get("verdict", "?"),
-            "score":   jr.get("score", "?"),
+            "score":   compute_score_str(jr),
             "numeric": round(r.get("numeric_score", 0.0), 4),
         }
         if r.get("critical_failure"):
@@ -816,19 +877,57 @@ def append_eval_log(
 # Single-test runner
 # ---------------------------------------------------------------------------
 
+# Injected into the system prompt of every validate test, between the role
+# preamble and the output-format section.  Phrased as a system-role directive
+# so the model knows unambiguously it must perform a code review — matching
+# the imperative framing used in training examples.
+_VALIDATE_INSTRUCTION = (
+    "Validate the CTL2 code provided by the user. "
+    "Identify all bugs and issues and use the output format below."
+)
+
+
+def _inject_validate_instruction(system_prompt: str) -> str:
+    """Insert _VALIDATE_INSTRUCTION into a validate system prompt.
+
+    Splits on the first occurrence of '\\nOutput format:' and inserts the
+    instruction (with a blank line either side) between the role preamble and
+    the output-format section.  If the marker is not found the instruction is
+    appended at the end so it always appears.
+    """
+    marker = "\nOutput format:"
+    idx = system_prompt.find(marker)
+    if idx != -1:
+        return (
+            system_prompt[:idx].rstrip()
+            + "\n\n" + _VALIDATE_INSTRUCTION + "\n"
+            + system_prompt[idx:]
+        )
+    return system_prompt.rstrip() + "\n\n" + _VALIDATE_INSTRUCTION
+
+
 def _resolve_mut_overrides(mut_cfg: dict, test_type: str, test: dict) -> tuple[str, float, float]:
     """Return (system_prompt, temperature, top_p) applying any per-type MUT config overrides."""
     type_cfg = mut_cfg.get(test_type) or {}
     system_prompt = type_cfg.get("system_prompt") or test["system_prompt"]
+    # For validate tests inject the review directive into the system prompt so the
+    # model's role is unambiguous before it reads the output-format instructions.
+    if test_type == "validate" and not type_cfg.get("system_prompt"):
+        system_prompt = _inject_validate_instruction(system_prompt)
     temperature = type_cfg["temperature"] if "temperature" in type_cfg else test.get("temperature", 0.1)
     top_p = type_cfg.get("top_p", 1.0)
     return system_prompt, temperature, top_p
 
 
+def _build_mut_user_message(test: dict) -> str:
+    """Return the user message to send to the MUT (unchanged for all test types)."""
+    return test["user_message"]
+
+
 def _call_mut_with_retry(mut_client, test: dict, timeout: int, mut_cfg: dict) -> tuple[str, float]:
     test_type = test.get("type", "generate")
     system_prompt, temperature, top_p = _resolve_mut_overrides(mut_cfg, test_type, test)
-    user_message = test["user_message"]
+    user_message = _build_mut_user_message(test)
 
     last_exc: Optional[Exception] = None
     for attempt in range(2):
@@ -875,7 +974,6 @@ def run_single_test(
     mut_client,
     judge_client,
     judge_system_prompt: str,
-    judge_instructions: str,
     timeout: int,
     mut_cfg: dict,
     run_index: int = 1,
@@ -886,7 +984,7 @@ def run_single_test(
     # Resolve prompts once so we can store the exact values sent to MUT
     test_type = test.get("type", "generate")
     mut_system_prompt, _temperature, _top_p = _resolve_mut_overrides(mut_cfg, test_type, test)
-    mut_user_message = test["user_message"]
+    mut_user_message = _build_mut_user_message(test)
 
     # Step 1: MUT
     _print(f"    → MUT call (run {run_index}) …  [dim]temp={_temperature}, top-p={_top_p}[/dim]")
@@ -903,7 +1001,7 @@ def run_single_test(
 
     # Step 2: Judge
     _print("    → Judge call …")
-    judge_user_msg = build_judge_user_message(test, mut_response, judge_instructions)
+    judge_user_msg = build_judge_user_message(test, mut_response)
     try:
         judge_raw = _call_judge_with_retry(judge_client, judge_system_prompt, judge_user_msg)
     except Exception as exc:  # noqa: BLE001
@@ -935,7 +1033,7 @@ def run_single_test(
     fp_count = len(fp_triggered)
 
     verdict = judge_result.get("verdict", "?")
-    score_str = judge_result.get("score", "?")
+    score_str = compute_score_str(judge_result)
     crit_tag = "  [red][CRITICAL FAILURE][/red]" if critical else ""
     fp_tag = f"  [yellow]+FP({fp_count})[/yellow]" if fp_count else ""
     _print(f"      Verdict: [bold]{verdict}[/bold]  Score: {score_str}  Numeric: {numeric:.2f}{crit_tag}{fp_tag}")
@@ -987,8 +1085,19 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str) -> di
     with open(suite_file) as f:
         suite = json.load(f)
 
-    judge_system_prompt: str = suite["judge_system_prompt"]
-    judge_instructions: str = suite["judge_instructions"]
+    # Load CTL2 reference — gives the judge ground-truth language knowledge so it
+    # can evaluate fixes and explanations accurately, not just pattern-match rubric text.
+    ctl2_reference: Optional[str] = None
+    ref_path = _find_reference_file(suite_file)
+    if ref_path:
+        ctl2_reference = ref_path.read_text(encoding="utf-8")
+        _print(f"  [dim]CTL2 reference loaded: {ref_path} ({len(ctl2_reference):,} chars)[/dim]")
+    else:
+        _print("  [yellow]Warning: CTL2_Reference_for_LLM_compact.md not found — judge will have no language reference.[/yellow]")
+
+    judge_system_prompt: str = build_judge_system_prompt(
+        suite["judge_system_prompt"], suite["judge_instructions"], ctl2_reference
+    )
     tests: list[dict] = suite["tests"]
 
     # Filter by test_ids
@@ -1041,7 +1150,7 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str) -> di
         for run_i in range(1, runs_per_test + 1):
             result = run_single_test(
                 test, mut_client, judge_client,
-                judge_system_prompt, judge_instructions,
+                judge_system_prompt,
                 timeout, mut_cfg, run_index=run_i,
             )
             all_results.append(result)
@@ -1087,6 +1196,11 @@ partially failed. Write a concise, actionable failure analysis in Markdown.
 
 Rules:
 - One ## section per distinct failure or error pattern you observe.
+- Each ## heading MUST end with the test ID(s) it concerns in square brackets,
+  e.g. "## Missed regex operator semantics [T5]" or
+       "## Incorrect isNull explanation [T5, T13]".
+  If the same pattern appears in multiple tests, group them into one section and
+  list all affected IDs.
 - State exactly what the model did wrong and what the correct behaviour is.
 - Be specific enough that the section could be used directly to write a targeted
   SFT or DPO training example — quote the model's wrong output where helpful.
@@ -1125,7 +1239,7 @@ def generate_llm_failure_summary(judge_client, results: dict, suite_file: Path) 
             f"### {test_id} ({r.get('test_type', '?')}"
             + (f" — {r.get('test_component')}" if r.get("test_component") else "")
             + ")",
-            f"Verdict: {jr.get('verdict')}  Score: {jr.get('score')}  "
+            f"Verdict: {jr.get('verdict')}  Score: {compute_score_str(jr)}  "
             f"Numeric: {r.get('numeric_score', 0):.2f}",
             "",
             "**Input:**",
@@ -1188,7 +1302,7 @@ def write_failure_analysis_md(content: str, results: dict, output_dir: Path) -> 
         tid = r["test_id"]
         comp = f" — {r['test_component']}" if r.get("test_component") else ""
         verdict = r.get("judge_result", {}).get("verdict", "?")
-        score = r.get("judge_result", {}).get("score", "?")
+        score = compute_score_str(r.get("judge_result", {}))
         lines = [
             f"### {tid}{comp}  ({verdict} {score})",
             "",
@@ -1240,7 +1354,7 @@ def write_summary_md(results: dict, output_dir: Path) -> Path:
     for r in results["tests"]:
         jr = r.get("judge_result", {})
         verdict = jr.get("verdict", "?")
-        score = jr.get("score", "?")
+        score = compute_score_str(jr)
         numeric = r.get("numeric_score", 0.0)
         critical = "⚠ YES" if r.get("critical_failure") else ""
         lines.append(
@@ -1319,7 +1433,7 @@ def print_summary_table(results: dict, prev_entry: Optional[dict] = None):
             critical = r.get("critical_failure") or ""
             fp_count = r.get("judge_fp_count", 0)
             fp_cell = f"[yellow]+FP({fp_count})[/yellow]" if fp_count else ""
-            flags = " ".join(filter(None, [f"[red]{critical[:50]}[/red]" if critical else "", fp_cell]))
+            flags = " ".join(filter(None, [f"[red]{critical}[/red]" if critical else "", fp_cell]))
             numeric = r.get("numeric_score", 0.0)
             prev_numeric = (prev_tests.get(r["test_id"]) or {}).get("numeric")
             prev_str, ind_str = _delta_cell(numeric, prev_numeric, rich=True)
@@ -1328,7 +1442,7 @@ def print_summary_table(results: dict, prev_entry: Optional[dict] = None):
                 r.get("test_type") or "?",
                 r.get("test_component") or "—",
                 f"[{color}]{verdict}[/{color}]",
-                jr.get("score", "?"),
+                compute_score_str(jr),
                 f"{numeric:.2f}",
                 prev_str,
                 ind_str,
@@ -1366,7 +1480,7 @@ def print_summary_table(results: dict, prev_entry: Optional[dict] = None):
                 f"{(r.get('test_type') or '?'):<10} "
                 f"{(r.get('test_component') or '—'):<16} "
                 f"{jr.get('verdict', '?'):<8} "
-                f"{jr.get('score', '?'):<8} "
+                f"{compute_score_str(jr):<8} "
                 f"{numeric:<6.2f} "
                 f"{prev_str:<6} "
                 f"{ind_str:<2} "
@@ -1499,6 +1613,19 @@ def _find_suite_file(cfg: dict, config_dir: Path) -> Path:
             return p
 
     return candidates[0]  # will fail existence check in caller
+
+
+def _find_reference_file(suite_file: Path) -> Optional[Path]:
+    """Locate CTL2_Reference_for_LLM_compact.md alongside the suite file, or None."""
+    candidates = [
+        suite_file.parent / "CTL2_Reference_for_LLM_compact.md",
+        Path(__file__).parent / "resources" / "CTL2_Reference_for_LLM_compact.md",
+        Path("resources/CTL2_Reference_for_LLM_compact.md"),
+    ]
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
 
 
 def main():

@@ -20,7 +20,7 @@
 # Link to the training config (enables auto-discovery + shared run log)
 # ---------------------------------------------------------------------------
 # Point this at the same YAML you pass to train.py.
-training_config: configs/qwen35-9B.yaml
+training_config: configs/qwen35-9Bv3.yaml
 
 # ---------------------------------------------------------------------------
 # Model under test (MUT)
@@ -58,7 +58,7 @@ mut:
   # ---------------------------------------------------------------------------
   generate:
     # Suite default temperature: 0.1
-    # temperature: 0.1
+    #temperature: 0.3
     # top_p: 1.0
     # system_prompt: |
     #   You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
@@ -67,8 +67,8 @@ mut:
 
   validate:
     # Suite default temperature: 0.05
-    temperature: 0.3
-    #top_p: 0.95
+    temperature: 0.2
+      #top_p: 0.75
     # system_prompt: |
     #   You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
     #   Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.

@@ -104,12 +104,14 @@
           {
             "id": "T2.F1",
             "check": "Must not access $out.0.* in append() body.",
-            "rationale": "NPE at runtime — the single most critical Denormalizer mistake."
+            "rationale": "NPE at runtime — the single most critical Denormalizer mistake.",
+            "critical": true
           },
           {
             "id": "T2.F2",
             "check": "Must not access $out.0.* in clean() body.",
-            "rationale": "Same NPE issue."
+            "rationale": "Same NPE issue.",
+            "critical": true
           },
           {
             "id": "T2.F3",
@@ -182,6 +184,7 @@
     {
       "test_id": "T4",
       "type": "validate",
+      "component": "Reformat",
       "temperature": 0.05,
       "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
       "user_message": "Find all bugs: wrong function names, invalid cast usage, null comparison issues, invalid ++ usage on record fields.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    integer age = toInteger($in.0.age_string);\n    decimal price = cast($in.0.gross_price, decimal);\n    if ($in.0.score < null) { return SKIP; }\n    $out.0.counter++;\n    $out.0.age = age;\n    $out.0.price = price;\n    return ALL;\n}\n```\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"In\" type=\"delimited\"><Field name=\"age_string\" type=\"string\"/><Field name=\"gross_price\" type=\"number\" nullable=\"false\"/><Field name=\"score\" type=\"integer\" nullable=\"true\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"Out\" type=\"delimited\"><Field name=\"age\" type=\"integer\"/><Field name=\"price\" type=\"decimal\"/><Field name=\"counter\" type=\"integer\"/></Record></Metadata>",
@@ -244,6 +247,7 @@
     {
       "test_id": "T5",
       "type": "validate",
+      "component": "Multi-bug / compiled",
       "temperature": 0.05,
       "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
       "user_message": "Focus on: null string concatenation behavior, regex operator semantics (~= vs ?=), isnull vs isNull distinction, long literal syntax, conditional fail expression compatibility with compile mode.\n\n```ctl\n//#CTL2:COMPILE\nfunction integer transform() {\n    string result = $in.0.prefix + $in.0.suffix;\n    if ($in.0.email ~= \"gmail\") { $out.0.provider = \"google\"; }\n    if (isNull($in.0.amount)) {\n        $out.0.amount = 0D;\n    } else {\n        $out.0.amount = $in.0.amount;\n    }\n    long threshold = 7999999888;\n    date parsed = str2date($in.0.dateStr, \"yyyy-MM-dd\") : 1990-01-01;\n    $out.0.result = result;\n    $out.0.date_start = parsed;\n    return ALL;\n}\n```\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"In\" type=\"delimited\"><Field name=\"prefix\" type=\"string\" nullable=\"false\"/><Field name=\"suffix\" type=\"string\" nullable=\"true\"/><Field name=\"email\" type=\"string\" nullable=\"false\"/><Field name=\"amount\" type=\"decimal\" nullable=\"true\"/><Field name=\"dateStr\" type=\"string\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"Out\" type=\"delimited\"><Field name=\"result\" type=\"string\"/><Field name=\"provider\" type=\"string\"/><Field name=\"amount\" type=\"decimal\"/></Record></Metadata>",
@@ -302,6 +306,14 @@
           "T5.B5": "Fix must use: (1) try-catch block, (2) CTLException as the catch type, (3) a direct date literal 1990-01-01 as the fallback — NOT str2date(\"1990-01-01\", \"yyyy-MM-dd\"). Using str2date() to parse a constant string fallback is unnecessarily verbose and demonstrates the model does not know that CTL2 supports date literals directly. Score the fix as WRONG if it wraps the constant fallback in str2date()."
         },
         "verdict_expected": "FAIL",
+        "false_positive_traps": [
+          {
+            "id": "T5.FP1",
+            "trap": "Claiming ~= is a 'contains' or 'partial match' operator (it is a whole-string regex match; ?= is the contains/partial operator).",
+            "reality": "~= tests whether the entire string matches the regex. ?= tests whether the regex appears anywhere in the string. Inverting these semantics is a critical factual error about CTL2.",
+            "critical": true
+          }
+        ],
         "scoring": {
           "PASS": "All 5 bugs caught with correct explanations (especially T5.B1 null-concat, T5.B2 ~= semantics correctly explained, and T5.B5 fixed with try-catch).",
           "PARTIAL": "3-4 bugs caught, or T5.B5 identified but fixed incorrectly (e.g. removing COMPILE header instead of using try-catch).",
@@ -366,7 +378,8 @@
           {
             "id": "T6.F1",
             "check": "Must not generate a plain Reformat-style single transform() with no accumulator parameter.",
-            "rationale": "This ignores the Rollup component contract entirely."
+            "rationale": "This ignores the Rollup component contract entirely.",
+            "critical": true
           },
           {
             "id": "T6.F2",
@@ -389,6 +402,7 @@
     {
       "test_id": "T7",
       "type": "validate",
+      "component": "Normalizer",
       "temperature": 0.05,
       "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
       "user_message": "Verify this Normalizer is fully correct — lifecycle, null handling, types.\n\n```ctl\n//#CTL2\nstring[] tagParts;\n\nfunction integer count() {\n    if (isnull($in.0.tags) || isBlank($in.0.tags)) {\n        return 0;\n    }\n    tagParts = split($in.0.tags, \"\\|\");\n    return length(tagParts);\n}\n\nfunction integer transform(integer idx) {\n    $out.0.entity_id = $in.0.entity_id;\n    $out.0.tag = trim(tagParts[idx]);\n    $out.0.tag_index = idx;\n    return OK;\n}\n\nfunction void clean() {\n    clear(tagParts);\n}\n```\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"Entity\" type=\"delimited\"><Field name=\"entity_id\" type=\"long\" nullable=\"false\"/><Field name=\"tags\" type=\"string\" nullable=\"true\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"TagRecord\" type=\"delimited\"><Field name=\"entity_id\" type=\"long\" nullable=\"false\"/><Field name=\"tag\" type=\"string\"/><Field name=\"tag_index\" type=\"integer\"/></Record></Metadata>",
@@ -403,6 +417,7 @@
       "rubric": {
         "description": "This code is FULLY CORRECT. Validator must return PASS with no ERROR issues. The key challenge: models frequently false-positive on isBlank() (claiming it doesn't exist) and split(\"\\\\|\") (claiming wrong escaping). Both are correct.",
         "verdict_expected": "PASS",
+        "critical_wrong_verdict": true,
         "false_positive_traps": [
           {
             "id": "T7.FP1",
@@ -480,6 +495,7 @@
             "rationale": "Explicit instruction: 'not str2date or createDate'."
           }
         ],
+        "critical_forbidden_all": ["T8.F1", "T8.F2"],
         "scoring": {
           "PASS": "Date literals 2020-01-01 and 2023-12-31 used inline, today() present, correct three-way classification.",
           "PARTIAL": "Logic correct but one boundary uses str2date or createDate.",
@@ -493,7 +509,7 @@
       "component": "Join (Hash/Merge)",
       "temperature": 0.1,
       "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
-      "user_message": "Transform for a LEFT OUTER JOIN between orders (master, port 0) and customers (slave, port 1) on customer_id. Copy all order fields. Add customer_name and email from the slave side. When no matching customer exists, customer_name should be \"UNKNOWN\" and email should be null. Set a boolean flag customer_found to true when a match was found, false otherwise. Use a field-level sentinel to detect a missing match — not a whole-record null check.\n\nPort 0 (master — orders):\n<Metadata id=\"MetaOrders\">\n  <Record name=\"Order\" type=\"delimited\">\n    <Field name=\"order_id\"    type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"amount\"      type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"order_date\"  type=\"date\"    nullable=\"false\"/>\n  </Record>\n</Metadata>\n\nPort 1 (slave — customers):\n<Metadata id=\"MetaCustomers\">\n  <Record name=\"Customer\" type=\"delimited\">\n    <Field name=\"customer_id\"   type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_name\" type=\"string\"  nullable=\"false\"/>\n    <Field name=\"email\"         type=\"string\"  nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"EnrichedOrder\" type=\"delimited\">\n    <Field name=\"order_id\"       type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_id\"    type=\"integer\" nullable=\"false\"/>\n    <Field name=\"amount\"         type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"order_date\"     type=\"date\"    nullable=\"false\"/>\n    <Field name=\"customer_name\"  type=\"string\"/>\n    <Field name=\"email\"          type=\"string\"/>\n    <Field name=\"customer_found\" type=\"boolean\" nullable=\"false\"/>\n  </Record>\n</Metadata>",
+      "user_message": "Transform for a LEFT OUTER JOIN between orders (master, port 0) and customers (slave, port 1) on customer_id. Copy all order fields. Add customer_name and email from the slave side. When no matching customer exists, customer_name should be \"UNKNOWN\" and email should be null. Set a boolean flag customer_found to true when a match was found, false otherwise. Make sure you properly handle no-match slave record situation.\n\nPort 0 (master — orders):\n<Metadata id=\"MetaOrders\">\n  <Record name=\"Order\" type=\"delimited\">\n    <Field name=\"order_id\"    type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"amount\"      type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"order_date\"  type=\"date\"    nullable=\"false\"/>\n  </Record>\n</Metadata>\n\nPort 1 (slave — customers):\n<Metadata id=\"MetaCustomers\">\n  <Record name=\"Customer\" type=\"delimited\">\n    <Field name=\"customer_id\"   type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_name\" type=\"string\"  nullable=\"false\"/>\n    <Field name=\"email\"         type=\"string\"  nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"EnrichedOrder\" type=\"delimited\">\n    <Field name=\"order_id\"       type=\"integer\" nullable=\"false\"/>\n    <Field name=\"customer_id\"    type=\"integer\" nullable=\"false\"/>\n    <Field name=\"amount\"         type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"order_date\"     type=\"date\"    nullable=\"false\"/>\n    <Field name=\"customer_name\"  type=\"string\"/>\n    <Field name=\"email\"          type=\"string\"/>\n    <Field name=\"customer_found\" type=\"boolean\" nullable=\"false\"/>\n  </Record>\n</Metadata>",
       "rubric": {
         "description": "Generate a correct JOIN transform using $in.0 for master fields and $in.1 for slave fields, with a field-level sentinel for missing slave records.",
         "required": [
@@ -672,6 +688,7 @@
     {
       "test_id": "T12",
       "type": "validate",
+      "component": "Join (LEFT OUTER)",
       "temperature": 0.05,
       "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
       "user_message": "Validate this JOIN transform. Port 0 (master) has: order_id, customer_id, amount. Port 1 (slave) has: customer_id, customer_name, email. It is a LEFT OUTER JOIN.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.order_id   = $in.0.order_id;\n    $out.0.amount     = $in.0.amount;\n    $out.0.cust_name  = $in.0.customer_name;\n    $out.0.email      = $in.1.email;\n    if (isnull($in.1)) {\n        $out.0.found = false;\n    } else {\n        $out.0.found = true;\n    }\n    return ALL;\n}\n```\n\nPort 0 (master — orders):\n<Metadata id=\"M0\"><Record name=\"Order\" type=\"delimited\"><Field name=\"order_id\"    type=\"integer\" nullable=\"false\"/><Field name=\"customer_id\" type=\"integer\" nullable=\"false\"/><Field name=\"amount\"      type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/></Record></Metadata>\n\nPort 1 (slave — customers):\n<Metadata id=\"M1\"><Record name=\"Customer\" type=\"delimited\"><Field name=\"customer_id\"   type=\"integer\" nullable=\"false\"/><Field name=\"customer_name\" type=\"string\"  nullable=\"false\"/><Field name=\"email\"         type=\"string\"  nullable=\"true\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M2\"><Record name=\"Out\" type=\"delimited\"><Field name=\"order_id\"  type=\"integer\" nullable=\"false\"/><Field name=\"amount\"    type=\"decimal\" length=\"10\" scale=\"2\"/><Field name=\"cust_name\" type=\"string\"/><Field name=\"email\"     type=\"string\"/><Field name=\"found\"     type=\"boolean\"/></Record></Metadata>",
@@ -717,6 +734,7 @@
     {
       "test_id": "T13",
       "type": "validate",
+      "component": "Filter",
       "temperature": 0.05,
       "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
       "user_message": "Validate this Filter CTL2 transform.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    if (isnull($in.0.amount) || $in.0.amount <= 0D) {\n        return SKIP;\n    }\n    if (isBlank($in.0.status) || $in.0.status == \"CANCELLED\") {\n        return SKIP;\n    }\n    return ALL;\n}\n```\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"Txn\" type=\"delimited\"><Field name=\"txn_id\"  type=\"integer\" nullable=\"false\"/><Field name=\"amount\"  type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/><Field name=\"status\"  type=\"string\"  nullable=\"true\"/></Record></Metadata>",
@@ -749,6 +767,7 @@
     {
       "test_id": "T14",
       "type": "validate",
+      "component": "Partition",
       "temperature": 0.05,
       "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
       "user_message": "Validate this Partition component CTL2 transform.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    if ($in.0.region == \"EU\") return 0;\n    if ($in.0.region == \"US\") return 1;\n    return 2;\n}\n```\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"Event\" type=\"delimited\"><Field name=\"event_id\" type=\"long\"   nullable=\"false\"/><Field name=\"region\"   type=\"string\" nullable=\"true\"/></Record></Metadata>",
