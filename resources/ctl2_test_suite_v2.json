@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "description": "CTL2 model evaluation test suite — 8 standard tests covering generation and validation quality.",
+  "version": "2.0",
+  "description": "CTL2 model evaluation test suite — 24 tests covering generation and validation quality. V2 adds T17-T24: Lookup generate+validate, Sequence generate, DataGenerator generate, pure standalone function generate, Rollup validate, HowTo/bridge-style generate, and date format pattern validate.",
   "judge_system_prompt": "You are an expert CTL2 code reviewer evaluating LLM responses against a rubric.\nFor each test you receive:\n  - The prompt sent to the model\n  - The model's response\n  - The evaluation rubric\n\nScore each required finding as: CAUGHT | MISSED | WRONG (caught but incorrect fix/explanation).\nScore forbidden content as: PRESENT (bad) | ABSENT (good).\nProvide a final verdict: PASS | PARTIAL | FAIL with a brief justification.",
   "judge_instructions": "For each test, you will receive:\n  1. This test definition (system_prompt, user_message, rubric)\n  2. The model's actual response\n\nEvaluate the response against the rubric:\n  - For GENERATE tests: check each required item as PRESENT | MISSING | WRONG\n  - For VALIDATE tests: check each required finding as CAUGHT | MISSED | WRONG\n  - For VALIDATE tests: check each false-positive trap as TRIGGERED | AVOIDED\n  - Check all forbidden items as ABSENT (good) | PRESENT (bad)\n\nOutput a structured evaluation:\n  FINDINGS: [list each rubric item with its status]\n  FALSE_POSITIVES: [for validate tests — any wrong flags not in rubric]\n  VERDICT: PASS | PARTIAL | FAIL\n  SCORE: N/M (required items met)\n  NOTES: brief justification",
   "tests": [
@@ -954,6 +954,469 @@
           "PASS": "All four bugs caught with correct severities: B1 ERROR, B2 ERROR, B3 WARNING, B4 ERROR. No false claims about == null safety.",
           "PARTIAL": "B1 caught but one or more of B2/B3/B4 missed; or a bug caught with wrong severity or explanation (e.g. B4 flagged as WARNING instead of ERROR).",
           "FAIL": "B1 missed, or wrong PASS verdict, or model claims == throws on null (T16.FP1)."
+        }
+      }
+    },
+    {
+      "test_id": "T17",
+      "type": "generate",
+      "component": "Map (Reformat + Lookup)",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Reformat transform: for each input product record, look up pricing from the lookup table `PriceLookup` (keyed on product_id). Write:\n- `product_id` and `product_name` — copied from input.\n- `unit_price` (decimal) — from the lookup record, rounded to 2 decimal places. Default to 0.00 when no match found.\n- `currency` (string) — from the lookup record. Default to \"UNKNOWN\" when no match found.\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"ProductIn\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"product_id\"   type=\"string\" nullable=\"false\"/>\n    <Field name=\"product_name\" type=\"string\" nullable=\"false\"/>\n  </Record>\n</Metadata>\n\nLookup table `PriceLookup` (preloaded, key: product_id):\n<Metadata id=\"MetaPrice\">\n  <Record name=\"PriceRec\" type=\"delimited\">\n    <Field name=\"product_id\" type=\"string\"  nullable=\"false\"/>\n    <Field name=\"unit_price\" type=\"decimal\" length=\"12\" scale=\"4\" nullable=\"false\"/>\n    <Field name=\"currency\"   type=\"string\"  nullable=\"false\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"PricedProduct\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"product_id\"   type=\"string\"  nullable=\"false\"/>\n    <Field name=\"product_name\" type=\"string\"  nullable=\"false\"/>\n    <Field name=\"unit_price\"   type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"currency\"     type=\"string\"  nullable=\"false\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate a correct Reformat that uses lookup(TableName).get(key) to retrieve a typed record, null-checks the result, and applies defaults for misses.",
+        "required": [
+          {
+            "id": "T17.1",
+            "check": "`lookup(PriceLookup).get($in.0.product_id)` — correct invocation: table name to lookup(), key to .get().",
+            "rationale": "The only valid CTL2 lookup pattern. Passing the key directly to lookup() is a compile error."
+          },
+          {
+            "id": "T17.2",
+            "check": "Result assigned to a typed record variable of type PriceRec (e.g. `PriceRec r = lookup(PriceLookup).get(...)`  ).",
+            "rationale": "The return type of .get() is the lookup record type. Storing it in a typed variable allows field-dot access."
+          },
+          {
+            "id": "T17.3",
+            "check": "`isnull(r)` check (or equivalent) on the result before accessing r.unit_price / r.currency.",
+            "rationale": ".get() returns null when the key is not found; accessing fields on null throws NullPointerException."
+          },
+          {
+            "id": "T17.4",
+            "check": "`round(r.unit_price, 2)` or equivalent rounding applied to the looked-up decimal.",
+            "rationale": "Output scale is 2; the lookup record has scale 4."
+          },
+          {
+            "id": "T17.5",
+            "check": "Default fallback applied when no match: unit_price = 0.00 (or 0D), currency = \"UNKNOWN\".",
+            "rationale": "Explicit no-match handling required by the spec."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T17.F1",
+            "check": "Must not use `lookup(PriceLookup, $in.0.product_id)` — passing the key directly to lookup() is invalid CTL2 syntax.",
+            "rationale": "The key must go to .get(), not to lookup() itself."
+          },
+          {
+            "id": "T17.F2",
+            "check": "Must not access lookup result fields with map-subscript syntax: `lookup(...).get(...)[\"unit_price\"]`.",
+            "rationale": ".get() returns a record type, not a map; fields are accessed via dot notation (r.unit_price)."
+          },
+          {
+            "id": "T17.F3",
+            "check": "Must not use invented method names: `.getRecord()`, `.find()`, `.fetch()`, `.lookup()`, `.getCurrent()`.",
+            "rationale": "The only valid retrieval method on a CTL2 lookup object is `.get(key)`."
+          }
+        ],
+        "scoring": {
+          "PASS": "Correct .get() invocation, typed result variable, isnull check, rounding, defaults for miss.",
+          "PARTIAL": "Correct .get() invocation and null check but missing round() or missing defaults.",
+          "FAIL": "Uses wrong invocation (lookup(Name, key)), OR accesses fields without null check, OR uses invented method names."
+        }
+      }
+    },
+    {
+      "test_id": "T18",
+      "type": "validate",
+      "component": "Map (Reformat + Lookup)",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Validate this Map/Reformat CTL2 transform that uses a lookup table.\n\nLookup table `PriceLookup` (preloaded, key: product_id) returns records of type `PriceRec` with fields: unit_price (decimal), currency (string).\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"ProductIn\" type=\"delimited\"><Field name=\"product_id\" type=\"string\" nullable=\"false\"/><Field name=\"product_name\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"Out\" type=\"delimited\"><Field name=\"product_id\" type=\"string\" nullable=\"false\"/><Field name=\"unit_price\" type=\"decimal\" length=\"10\" scale=\"2\"/><Field name=\"currency\" type=\"string\"/></Record></Metadata>\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    PriceRec r = lookup(PriceLookup, $in.0.product_id);\n    $out.0.product_id = $in.0.product_id;\n    $out.0.unit_price = round(r.unit_price, 2);\n    $out.0.currency   = r.currency;\n    return ALL;\n}\n```",
+      "bugs": [
+        {
+          "id": "T18.B1",
+          "code": "lookup(PriceLookup, $in.0.product_id)",
+          "description": "Invalid lookup invocation. The correct CTL2 form is `lookup(TableName).get(key)` — the table name goes to `lookup()` and the key goes to `.get()`. Passing the key directly as a second argument to `lookup()` is a compile error.",
+          "correct_fix": "PriceRec r = lookup(PriceLookup).get($in.0.product_id);",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T18.B2",
+          "code": "r.unit_price and r.currency accessed without null check",
+          "description": "When no record matches the lookup key, `.get()` returns null. Accessing `r.unit_price` or `r.currency` on a null record throws a NullPointerException at runtime. An `isnull(r)` guard with fallback defaults is required before any field access.",
+          "correct_fix": "PriceRec r = lookup(PriceLookup).get($in.0.product_id);\nif (!isnull(r)) {\n    $out.0.unit_price = round(r.unit_price, 2);\n    $out.0.currency   = r.currency;\n} else {\n    $out.0.unit_price = 0.00D;\n    $out.0.currency   = \"UNKNOWN\";\n}",
+          "severity": "ERROR"
+        }
+      ],
+      "rubric": {
+        "description": "Validator must catch both bugs: the wrong lookup invocation syntax (B1) and the missing null guard before field access on the lookup result (B2).",
+        "required_findings": [
+          "T18.B1",
+          "T18.B2"
+        ],
+        "fix_quality": {
+          "T18.B1": "Must state the correct form is `lookup(TableName).get(key)` and that passing the key to `lookup()` directly is invalid. Must flag as ERROR (compile error).",
+          "T18.B2": "Must explain that `.get()` returns null on a miss and that field access on null throws at runtime. Must suggest an `isnull(r)` guard with defaults. Must flag as ERROR."
+        },
+        "verdict_expected": "FAIL",
+        "scoring": {
+          "PASS": "Both bugs caught with correct explanations. B1 identified as wrong invocation syntax; B2 identified as missing null guard.",
+          "PARTIAL": "B1 caught but B2 missed (no mention of null-check requirement); or B2 caught but explanation is vague.",
+          "FAIL": "B1 missed (wrong invocation not identified), or wrong PASS verdict."
+        }
+      }
+    },
+    {
+      "test_id": "T19",
+      "type": "generate",
+      "component": "Reformat + Sequence",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Reformat transform: assign a unique auto-incremented integer to `$out.0.invoice_id` using the integer sequence `InvoiceSeq`. Copy all other input fields to the output.\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"OrderIn\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"order_ref\"   type=\"string\"  nullable=\"false\"/>\n    <Field name=\"customer_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"amount\"      type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"InvoiceOut\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"invoice_id\"  type=\"integer\" nullable=\"false\"/>\n    <Field name=\"order_ref\"   type=\"string\"  nullable=\"false\"/>\n    <Field name=\"customer_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"amount\"      type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate a correct Reformat that calls sequence(Name).next() for an integer sequence — not any invented method name.",
+        "required": [
+          {
+            "id": "T19.1",
+            "check": "`sequence(InvoiceSeq).next()` — preferred call form for an integer sequence. The typed variant `sequence(InvoiceSeq, integer).next()` is also syntactically valid in CTL2 but is non-idiomatic for integer sequences (the type argument is conventional only for non-integer typed sequences such as date). Using the typed form is a minor style issue, not an error.",
+            "rationale": ".next() is the documented method for advancing a CTL2 sequence. Other names (.getNext(), .nextValue(), .increment()) do not exist."
+          },
+          {
+            "id": "T19.2",
+            "check": "Result of sequence call assigned to `$out.0.invoice_id`.",
+            "rationale": "Core output field requirement."
+          },
+          {
+            "id": "T19.3",
+            "check": "Remaining input fields (order_ref, customer_id, amount) copied to output, either via wildcard $out.0.* = $in.0.* or field-by-field.",
+            "rationale": "Spec says copy all other fields."
+          },
+          {
+            "id": "T19.4",
+            "check": "transform() returns OK or ALL.",
+            "rationale": "Valid Reformat return values."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T19.F1",
+            "check": "Must not use `sequence(InvoiceSeq).getNext()` — method getNext() does not exist in CTL2.",
+            "rationale": "The correct method name is .next(). getNext() is a common Java-inspired hallucination."
+          },
+          {
+            "id": "T19.F2",
+            "check": "Must not use `nextSequenceValue(\"InvoiceSeq\")` or any similar standalone function.",
+            "rationale": "CTL2 has no standalone sequence function. Sequences are always accessed via sequence(Name).next()."
+          }
+        ],
+        "scoring": {
+          "PASS": "Plain `sequence(InvoiceSeq).next()` used, result in invoice_id, other fields copied, returns OK/ALL.",
+          "PARTIAL": "Uses typed form `sequence(InvoiceSeq, integer).next()` (valid but non-idiomatic for integer sequences), OR correct call but other fields not copied, OR return value missing.",
+          "FAIL": "Uses invented method name (.getNext(), .nextValue()), OR uses standalone function instead of sequence()."
+        }
+      }
+    },
+    {
+      "test_id": "T20",
+      "type": "generate",
+      "component": "DataGenerator",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "DataGenerator: the component is configured externally to emit exactly 4 records. Write the CTL2 `generate()` function plus any necessary global variable declarations.\n\nRules per call:\n- Maintain a global integer counter starting at 0; increment it at the very start of each generate() call (so the first emitted record has counter = 1).\n- `row_id` (integer): set to the current counter value.\n- `label` (string): the string \"ROW-\" followed by the counter value zero-padded to 3 digits (e.g. \"ROW-001\", \"ROW-004\").\n- `active` (boolean): true when the counter is even, false when odd.\n- Return OK.\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"Row\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"row_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"label\"  type=\"string\"  nullable=\"false\"/>\n    <Field name=\"active\" type=\"boolean\" nullable=\"false\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate a correct DataGenerator using generate() (not transform()), a global counter, num2str() for zero-padded formatting, and boolean even/odd logic.",
+        "required": [
+          {
+            "id": "T20.1",
+            "check": "`function integer generate()` — correct DataGenerator entry point.",
+            "rationale": "DataGenerator uses generate(), not transform(). transform() is for stream-processing components."
+          },
+          {
+            "id": "T20.2",
+            "check": "Global integer counter variable declared at module level (outside any function).",
+            "rationale": "Sequence-style counter must persist across generate() calls."
+          },
+          {
+            "id": "T20.3",
+            "check": "Counter incremented before assignment, producing 1-based row numbering (first call → counter = 1).",
+            "rationale": "Spec says increment at start of each call."
+          },
+          {
+            "id": "T20.4",
+            "check": "`num2str(counter, \"000\")` or equivalent zero-padded formatting of the counter.",
+            "rationale": "CTL2 uses num2str(value, pattern) for formatted numeric-to-string conversion."
+          },
+          {
+            "id": "T20.5",
+            "check": "`\"ROW-\" + num2str(...)` string concatenation for the label field.",
+            "rationale": "Produces \"ROW-001\" style labels."
+          },
+          {
+            "id": "T20.6",
+            "check": "`counter % 2 == 0` logic for the `active` boolean (true when even, false when odd).",
+            "rationale": "Core even/odd rule."
+          },
+          {
+            "id": "T20.7",
+            "check": "generate() returns OK.",
+            "rationale": "OK signals successful record emission."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T20.F1",
+            "check": "Must not use `function integer transform()` — DataGenerator requires `generate()`, not `transform()`.",
+            "rationale": "transform() is for record-processing components (Reformat, etc.), not DataGenerator."
+          },
+          {
+            "id": "T20.F2",
+            "check": "Must not use `String.format(...)`, `printf(...)`, or `sprintf(...)` — these Java/C functions do not exist in CTL2.",
+            "rationale": "CTL2 uses num2str(value, pattern) for formatted conversion."
+          }
+        ],
+        "scoring": {
+          "PASS": "generate() entry point, global counter, correct increment, num2str zero-padding, ROW- label, even/odd boolean, returns OK.",
+          "PARTIAL": "generate() present and counter logic correct, but label formatting wrong (e.g. plain num2str without padding pattern) or active logic incorrect.",
+          "FAIL": "Uses transform() instead of generate(), OR missing global counter, OR uses Java String.format."
+        }
+      }
+    },
+    {
+      "test_id": "T21",
+      "type": "generate",
+      "component": "Standalone / pure function",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Write standalone CTL2 code — no component wrapper, no transform(), generate(), or getOutputPort() function.\n\nDefine function `integer countNonBlankCsv(string csv)` that:\n- Returns 0 if csv is null or blank.\n- Otherwise splits on comma using split(), iterates the resulting string array with a while loop (not for-each), trims each token, and counts tokens that are not blank after trimming.\n- Returns the count.\n\nThen declare the following global integer variables to verify the function:\n  integer r1 = countNonBlankCsv(\"a, ,b,,c\")   // expected: 3\n  integer r2 = countNonBlankCsv(\"\")             // expected: 0\n  integer r3 = countNonBlankCsv(null)           // expected: 0",
+      "rubric": {
+        "description": "Generate a correct standalone CTL2 function using while-loop iteration. No component wrapper of any kind.",
+        "required": [
+          {
+            "id": "T21.1",
+            "check": "`function integer countNonBlankCsv(string csv)` — correct function signature with return type and parameter.",
+            "rationale": "CTL2 function definition syntax."
+          },
+          {
+            "id": "T21.2",
+            "check": "`isBlank(csv)` or `isnull(csv)` early-return 0 guard for null/blank input.",
+            "rationale": "isBlank() handles both null and whitespace-only; either guard (isBlank or isnull+isEmpty) is acceptable."
+          },
+          {
+            "id": "T21.3",
+            "check": "`split(csv, \",\")` with the separator argument — produces a string array.",
+            "rationale": "split() requires the delimiter; single-argument form does not exist in CTL2."
+          },
+          {
+            "id": "T21.4",
+            "check": "`while` loop with an integer index variable to iterate the array.",
+            "rationale": "Spec explicitly requires while loop. For-each syntax is not valid CTL2."
+          },
+          {
+            "id": "T21.5",
+            "check": "`trim(token)` applied to each element, followed by `isBlank()` check to skip blank tokens.",
+            "rationale": "Tokens like \" \" must be trimmed before the blank check."
+          },
+          {
+            "id": "T21.6",
+            "check": "Integer counter incremented for non-blank tokens; returned at end of function.",
+            "rationale": "Core accumulation logic."
+          },
+          {
+            "id": "T21.7",
+            "check": "Global integer declarations r1, r2, r3 calling the function.",
+            "rationale": "Required verification variables."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T21.F1",
+            "check": "Must not use Java-style for-each: `for (string s : parts)` — for-each is not valid CTL2 syntax.",
+            "rationale": "CTL2 uses while loops with integer index. for-each is a common Java hallucination."
+          },
+          {
+            "id": "T21.F2",
+            "check": "Must not use `split(csv)` with no separator argument.",
+            "rationale": "CTL2 split() requires a regex separator as second argument. Single-argument form does not exist."
+          },
+          {
+            "id": "T21.F3",
+            "check": "Must not wrap the code in any component function (transform(), generate(), getOutputPort(), etc.).",
+            "rationale": "This is standalone code — no component lifecycle functions."
+          }
+        ],
+        "scoring": {
+          "PASS": "Correct function signature, isBlank/isnull guard, split with delimiter, while loop with index, trim+isBlank per token, counter returned, three global declarations.",
+          "PARTIAL": "Logic correct but for-each used instead of while, or split missing delimiter argument.",
+          "FAIL": "Java for-each syntax, OR wrapped in transform(), OR no split delimiter, OR missing early-return guard."
+        }
+      }
+    },
+    {
+      "test_id": "T22",
+      "type": "validate",
+      "component": "Rollup",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Validate this Rollup component CTL2 transform grouped by department_id.\n\nAccumulator record type (SalaryAcc): count (integer), total (decimal).\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"Emp\" type=\"delimited\"><Field name=\"department_id\" type=\"integer\" nullable=\"false\"/><Field name=\"employee_id\" type=\"integer\" nullable=\"false\"/><Field name=\"annual_salary\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"Dept\" type=\"delimited\"><Field name=\"department_id\" type=\"integer\" nullable=\"false\"/><Field name=\"emp_count\" type=\"integer\" nullable=\"false\"/><Field name=\"total_salary\" type=\"decimal\" length=\"14\" scale=\"2\" nullable=\"false\"/><Field name=\"avg_salary\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/></Record></Metadata>\n\n```ctl\n//#CTL2\nfunction void initGroup(SalaryAcc acc) {\n    acc.total = 0D;\n}\n\nfunction boolean updateGroup(SalaryAcc acc) {\n    acc.count = acc.count + 1;\n    acc.total = acc.total + $in.0.annual_salary;\n    return false;\n}\n\nfunction integer transform(integer counter, SalaryAcc acc) {\n    if (counter > 0) return SKIP;\n    $out.0.department_id = $in.0.department_id;\n    $out.0.emp_count     = acc.count;\n    $out.0.total_salary  = acc.total;\n    $out.0.avg_salary    = acc.total / acc.count;\n    return ALL;\n}\n```",
+      "bugs": [
+        {
+          "id": "T22.B1",
+          "code": "initGroup does not initialise acc.count",
+          "description": "`initGroup` initialises `acc.total` but not `acc.count`. Because `acc.count` is null at the start of each group, the first `acc.count + 1` in `updateGroup` throws CTLException — integer arithmetic on null is not allowed in CTL2. `initGroup` must initialise every accumulator field used downstream.",
+          "correct_fix": "function void initGroup(SalaryAcc acc) {\n    acc.count = 0;\n    acc.total = 0D;\n}",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T22.B2",
+          "code": "return false;  // in updateGroup",
+          "description": "`updateGroup` must return `true` to signal normal accumulation. Returning `false` discards the current record from the group — no records are accumulated, every group produces empty results.",
+          "correct_fix": "return true;",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T22.B3",
+          "code": "acc.total / acc.count",
+          "description": "No divide-by-zero guard. If `acc.count` is 0 (which can happen when all records are discarded due to B2), this throws an ArithmeticException at runtime. A guard such as `acc.count > 0 ? acc.total / acc.count : 0D` is required.",
+          "correct_fix": "acc.count > 0 ? acc.total / acc.count : 0D",
+          "severity": "WARNING"
+        }
+      ],
+      "rubric": {
+        "description": "Validator must catch three bugs: missing initGroup initialisation of acc.count (ERROR), wrong updateGroup return value (ERROR), and potential divide-by-zero in avg computation (WARNING).",
+        "required_findings": [
+          "T22.B1",
+          "T22.B2",
+          "T22.B3"
+        ],
+        "fix_quality": {
+          "T22.B1": "Must identify that acc.count is not initialised in initGroup and that CTL2 integer arithmetic on null throws. Must flag as ERROR. Must say initGroup should set acc.count = 0.",
+          "T22.B2": "Must explain that updateGroup returning false discards accumulated records. Must say it should return true. Must flag as ERROR.",
+          "T22.B3": "Must identify the divide-by-zero risk. Must flag as WARNING. Must suggest a conditional guard."
+        },
+        "verdict_expected": "FAIL",
+        "scoring": {
+          "PASS": "All three bugs caught with correct severities: B1 ERROR, B2 ERROR, B3 WARNING.",
+          "PARTIAL": "B2 caught but B1 missed (uninitialised accumulator not identified); or B3 missed.",
+          "FAIL": "B2 missed (wrong return value not identified), or wrong PASS verdict."
+        }
+      }
+    },
+    {
+      "test_id": "T23",
+      "type": "generate",
+      "component": "HowTo / multi-part",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Answer each of the following four standalone CTL2 questions. For each, provide only the minimal code (a single expression or the smallest correct snippet) — no full function wrappers, no explanation unless necessary.\n\n1. Given a non-nullable date variable `renewal_date`, write the CTL2 expression that produces a new date 30 days later.\n\n2. Given two non-nullable decimal variables `invoice_amount` and `tax_rate` (tax_rate is a percentage, e.g. 23.0 means 23%), write a single CTL2 expression that produces a string showing the computed tax amount (invoice_amount * tax_rate / 100) formatted to exactly 2 decimal places.\n\n3. Given a nullable string variable `qty_text`, write a single CTL2 expression that converts it to an integer where null or blank input produces 0 and any other value is parsed as an integer. Must not throw on null or blank input.\n\n4. Given a nullable string variable `notes`, write a CTL2 boolean expression that returns true when notes contains the substring \"urgent\" (case-insensitive). Null notes must evaluate to false, not throw.",
+      "rubric": {
+        "description": "Four short CTL2 expressions testing date arithmetic, decimal formatting, safe integer parse, and case-insensitive contains with null safety.",
+        "required": [
+          {
+            "id": "T23.1",
+            "check": "`dateAdd(renewal_date, 30, day)` or equivalent correct CTL2 date arithmetic function.",
+            "rationale": "dateAdd(date, amount, unit) is the CTL2 function for date offset arithmetic. No Java-style method calls exist on date values."
+          },
+          {
+            "id": "T23.2",
+            "check": "`num2str(invoice_amount * tax_rate / 100D, \"0.00\")` or similar — num2str() with a format pattern specifying 2 decimal places.",
+            "rationale": "num2str(decimal, pattern) is the correct CTL2 decimal-to-string formatting function. Java's String.format does not exist."
+          },
+          {
+            "id": "T23.3",
+            "check": "`isBlank(qty_text) ? 0 : str2integer(qty_text)` or equivalent null-safe integer parse — null/blank maps to 0 without throwing.",
+            "rationale": "isBlank() handles both null and whitespace. str2integer() is the correct parse function. Must not throw on null input."
+          },
+          {
+            "id": "T23.4",
+            "check": "Null guard on notes combined with case-insensitive substring check — e.g. `!isnull(notes) && lowerCase(notes) ?= \"urgent\"` or `lowerCase(nvl(notes, \"\")) ?= \"urgent\"` or `!isBlank(notes) && contains(lowerCase(notes), \"urgent\")`.",
+            "rationale": "lowerCase(null) returns null; the ?= or contains() check on null notes would not produce false reliably. A null/blank guard is required."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T23.F1",
+            "check": "Must not use Java-style date arithmetic: `renewal_date.plusDays(30)`, `renewal_date + 30`, or `Calendar.add(...)`.",
+            "rationale": "CTL2 does not have method calls on date values. dateAdd() is the only correct approach."
+          },
+          {
+            "id": "T23.F2",
+            "check": "Must not use `String.format(...)`, `printf(...)`, or `sprintf(...)` for decimal formatting.",
+            "rationale": "These Java/C functions do not exist in CTL2. Use num2str()."
+          },
+          {
+            "id": "T23.F3",
+            "check": "Must not call `lowerCase(notes) ?= \"urgent\"` without a null guard when notes is nullable.",
+            "rationale": "lowerCase(null) returns null; applying ?= to a null left-hand side may not safely return false. A null guard is required for correct null-safe behaviour."
+          }
+        ],
+        "scoring": {
+          "PASS": "All four correct: dateAdd, num2str with format, null-safe str2integer, null-guarded case-insensitive contains.",
+          "PARTIAL": "3/4 correct, or minor issue (e.g. correct function but format string slightly off, or divide by 100 omitted for tax rate).",
+          "FAIL": "Java-style method calls used for date or string, OR String.format used, OR null not handled for qty_text or notes, OR fewer than 2 answers correct."
+        }
+      }
+    },
+    {
+      "test_id": "T24",
+      "type": "validate",
+      "component": "Reformat (date format)",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Validate this Reformat CTL2 transform. Pay attention to date/time format pattern correctness.\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"In\" type=\"delimited\"><Field name=\"event_date\" type=\"date\" nullable=\"false\"/><Field name=\"date_text\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"Out\" type=\"delimited\"><Field name=\"formatted_date\" type=\"string\" nullable=\"false\"/><Field name=\"parsed_date\" type=\"date\" nullable=\"false\"/></Record></Metadata>\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    string formatted = date2str($in.0.event_date, \"DD/MM/YYYY\");\n    date   parsed    = str2date($in.0.date_text,  \"dd-mm-yyyy\");\n    $out.0.formatted_date = formatted;\n    $out.0.parsed_date    = parsed;\n    return ALL;\n}\n```",
+      "bugs": [
+        {
+          "id": "T24.B1",
+          "code": "\"DD/MM/YYYY\" — the DD part",
+          "description": "In Java-style date patterns (used by CTL2), `D` and `DD` mean day of year (1–366), not day of month. For a typical dd/MM/yyyy display format this is almost certainly unintentional, but since day-of-year is syntactically valid CTL2 the validator cannot rule out deliberate intent — flag as WARNING.",
+          "correct_fix": "Change `DD` to `dd` in the date2str format pattern if day of month was intended.",
+          "severity": "WARNING"
+        },
+        {
+          "id": "T24.B2",
+          "code": "\"DD/MM/YYYY\" — the YYYY part",
+          "description": "In Java-style date patterns, `Y` and `YYYY` mean ISO week-based year, which can differ from the calendar year near year-end boundaries (e.g. Dec 29, 2024 may produce 2025). Calendar year requires lowercase `yyyy`. Again syntactically valid — flag as WARNING.",
+          "correct_fix": "Change `YYYY` to `yyyy` if calendar year was intended.",
+          "severity": "WARNING"
+        },
+        {
+          "id": "T24.B3",
+          "code": "\"dd-mm-yyyy\" — the mm part",
+          "description": "In Java-style date patterns, `m` and `mm` mean minutes (0–59), not month. For a date-only parse pattern this is almost certainly unintentional (minutes have no meaning in a date value), but the code still compiles — flag as WARNING.",
+          "correct_fix": "Change `mm` to `MM` in the str2date format pattern if month was intended.",
+          "severity": "WARNING"
+        }
+      ],
+      "rubric": {
+        "description": "All three suspect patterns (DD, YYYY, mm) are syntactically valid CTL2 — the validator cannot know the developer's intent with certainty. The correct behaviour is to flag each as WARNING (suspicious / likely unintentional), not ERROR. The resulting VERDICT must be PASS since no ERRORs are present. The key secondary challenge: the correct letters MM, dd, yyyy also appear in the patterns and must NOT be flagged.",
+        "required_findings": [
+          "T24.B1",
+          "T24.B2",
+          "T24.B3"
+        ],
+        "fix_quality": {
+          "T24.B1": "Must identify that D/DD = day of year, not day of month, and suggest `dd` as the likely intended alternative. Must flag as WARNING, not ERROR.",
+          "T24.B2": "Must identify that Y/YYYY = ISO week-based year, not calendar year, and suggest `yyyy`. Must flag as WARNING, not ERROR.",
+          "T24.B3": "Must identify that m/mm = minutes, not month, and suggest `MM`. Must flag as WARNING, not ERROR."
+        },
+        "verdict_expected": "PASS",
+        "false_positive_traps": [
+          {
+            "id": "T24.FP1",
+            "trap": "Flagging `MM` in the date2str pattern `\"DD/MM/YYYY\"` as wrong.",
+            "reality": "`MM` (uppercase) correctly means month (01–12). It is correct and must NOT be flagged."
+          },
+          {
+            "id": "T24.FP2",
+            "trap": "Flagging `dd` in the str2date pattern `\"dd-mm-yyyy\"` as wrong.",
+            "reality": "`dd` (lowercase) correctly means day of month (01–31). It is correct and must NOT be flagged."
+          },
+          {
+            "id": "T24.FP3",
+            "trap": "Flagging `yyyy` in the str2date pattern `\"dd-mm-yyyy\"` as wrong.",
+            "reality": "`yyyy` (lowercase) correctly means calendar year. It is correct and must NOT be flagged."
+          },
+          {
+            "id": "T24.FP4",
+            "trap": "Flagging any of T24.B1/B2/B3 as ERROR severity and returning VERDICT FAIL.",
+            "reality": "DD, YYYY, and mm are syntactically valid CTL2 date pattern letters. The validator cannot know intent — these must be raised as WARNING, and since no ERRORs are present the VERDICT must be PASS."
+          }
+        ],
+        "scoring": {
+          "PASS": "All three suspicious patterns flagged as WARNING with correct explanations (DD=day-of-year, YYYY=ISO-week-year, mm=minutes). VERDICT PASS. No false flags on correct letters MM, dd, yyyy.",
+          "PARTIAL": "2/3 patterns flagged as WARNING, or all three identified but at wrong severity (ERROR) causing an incorrect FAIL verdict.",
+          "FAIL": "Fewer than 2 patterns identified, OR model returns FAIL verdict (treating WARNINGs as ERRORs), OR correct letters MM/dd/yyyy flagged as wrong."
         }
       }
     }

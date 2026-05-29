@@ -877,51 +877,30 @@ def append_eval_log(
 # Single-test runner
 # ---------------------------------------------------------------------------
 
-# Injected into the system prompt of every validate test, between the role
-# preamble and the output-format section.  Phrased as a system-role directive
-# so the model knows unambiguously it must perform a code review — matching
-# the imperative framing used in training examples.
-_VALIDATE_INSTRUCTION = (
-    "Validate the CTL2 code provided by the user. "
-    "Identify all bugs and issues and use the output format below."
-)
-
-
-def _inject_validate_instruction(system_prompt: str) -> str:
-    """Insert _VALIDATE_INSTRUCTION into a validate system prompt.
-
-    Splits on the first occurrence of '\\nOutput format:' and inserts the
-    instruction (with a blank line either side) between the role preamble and
-    the output-format section.  If the marker is not found the instruction is
-    appended at the end so it always appears.
-    """
-    marker = "\nOutput format:"
-    idx = system_prompt.find(marker)
-    if idx != -1:
-        return (
-            system_prompt[:idx].rstrip()
-            + "\n\n" + _VALIDATE_INSTRUCTION + "\n"
-            + system_prompt[idx:]
-        )
-    return system_prompt.rstrip() + "\n\n" + _VALIDATE_INSTRUCTION
-
-
 def _resolve_mut_overrides(mut_cfg: dict, test_type: str, test: dict) -> tuple[str, float, float]:
     """Return (system_prompt, temperature, top_p) applying any per-type MUT config overrides."""
     type_cfg = mut_cfg.get(test_type) or {}
     system_prompt = type_cfg.get("system_prompt") or test["system_prompt"]
-    # For validate tests inject the review directive into the system prompt so the
-    # model's role is unambiguous before it reads the output-format instructions.
-    if test_type == "validate" and not type_cfg.get("system_prompt"):
-        system_prompt = _inject_validate_instruction(system_prompt)
     temperature = type_cfg["temperature"] if "temperature" in type_cfg else test.get("temperature", 0.1)
     top_p = type_cfg.get("top_p", 1.0)
     return system_prompt, temperature, top_p
 
 
 def _build_mut_user_message(test: dict) -> str:
-    """Return the user message to send to the MUT (unchanged for all test types)."""
-    return test["user_message"]
+    """Return the user message to send to the MUT (unchanged for all test types).
+
+    Emits a warning when a validate-type test's user message does not contain
+    the word "validate" — the model keys off that framing and omitting it may
+    produce a generate-style response instead of a bug report.
+    """
+    user_message = test["user_message"]
+    if test.get("type") == "validate" and "validate" not in user_message.lower():
+        test_id = test.get("test_id", "?")
+        _print(
+            f"[bold yellow]⚠  WARNING[/bold yellow] [{test_id}] validate test user message "
+            "does not contain the word 'validate' — model may not produce a bug report."
+        )
+    return user_message
 
 
 def _call_mut_with_retry(mut_client, test: dict, timeout: int, mut_cfg: dict) -> tuple[str, float]:
