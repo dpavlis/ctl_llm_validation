@@ -411,14 +411,30 @@ class LocalMUTClient:
         else:
             input_ids = tokenized.to(self._model.device)
 
+        # Build stop-token list: tokenizer EOS + <|im_end|> (ChatML assistant
+        # turn terminator).  Without <|im_end|> in eos_token_id the model keeps
+        # generating past the end of its answer until max_new_tokens is exhausted.
+        stop_ids: list[int] = []
+        if self._tok.eos_token_id is not None:
+            stop_ids.append(self._tok.eos_token_id)
+        im_end_id = self._tok.convert_tokens_to_ids("<|im_end|>")
+        if (
+            im_end_id is not None
+            and im_end_id != self._tok.unk_token_id
+            and im_end_id not in stop_ids
+        ):
+            stop_ids.append(im_end_id)
+
         do_sample = temperature > 0.0
         with torch.inference_mode():
             output = self._model.generate(
                 input_ids,
+                attention_mask=torch.ones_like(input_ids),
                 max_new_tokens=self._cfg.get("max_new_tokens", 2048),
                 temperature=temperature if do_sample else 1.0,
                 top_p=top_p if do_sample else 1.0,
                 do_sample=do_sample,
+                eos_token_id=stop_ids if stop_ids else None,
                 pad_token_id=self._tok.eos_token_id,
             )
         return self._tok.decode(output[0][input_ids.shape[1]:], skip_special_tokens=True)
