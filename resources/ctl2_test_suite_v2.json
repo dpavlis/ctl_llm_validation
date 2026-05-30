@@ -1420,5 +1420,226 @@
         }
       }
     }
+  ,
+    {
+      "test_id": "T25",
+      "type": "generate",
+      "component": "Reformat (decimal arithmetic)",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Payroll Reformat: compute gross pay, tax, and net pay from raw inputs.\n\nRules:\n- `gross` = base_salary + bonus. bonus is nullable — treat as 0 when null.\n- `tax_amount` = gross * tax_rate / 100. tax_rate is a percentage (e.g. 23.5 means 23.5%). Round to 2 decimal places.\n- `net` = gross - tax_amount. Round to 2 decimal places.\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"PayIn\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"emp_id\"      type=\"integer\" nullable=\"false\"/>\n    <Field name=\"base_salary\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"bonus\"       type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"true\"/>\n    <Field name=\"tax_rate\"    type=\"decimal\" length=\"5\"  scale=\"2\" nullable=\"false\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"PayOut\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"emp_id\"     type=\"integer\" nullable=\"false\"/>\n    <Field name=\"gross\"      type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"tax_amount\" type=\"decimal\" length=\"10\" scale=\"2\" nullable=\"false\"/>\n    <Field name=\"net\"        type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate correct payroll arithmetic: nullable bonus guarded with nvl(), decimal literal 0D as fallback, 100D (not integer 100) in the percentage denominator to avoid unintended integer division semantics, round() on both monetary outputs.",
+        "required": [
+          {
+            "id": "T25.1",
+            "check": "`nvl($in.0.bonus, 0D)` — null-safe bonus with a decimal zero fallback, NOT integer 0.",
+            "rationale": "bonus is nullable=true; using it directly in addition throws CTLException on null. The fallback must be decimal 0D to keep the result type clean."
+          },
+          {
+            "id": "T25.2",
+            "check": "Percentage denominator uses `100D` (decimal literal), not bare integer `100`.",
+            "rationale": "In CTL2, decimal / integer produces decimal (upcasting), so `/ 100` technically works here. But `/ 100D` is the idiomatic and unambiguous form — it makes the division explicitly decimal and avoids any integer-truncation risk if the expression is rearranged. A model that uses `100D` demonstrates knowledge of decimal literal syntax."
+          },
+          {
+            "id": "T25.3",
+            "check": "`round(tax_amount, 2)` and `round(net, 2)` — both monetary outputs rounded to 2 decimal places.",
+            "rationale": "Financial amounts must be rounded to the output field scale."
+          },
+          {
+            "id": "T25.4",
+            "check": "Correct arithmetic chain: gross = base_salary + nvl(bonus, 0D), tax_amount = gross * tax_rate / 100D, net = gross - tax_amount.",
+            "rationale": "Core payroll computation."
+          },
+          {
+            "id": "T25.5",
+            "check": "transform() returns OK or ALL.",
+            "rationale": "Valid Reformat return values."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T25.F1",
+            "check": "Must not access `$in.0.bonus` in arithmetic without a null guard (nvl or isnull check).",
+            "rationale": "bonus is nullable=true; unguarded use throws CTLException at runtime."
+          },
+          {
+            "id": "T25.F2",
+            "check": "Must not use invented conversion functions: `toDecimal()`, `double2decimal()`, `convert()`.",
+            "rationale": "None of these exist in CTL2. No type conversion is needed — all fields are already decimal."
+          }
+        ],
+        "scoring": {
+          "PASS": "nvl with 0D fallback, 100D in denominator, round on both outputs, correct arithmetic order.",
+          "PARTIAL": "Correct logic but missing round() on one or both outputs, or uses integer 0 instead of 0D as nvl fallback.",
+          "FAIL": "bonus used without null guard (CTLException risk), or invented conversion functions used, or arithmetic chain incorrect."
+        }
+      }
+    },
+    {
+      "test_id": "T26",
+      "type": "validate",
+      "component": "Reformat (type conversions)",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Validate this Reformat CTL2 transform.\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"In\" type=\"delimited\"><Field name=\"qty_str\"    type=\"string\" nullable=\"false\"/><Field name=\"amount_str\" type=\"string\" nullable=\"false\"/><Field name=\"ref_str\"    type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"Out\" type=\"delimited\"><Field name=\"line_total\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/><Field name=\"ref_no\"    type=\"long\"    nullable=\"false\"/></Record></Metadata>\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    integer qty    = parseInt($in.0.qty_str);\n    decimal amount = (decimal) $in.0.amount_str;\n    long    ref_no = toLong($in.0.ref_str);\n    $out.0.line_total = qty * amount;\n    $out.0.ref_no     = ref_no;\n    return ALL;\n}\n```",
+      "bugs": [
+        {
+          "id": "T26.B1",
+          "code": "parseInt($in.0.qty_str)",
+          "description": "`parseInt()` is a Java function that does not exist in CTL2. The correct CTL2 function for parsing a string to integer is `str2integer()`.",
+          "correct_fix": "str2integer($in.0.qty_str)",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T26.B2",
+          "code": "(decimal) $in.0.amount_str",
+          "description": "Java-style cast syntax `(type) value` is not valid CTL2. In CTL2, `cast()` is only valid for variant → strong type conversion. To parse a string to decimal, use `str2decimal()`.",
+          "correct_fix": "str2decimal($in.0.amount_str)",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T26.B3",
+          "code": "toLong($in.0.ref_str)",
+          "description": "`toLong()` is a Java-inspired function that does not exist in CTL2. The correct CTL2 function for parsing a string to long is `str2long()`.",
+          "correct_fix": "str2long($in.0.ref_str)",
+          "severity": "ERROR"
+        }
+      ],
+      "rubric": {
+        "description": "Validator must catch three wrong type-conversion calls — each a Java function or Java cast syntax that does not exist in CTL2 — and name the correct CTL2 str2*() replacement.",
+        "required_findings": [
+          "T26.B1",
+          "T26.B2",
+          "T26.B3"
+        ],
+        "fix_quality": {
+          "T26.B1": "Must name `str2integer()` specifically as the replacement. Must flag as ERROR.",
+          "T26.B2": "Must explain that Java-style `(type)` cast syntax is invalid in CTL2 for string parsing, and that `str2decimal()` is the correct replacement. Must flag as ERROR.",
+          "T26.B3": "Must name `str2long()` specifically as the replacement. Must flag as ERROR."
+        },
+        "verdict_expected": "FAIL",
+        "false_positive_traps": [
+          {
+            "id": "T26.FP1",
+            "trap": "Suggesting `cast($in.0.amount_str, decimal)` as the fix for T26.B2.",
+            "reality": "`cast()` in CTL2 is only valid for variant → strong type. `$in.0.amount_str` is a string (strong type), not a variant. The correct fix is `str2decimal()`, not `cast()`."
+          }
+        ],
+        "scoring": {
+          "PASS": "All three bugs caught with correct CTL2 replacements: str2integer, str2decimal, str2long.",
+          "PARTIAL": "2/3 bugs caught, or bugs caught but wrong replacement suggested (e.g. cast() for B2).",
+          "FAIL": "Fewer than 2 bugs caught, or wrong PASS verdict."
+        }
+      }
+    },
+    {
+      "test_id": "T27",
+      "type": "generate",
+      "component": "Reformat (date arithmetic)",
+      "temperature": 0.1,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Reformat transform: compute contract tenure and expiry information.\n\nRules:\n- `tenure_days` = number of days from hire_date to today.\n- `days_until_expiry` = number of days from today to contract_end. Set to null when contract_end is null (open-ended contract).\n- `contract_active` = true when contract_end is null OR when contract_end is on or after today.\n\nPort 0 (in):\n<Metadata id=\"MetaIn\">\n  <Record name=\"ContractIn\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"employee_id\"  type=\"integer\" nullable=\"false\"/>\n    <Field name=\"hire_date\"    type=\"date\"    nullable=\"false\"/>\n    <Field name=\"contract_end\" type=\"date\"    nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nPort 0 (out):\n<Metadata id=\"MetaOut\">\n  <Record name=\"ContractOut\" type=\"delimited\" fieldDelimiter=\",\">\n    <Field name=\"employee_id\"       type=\"integer\" nullable=\"false\"/>\n    <Field name=\"tenure_days\"        type=\"integer\" nullable=\"false\"/>\n    <Field name=\"days_until_expiry\"  type=\"integer\" nullable=\"true\"/>\n    <Field name=\"contract_active\"    type=\"boolean\" nullable=\"false\"/>\n  </Record>\n</Metadata>",
+      "rubric": {
+        "description": "Generate correct date arithmetic using dateDiff(), today(), and a null guard on the nullable date field. CTL2 dateDiff signature: dateDiff(date later, date earlier, unit) returns later − earlier. Must NOT use integer addition on dates or invent non-existent date functions.",
+        "required": [
+          {
+            "id": "T27.1",
+            "check": "`dateDiff(today(), $in.0.hire_date, day)` for tenure_days — today() is the 'later' argument, hire_date is the 'earlier' argument, giving today − hire_date = positive days elapsed.",
+            "rationale": "dateDiff(later, earlier, unit) returns later − earlier. today() is after hire_date for any current employee, so the result is positive."
+          },
+          {
+            "id": "T27.2",
+            "check": "`today()` used as the reference for the current date — not `now()`, `new Date()`, or `currentDate()`.",
+            "rationale": "today() is the correct CTL2 built-in for the current date. Other forms are hallucinations from Java or other languages."
+          },
+          {
+            "id": "T27.3",
+            "check": "`isnull($in.0.contract_end)` guard before any use of contract_end in arithmetic or comparison.",
+            "rationale": "contract_end is nullable=true. dateDiff on null throws; >= comparison on null is null-safe but the spec requires explicit null branching for days_until_expiry."
+          },
+          {
+            "id": "T27.4",
+            "check": "`dateDiff($in.0.contract_end, today(), day)` for days_until_expiry (when contract_end is not null) — contract_end is the 'later' argument, today() is the 'earlier' argument, giving contract_end − today = positive days remaining for a future expiry.",
+            "rationale": "dateDiff(later, earlier) returns later − earlier. For a date that lies in the future, contract_end > today(), so the result is positive."
+          },
+          {
+            "id": "T27.5",
+            "check": "contract_active set to true when contract_end is null, and to `$in.0.contract_end >= today()` when not null.",
+            "rationale": "Open-ended contracts are always active. For fixed-term, active means the end date has not passed."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T27.F1",
+            "check": "Must not add an integer to a date: e.g. `hire_date + 365` or `contract_end + 30`.",
+            "rationale": "CTL2 does not support arithmetic operators on date values. Use dateAdd(date, n, unit) instead."
+          },
+          {
+            "id": "T27.F2",
+            "check": "Must not use `now()`, `new Date()`, `currentDate()`, or `System.currentTimeMillis()` — only `today()` is the valid CTL2 built-in for the current date.",
+            "rationale": "These are hallucinations from Java or other languages."
+          },
+          {
+            "id": "T27.F3",
+            "check": "Must not call `dateDiff($in.0.hire_date, today(), day)` for tenure — with the signature dateDiff(later, earlier), this gives hire_date − today = a negative number for any hire date in the past.",
+            "rationale": "dateDiff(later, earlier) = later − earlier. When hire_date is the first (later) argument and today() is the second (earlier), the formula computes hire_date − today, which is negative for past hires. The correct order is dateDiff(today(), hire_date, day)."
+          }
+        ],
+        "scoring": {
+          "PASS": "Correct dateDiff argument orders, today() used, isnull guard on contract_end, correct logic for all three output fields.",
+          "PARTIAL": "Correct structure but dateDiff argument order reversed for one of the two calls, or missing isnull guard.",
+          "FAIL": "today() replaced with now()/new Date(), OR date + integer used, OR no null guard on contract_end."
+        }
+      }
+    },
+    {
+      "test_id": "T28",
+      "type": "validate",
+      "component": "Reformat (date arithmetic)",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity is ERROR, WARNING, or INFO)\n  ...\n\nSUGGESTIONS:\n  - Optional improvement hints (omit section if none)\n\nVERDICT: PASS | FAIL\n  (FAIL if any ERROR-severity issue is found; PASS otherwise)\n\nIf no issues are found respond with just:\n  ISSUES: none\n  VERDICT: PASS",
+      "user_message": "Validate this Reformat CTL2 transform.\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"In\" type=\"delimited\"><Field name=\"hire_date\"       type=\"date\"    nullable=\"false\"/><Field name=\"assessment_date\" type=\"date\"    nullable=\"false\"/><Field name=\"notice_days\"     type=\"integer\" nullable=\"false\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"Out\" type=\"delimited\"><Field name=\"service_years\"   type=\"integer\" nullable=\"false\"/><Field name=\"notice_end_date\" type=\"date\"    nullable=\"false\"/></Record></Metadata>\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.service_years   = dateDiff($in.0.hire_date, $in.0.assessment_date, year);\n    $out.0.notice_end_date = $in.0.assessment_date + $in.0.notice_days;\n    return ALL;\n}\n```",
+      "bugs": [
+        {
+          "id": "T28.B1",
+          "code": "dateDiff($in.0.hire_date, $in.0.assessment_date, year)",
+          "description": "Wrong argument order. The CTL2 signature is `dateDiff(date later, date earlier, unit)` which returns `later − earlier`. With hire_date as the first (later) argument and assessment_date as the second (earlier), the result is `hire_date − assessment_date` — a negative number, because hire_date is always earlier than the assessment date. The correct call is `dateDiff($in.0.assessment_date, $in.0.hire_date, year)`, giving `assessment_date − hire_date` = positive service years.",
+          "correct_fix": "dateDiff($in.0.assessment_date, $in.0.hire_date, year)",
+          "severity": "ERROR"
+        },
+        {
+          "id": "T28.B2",
+          "code": "$in.0.assessment_date + $in.0.notice_days",
+          "description": "CTL2 does not support the `+` operator between a date and an integer. Date offset arithmetic requires the `dateAdd()` function: `dateAdd(date, amount, unit)`.",
+          "correct_fix": "dateAdd($in.0.assessment_date, $in.0.notice_days, day)",
+          "severity": "ERROR"
+        }
+      ],
+      "rubric": {
+        "description": "Validator must catch two date arithmetic bugs: reversed dateDiff argument order — dateDiff(hire_date, assessment_date, year) gives hire_date − assessment_date = negative, because dateDiff(later, earlier) = later − earlier and hire_date is the earlier date — and invalid date+integer addition (must use dateAdd).",
+        "required_findings": [
+          "T28.B1",
+          "T28.B2"
+        ],
+        "fix_quality": {
+          "T28.B1": "Must explain that dateDiff(later, earlier) = later − earlier, so dateDiff(hire_date, assessment_date) gives hire_date − assessment_date = negative years. Must give the corrected call dateDiff(assessment_date, hire_date, year). Must flag as ERROR.",
+          "T28.B2": "Must state that CTL2 does not allow + between date and integer. Must suggest dateAdd(assessment_date, notice_days, day). Must flag as ERROR."
+        },
+        "verdict_expected": "FAIL",
+        "false_positive_traps": [
+          {
+            "id": "T28.FP1",
+            "trap": "Flagging the `year` unit in dateDiff as wrong — claiming it should be `day`.",
+            "reality": "dateDiff supports `day`, `month`, and `year` as units. Using `year` to compute years of service is correct. The bug is the argument order, not the unit."
+          }
+        ],
+        "scoring": {
+          "PASS": "Both bugs caught: B1 (swapped dateDiff args, produces negatives) and B2 (date + integer invalid, must use dateAdd). Both flagged as ERROR.",
+          "PARTIAL": "B2 caught but B1 missed (argument order not identified), or B1 caught but fix is wrong.",
+          "FAIL": "B2 missed (date + integer not identified), or wrong PASS verdict, or T28.FP1 triggered (year unit flagged incorrectly)."
+        }
+      }
+    }
   ]
 }
