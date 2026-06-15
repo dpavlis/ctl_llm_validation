@@ -412,7 +412,7 @@ def run_chat(model, system_prompt: str, temperature: float, top_p: float,
         f"  [dim]Model temp={temperature}  top_p={top_p}  "
         f"system={repr(system_prompt[:60])}{'…' if len(system_prompt) > 60 else ''}[/dim]"
     )
-    _print("  [dim]Commands: /reset  /history  /quit[/dim]")
+    _print("  [dim]Commands: /reset /clear /history  /quit[/dim]")
     _rule()
     _print()
 
@@ -456,7 +456,7 @@ def run_chat(model, system_prompt: str, temperature: float, top_p: float,
             _print("[dim]Goodbye.[/dim]")
             break
 
-        if user_text.lower() == "/reset":
+        if user_text.lower() in ("/reset","/clear"):
             history.clear()
             if logger:
                 logger.note("*** conversation reset ***")
@@ -518,6 +518,7 @@ def main():
         epilog=textwrap.dedent("""\
             During chat:
               /reset    — clear conversation history
+              /clear    - dtto
               /history  — print conversation so far
               /quit     — exit
         """),

@@ -1613,9 +1613,9 @@ def _find_suite_file(cfg: dict, config_dir: Path) -> Path:
 def _find_reference_file(suite_file: Path) -> Optional[Path]:
     """Locate CTL2_Reference_for_LLM_compact.md alongside the suite file, or None."""
     candidates = [
-        suite_file.parent / "CTL2_Reference_for_LLM_compact.md",
-        Path(__file__).parent / "resources" / "CTL2_Reference_for_LLM_compact.md",
-        Path("resources/CTL2_Reference_for_LLM_compact.md"),
+        suite_file.parent / "ctl2-basics.md",
+        Path(__file__).parent / "resources" / "ctl2-basics.md",
+        Path("resources/ctl2-basics.md"),
     ]
     for p in candidates:
         if p.exists():

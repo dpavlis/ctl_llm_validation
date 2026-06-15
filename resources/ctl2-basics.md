@@ -1,3 +1,12 @@
+---
+name: ctl2-basics
+description: CTL2 language reference — types, port access $in/$out, null handling, control flow, function library, hard constraints for valid CTL.
+tags: [guide, ctl2, language-reference, types, null-handling, functions]
+scope: install
+provenance: human-curated
+validated: true
+---
+
 description: Dense CTL2 language reference for CloverDX transformations: valid syntax, typing and conversion rules, record and port access semantics, null handling, control flow, built-in function surface, and hard constraints needed to generate, lint, and repair executable CTL2 without inventing unsupported constructs.
 
 # CTL2 (Clover Transformation Language) — Reference
@@ -44,22 +53,29 @@ description: Dense CTL2 language reference for CloverDX transformations: valid s
 Script order: imports → variable declarations → function declarations → statements/mappings.
 Declarations and statements can be interspersed. Variables/functions must be declared before use.
 
-```ctl
-import "trans/filterFunctions.ctl";
-import '${TRANS_DIR}/utils.ctl';
-import metadata "meta/Customer.fmt";
-import metadata "${META_DIR}/Order.fmt" MyOrderAlias;
-```
-
-- Double-quoted paths: support escape sequences. Single-quoted: only `\'`.
-- Graph parameters (`${PARAM}`) allowed in paths.
-- `import metadata` (since CloverDX 5.6) makes external metadata available for record variables.
-
+#### Comments
 ```ctl
 // Single-line comment
 /* Multi-line comment */
 ```
 
+
+
+### 1.1 Imports
+
+`import <path to .ctl>` - for CTL files - makes functions available for use; no namespace, so function names must be unique across imports.
+`import metadata <path to .fmt> <alias?>` - makes external metadata available for record variables.
+
+- Double-quoted paths: support escape sequences. Single-quoted: only `\'`.
+- Graph parameters (`${PARAM}`) allowed in paths.
+
+Example imports:
+```ctl
+import "trans/filterFunctions.ctl";
+import '${TRANS_DIR}/utils.ctl';
+import metadata "meta/Customer.fmt";
+import metadata "${META_DIR}/Order.fmt" MyOrderAlias; //record variable from Order.fmt use MyOrderAlias as type name
+```
 ---
 
 ## 2. Data Types
@@ -192,18 +208,10 @@ const string[] TAGS = ["a", "b", "c"];
 
 | Operator | Notes |
 |---|---|
-| `+` | `numeric+(numeric,numeric)` / `string+(string,string)` (concat) / `list+(list,list)` (concat) / `map+(map,map)` (union) |
-| `+=` | compound assignment: `x += y` ≡ `x = x + y`; same type rules as `+` (numeric, string concat, list concat, map union) |
-| `-` `*` `%` | numeric; `%` works on float/decimal too (e.g., `6.25 % 2.5` → `1.25`) |
-| `-=` `*=` `/=` `%=` | compound assignment (numeric only): `x -= y` ≡ `x = x - y`; same division/modulus rules as `/` and `%` |
-| `/` | both-integer → truncates (`7/2`→`3`); float operand → float; decimal → decimal; ÷0 → exception for integer/long/decimal, Infinity for number |
+| `+` | numeric / string concat (string must be left operand) / list concat / map merge |
+| `-` `*` `%` | numeric |
+| `/` | integer division truncates; ÷0 → exception for integer/long/decimal, Infinity for double |
 | `++` `--` | pre/post; **cannot use on**: literals, record fields, map/list values |
-
-**Numeric type promotion** (automatic, per expression): `integer < long < number(double) < decimal`.
-Rules: int+long→long; int/long+number→number (⚠ long→number may lose precision); int/long+decimal→decimal.
-⚠ **`number` is contagious**: if any operand is `number` (or an unsuffixed float literal like `0.15`, which is `number`), the entire expression is floating-point — decimal precision is lost. Use `D`-suffixed literals throughout to stay in decimal math.
-No implicit downcast on assignment — result type must match target or use explicit conversion (`decimal2double()`, `decimal2long()`, `double2long()`, etc.).
-Overflow: integer/long overflow silently (no error). Null operand → runtime exception.
 
 ### 3.2 Relational
 
@@ -287,7 +295,7 @@ date d = str2date($in.0.text, "yyyy-MM-dd") : str2date($in.0.text, "dd.MM.yyyy")
 ```ctl
 if (cond) { ... } else if (cond2) { ... } else { ... }
 
-switch (expr) {          // expr: integer, string, boolean, double, decimal, date; labels must be unique literals; null expr is allowed (no runtime error) — default branch is taken if present
+switch (expr) {          // expr: integer, string, boolean; labels must be unique literals
     case "v1": ...; break;
     case "v2":
     case "v3": ...; break;  // fall-through
@@ -469,27 +477,33 @@ function integer getOutputPortOnError(string errorMessage, string stackTrace) { 
 
 ### 8.7 Rollup
 
-Accumulator metadata is set on the Rollup component; `GroupAccMeta` and `groupAccumulator` are examples only, actual type/name come from graph metadata.
+> **Placeholder warning:** `GroupAccMeta` and `groupAccumulator` in the snippet below are **examples only**. Substitute the actual `<Record name="…">` of the metadata you wire via the Rollup component's `groupAccumulator` attribute. The CTL2 type checker resolves the parameter type against the Record `name`, **not** against `<Metadata id="…">`. Mismatch fails the graph with `"Error loading job file"` and a CTL compile error.
+
+**All five functions are mandatory — the component fails init if any is missing** (`Required function(s) … are missing!`): `initGroup`, `updateGroup`, `updateTransform`, `finishGroup`, `transform`. Note the two distinct emit functions: `updateTransform` is the per-record emit (called when `updateGroup` returns `true`), `transform` is the per-group emit (called when `finishGroup` returns `true`). Even when you emit only once per group via `transform`, you must still define `updateTransform` — give it a `return SKIP;` body. Return types are fixed: `void initGroup`, `boolean updateGroup`/`finishGroup`, `integer updateTransform`/`transform`.
 
 ```ctl
 //#CTL2
-// First record in each group.
+// First record of each group.
 function void initGroup(GroupAccMeta groupAccumulator) {
     groupAccumulator.count = 0;
     groupAccumulator.total = 0D;
 }
-// Every record in group (first..last).
+// Every record in the group. Return false to skip updateTransform for this record.
 function boolean updateGroup(GroupAccMeta groupAccumulator) {
-    groupAccumulator.count++;
-    groupAccumulator.total += $in.0.amount;
-    return true;
+    groupAccumulator.count = groupAccumulator.count + 1;
+    groupAccumulator.total = groupAccumulator.total + $in.0.amount;
+    return false;   // accumulate only; emit once per group in transform()
 }
-// Last record in each group.
+// Per-record emit — called only when updateGroup returns true. Required even when unused.
+function integer updateTransform(integer counter, GroupAccMeta groupAccumulator) {
+    return SKIP;
+}
+// Last record of each group. Return true to call transform().
 function boolean finishGroup(GroupAccMeta groupAccumulator) {
     groupAccumulator.avg = groupAccumulator.total / groupAccumulator.count;
     return true;
 }
-// After finishGroup=true; emit group-level outputs.
+// Per-group emit — called when finishGroup returns true.
 function integer transform(integer counter, GroupAccMeta groupAccumulator) {
     if (counter > 0) return SKIP;
     $out.0.count = groupAccumulator.count;
@@ -772,8 +786,7 @@ Metadata defines the structure of records flowing between components. Fields in 
 | | `boolean isNumber(string, string format, string locale)` | |
 | `isUrl` | `boolean isUrl(string)` | |
 | `join` | `string join(string delimiter, type[] array)` | Join array with delimiter. |
-| `lastIndexOf` | `integer lastIndexOf(string input, string substr)` | Last occurrence. `input` null → `-1`; `substr` null → fail. |
-| | `integer lastIndexOf(string input, string substr, integer index)` | Search backward from `index`. `index` null/`substr` null → fail; `index < 0` → `-1`. |
+| `lastIndexOf` | `integer lastIndexOf(string, string substring)` | Last index. **2 args only — no fromIndex.** |
 | `left` | `string left(string, integer length)` | Leftmost N chars. |
 | `length` | `integer length(string)` | Also works on lists, maps, records. **null or `""` → 0.** |
 | `lowerCase` | `string lowerCase(string)` | **null → null.** |
@@ -854,7 +867,7 @@ Date format patterns: Java SimpleDateFormat — `yyyy`, `MM`, `dd`, `HH`, `mm`, 
 |---|---|---|
 | `abs` | `T abs(T)` — T: integer\|long\|number\|decimal | Absolute value. |
 | `acos` | `number acos(number\|decimal)` | Arc cosine (radians). |
-| `addNoise` | `T addNoise(T value, T noise)` | Add random noise ±noise. Use for anonymization. |
+| `addNoise` | `T addNoise(T value, T noise)` | Add random noise ±noise. |
 | | `date addNoise(date, long noise)` | Noise in ms. |
 | | `date addNoise(date, long noise, unit)` | |
 | `asin` | `number asin(number\|decimal)` | |
@@ -908,7 +921,7 @@ Date format patterns: Java SimpleDateFormat — `yyyy`, `MM`, `dd`, `HH`, `mm`, 
 
 | Function | Signature(s) | Description |
 |---|---|---|
-| `append` | `T[] append(T[], T element)` | Append to end. Returns modified list. `append(nullList, x)` throws error. |
+| `append` | `T[] append(T[], T element)` | Append to end. Returns modified list. `append(nullList, x)` is valid; `x` becomes the first item automatically. |
 | | `variant append(variant, variant)` | variant must contain list. |
 | `appendAll` | `list[E] appendAll(list[E] target, list[E] source)` | Append `source` to `target`; returns mutated `target`. `target==null` fails. Since 6.4.0. |
 | | `map[K,V] appendAll(map[K,V] target, map[K,V] source)` | Merge into `target`; existing keys in `target` are preserved (left wins). `target==null` or `source==null` fails. Since 6.4.0. |
@@ -1230,7 +1243,7 @@ In `replace(str, regex, repl)` and `split(str, regex)`: pattern is always regex.
 
 ### 13.2 Common Pitfalls
 
-1. **Decimal without `D`**: `123.45` is `number`, not `decimal`. Use `123.45D`. Mixing a `number` literal into a `decimal` expression silently degrades to floating-point math.
+1. **Decimal without `D`**: `123.45` is `number`, not `decimal`. Use `123.45D`.
 2. **Long without `L`**: `9999999999` overflows integer. Use `9999999999L`.
 3. **`replace()` regex**: `replace(s, ".", "_")` replaces EVERY char. Use `replace(s, "\\.", "_")`.
 4. **`split()` regex**: `split(s, ".")` splits every char. Use `split(s, "\\.")`.
@@ -1247,13 +1260,12 @@ In `replace(str, regex, repl)` and `split(str, regex)`: pattern is always regex.
 15. **`foreach` colon not `in`**: `foreach (string s : myList)`. No tuple unpacking.
 16. **Exception**: `catch(CTLException e)` only. `e.message` property, not `e.getMessage()`.
 17. **Port syntax**: `$in.0.field` — NOT `$in0.field`, NOT `$field`.
-18. **`lastIndexOf()`** has 2 forms; optional `index` searches backward from `index`. `input` null → `-1`; `substr`/`index` null → fail; `index < 0` → `-1`.
+18. **`lastIndexOf()` 2 args only** — no `fromIndex` param.
 19. **`date2num()` needs unit**: `date2num(date, day)` — not bare `date2num(date)`.
 20. **`double` is valid alias** for `number`. `double x = 1.5;` is valid.
 21. **`cast()` strong-type conversion INVALID**: `cast(decimal, integer)` is wrong. Use `decimal2integer()`.
 22. **Null function confusion**: `isnull(expr)` (1 arg, lowercase) and `expr == null` are interchangeable. `isNull(record, idx/name)` (2 args, camelCase) is a different function for dynamic field access. `isnull("")` = false. Local primitive vars NOT null. See **11.8**.
 23. **Null in ordering comparisons throws**: `<`, `>`, `<=`, `>=` throw `CTLException` if either operand is null. `==`/`!=` are null-safe. Use `isnull()` guards or `nvl()` fallbacks.
-24. **Numeric promotion one-way**: `integer→long→number(double)→decimal`; assigning result to lower type is a compile error — use explicit conversion. long→number may lose precision. integer/long overflow silently.
 
 ---
 
@@ -1267,7 +1279,7 @@ In `replace(str, regex, repl)` and `split(str, regex)`: pattern is always regex.
 6. Operators: only **3**. No `===`, `>>>`, `instanceof`, `is`, `not in`, `in` as operator.
 7. Control flow: only `if/else`, `switch/case`, `for`, `while`, `do-while`, `foreach`, `break`, `continue`, `return`. No `for-in`, `for-of`, `yield`, `async/await`, `try-finally`.
 8. Functions: `function returnType name(args)`. No `def`, `fun`, `fn`, arrow, anonymous.
-9. Built-in functions: only **10**. Top hallucinations: `size()`→`length()`, `toInteger()`→`str2integer()`, `if(cond,a,b)`→`iif()`, `parseDate()`→`str2date()`, `parseInt()`→`str2integer()`, `now()`→`today()`, `toDouble()`→`str2double()`, `toDecimal()`→`str2decimal()`, `asc()`→`codePointAt()`, `parseDecimal()`→`str2decimal()`, `removeAt()`→`remove()`, `addDays()`→`dateAdd()`, `number2decimal()`→DNE (auto numeric upcast), `double2decimal()`→DNE (`double`=`number`; auto upcast), `regexReplace()`→`replace()`, `printJson`→`writeJson`, `containerSize`→`length`, `format`→`formatMessage`, `toUpperCase`→`upperCase`, `toLowerCase`→`lowerCase`, `strip`→`trim`, `len`→`length`, `print`→`printLog`/`printErr`, `JSON.parse`→`parseJson`, `JSON.stringify`→`writeJson`.
+9. Built-in functions: only **10**. Top hallucinations: `size()`→`length()` (32×), `toInteger()`→`str2integer()` (13×), `if(cond,a,b)`→`iif()` (37×), `parseDate()`→`str2date()` (5×), `parseInt()`→`str2integer()` (4×), `now()`→`today()` (2×), `toDouble()`→`str2double()`, `toDecimal()`→`str2decimal()`, `asc()`→`codePointAt()`, `parseDecimal()`→`str2decimal()`, `removeAt()`→`remove()`, `addDays()`→`dateAdd()`, `number2decimal()`→`cast(n,decimal)`, `regexReplace()`→`replace()`, `printJson`→`writeJson`, `containerSize`→`length`, `decode`→DNE, `format`→`formatMessage`, `toUpperCase`→`upperCase`, `toLowerCase`→`lowerCase`, `strip`→`trim`, `len`→`length`, `print`→`printLog`/`printErr`, `JSON.parse`→`parseJson`, `JSON.stringify`→`writeJson`.
 10. Port access: `$in.N.field` / `$out.N.field`. No `input[0]`, `record.get()`.
 11. Type casting: `cast(variant, type)` for variants ONLY. No C-style `(int)x`, no `as`.
 12. Null: `isnull(expr)` and `expr == null` interchangeable for all types. `isNull(record, int/string)` (2 args, camelCase) is separate — dynamic field access only. No `??`, `?.`, `== NULL`. `""` ≠ null. Ordering operators throw on null.
