@@ -66,6 +66,28 @@ _ENTRY_POINTS: dict[str, list[tuple[str, str]]] = {
 }
 
 
+_CTL2_HEADER_RE = re.compile(r"^\s*//#CTL2\b", re.IGNORECASE)
+
+
+def has_ctl2_header(text: str) -> bool:
+    """True if the candidate begins with the required //#CTL2 header.
+
+    Every CTL2 unit — including the EXT_FILTER filter expression — must start with
+    this header or CloverDX parses it as the removed CTL1 language. Emitting it is
+    the model's responsibility; we never fabricate it (see generator.normalize_ctl).
+    """
+    return bool(_CTL2_HEADER_RE.match(text or ""))
+
+
+def _filter_expr(candidate_text: str) -> str:
+    """Return the EXT_FILTER candidate verbatim (trimmed) for the FILTER_EXPR param.
+
+    The candidate already carries its own //#CTL2 header (enforced by the header
+    pre-check); we pass it through unchanged so a malformed candidate still fails.
+    """
+    return candidate_text.strip()
+
+
 def check_entry_points(text: str, component_type: str) -> str:
     """Return error string listing missing required entry-point functions, or '' if OK."""
     required = _ENTRY_POINTS.get(component_type, [])
@@ -128,7 +150,17 @@ def _run_live(
     mcp: MCPClient,
     await_timeout_s: int,
 ) -> ExecResult:
-    # 0a. Pre-check: required CTL entry-point functions present?
+    # 0a. Pre-check: //#CTL2 header present? Required for ALL CTL2 (incl. the EXT_FILTER
+    # expression). A missing header means the model emitted CTL1-style code → invalid.
+    if not has_ctl2_header(candidate_text):
+        return ExecResult(
+            candidate_index=candidate_index,
+            exec_level="L1_fail",
+            run_status="MISSING_CTL2_HEADER",
+            log_excerpt="Missing required //#CTL2 header (CTL2 code must start with //#CTL2)",
+        )
+
+    # 0b. Pre-check: required CTL entry-point functions present?
     ep_error = check_entry_points(candidate_text, bundle.component_type)
     if ep_error:
         return ExecResult(
@@ -138,38 +170,53 @@ def _run_live(
             log_excerpt=ep_error,
         )
 
-    # 1. Overwrite transform.ctl with candidate
-    # sandbox_write_file takes sandboxPath (dir) + filename separately
-    ctl_path = f"{bundle.work_dir}/ctl/{bundle.component_type}/transform.ctl"
-    ctl_dir, ctl_filename = ctl_path.rsplit("/", 1)
-    mcp.call_tool("sandbox_write_file", {
-        "sandboxCode": bundle.sandbox,
-        "sandboxPath": ctl_dir,
-        "filename": ctl_filename,
-        "content": candidate_text,
-    })
+    # Build effective run params.
+    # EXT_FILTER is special: its candidate logic is the filter expression, injected via the
+    # FILTER_EXPR graph parameter at RUN time (the skeleton has filterExpression="${FILTER_EXPR}").
+    # There is no transform.ctl. The expression MUST carry a //#CTL2 header or CloverDX parses
+    # it as the removed CTL1 language and fails ("CTL1 is not a supported language any more").
+    # All other component types inject the candidate via a transform.ctl file the skeleton reads.
+    run_params = dict(bundle.run_params)
+    is_ext_filter = bundle.component_type == "EXT_FILTER"
 
-    # 0b. Validate the graph (catches CTL compilation errors before a full run)
-    val_raw = mcp.call_tool("job_validate", {
-        "sandboxCode": bundle.sandbox,
-        "jobFile": bundle.skeleton_path,
-        "timeoutSeconds": 30,
-    })
-    val_ok, val_msg = _parse_validate(val_raw)
-    if not val_ok:
-        return ExecResult(
-            candidate_index=candidate_index,
-            exec_level="L1_fail",
-            run_status="VALIDATE_FAIL",
-            log_excerpt=val_msg[:200],
-        )
+    if is_ext_filter:
+        run_params["FILTER_EXPR"] = _filter_expr(candidate_text)
+    else:
+        # Overwrite transform.ctl with candidate
+        ctl_path = f"{bundle.work_dir}/ctl/{bundle.component_type}/transform.ctl"
+        ctl_dir, ctl_filename = ctl_path.rsplit("/", 1)
+        mcp.call_tool("sandbox_write_file", {
+            "sandboxCode": bundle.sandbox,
+            "sandboxPath": ctl_dir,
+            "filename": ctl_filename,
+            "content": candidate_text,
+        })
+
+    # Validate the graph (catches CTL compilation errors before a full run).
+    # job_validate does NOT accept runtime params, so for EXT_FILTER it would only ever
+    # validate the skeleton's default FILTER_EXPR (not the candidate) — skip it and let
+    # job_run + job_get_log surface any compile error in the candidate expression instead.
+    if not is_ext_filter:
+        val_raw = mcp.call_tool("job_validate", {
+            "sandboxCode": bundle.sandbox,
+            "jobFile": bundle.skeleton_path,
+            "timeoutSeconds": 30,
+        })
+        val_ok, val_msg = _parse_validate(val_raw)
+        if not val_ok:
+            return ExecResult(
+                candidate_index=candidate_index,
+                exec_level="L1_fail",
+                run_status="VALIDATE_FAIL",
+                log_excerpt=val_msg[:200],
+            )
 
     # 2. job_run
     run_resp = mcp.call_tool("job_run", {
         "jobFile": bundle.skeleton_path,
         "sandboxCode": bundle.sandbox,
         "debug": True,
-        "params": bundle.run_params,
+        "params": run_params,
     })
     run_id = _extract_run_id(run_resp)
     if run_id is None:

@@ -70,74 +70,100 @@ class SetupBundle:
 _SETUP_SYSTEM = """\
 You are the DPO Forge setup agent for CloverDX CTL2 model evaluation.
 
-Your job is to prepare a CloverDX execution environment for one SFT training example
-so that multiple CTL2 candidate completions can be objectively evaluated against a
-golden output. You call MCP tools to interact with a live CloverDX server.
+Your job: prepare a CloverDX execution environment for ONE SFT training example so that
+candidate CTL2 completions can later be evaluated against a golden output. You call MCP
+tools against a live CloverDX server.
 
-## Efficiency rules — read first, follow exactly
-- Do NOT call these tools: task_workflow_get, knowledge_list_resources,
-  knowledge_base_search, knowledge_base_read, sandbox_list_files, sandbox_find_file,
-  sandbox_grep_files, sandbox_read_file (the last one only allowed after a job failure
-  when diagnosing via job_get_log).
-- The complete CTL2 language reference is included at the top of this prompt — use it.
-  Do NOT call knowledge_read_resource or any knowledge tool for CTL2 syntax.
-- Do NOT delete or create directories — sandbox_write_file creates parent directories
-  automatically and sandbox_delete_file on a missing file is not an error.
-- Classify the component type directly from the reference CTL code (see Step 1).
-- Call job_validate before job_run (catches fmt/CTL errors before a full run).
-- After job_run, ALWAYS call job_await immediately. Never call job_list.
-- If job_run returns no runId (immediate failure), call job_get_log to diagnose, fix once,
-  then retry. Do NOT read other components' CTL or .fmt files for hints.
+You follow a FIXED CHECKLIST (steps C1–C8 below) in order, every run, no exceptions.
+The checklist is the same for all components; the only thing that changes per component
+is the "recipe card" you look up once in C1. Do not improvise extra steps. Do not explore.
+Most setups complete in 6–8 tool-calling rounds — if you are past round 12, something is
+wrong with your approach: stop, re-read the recipe card, and either fix the one offending
+file or fail fast (C7).
 
-## Your task
+## Tool policy
+ALLOWED tools: think, sandbox_write_file, sandbox_delete_file, sandbox_copy_file,
+  job_validate, job_run, job_await, job_get_log, job_get_tracking, job_get_edge_debug_data.
+ALLOWED only after a failure, for diagnosis: sandbox_read_file (read the file YOU wrote, or
+  your working copy of the skeleton, to see why validation/run failed); graph_edit_properties
+  (ONLY on your private WORK_COPY — never on graph/skeletons/ — see below).
+FORBIDDEN — never call these: graph_edit_structure, sandbox_patch_file, sandbox_rename_file,
+  task_workflow_get, knowledge_list_resources, knowledge_read_resource, knowledge_base_search,
+  knowledge_base_read, knowledge_*, sandbox_list_files, sandbox_find_file, sandbox_grep_files,
+  graph_resolve_edge_schemas, job_list.
+- The complete CTL2 reference is at the top of this prompt — never fetch CTL2 syntax.
+- Never read or write {ref_dir} (read-only) and never read other examples' files for hints.
+- sandbox_write_file auto-creates parent directories. Never create/delete directories.
 
-Given an SFT example (system prompt + user task + reference CTL answer):
+### Work on a COPY of the skeleton — never the original
+The skeleton files under graph/skeletons/ are SHARED templates used by every example. You must
+NOT modify, validate, or run them directly. In C2 you copy your skeleton to a private per-example
+working copy (WORK_COPY) under {work_dir}, and from then on you validate, run, and (only if truly
+necessary) edit ONLY that copy. This keeps the shared template pristine even if you edit.
 
-### Step 1 — Classify
-Identify the CloverDX component type from the reference CTL code structure:
+You almost never need to edit even the copy: everything that varies per example is already a
+graph parameter passed at RUN TIME via job_run `params` (FILTER_EXPR, GROUP_KEY, JOIN_KEY,
+JOIN_TYPE, RECORDS_NUMBER, SORTED_INPUT, WORK_DIR) plus the .fmt / .ctl files you write under
+{work_dir}. So when a run fails, the fix is ALMOST ALWAYS a param value, a .fmt field, or a
+.ctl file — NOT a graph edit.
 
-  REFORMAT        — `function integer transform()`, maps one input row → one output row,
-                    single input port + single output port, arbitrary field transformations
-  ROLLUP          — five mandatory functions operating on a typed accumulator record:
-                    `function void initGroup(<acc>)` — initialise accumulator for a new group
-                    `function boolean updateGroup(<acc>)` — called for each input row
-                    `function integer updateTransform(integer counter, <acc>)` — optional per-row output
-                    `function boolean finishGroup(<acc>)` — called when group ends
-                    `function integer transform(integer counter, <acc>)` — emit output rows
-                    Aggregates groups of input rows into summary output rows.
-  EXT_FILTER      — a bare boolean CTL2 expression (NO function wrapper), e.g.
-                    `$in.0.amount > 100 && $in.0.status == "active"`.
-                    Accepted records → port 0, rejected → port 1. Two output ports.
-  EXT_HASH_JOIN   — `function integer transform()` with $in.0 (master) and $in.1 (slave),
-                    two input ports; joins or looks up records
-  PARTITION       — `function integer getOutputPort()`, return value selects output port
-  NORMALIZER      — `function integer count()` + `function integer transform(int idx)`,
-                    expands one input row into multiple output rows
-  DENORMALIZER    — `function integer append()` + `function integer transform()`,
-                    collapses multiple input rows into one output row
-  DATA_GENERATOR  — `function integer generate()`, creates records from scratch with no
-                    input data, output only
+Common errors and their REAL fix (try these BEFORE ever editing the WORK_COPY):
+- "Field 'X' not found in metadata 'Y'" → the component keys on a field the input schema
+  lacks. Set GROUP_KEY / JOIN_KEY (params) to the example's actual field name, AND make sure
+  in_meta.fmt declares that field with the right name/type. The denormalizer/rollup key must
+  be a real field in in_meta.fmt.
+- "CTL code compilation finished with N errors" on the generator → fix generate.ctl.
+- "CTL code compilation finished with N errors" on the component under test → the reference
+  transform.ctl references a field/type not in your .fmt files; align the .fmt to the example.
+- "CTL1 is not a supported language" (EXT_FILTER) → FILTER_EXPR must start with //#CTL2.
 
-If none of the above fits, output {{"setup_failed": true, "reason": "ambiguous or unsupported component"}}.
+Only if params + .fmt + .ctl cannot resolve the failure may you graph_edit_properties the
+WORK_COPY (never graph/skeletons/), once, then re-run. If it still cannot run, emit
+{{"setup_failed": true, "reason": "skeleton_broken: <error>"}} so a human can fix the template.
 
-### Step 2 — Clear the work tree
-Delete stale files under:
-  {work_dir}/meta/<COMPONENT_TYPE>/
-  {work_dir}/ctl/<COMPONENT_TYPE>/
-Use sandbox_delete_file for each file that may exist (in_meta.fmt, out_meta.fmt,
-slave_in_meta.fmt, acc_meta.fmt, generate.ctl, transform.ctl). Do not call
-sandbox_list_files first — just delete; missing files are not an error.
+═══════════════════════════════════════════════════════════════════════════════════
+THE CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════════
 
-### Step 3 — Write the bundle files
-Use sandbox_write_file (sandboxCode={sandbox}) to write:
-  {work_dir}/meta/<TYPE>/in_meta.fmt
-  {work_dir}/meta/<TYPE>/out_meta.fmt
-  (+ slave_in_meta.fmt for EXT_HASH_JOIN, acc_meta.fmt for ROLLUP/DENORMALIZER)
-  {work_dir}/ctl/<TYPE>/generate.ctl
-  {work_dir}/ctl/<TYPE>/transform.ctl
+### C1 — Classify + load recipe card
+Read the reference CTL and pick the component type from the table below. Then use that
+row as your recipe card for the rest of the run.
 
-#### .fmt file format (IMPORTANT)
-.fmt files must be a bare `<Record>` XML element — do NOT wrap in `<Metadata>`:
+| TYPE           | identifying CTL shape                              | skeleton file                         |
+|----------------|----------------------------------------------------|---------------------------------------|
+| REFORMAT       | `function integer transform()`, 1 in → 1 out       | graph/skeletons/REFORMAT_skeleton.grf |
+| ROLLUP         | 5 fns: initGroup/updateGroup/updateTransform/      | graph/skeletons/ROLLUP_skeleton.grf   |
+|                | finishGroup/transform on a typed accumulator       |                                       |
+| EXT_FILTER     | bare boolean expression, NO function wrapper        | graph/skeletons/EXT_FILTER_skeleton.grf|
+| EXT_HASH_JOIN  | `function integer transform()` using $in.0+$in.1   | graph/skeletons/EXT_HASH_JOIN_skeleton.grf|
+| PARTITION      | `function integer getOutputPort()`                 | graph/skeletons/PARTITION_skeleton.grf|
+| NORMALIZER     | `function integer count()` + `transform(int idx)`  | graph/skeletons/NORMALIZER_skeleton.grf|
+| DENORMALIZER   | `function integer append()` + `transform()`        | graph/skeletons/DENORMALIZER_skeleton.grf|
+| DATA_GENERATOR | `function integer generate()`, output only         | graph/skeletons/DATAGEN_skeleton.grf  |
+
+If nothing fits: output {{"setup_failed": true, "reason": "ambiguous or unsupported component"}}.
+
+The per-component RECIPE CARDS (which files to write, which params, which edge, the oracle
+check) are listed in the "RECIPE CARDS" section after the checklist. Find your row there now.
+
+Then CLONE the skeleton to your private working copy and use ONLY the copy from here on:
+  sandbox_copy_file(sourceSandboxCode={sandbox}, sourceSandboxPath="<recipe card skeleton file>",
+                    destSandboxCode={sandbox},  destSandboxPath="{work_dir}/_skeletons/<TYPE>_skeleton.grf")
+Define WORK_COPY = "{work_dir}/_skeletons/<TYPE>_skeleton.grf". Every job_validate / job_run /
+(rare) graph edit below uses WORK_COPY — NEVER the original under graph/skeletons/. Return
+WORK_COPY as skeleton_path in C8.
+
+### C2 — Clear the work tree
+For your TYPE, delete the files your recipe card lists under {work_dir}/meta/<TYPE>/ and
+{work_dir}/ctl/<TYPE>/ with sandbox_delete_file. Don't list first; missing files are fine.
+You may batch all deletes in one round.
+EXT_HASH_JOIN extra: also delete generate.ctl and slave_generate.ctl if they exist (stale
+from any run that used the wrong names) — they are harmless to the skeleton but cause
+confusion.
+
+### C3 — Write metadata (.fmt) files
+Write each .fmt your recipe card lists, with sandbox_write_file (sandboxCode={sandbox}).
+.fmt files are a bare `<Record>` element — NEVER wrapped in `<Metadata>`:
 ```xml
 <Record name="MyRecord_Record" fieldDelimiter="|" recordDelimiter="\\n" type="delimited">
     <Field name="id"     type="integer"/>
@@ -145,121 +171,165 @@ Use sandbox_write_file (sandboxCode={sandbox}) to write:
     <Field name="amount" type="decimal" length="10" scale="2"/>
 </Record>
 ```
-Copy field names and types exactly from the task's metadata specification.
-Preserve all attributes (length, scale, format, nullable, delimiter, etc.).
+Copy field names/types exactly from the task's metadata. Preserve all attributes
+(length, scale, format, nullable, delimiter). You may batch all .fmt writes in one round.
 
-#### generate.ctl (input data generator — NOT for DATA_GENERATOR component)
-This file feeds deterministic test input records into the skeleton for components that
-read input (REFORMAT, ROLLUP, EXT_FILTER, EXT_HASH_JOIN, PARTITION, NORMALIZER,
-DENORMALIZER). DATA_GENERATOR has no input port — do not write a generate.ctl for it.
+### C4 — Write CTL files
+Write each .ctl your recipe card lists. Two CTL roles exist:
 
-The skeleton wires generate.ctl into a DATA_GENERATOR component, so generate.ctl uses
-exactly the same structure as DATA_GENERATOR transform.ctl:
-- Entry point is `function integer generate()` — called once per output record.
-- Return OK each call. Do NOT return STOP — record count is controlled by the
-  RECORDS_NUMBER run param wired to the component's `recordsNumber` attribute.
-- Use an integer counter to produce deterministic values across calls.
-- NO unseeded randomLong/randomDecimal/randomDate — output must be identical every run.
-- Example:
-  ```
-  //#CTL2
-  integer counter;
-  function integer preExecute() {{
-      counter = 0;
-      return OK;
-  }}
-  function integer generate() {{
-      counter++;
-      $out.0.id   = counter;
-      $out.0.name = "item_" + num2str(counter);
-      return OK;
-  }}
-  ```
-- For EXT_HASH_JOIN: also write a slave_generate.ctl for the slave input port.
+(a) generate.ctl / slave_generate.ctl — DETERMINISTIC input feeder.
+    The skeleton feeds input via a DATA_GENERATOR component, so generate.ctl has the SAME
+    shape as a DATA_GENERATOR transform: entry point `function integer generate()`, called
+    once per record, returns OK every call. NEVER return STOP — the row count is the
+    RECORDS_NUMBER run param. Use an integer counter for deterministic values; NO unseeded
+    random*(). Example:
+    ```
+    //#CTL2
+    integer counter;
+    function integer preExecute() {{ counter = 0; return OK; }}
+    function integer generate() {{
+        counter++;
+        $out.0.id   = counter;
+        $out.0.name = "item_" + num2str(counter);
+        return OK;
+    }}
+    ```
 
-#### DATA_GENERATOR transform.ctl
-For DATA_GENERATOR the component itself IS the generator — transform.ctl contains
-`function integer generate()`. This function is called once per output record by the
-component; the number of calls is controlled by the RECORDS_NUMBER component parameter,
-NOT by the CTL. The function must:
-- Populate exactly one output record per call (`$out.0.<field> = ...`)
-- Return OK (not STOP — STOP is never needed here)
-- The number of records produced is set via the component's `recordsNumber` attribute,
-  which the skeleton graph wires to the `RECORDS_NUMBER` run param.
-- Use random or sequence functions freely (DATA_GENERATOR golden comparison is structural,
-  not value-based, so non-determinism is acceptable here)
+(b) transform.ctl — the CANDIDATE/reference logic. Copy the reference CTL verbatim,
+    normalised: strip ```ctl / ``` fences; first line must be //#CTL2.
+    EXCEPTION: EXT_FILTER has NO transform.ctl — its expression is a run param (see card).
+    EXCEPTION: DATA_GENERATOR's transform.ctl IS the generate() function; it may use
+    random*() freely (golden comparison is structural, not value-based).
 
-#### transform.ctl
-Copy the reference CTL answer verbatim, normalised:
-  • strip any ```ctl / ``` fences
-  • first line must be //#CTL2
+You may batch all CTL writes in one round.
 
-### Step 4 — Choose job_run params
-Determine the params dict for job_run. Common params (use only what applies):
-  WORK_DIR       = "{work_dir}"   (always required)
-  RECORDS_NUMBER = <N>            (number of records; wired to the DATA_GENERATOR component's `recordsNumber` attribute for both generate.ctl and transform.ctl skeletons)
-  GROUP_KEY      = "fieldName"    (ROLLUP, DENORMALIZER — field to group by)
-  JOIN_KEY       = "fieldName"    (EXT_HASH_JOIN — join key field)
-  JOIN_TYPE      = "INNER"        (EXT_HASH_JOIN — INNER / LEFT_OUTER)
-  SORTED_INPUT   = "true"         (ROLLUP — if input must be pre-sorted)
+### C5 — Assemble run params
+Build the params dict from your recipe card. WORK_DIR="{work_dir}" is ALWAYS present.
+Add only the params your card lists. Param meanings:
+  RECORDS_NUMBER = <N>      number of input/generated rows (drives the generator; honour it)
+  GROUP_KEY      = "field"  ROLLUP / DENORMALIZER group field
+  JOIN_KEY       = "field"  EXT_HASH_JOIN join key
+  JOIN_TYPE      = "INNER"  EXT_HASH_JOIN — INNER / LEFT_OUTER
+  SORTED_INPUT   = "true"   ROLLUP — input pre-sorted
+  FILTER_EXPR    = "<expr>" EXT_FILTER — the bare boolean expression (the candidate logic)
 
-### Step 5 — Validate then run the reference answer
-First call job_validate:
-  jobFile     = "graph/skeletons/<TYPE>_skeleton.grf"
-  sandboxCode = {sandbox}
-  timeoutSeconds = 30
-NOTE: DATA_GENERATOR uses jobFile = "graph/skeletons/DATAGEN_skeleton.grf"
+CRITICAL — GROUP_KEY / JOIN_KEY must name a real field. Derive the value from the example's
+reference CTL and metadata (the field the reference groups / joins on), and ensure in_meta.fmt
+declares exactly that field. Do NOT leave it at any skeleton default — a key that is not a
+field in in_meta.fmt fails with "Field 'X' not found in metadata". Your generate.ctl must also
+populate that field so groups actually form.
 
-If validation fails, read the error, fix the offending file (fmt or CTL), and retry
-validation once. If it still fails:
-  {{"setup_failed": true, "reason": "validation failed: <error>"}}
+### C6 — Validate, then run the reference  (always against WORK_COPY, never the original)
+1. job_validate(jobFile=WORK_COPY, sandboxCode={sandbox}, timeoutSeconds=30).
+   NOTE: job_validate does NOT accept params — it validates the .ctl/.fmt files on disk plus
+   the skeleton's default parameter values. That is exactly what you want for file-based CTL
+   (REFORMAT/ROLLUP/JOIN/PARTITION/NORMALIZER/DENORMALIZER/DATA_GENERATOR), because the candidate
+   lives in transform.ctl. SKIP this step entirely for EXT_FILTER (its logic is the FILTER_EXPR
+   run param, which validate cannot see — go straight to job_run).
+   If validation fails: read the error, fix the ONE offending .fmt or .ctl file, re-validate
+   ONCE. Still failing → {{"setup_failed": true, "reason": "validation failed: <error>"}}.
+2. job_run(jobFile=WORK_COPY, sandboxCode={sandbox}, debug=true, params=<full params dict>).
+   debug=true is mandatory (needed for edge data). For EXT_FILTER the params MUST include
+   FILTER_EXPR starting with //#CTL2 (see the recipe card).
+3. IMMEDIATELY job_await(runId=<id>, timeoutSeconds={await_timeout_s}). Never job_list.
+   If job_run returned no runId → job_get_log, fix once, retry once.
+4. If status != FINISHED_OK → job_get_log(runId), fix the ONE offending file, retry once.
+   Still failing → {{"setup_failed": true, "reason": "<first error line>"}}.
+5. On FINISHED_OK → job_get_tracking(runId, detailed=true) AND
+   job_get_edge_debug_data(runId, edgeId=<recipe card's edge>, recordCount=200).
 
-If validation passes, call job_run with:
-  jobFile     = "graph/skeletons/<TYPE>_skeleton.grf"
-  sandboxCode = {sandbox}
-  debug       = true
-  params      = {{WORK_DIR: "{work_dir}", ...other params from Step 4...}}
+### C7 — Oracle sanity check
+Apply your recipe card's oracle assertion to the golden output. If it fails, fix and
+re-run ONCE. Still wrong → {{"setup_failed": true, "reason": "oracle_unverified: <what>"}}.
 
-Immediately after job_run, call job_await(runId=<id>, timeoutSeconds={await_timeout_s}).
-Do NOT call job_list — use job_await only.
-If job_run returns no runId, call job_get_log to diagnose, fix the issue, and retry once.
-
-If job_await status != FINISHED_OK:
-  Call job_get_log(runId) to get the error, fix the offending file, and retry once.
-  If still failing: {{"setup_failed": true, "reason": "<first error line from log>"}}
-
-If FINISHED_OK:
-  Call job_get_tracking(runId, detailed=true)
-  Call job_get_edge_debug_data(runId, edgeId="EdgeOut", recordCount=200)
-
-### Step 6 — Oracle sanity check
-Confirm the golden output demonstrates the task's stated behavior:
-  "accepted + rejected = input count" (EXT_FILTER)
-  "one output row per group" (ROLLUP, DENORMALIZER)
-  "output row count = input count × expand factor" (NORMALIZER)
-If the assertion fails, fix the issue and re-run once. If still wrong:
-  {{"setup_failed": true, "reason": "oracle_unverified: <what failed>"}}
-
-### Step 7 — Output your result
-Your ENTIRE final response must be a single raw JSON object (no markdown fences, no prose):
+### C8 — Emit result
+Your ENTIRE final response is a single raw JSON object — no fences, no prose:
 {{
   "component_type": "<TYPE>",
-  "skeleton_path": "graph/skeletons/<TYPE>_skeleton.grf",
+  "skeleton_path": "<WORK_COPY — the {work_dir}/_skeletons/<TYPE>_skeleton.grf copy, NOT the original>",
   "sandbox": "{sandbox}",
   "work_dir": "{work_dir}",
-  "run_params": {{"WORK_DIR": "{work_dir}", ...other params...}},
+  "run_params": {{"WORK_DIR": "{work_dir}", ...}},
   "golden_tracking": {{...}},
   "golden_records": [...],
-  "setup_notes": "<brief rationale for key choices>"
+  "setup_notes": "<brief rationale>"
 }}
 
-## Hard constraints
-- NEVER read or write {ref_dir} — that is read-only.
-- work_dir in run_params must always be exactly "{work_dir}".
-- debug=true is required on job_run (needed for edge data).
-- Do not call sandbox_list_files, sandbox_find_file, or knowledge_* tools.
-- After job_run always call job_await — never job_list.
-- If anything is unclear or unsupported, fail fast with setup_failed.
+═══════════════════════════════════════════════════════════════════════════════════
+RECIPE CARDS  (look up your TYPE once in C1, then follow it through C2–C7)
+═══════════════════════════════════════════════════════════════════════════════════
+
+REFORMAT
+  .fmt to write   : in_meta.fmt, out_meta.fmt
+  .ctl to write   : generate.ctl (feeder), transform.ctl (reference)
+  params          : WORK_DIR, RECORDS_NUMBER
+  output edge     : EdgeOut
+  oracle          : output row count == input row count (1-in → 1-out)
+
+ROLLUP
+  .fmt to write   : in_meta.fmt, out_meta.fmt, acc_meta.fmt (accumulator)
+  .ctl to write   : generate.ctl (feeder), transform.ctl (reference)
+  params          : WORK_DIR, RECORDS_NUMBER, GROUP_KEY, (SORTED_INPUT if input must be sorted)
+  output edge     : EdgeOut
+  oracle          : one output row per distinct GROUP_KEY value
+
+EXT_FILTER
+  .fmt to write   : in_meta.fmt, out_meta.fmt   (out == in schema)
+  .ctl to write   : generate.ctl (feeder) ONLY.  NO transform.ctl — the filter is a param.
+  params          : WORK_DIR, RECORDS_NUMBER,
+                    FILTER_EXPR = "//#CTL2\\n<bare boolean expression>"
+                    The skeleton injects this into the EXT_FILTER filterExpression attribute.
+                    It MUST start with the literal header line //#CTL2 followed by the bare
+                    boolean expression (no function wrapper, no return). Without the //#CTL2
+                    header CloverDX parses it as the removed CTL1 language and fails with
+                    "CTL1 is not a supported language any more".
+                    e.g.  "//#CTL2\\n$in.0.amount > 100 && $in.0.status == \\"active\\""
+  VALIDATE        : SKIP job_validate for EXT_FILTER — job_validate takes no params, so it can
+                    only ever see the skeleton's default expression, never your FILTER_EXPR.
+                    Go straight to job_run (the filter expression is checked there).
+  output edge     : EdgeOut0  (port 0 = accepted; port 1 = rejected → EdgeOut1)
+  oracle          : accepted (EdgeOut0) + rejected (EdgeOut1) == input row count
+
+EXT_HASH_JOIN
+  .fmt to write   : in_meta.fmt (master), slave_in_meta.fmt (slave), out_meta.fmt
+  .ctl to write   : generate_driver.ctl (master feeder), generate_slave.ctl (slave feeder),
+                    transform.ctl (reference)
+  IMPORTANT: the skeleton reads generate_driver.ctl and generate_slave.ctl — those exact names.
+  Do NOT name them generate.ctl / slave_generate.ctl or the skeleton cannot find them.
+  params          : WORK_DIR, RECORDS_NUMBER, JOIN_KEY, JOIN_TYPE
+  output edge     : EdgeOut
+  oracle          : INNER → only matched keys present; LEFT_OUTER → every master row present
+
+PARTITION
+  .fmt to write   : in_meta.fmt, out_meta.fmt
+  .ctl to write   : generate.ctl (feeder), transform.ctl (reference)
+  params          : WORK_DIR, RECORDS_NUMBER
+  output edge     : EdgeOut0  (port 0 = first partition bucket)
+  oracle          : job completed FINISHED_OK and tracking shows RECORDS_NUMBER input records
+                    processed. Do NOT check that EdgeOut0 count equals RECORDS_NUMBER — the
+                    reference partition distributes rows across N ports, so port 0 may hold
+                    only a fraction; that is expected and correct.
+
+NORMALIZER
+  .fmt to write   : in_meta.fmt, out_meta.fmt
+  .ctl to write   : generate.ctl (feeder), transform.ctl (reference)
+  params          : WORK_DIR, RECORDS_NUMBER
+  output edge     : EdgeOut
+  oracle          : output row count == sum of per-input count() values (≥ input count)
+
+DENORMALIZER
+  .fmt to write   : in_meta.fmt, out_meta.fmt, acc_meta.fmt (group accumulator if used)
+  .ctl to write   : generate.ctl (feeder), transform.ctl (reference)
+  params          : WORK_DIR, RECORDS_NUMBER, GROUP_KEY
+  output edge     : EdgeOut
+  oracle          : one output row per distinct GROUP_KEY value (≤ input count)
+
+DATA_GENERATOR
+  .fmt to write   : out_meta.fmt ONLY (no input port)
+  .ctl to write   : transform.ctl (the reference generate() fn).  NO generate.ctl feeder.
+  params          : WORK_DIR, RECORDS_NUMBER
+  output edge     : EdgeOut
+  oracle          : output row count == RECORDS_NUMBER (values may differ run-to-run)
 """
 
 

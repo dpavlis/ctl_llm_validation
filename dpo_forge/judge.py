@@ -143,11 +143,16 @@ an explanation (e.g. "explain", "how does", "describe", "with comments").
 - Unknown failure modes → "other".
 
 ## EXT_FILTER form
-EXT_FILTER CTL is normally a bare boolean expression with NO function wrapper, e.g.
+EXT_FILTER CTL is a `//#CTL2` header line followed by a bare boolean expression with NO
+function wrapper, e.g.
   `//#CTL2\n$in.0.amount > 100 && $in.0.status == "active"`
-Do NOT penalise a filter candidate for lacking a `function` declaration — that is the
-correct and expected form. Only flag missing-function as wrong_function_name if the
-code uses a function with an unrecognised name that would prevent execution.
+- Do NOT penalise a filter candidate for lacking a `function` declaration — the bare
+  expression is the correct and expected form.
+- The leading `//#CTL2` header IS required: without it CloverDX parses the code as the
+  removed CTL1 language and it fails to compile. A header-less candidate is correctly
+  reported as exec_level=L1_fail (run_status=MISSING_CTL2_HEADER) → verdict="incorrect".
+- Only flag missing-function as wrong_function_name if the code uses a function with an
+  unrecognised name that would prevent execution.
 """
 
 _JUDGE_DATAGEN_NOTE = """\

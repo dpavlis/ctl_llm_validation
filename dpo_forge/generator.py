@@ -31,21 +31,25 @@ _CTL_HEADER = "//#CTL2"
 
 
 def normalize_ctl(text: str) -> str:
-    """Strip markdown fences and ensure //#CTL2 header (§3.3)."""
+    """Strip markdown fences and trim (§3.3).
+
+    Does NOT inject the //#CTL2 header. Emitting the header is the model's
+    responsibility — CloverDX treats header-less code as the removed CTL1
+    language. A missing header is therefore a real defect we must preserve so
+    the runner can flag the candidate invalid (it then becomes a DPO 'rejected'),
+    not silently repair it.
+    """
     m = _CTL_FENCE_RE.search(text)
     if m:
         text = m.group(1)
-    text = text.strip()
-    if not text.startswith(_CTL_HEADER):
-        text = _CTL_HEADER + "\n" + text
-    return text
+    return text.strip()
 
 
 @dataclass
 class Candidate:
     source_id: str
     index: int       # 0-based within this prompt's batch
-    text: str        # CTL-normalized (fences stripped, //#CTL2 present)
+    text: str        # CTL-normalized (fences stripped; //#CTL2 header NOT fabricated)
     gen_meta: dict = field(default_factory=dict)
 
 
