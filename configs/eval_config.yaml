@@ -134,4 +134,4 @@ output_dir: ./results
 test_ids: null
 
 # Explicit path to ctl2_test_suite.json — auto-discovered from resources/ if omitted.
-# suite_file: /home/pavlisd/llama_train/resources/ctl2_test_suite.json
+suite_file: /home/pavlisd/llama_train/resources/ctl2_test_suite_v2.json

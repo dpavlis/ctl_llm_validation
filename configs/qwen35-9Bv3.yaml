@@ -36,7 +36,7 @@ bf16: true                      # Only set to true if your GPU supports it; othe
 lora_target: "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj"
 # additional_target: "embed_tokens, lm_head" #too aggresive
 lora_dropout: 0.05
-loraplus_lr_ratio: 3       # Scaled up, meaning ηB becomes 0.0008
+loraplus_lr_ratio: 2 #3       # Scaled up, meaning ηB becomes 0.0008
 #loraplus_lr_embedding: 1e-6  # without additional_targets enable this has no effect # Standard fallback for token embedding stability
 seed: 42
 
@@ -46,8 +46,9 @@ enable_thinking: false
 optim: adamw_torch
 weight_decay: 0.05
 max_grad_norm: 1.0
-lr_scheduler_type: linear #cosine_with_min_lr #constant_with_warmupa
-  #min_lr : 5.0e-6
+#lr_scheduler_type: cosine_with_min_lr  #linear # #constant_with_warmupa
+#lr_scheduler_kwargs:
+#    min_lr: 5.0e-6
 warmup_steps: 0.05 #80
 logging_steps: 25
 save_steps: 50
@@ -73,9 +74,12 @@ dataset_dir: data
 sft:
   dataset: clover_ctl_trainign_data
   eval_dataset: clover_ctl_eval_data
-  cutoff_len: 1860
+  cutoff_len: 2576 
+  lr_scheduler_type: cosine_with_min_lr  #linear # #constant_with_warmupa
+  lr_scheduler_kwargs:
+        min_lr: 5.0e-6
   learning_rate: 5.0e-5
-  num_train_epochs: 2.0
+  num_train_epochs: 2.3
   max_samples: 100000
   per_device_train_batch_size: 4
   gradient_accumulation_steps: 6
@@ -100,22 +104,22 @@ sft:
 # =============================================================================
 dpo:
   dataset: clover_dpo_data
-  cutoff_len: 1850
-  learning_rate: 5.0e-6 #1.0e-6
+  cutoff_len: 800 
+  learning_rate: 8.0e-6 #1.0e-6
   lr_scheduler_type: cosine   # Ensures smooth decay over the shorter step count
   warmup_ratio: 0.1       
-  num_train_epochs: 2.0
+  num_train_epochs: 3.0
   max_samples: 100000
   per_device_train_batch_size: 2
   gradient_accumulation_steps: 6
 
   # LoRA dims for DPO
   lora_rank: 16
-  lora_alpha: 32 
+  lora_alpha: 16 
 
   # DPO objective
-  pref_beta: 0.075
-  pref_ftx: 0.1  #also 0.1  0.2
+  pref_beta: 0.05 #0.075
+  pref_ftx: 0.05 #also 0.1  0.2
   pref_loss: ipo #sigmoid            # choices: sigmoid (DPO), orpo, simpo
 
   # To resume DPO from an existing adapter instead of the SFT output,
@@ -131,4 +135,4 @@ export:
   export_legacy_format: false
 
   # Override the auto-generated export path if you want a fixed location:
-  export_dir: /home/pavlisd/exports/qwen35-9B-CTLv12/
+  export_dir: /home/pavlisd/exports/qwen35-9B-CTLv19/

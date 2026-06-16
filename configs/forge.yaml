@@ -1,0 +1,91 @@
+# DPO Forge configuration
+# Run: python dpo_forge.py run --config configs/forge.yaml
+
+input:
+  # List of SFT data files or glob patterns
+  # Drop curated CTL-contract examples into data/sft_input/ and list them here
+  sft_files:
+    - /home/pavlisd/llama_train/data/sft_input/*.json
+    - /home/pavlisd/llama_train/data/sft_input/*.jsonl
+  # Only process examples whose meta.failure_mode contains this string (null = all)
+  failure_mode_filter: null
+  # Max examples to process (null = all)
+  limit: null
+  shuffle:
+    enabled: true
+    seed: 42
+
+model:
+  # Path to the merged/exported safetensors checkpoint
+  checkpoint_dir: /home/pavlisd/exports/qwen35-9B-CTLv19
+  adapter_dir: null      # optional LoRA adapter dir (unmerged checkpoint)
+  dtype: bfloat16        # float16 | bfloat16 | float32
+  attn_impl: flash_attention_2   # flash_attention_2 | sdpa
+  enable_thinking: false
+  # System prompt sent to the MUT — must match test.py's canonical prompt
+  system_prompt: |
+    You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+    Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+    Prefer correct, practical, minimal solutions.
+
+generation:
+  # One completion per temperature value — spread for diverse candidates
+  # Base temperature matches test.py GENERATE default (0.1); higher values add diversity
+  temperatures: [0.1, 0.5, 0.8, 1.0]
+  top_p: 1.0             # matches test.py default
+  max_new_tokens: 2048   # matches test.py default
+  seed: 42
+  dedup_candidates: true       # drop identical normalized completions
+  resample_if_all_pass: true   # extra high-temp round if all candidates pass
+
+judge:
+  provider: openai
+  model: gpt-5.4
+  api_key: ${OPENAI_API_KEY}
+  base_url: null                # for openai-compatible endpoints
+  confidence_threshold: 0.6    # min confidence to accept a verdict
+  max_json_retries: 2
+
+pairing:
+  strategy: best_vs_worst       # best_vs_worst | all_pairs
+  max_pairs_per_prompt: 3
+
+balance:
+  max_share_per_failure_mode: 0.25
+  max_share_per_component: 0.40
+  max_share_l1_rejected: 0.20
+  enforce: warn                 # warn | fail
+
+output:
+  dpo_file: data/dpo/forged.jsonl
+  provenance_file: data/dpo/forged.provenance.jsonl
+  wandb:
+    enabled: false
+    project: llamafactory
+    entity: david-pavlis-cloverdx
+
+# Phase 2: CloverDX execution via MCP
+# Leave endpoint null to run in Phase 1 (generation + judge only, no execution)
+clover:
+  endpoint: http://localhost:8083/clover/mcp/mcp
+  sandbox: DPOForge
+  ref_dir: data-tmp/forge/ref   # pristine reference bundle (read-only)
+  work_dir: data-tmp/forge/work # live area the harness writes to
+  debug_dir: data-tmp/forge/_debug
+  await_timeout_s: 60
+  workers: 1                    # 1 = sequential; N = parallel worker pool
+
+setup_llm:
+  provider: openai
+  model: gpt-5.4
+  api_key: ${OPENAI_API_KEY}
+  cache: true                   # cache setup bundle per example_id in state DB
+
+oracle:
+  strategy: reference_run       # reference_run | assertions | judge
+  float_tolerance: 1.0e-9
+  null_canonicalization: true
+  sanity_assert: true
+
+state:
+  db_path: data/dpo/forge_state.db

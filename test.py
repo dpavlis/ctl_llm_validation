@@ -107,6 +107,19 @@ except ImportError:
 
 
 # ---------------------------------------------------------------------------
+# Constants — resource filenames and directory paths
+# ---------------------------------------------------------------------------
+
+_SCRIPT_DIR    = Path(__file__).parent
+_RESOURCES_DIR = _SCRIPT_DIR / "resources"
+_LOGS_DIR      = _SCRIPT_DIR / "logs"
+
+_SUITE_FILENAME      = "ctl2_test_suite.json"
+_CTL2_REF_FILENAME   = "ctl2-basics.md"
+_DEFAULT_JUDGE_MODEL = "claude-opus-4-20250514"
+
+
+# ---------------------------------------------------------------------------
 # Config defaults and loading
 # ---------------------------------------------------------------------------
 
@@ -137,7 +150,7 @@ DEFAULT_CONFIG: dict = {
     },
     "judge": {
         "provider": "anthropic",  # "anthropic" | "openai"
-        "model": "claude-opus-4-20250514",
+        "model": _DEFAULT_JUDGE_MODEL,
         "api_key": None,
         "base_url": None,
     },
@@ -486,7 +499,7 @@ class AnthropicJudgeClient:
 
         api_key = cfg.get("api_key") or os.environ.get("ANTHROPIC_API_KEY")
         self._client = anthropic.Anthropic(api_key=api_key)
-        self._model = cfg.get("model", "claude-opus-4-20250514")
+        self._model = cfg.get("model", _DEFAULT_JUDGE_MODEL)
 
     def evaluate(self, system_prompt: str, user_message: str) -> str:
         resp = self._client.messages.create(
@@ -1088,7 +1101,7 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str) -> di
         ctl2_reference = ref_path.read_text(encoding="utf-8")
         _print(f"  [dim]CTL2 reference loaded: {ref_path} ({len(ctl2_reference):,} chars)[/dim]")
     else:
-        _print("  [yellow]Warning: CTL2_Reference_for_LLM_compact.md not found — judge will have no language reference.[/yellow]")
+        _print(f"  [yellow]Warning: {_CTL2_REF_FILENAME} not found — judge will have no language reference.[/yellow]")
 
     judge_system_prompt: str = build_judge_system_prompt(
         suite["judge_system_prompt"], suite["judge_instructions"], ctl2_reference
@@ -1589,19 +1602,18 @@ def compare_results(files: list[Path]):
 # ---------------------------------------------------------------------------
 
 def _find_suite_file(cfg: dict, config_dir: Path) -> Path:
-    """Locate ctl2_test_suite.json in priority order."""
+    """Locate the test suite JSON in priority order."""
     # 1. Explicit in config
     if cfg.get("suite_file"):
         p = Path(cfg["suite_file"])
         return p if p.is_absolute() else config_dir / p
 
-    # 2. resources/ next to test.py
-    script_dir = Path(__file__).parent
+    # 2. resources/ next to test.py, then legacy locations
     candidates = [
-        script_dir / "resources" / "ctl2_test_suite.json",
-        script_dir / "ctl2_test_suite.json",  # legacy location
-        Path("resources/ctl2_test_suite.json"),
-        Path("ctl2_test_suite.json"),
+        _RESOURCES_DIR / _SUITE_FILENAME,
+        _SCRIPT_DIR / _SUITE_FILENAME,              # legacy location
+        Path("resources") / _SUITE_FILENAME,
+        Path(_SUITE_FILENAME),
     ]
     for p in candidates:
         if p.exists():
@@ -1611,11 +1623,11 @@ def _find_suite_file(cfg: dict, config_dir: Path) -> Path:
 
 
 def _find_reference_file(suite_file: Path) -> Optional[Path]:
-    """Locate CTL2_Reference_for_LLM_compact.md alongside the suite file, or None."""
+    """Locate the CTL2 language reference file alongside the suite file, or None."""
     candidates = [
-        suite_file.parent / "ctl2-basics.md",
-        Path(__file__).parent / "resources" / "ctl2-basics.md",
-        Path("resources/ctl2-basics.md"),
+        suite_file.parent / _CTL2_REF_FILENAME,
+        _RESOURCES_DIR / _CTL2_REF_FILENAME,
+        Path("resources") / _CTL2_REF_FILENAME,
     ]
     for p in candidates:
         if p.exists():
@@ -1731,7 +1743,7 @@ eval_config.yaml schema:
     if not suite_file.exists():
         print(
             f"ERROR: Test suite not found: {suite_file}\n"
-            f"  Expected at: {Path(__file__).parent / 'resources' / 'ctl2_test_suite.json'}\n"
+            f"  Expected at: {_RESOURCES_DIR / _SUITE_FILENAME}\n"
             f"  Use --suite-file to specify its location.",
             file=sys.stderr,
         )
@@ -1757,7 +1769,7 @@ eval_config.yaml schema:
     summary_path = write_summary_md(results, output_dir)
 
     # Load previous eval entry BEFORE appending current run so the table can compare
-    log_dir = Path(__file__).parent / "logs"
+    log_dir = _LOGS_DIR
     prev_entry = load_prev_eval_entry(log_dir, base_model, run_name)
 
     print_summary_table(results, prev_entry=prev_entry)
