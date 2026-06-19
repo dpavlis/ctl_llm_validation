@@ -116,6 +116,10 @@ Common errors and their REAL fix (try these BEFORE ever editing the WORK_COPY):
 - "CTL code compilation finished with N errors" on the component under test → the reference
   transform.ctl references a field/type not in your .fmt files; align the .fmt to the example.
 - "CTL1 is not a supported language" (EXT_FILTER) → FILTER_EXPR must start with //#CTL2.
+- "Unable to resolve sequence 'NAME'" → transform.ctl uses sequence() but the sandbox has no
+  sequences. Apply the C4 substitution: replace with a counter variable (see C4 section).
+- "Function 'getCurrentTimeMillis' is not declared" → wrong name; replace with
+  `currentTimeMillis()` (no "get" prefix) — see C4 substitutions.
 
 Only if params + .fmt + .ctl cannot resolve the failure may you graph_edit_properties the
 WORK_COPY (never graph/skeletons/), once, then re-run. If it still cannot run, emit
@@ -200,6 +204,26 @@ Write each .ctl your recipe card lists. Two CTL roles exist:
     EXCEPTION: EXT_FILTER has NO transform.ctl — its expression is a run param (see card).
     EXCEPTION: DATA_GENERATOR's transform.ctl IS the generate() function; it may use
     random*() freely (golden comparison is structural, not value-based).
+
+### Environment substitutions — apply ALL proactively in one pass, never wait for an error
+The forge sandbox (DPOForge) does not have every resource or function that a real project
+might use. When writing transform.ctl (or generate.ctl), scan the reference for the patterns
+below and substitute before the first run. Apply every applicable substitution in a single
+write — do NOT write the raw reference and fix errors one at a time.
+
+a) sequence() calls — the sandbox has NO named sequences.
+   Replace `sequence(NAME).next()` or `sequence(NAME, integer).next()` with a counter:
+     integer __seq_NAME;
+     function integer preExecute() {{ __seq_NAME = 0; return OK; }}
+     // in generate()/transform():  __seq_NAME++;  $out.X.field = __seq_NAME;
+   For long type (`sequence(NAME, long).next()`): declare `long __seq_NAME;` instead.
+   For string type (`sequence(NAME, string).next()`): use `num2str(__seq_NAME)` after
+   incrementing an integer counter.
+   Rule: one counter variable per distinct NAME. Never leave any `sequence()` call in the file.
+
+b) getCurrentTimeMillis() — wrong name (Java-style prefix). CTL2 spells it without "get":
+     currentTimeMillis()
+   Replace every occurrence of `getCurrentTimeMillis()` with `currentTimeMillis()` inline.
 
 You may batch all CTL writes in one round.
 
@@ -330,6 +354,9 @@ DATA_GENERATOR
   params          : WORK_DIR, RECORDS_NUMBER
   output edge     : EdgeOut
   oracle          : output row count == RECORDS_NUMBER (values may differ run-to-run)
+  NOTE: Apply the environment substitutions from C4 — DATA_GENERATOR references frequently
+  use sequence() for IDs and getCurrentTimeMillis() for timestamps; substitute them before
+  the first run or it will fail with "Unable to resolve sequence" / "not declared" errors.
 """
 
 

@@ -1122,7 +1122,7 @@ isNull($in.0, "field2")  // field "field2" null?
 | `getRawParamValue` | `string getRawParamValue(string paramName)` | Unresolved param. |
 | `getRawParamValues` | `map getRawParamValues()` | All unresolved params. |
 | `getType` | `string getType(variant)` | Type name string. Returns `"double"` for `number`/`double` values. |
-| `getCurrentTimeMillis` | `long getCurrentTimeMillis()` | Epoch ms. |
+| `currentTimeMillis` | `long currentTimeMillis()` | Current time as ms since UNIX epoch (1970-01-01 00:00:00 UTC). Available since CloverDX 6.4.0. |
 | `getOAuth2Token` | `string getOAuth2Token(string connName)` | |
 | `parseProperties` | `map parseProperties(string)` | Parse properties format. |
 | `printErr` | `void printErr(any message)` | |

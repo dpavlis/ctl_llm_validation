@@ -121,9 +121,16 @@ the CTL code implements ALL of them.
 - exec_level=L3_pass: run succeeded AND output matched golden → supports "correct".
 - exec_level=L1_fail: compile/entry-point error → "incorrect".
 - exec_level=L2_fail: runtime crash → "incorrect".
-- exec_level=L3_mismatch: output differed from golden.  Investigate the diff: if it reveals
-  a real logic error, call it "incorrect"; if it looks like a legitimate alternative
-  interpretation, call it "partially_correct".
+- exec_level=L3_mismatch: output differed from golden. Investigate the diff carefully:
+  - Real logic error (wrong field, wrong operator, wrong grouping key, etc.) → "incorrect".
+  - Candidate adds null-handling (nvl/isnull guard) on a field whose metadata does NOT
+    declare `nullable="false"`, or on any $in.1.* field in a LEFT OUTER JOIN → this is
+    a valid, often better, alternative. Call it "correct" if all explicit requirements
+    are met; extra null safety on a nullable field is not a bug.
+  - Candidate uses a semantically EQUIVALENT null-coalescing form that produces different
+    output only for null inputs, and the prompt does not specify null behaviour → "correct"
+    if all stated requirements are satisfied; the reference is not the only valid answer.
+  - Genuine ambiguity where both sides have merit → "partially_correct".
 - Never return verdict="correct" for L1_fail or L2_fail.
 
 ### Priority 3 — Prose / explanation style (least important)
@@ -142,6 +149,32 @@ an explanation (e.g. "explain", "how does", "describe", "with comments").
 - confidence reflects certainty given evidence quality, not code quality.
 - Unknown failure modes → "other".
 
+## Null-handling and metadata
+Whether a field can carry null is determined by its metadata declaration:
+- Field with NO `nullable` attribute, or `nullable="true"` → the field CAN be null.
+  Guarding it with `nvl()` / `isnull()` is correct and often preferable.
+- Field with `nullable="false"` → the graph enforces non-null at runtime; null cannot
+  legitimately reach the CTL. Adding a null guard is harmless but unnecessary.
+
+Special case — EXT_HASH_JOIN LEFT OUTER JOIN: when the slave (port 1) has no matching
+record, ALL `$in.1.*` fields are null at runtime, regardless of what the slave metadata
+declares as `nullable`. Null-guarding slave fields in a LEFT OUTER JOIN transform is
+therefore ALWAYS correct, even if the slave metadata says `nullable="false"`.
+
+### Null-handling equivalences (do NOT penalise either form)
+These patterns are semantically equivalent in CTL2:
+- `nvl(x, default)` ≡ `isnull(x) ? default : x`  (null coalescing)
+- `nvl2(x, non_null_val, null_val)` ≡ `isnull(x) ? null_val : non_null_val`
+
+### When to flag null_propagation
+Tag `null_propagation` ONLY when the candidate:
+- Reads a field that CAN be null (no `nullable="false"` in metadata, or a LEFT OUTER JOIN
+  slave field) and assigns it directly to an output field without any null guard, AND
+- The prompt explicitly requires a default or the missing guard causes the output diff to
+  show nulls where values are expected.
+Do NOT tag it when the reference itself leaves the same field unguarded, or when the
+prompt does not specify behaviour for null inputs on that field.
+
 ## EXT_FILTER form
 EXT_FILTER CTL is a `//#CTL2` header line followed by a bare boolean expression with NO
 function wrapper, e.g.
@@ -153,6 +186,99 @@ function wrapper, e.g.
   reported as exec_level=L1_fail (run_status=MISSING_CTL2_HEADER) → verdict="incorrect".
 - Only flag missing-function as wrong_function_name if the code uses a function with an
   unrecognised name that would prevent execution.
+"""
+
+_JUDGE_DENORMALIZER_NOTE = """\
+
+## DENORMALIZER component contract
+
+DENORMALIZER accumulates input records into one output row per group using MODULE-LEVEL
+VARIABLES (NOT a groupAccumulator parameter — that belongs to ROLLUP, not DENORMALIZER).
+
+  append()  — NO parameters. Called ONCE PER INPUT RECORD.
+    - $in.0.* IS accessible here. Read input fields and accumulate into module-level vars.
+    - Returns OK/positive = continue; negative = error.
+
+  transform()  — NO parameters. Called ONCE after all append() calls for the group.
+    - $out.0.* IS accessible here.
+    - $in.0.* is UNDEFINED here. CloverDX may expose the last appended record as an
+      implementation detail, but the contract forbids relying on it.
+    - Must emit ONLY from module-level variables populated during append().
+
+  clean()  — Called after transform(). Reset all module-level variables.
+    - Neither $in.0.* nor $out.0.* is accessible here.
+
+### Evaluation rules for DENORMALIZER
+- Any $in.0.field reference inside transform() → verdict="incorrect",
+  failure_modes=["denormalizer_lifecycle"].
+  EVEN IF exec_level=L3_pass: single-record-per-group test data silently masks this
+  bug (last record == only record, so $in.0 appears to work). The code will produce
+  wrong results for any group with more than one record.
+- groupAccumulator parameter on append() or transform() → verdict="incorrect",
+  failure_modes=["wrong_function_name"]. That parameter style belongs to ROLLUP.
+- verdict="correct" only when transform() emits exclusively from module-level
+  variables that were fully populated during append().
+"""
+
+_JUDGE_ROLLUP_NOTE = """\
+
+## ROLLUP component contract
+
+ROLLUP uses a TYPED groupAccumulator record parameter for group state. All five functions
+are MANDATORY — missing any one aborts with "Required function(s) … are missing!".
+
+  initGroup(TYPE groupAccumulator)  — First record of each group.
+    $in.0 accessible. Initialize accumulator fields here.
+
+  updateGroup(TYPE groupAccumulator) → boolean  — Every record.
+    $in.0 accessible. Returns true → call updateTransform(); false → skip it.
+
+  updateTransform(integer counter, TYPE groupAccumulator) → integer  — Per-record emit.
+    Called after each updateGroup()=true. counter is 0-based.
+    $in.0 AND $out.N accessible. Return SKIP to suppress this record's output.
+
+  finishGroup(TYPE groupAccumulator) → boolean  — After last record.
+    $in.0 accessible. Returns true → call transform(); false → skip group output.
+
+  transform(integer counter, TYPE groupAccumulator) → integer  — Per-group emit.
+    Called after finishGroup()=true. counter is 0-based.
+    $in.0 (last record of group) AND $out.N accessible. Return SKIP to skip.
+
+### Evaluation rules for ROLLUP
+- rollup_missing_update_transform: updateTransform() absent → always incorrect.
+  It must be present even if unused; give it `return SKIP;`.
+- rollup_lifecycle: confusing per-record emit (updateTransform) with per-group emit
+  (transform), or omitting initGroup reset.
+- rollup_accumulator_mismatch: accumulator field names in CTL do not match the
+  accumulator metadata record schema → runtime "Field not found" errors.
+- rollup_per_record_emission: emitting from transform() on every counter value
+  instead of only counter==0, producing duplicate group-summary rows.
+"""
+
+_JUDGE_NORMALIZER_NOTE = """\
+
+## NORMALIZER component contract
+
+NORMALIZER expands one input record into N output records. Module-level variables
+bridge count() and transform(idx).
+
+  count() → integer  — Called ONCE PER INPUT RECORD.
+    $in.0.* accessible here. Compute and return N (number of output rows for this record).
+    Return 0 to skip the record (transform() not called).
+    Typically parses/caches a list into a module-level variable for transform() to index.
+
+  transform(integer idx) → integer  — Called N times per input record (idx 0..N-1).
+    $in.0.* AND $out.0.* accessible here. Emit one output row per call. idx is 0-based.
+
+  clean()  — Called after the last transform() for each input record.
+    Neither $in.0.* nor $out.0.* is accessible here. Reset module-level variables.
+
+### Evaluation rules for NORMALIZER
+- normalizer_count_transform_mismatch: count() returns N but transform() accesses
+  indices ≥ N, or the module-level list has a different length than count() returns.
+- normalizer_idx_off_by_one: accessing parts[idx+1] or parts[idx-1] instead of
+  parts[idx], or returning length(parts)+1 from count().
+- Reading $in.0.* inside clean() is a contract violation (unreliable; $in.0 is gone).
 """
 
 _JUDGE_DATAGEN_NOTE = """\
@@ -189,12 +315,53 @@ Prose / explanation style is irrelevant for DATA_GENERATOR correctness.
 """
 
 
+def infer_component_type(text: str) -> str:
+    """Infer component type from CTL function signatures.
+
+    Used as a fallback when the setup-agent classification is unavailable (e.g. setup
+    failed).  Ordered from most-specific signature to least-specific so early matches
+    don't shadow later ones.
+
+    Returns one of the canonical TYPE strings or "" when nothing matches.
+    """
+    # ROLLUP: only component with initGroup
+    if re.search(r"function\s+\w+\s+initGroup\s*\(", text, re.IGNORECASE):
+        return "ROLLUP"
+    # PARTITION: getOutputPort
+    if re.search(r"function\s+integer\s+getOutputPort\s*\(", text, re.IGNORECASE):
+        return "PARTITION"
+    # DATA_GENERATOR: generate() with no args
+    if re.search(r"function\s+integer\s+generate\s*\(\s*\)", text, re.IGNORECASE):
+        return "DATA_GENERATOR"
+    # NORMALIZER: count() returns N; transform takes (integer idx)
+    if re.search(r"function\s+integer\s+count\s*\(\s*\)", text, re.IGNORECASE):
+        return "NORMALIZER"
+    # DENORMALIZER: append() with no args (distinct from list append())
+    if re.search(r"function\s+integer\s+append\s*\(\s*\)", text, re.IGNORECASE):
+        return "DENORMALIZER"
+    if re.search(r"function\s+integer\s+transform\s*\(", text, re.IGNORECASE):
+        # EXT_HASH_JOIN: transform() that reads $in.1.
+        if re.search(r"\$in\.1\b", text):
+            return "EXT_HASH_JOIN"
+        return "REFORMAT"
+    # EXT_FILTER: has //#CTL2 header but no function declarations at all
+    if re.search(r"//#CTL2", text, re.IGNORECASE) and not re.search(r"\bfunction\b", text):
+        return "EXT_FILTER"
+    return ""
+
+
 def _build_judge_system(component_type: str) -> str:
-    """Return the judge system prompt, with CTL2 reference and optional DATA_GENERATOR note."""
+    """Return the judge system prompt, with CTL2 reference and component-specific notes."""
     ref = (_CTL2_REFERENCE + "\n\n---\n\n") if _CTL2_REFERENCE else ""
     base = _JUDGE_SYSTEM_BASE
     if component_type in ("DATA_GENERATOR", "DATAGEN"):
         base += _JUDGE_DATAGEN_NOTE
+    elif component_type == "DENORMALIZER":
+        base += _JUDGE_DENORMALIZER_NOTE
+    elif component_type == "ROLLUP":
+        base += _JUDGE_ROLLUP_NOTE
+    elif component_type == "NORMALIZER":
+        base += _JUDGE_NORMALIZER_NOTE
     return ref + base
 
 
@@ -313,9 +480,12 @@ class JudgeClient:
         Evaluate one candidate and return a JudgeVerdict, or None if the LLM
         consistently returns unparseable JSON.
         """
-        judge_system = _build_judge_system(component_type)
+        # Resolve component type: use the setup-agent classification when available;
+        # fall back to signature-based inference from the candidate text itself.
+        effective_type = component_type or infer_component_type(candidate_text)
+        judge_system = _build_judge_system(effective_type)
         user_msg = _JUDGE_USER.format(
-            component_type=component_type or "unknown",
+            component_type=effective_type or "unknown",
             system=system or "(none)",
             prompt=prompt,
             candidate=candidate_text,

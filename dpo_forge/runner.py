@@ -237,6 +237,17 @@ def _run_live(
     if status != "FINISHED_OK":
         log_raw = str(mcp.call_tool("job_get_log", {"runId": run_id}))
         excerpt = _first_error(log_raw)
+        if _is_unresolved_sequence(excerpt):
+            # Sequence resources don't exist in the forge sandbox — this is a
+            # sandbox limitation, not a model error. Mark distinctly so the pairing
+            # step can skip it instead of creating a misleading DPO rejection.
+            return ExecResult(
+                candidate_index=candidate_index,
+                exec_level="L1_fail",
+                run_status="UNRESOLVED_SEQUENCE",
+                log_excerpt=excerpt,
+                run_id=run_id,
+            )
         level = "L1_fail" if _is_compile_error(excerpt) else "L2_fail"
         return ExecResult(
             candidate_index=candidate_index,
@@ -355,9 +366,15 @@ _COMPILE_PATTERNS = re.compile(
     re.IGNORECASE,
 )
 
+_UNRESOLVED_SEQUENCE_RE = re.compile(r"Unable to resolve sequence", re.IGNORECASE)
+
 
 def _is_compile_error(excerpt: str) -> bool:
     return bool(_COMPILE_PATTERNS.search(excerpt))
+
+
+def _is_unresolved_sequence(excerpt: str) -> bool:
+    return bool(_UNRESOLVED_SEQUENCE_RE.search(excerpt))
 
 
 def _primary_edge(component_type: str) -> str:

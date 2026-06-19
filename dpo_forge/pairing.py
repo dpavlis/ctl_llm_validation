@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .generator import Candidate
+from .generator import Candidate, normalize_ctl
 from .judge import JudgeVerdict
 from .loader import SourceExample
 from .runner import ExecResult
@@ -69,12 +69,16 @@ def label_candidate(
                                 is_rejected=True, is_correct=False)
 
     if level == "L3_mismatch":
-        if (verdict is not None
-                and verdict.verdict == "correct"
-                and verdict.confidence >= confidence_threshold):
-            # Correct via a different valid output — drop from pairing
-            return LabeledCandidate(candidate, exec_result, verdict,
-                                    is_rejected=False, is_correct=True)
+        if verdict is not None and verdict.confidence >= confidence_threshold:
+            if verdict.verdict == "correct":
+                # Correct via a different valid output (e.g. added null safety) — drop
+                return LabeledCandidate(candidate, exec_result, verdict,
+                                        is_rejected=False, is_correct=True)
+            if verdict.verdict == "partially_correct":
+                # Ambiguous: not clearly wrong enough to be a useful rejected example;
+                # not clearly right enough to be chosen. Drop from pairing — weak signal.
+                return LabeledCandidate(candidate, exec_result, verdict,
+                                        is_rejected=False, is_correct=False)
         return LabeledCandidate(candidate, exec_result, verdict,
                                 is_rejected=True, is_correct=False)
 
@@ -107,7 +111,7 @@ def build_pairs(
 
     Returns [] when no informative contrast can be constructed.
     """
-    chosen_text = chosen_override or example.reference
+    chosen_text = normalize_ctl(chosen_override or example.reference)
     if not chosen_text:
         return []
 
@@ -117,6 +121,12 @@ def build_pairs(
 
     # Discard trivially short/empty rejecteds (length guard)
     rejecteds = [lc for lc in rejecteds if len(lc.candidate.text.strip()) > 20]
+
+    # Discard sandbox-limitation failures — these are not model errors and would
+    # produce misleading DPO signal (e.g. correct sequence usage failing because
+    # the forge sandbox has no named sequences defined).
+    _SANDBOX_STATUSES = {"UNRESOLVED_SEQUENCE"}
+    rejecteds = [lc for lc in rejecteds if lc.exec_result.run_status not in _SANDBOX_STATUSES]
     if not rejecteds:
         return []
 
