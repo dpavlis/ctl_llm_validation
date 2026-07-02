@@ -174,8 +174,8 @@ def cmd_run(args: argparse.Namespace):
         label_candidate, build_pairs, CompositionStats,
     )
     from dpo_forge.output import (
-        write_dpo_jsonl, write_provenance_jsonl, write_dataset_info,
-        build_report, print_report,
+        write_dpo_jsonl, write_provenance_jsonl, write_invalid_jsonl,
+        write_dataset_info, build_report, print_report,
     )
     from dpo_forge.state import ForgeState
 
@@ -239,6 +239,7 @@ def cmd_run(args: argparse.Namespace):
     # ── Output paths ───────────────────────────────────────────────────
     dpo_path = Path(cfg["output"]["dpo_file"])
     prov_path = Path(cfg["output"]["provenance_file"])
+    invalid_path = dpo_path.with_suffix("").with_suffix(".invalid.jsonl")
 
     # ── Main loop ──────────────────────────────────────────────────────
     gen_cfg2   = cfg["generation"]
@@ -274,10 +275,25 @@ def cmd_run(args: argparse.Namespace):
             cached = state_db.get_setup_bundle(example.id)
             if cached:
                 bundle = SetupBundle(**cached)
+                # Re-validate cached bundles (catches entries stored before the
+                # golden_records check was introduced).
+                if not bundle.golden_records:
+                    comp = bundle.component_type or "unknown"
+                    fail_reason = (
+                        f"reference_produced_zero_records: cached bundle has empty "
+                        f"golden_records (component={comp})"
+                    )
+                    n_setup_failed += 1
+                    print(f"  [setup] INVALID cached bundle — {fail_reason}")
+                    write_invalid_jsonl(
+                        example, fail_reason, invalid_path,
+                        log_excerpt=bundle.reference_log_excerpt,
+                    )
+                    continue
                 print("  [setup] Using cached bundle")
             else:
                 print("  [setup] Calling setup agent (LLM + MCP) …")
-                bundle = run_setup_agent(
+                bundle, fail_reason, fail_log = run_setup_agent(
                     example, setup_loop,
                     sandbox=clover_cfg["sandbox"],
                     work_dir=clover_cfg["work_dir"],
@@ -286,7 +302,11 @@ def cmd_run(args: argparse.Namespace):
                 )
                 if bundle is None:
                     n_setup_failed += 1
-                    print("  [setup] FAILED — skipping example")
+                    print(f"  [setup] FAILED ({fail_reason}) — skipping example")
+                    write_invalid_jsonl(
+                        example, fail_reason, invalid_path,
+                        log_excerpt=fail_log,
+                    )
                     continue
                 state_db.save_setup_bundle(example.id, asdict(bundle))
 
@@ -434,6 +454,8 @@ def cmd_run(args: argparse.Namespace):
 
     print(f"\nDPO file:        {dpo_path}")
     print(f"Provenance file: {prov_path}")
+    if invalid_path.exists():
+        print(f"Invalid file:    {invalid_path}  (review & fix these SFT examples)")
 
     state_db.close()
 

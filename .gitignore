@@ -3,4 +3,4 @@ __pycache__/
 results/
 saves/
 CTL_LoRA_eval_data.json
-
+.env

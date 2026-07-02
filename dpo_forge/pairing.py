@@ -39,6 +39,8 @@ class DPOPair:
     rejected_exec_level: str
     rejected_failure_modes: list[str] = field(default_factory=list)
     pairing_strategy: str = ""
+    source_file: str = ""
+    source_index: int = 0
     provenance: dict = field(default_factory=dict)
 
 
@@ -188,6 +190,8 @@ def _make_pair(
         rejected_exec_level=lc.exec_result.exec_level,
         rejected_failure_modes=v.failure_modes if v else [],
         pairing_strategy=strategy,
+        source_file=example.source_file,
+        source_index=example.source_index,
         provenance={
             "candidate_index": lc.candidate.index,
             "gen_meta": lc.candidate.gen_meta,

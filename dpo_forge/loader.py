@@ -27,6 +27,8 @@ class SourceExample:
     system: Optional[str]
     prompt: str          # the user turn
     reference: str       # ground-truth assistant answer (the chosen candidate)
+    source_file: str = ""   # filename (no path) of the SFT file this came from
+    source_index: int = 0   # zero-based position of this record within source_file
     meta: dict = field(default_factory=dict)  # passthrough: comments, failure_mode, etc.
 
 
@@ -170,7 +172,8 @@ def load_examples(
     examples: list[SourceExample] = []
 
     for path in paths:
-        for rec in _load_raw(path):
+        fname = path.name
+        for rec_idx, rec in enumerate(_load_raw(path)):
             sys, prompt, ref, meta, is_multiturn = _parse_record(rec)
 
             if is_multiturn:
@@ -200,6 +203,8 @@ def load_examples(
                 system=sys,
                 prompt=prompt,
                 reference=ref,
+                source_file=fname,
+                source_index=rec_idx,
                 meta=meta,
             ))
 

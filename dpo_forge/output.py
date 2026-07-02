@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from .loader import SourceExample
 from .pairing import DPOPair
 
 
@@ -26,13 +27,47 @@ def write_dpo_jsonl(pairs: list[DPOPair], path: Path):
     with open(path, "a", encoding="utf-8") as f:
         for pair in pairs:
             record: dict = {
-                "prompt":   pair.prompt,
-                "chosen":   pair.chosen,
-                "rejected": pair.rejected,
+                "prompt":        pair.prompt,
+                "chosen":        pair.chosen,
+                "rejected":      pair.rejected,
+                "source_file":   pair.source_file,
+                "source_index":  pair.source_index,
             }
             if pair.system:
                 record["system"] = pair.system
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+# ---------------------------------------------------------------------------
+# Invalid examples JSONL
+# ---------------------------------------------------------------------------
+
+def write_invalid_jsonl(
+    example: SourceExample,
+    reason: str,
+    path: Path,
+    log_excerpt: str = "",
+):
+    """
+    Append one record to the invalid-examples file for human review/correction.
+
+    Written when setup fails or the reference CTL produced unusable golden output.
+    Fields are chosen to make it easy to locate the example in the source SFT file
+    and understand why it was rejected.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    record: dict = {
+        "example_id":   example.id,
+        "source_file":  example.source_file,
+        "source_index": example.source_index,
+        "reason":       reason,
+        "prompt":       example.prompt,
+        "reference":    example.reference,
+    }
+    if log_excerpt:
+        record["log_excerpt"] = log_excerpt
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 # ---------------------------------------------------------------------------

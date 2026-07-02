@@ -60,6 +60,7 @@ class SetupBundle:
     golden_tracking: dict    # job_get_tracking result from the reference run
     golden_records: list[dict]  # job_get_edge_debug_data records from reference run
     setup_notes: str = ""
+    reference_log_excerpt: str = ""  # first error line from job_get_log (empty on clean success)
     meta: dict = field(default_factory=dict)
 
 
@@ -74,12 +75,12 @@ Your job: prepare a CloverDX execution environment for ONE SFT training example 
 candidate CTL2 completions can later be evaluated against a golden output. You call MCP
 tools against a live CloverDX server.
 
-You follow a FIXED CHECKLIST (steps C1–C8 below) in order, every run, no exceptions.
+You follow a FIXED CHECKLIST (steps C1–C7 below) in order, every run, no exceptions.
 The checklist is the same for all components; the only thing that changes per component
 is the "recipe card" you look up once in C1. Do not improvise extra steps. Do not explore.
-Most setups complete in 6–8 tool-calling rounds — if you are past round 12, something is
+Most setups complete in 5–7 tool-calling rounds — if you are past round 10, something is
 wrong with your approach: stop, re-read the recipe card, and either fix the one offending
-file or fail fast (C7).
+file or fail fast (C6).
 
 ## Tool policy
 ALLOWED tools: think, sandbox_write_file, sandbox_delete_file, sandbox_copy_file,
@@ -150,23 +151,21 @@ If nothing fits: output {{"setup_failed": true, "reason": "ambiguous or unsuppor
 The per-component RECIPE CARDS (which files to write, which params, which edge, the oracle
 check) are listed in the "RECIPE CARDS" section after the checklist. Find your row there now.
 
-Then CLONE the skeleton to your private working copy and use ONLY the copy from here on:
+Then IMMEDIATELY call sandbox_copy_file to clone the skeleton to your private working copy:
   sandbox_copy_file(sourceSandboxCode={sandbox}, sourceSandboxPath="<recipe card skeleton file>",
                     destSandboxCode={sandbox},  destSandboxPath="{work_dir}/_skeletons/<TYPE>_skeleton.grf")
-Define WORK_COPY = "{work_dir}/_skeletons/<TYPE>_skeleton.grf". Every job_validate / job_run /
-(rare) graph edit below uses WORK_COPY — NEVER the original under graph/skeletons/. Return
-WORK_COPY as skeleton_path in C8.
+This call MUST appear in your very next tool-use round — do not defer it.
+Define WORK_COPY = "{work_dir}/_skeletons/<TYPE>_skeleton.grf".
 
-### C2 — Clear the work tree
-For your TYPE, delete the files your recipe card lists under {work_dir}/meta/<TYPE>/ and
-{work_dir}/ctl/<TYPE>/ with sandbox_delete_file. Don't list first; missing files are fine.
-You may batch all deletes in one round.
-EXT_HASH_JOIN extra: also delete generate.ctl and slave_generate.ctl if they exist (stale
-from any run that used the wrong names) — they are harmless to the skeleton but cause
-confusion.
+⚠ HARD CONSTRAINT enforced by the pipeline: skeleton_path in C8 MUST start with
+  "{work_dir}/_skeletons/", never with "graph/skeletons/". A path starting with
+  "graph/skeletons/" means the clone was skipped; the forge rejects the bundle and
+  the example is marked as failed. Every job_validate / job_run / (rare) graph edit
+  below uses WORK_COPY — NEVER the original under graph/skeletons/.
 
-### C3 — Write metadata (.fmt) files
-Write each .fmt your recipe card lists, with sandbox_write_file (sandboxCode={sandbox}).
+### C2 — Write metadata (.fmt) files
+Write each .fmt your recipe card lists with sandbox_write_file (sandboxCode={sandbox}).
+sandbox_write_file overwrites any existing file — no delete step needed.
 .fmt files are a bare `<Record>` element — NEVER wrapped in `<Metadata>`:
 ```xml
 <Record name="MyRecord_Record" fieldDelimiter="|" recordDelimiter="\\n" type="delimited">
@@ -178,7 +177,7 @@ Write each .fmt your recipe card lists, with sandbox_write_file (sandboxCode={sa
 Copy field names/types exactly from the task's metadata. Preserve all attributes
 (length, scale, format, nullable, delimiter). You may batch all .fmt writes in one round.
 
-### C4 — Write CTL files
+### C3 — Write CTL files
 Write each .ctl your recipe card lists. Two CTL roles exist:
 
 (a) generate.ctl / slave_generate.ctl — DETERMINISTIC input feeder.
@@ -227,7 +226,7 @@ b) getCurrentTimeMillis() — wrong name (Java-style prefix). CTL2 spells it wit
 
 You may batch all CTL writes in one round.
 
-### C5 — Assemble run params
+### C4 — Assemble run params
 Build the params dict from your recipe card. WORK_DIR="{work_dir}" is ALWAYS present.
 Add only the params your card lists. Param meanings:
   RECORDS_NUMBER = <N>      number of input/generated rows (drives the generator; honour it)
@@ -243,7 +242,7 @@ declares exactly that field. Do NOT leave it at any skeleton default — a key t
 field in in_meta.fmt fails with "Field 'X' not found in metadata". Your generate.ctl must also
 populate that field so groups actually form.
 
-### C6 — Validate, then run the reference  (always against WORK_COPY, never the original)
+### C5 — Validate, then run the reference  (always against WORK_COPY, never the original)
 1. job_validate(jobFile=WORK_COPY, sandboxCode={sandbox}, timeoutSeconds=30).
    NOTE: job_validate does NOT accept params — it validates the .ctl/.fmt files on disk plus
    the skeleton's default parameter values. That is exactly what you want for file-based CTL
@@ -251,32 +250,37 @@ populate that field so groups actually form.
    lives in transform.ctl. SKIP this step entirely for EXT_FILTER (its logic is the FILTER_EXPR
    run param, which validate cannot see — go straight to job_run).
    If validation fails: read the error, fix the ONE offending .fmt or .ctl file, re-validate
-   ONCE. Still failing → {{"setup_failed": true, "reason": "validation failed: <error>"}}.
+   ONCE. Still failing → {{"setup_failed": true, "reason": "validation_failed",
+   "reference_log_excerpt": "<full error text from the job_validate response>"}}.
 2. job_run(jobFile=WORK_COPY, sandboxCode={sandbox}, debug=true, params=<full params dict>).
    debug=true is mandatory (needed for edge data). For EXT_FILTER the params MUST include
    FILTER_EXPR starting with //#CTL2 (see the recipe card).
 3. IMMEDIATELY job_await(runId=<id>, timeoutSeconds={await_timeout_s}). Never job_list.
    If job_run returned no runId → job_get_log, fix once, retry once.
 4. If status != FINISHED_OK → job_get_log(runId), fix the ONE offending file, retry once.
-   Still failing → {{"setup_failed": true, "reason": "<first error line>"}}.
+   Still failing → {{"setup_failed": true, "reason": "runtime_error",
+   "reference_log_excerpt": "<first ERROR line from job_get_log>"}}.
 5. On FINISHED_OK → job_get_tracking(runId, detailed=true) AND
    job_get_edge_debug_data(runId, edgeId=<recipe card's edge>, recordCount=200).
+   If edge_debug_data returns 0 records: call job_get_log(runId) immediately and note the
+   first relevant line — you MUST include it in reference_log_excerpt in your C7 output.
 
-### C7 — Oracle sanity check
+### C6 — Oracle sanity check
 Apply your recipe card's oracle assertion to the golden output. If it fails, fix and
 re-run ONCE. Still wrong → {{"setup_failed": true, "reason": "oracle_unverified: <what>"}}.
 
-### C8 — Emit result
+### C7 — Emit result
 Your ENTIRE final response is a single raw JSON object — no fences, no prose:
 {{
   "component_type": "<TYPE>",
-  "skeleton_path": "<WORK_COPY — the {work_dir}/_skeletons/<TYPE>_skeleton.grf copy, NOT the original>",
+  "skeleton_path": "{work_dir}/_skeletons/<TYPE>_skeleton.grf",  // MUST start with work_dir, never graph/skeletons/
   "sandbox": "{sandbox}",
   "work_dir": "{work_dir}",
   "run_params": {{"WORK_DIR": "{work_dir}", ...}},
   "golden_tracking": {{...}},
   "golden_records": [...],
-  "setup_notes": "<brief rationale>"
+  "setup_notes": "<brief rationale>",
+  "reference_log_excerpt": "<first ERROR/WARNING line from job_get_log if the reference run failed or produced 0 records; empty string on clean success>"
 }}
 
 ═══════════════════════════════════════════════════════════════════════════════════
@@ -371,15 +375,13 @@ def run_setup_agent(
     work_dir: str,
     ref_dir: str,
     await_timeout_s: int = 60,
-) -> Optional[SetupBundle]:
+) -> tuple[Optional[SetupBundle], str, str]:
     """
     Run the setup agent for one SFT example.
 
-    Returns a SetupBundle on success, None on setup failure (caller should
-    log and skip this example).
-
-    Phase 1 stub: always returns None — CloverDX not yet connected.
-    Replace the single `return None` with the call to `_run_live` in Phase 2.
+    Returns (SetupBundle, "", "") on success, or (None, reason, log_excerpt) on failure.
+    log_excerpt is the first ERROR line from job_get_log / job_validate (may be empty if the
+    agent did not capture it). The caller should write the example to an invalid file.
     """
     return _run_live(example, agent_loop, sandbox, work_dir, ref_dir, await_timeout_s)
 
@@ -395,7 +397,7 @@ def _run_live(
     work_dir: str,
     ref_dir: str,
     await_timeout_s: int,
-) -> Optional[SetupBundle]:
+) -> tuple[Optional[SetupBundle], str, str]:
     system = (
         (_CTL2_REFERENCE + "\n\n---\n\n") if _CTL2_REFERENCE else ""
     ) + _SETUP_SYSTEM.format(
@@ -410,7 +412,7 @@ def _run_live(
         raw = agent_loop.run(system, user_msg)
     except Exception as exc:
         print(f"[setup_agent] Agent loop error for {example.id}: {exc}")
-        return None
+        return None, f"agent_loop_error: {exc}", ""
 
     return _parse_bundle(example.id, raw)
 
@@ -428,7 +430,8 @@ def _build_user_message(example: SourceExample) -> str:
     return "\n".join(parts)
 
 
-def _parse_bundle(example_id: str, raw: str) -> Optional[SetupBundle]:
+def _parse_bundle(example_id: str, raw: str) -> tuple[Optional[SetupBundle], str, str]:
+    """Returns (bundle, reason, log_excerpt). On success: (bundle, "", "")."""
     raw = re.sub(r"<think(?:ing)?>[\s\S]*?</think(?:ing)?>", "", raw, flags=re.IGNORECASE).strip()
     raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
     raw = re.sub(r"```\s*$", "", raw, flags=re.MULTILINE).strip()
@@ -446,12 +449,24 @@ def _parse_bundle(example_id: str, raw: str) -> Optional[SetupBundle]:
 
     if data is None:
         print(f"[setup_agent] Could not parse JSON response for {example_id}")
-        return None
+        return None, "agent_response_unparseable", ""
     if data.get("setup_failed"):
-        print(f"[setup_agent] Setup failed for {example_id}: {data.get('reason', '?')}")
-        return None
+        reason = data.get("reason", "unknown")
+        log_excerpt = data.get("reference_log_excerpt", "")
+        print(f"[setup_agent] Setup failed for {example_id}: {reason}")
+        return None, f"agent_reported_failure: {reason}", log_excerpt
 
-    return SetupBundle(
+    skeleton_path = data.get("skeleton_path", "")
+    if skeleton_path.startswith("graph/skeletons/"):
+        print(
+            f"[setup_agent] REJECTED bundle for {example_id}: skeleton_path points to the "
+            f"original shared template ({skeleton_path!r}). The agent must clone the skeleton "
+            f"to {{work_dir}}/_skeletons/<TYPE>_skeleton.grf in C1 and return that path. "
+            f"The clone step (sandbox_copy_file) was likely skipped."
+        )
+        return None, "skeleton_path_points_to_original_template", ""
+
+    bundle = SetupBundle(
         example_id=example_id,
         component_type=data.get("component_type", ""),
         skeleton_path=data.get("skeleton_path", ""),
@@ -461,4 +476,22 @@ def _parse_bundle(example_id: str, raw: str) -> Optional[SetupBundle]:
         golden_tracking=data.get("golden_tracking", {}),
         golden_records=data.get("golden_records", []),
         setup_notes=data.get("setup_notes", ""),
+        reference_log_excerpt=data.get("reference_log_excerpt", ""),
     )
+
+    if not bundle.golden_records:
+        comp = bundle.component_type or "unknown"
+        if bundle.golden_tracking:
+            reason = (
+                f"reference_produced_zero_records: the reference CTL ran but emitted 0 output "
+                f"records (component={comp})"
+            )
+        else:
+            reason = (
+                f"reference_run_likely_failed: golden_tracking is empty — reference CTL "
+                f"execution probably failed before producing output (component={comp})"
+            )
+        print(f"[setup_agent] REJECTED bundle for {example_id}: {reason}")
+        return None, reason, bundle.reference_log_excerpt
+
+    return bundle, "", ""

@@ -20,7 +20,7 @@
 # Link to the training config (enables auto-discovery + shared run log)
 # ---------------------------------------------------------------------------
 # Point this at the same YAML you pass to train.py.
-training_config: configs/qwen25-coder.yaml
+training_config: configs/qwen35-9Bv3.yaml
 
 # ---------------------------------------------------------------------------
 # Model under test (MUT)
@@ -67,7 +67,7 @@ mut:
 
   validate:
     # Suite default temperature: 0.05
-    temperature: 0.2
+    temperature: 0.1
       #top_p: 0.75
     # system_prompt: |
     #   You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
@@ -109,7 +109,7 @@ judge:
 
   # Uncomment to use OpenAI as judge:
   provider: openai
-  model: gpt-5.4-mini
+  model: gpt-5.4
   api_key: ${OPENAI_API_KEY}
  
 
