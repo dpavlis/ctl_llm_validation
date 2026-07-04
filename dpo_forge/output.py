@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Optional
 
 from .loader import SourceExample
 from .pairing import DPOPair
@@ -36,6 +37,25 @@ def write_dpo_jsonl(pairs: list[DPOPair], path: Path):
             if pair.system:
                 record["system"] = pair.system
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
+# ---------------------------------------------------------------------------
+# Generic multi-turn SFT conversation JSONL (used by mut_validate.py)
+# ---------------------------------------------------------------------------
+
+def write_conversation_jsonl(messages: list[dict], path: Path, extra: Optional[dict] = None):
+    """
+    Append one multi-turn SFT record: {"messages": [...], **extra}.
+
+    Matches the shape of the input SFT files (see data/sft_input/*.json),
+    so the output can be dropped straight back in as training data.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    record: dict = {"messages": messages}
+    if extra:
+        record.update(extra)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
 # ---------------------------------------------------------------------------

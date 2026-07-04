@@ -196,6 +196,64 @@ class LocalGenerator:
 
         return candidates
 
+    def generate_reply(
+        self,
+        messages: list[dict],
+        temperature: float = 0.3,
+        top_p: float = 1.0,
+        max_new_tokens: int = 2048,
+        seed: Optional[int] = None,
+    ) -> str:
+        """
+        Generate one completion for an already-built multi-turn message list
+        (e.g. system/user/assistant/user/...). Unlike generate_candidates(),
+        the caller supplies the full conversation history — used to show the
+        MUT its own earlier answer plus follow-up feedback.
+
+        Returns the raw decoded text (fences NOT stripped — caller normalizes).
+        """
+        import torch
+
+        self._load()
+
+        tokenized = self._tok.apply_chat_template(
+            messages,
+            tokenize=True,
+            add_generation_prompt=True,
+            return_tensors="pt",
+        )
+        if hasattr(tokenized, "input_ids"):
+            input_ids = tokenized.input_ids.to(self._model.device)
+        else:
+            input_ids = tokenized.to(self._model.device)
+
+        stop_ids: list[int] = []
+        if self._tok.eos_token_id is not None:
+            stop_ids.append(self._tok.eos_token_id)
+        im_end_id = self._tok.convert_tokens_to_ids("<|im_end|>")
+        if (
+            im_end_id is not None
+            and im_end_id != self._tok.unk_token_id
+            and im_end_id not in stop_ids
+        ):
+            stop_ids.append(im_end_id)
+
+        if seed is not None:
+            torch.manual_seed(seed)
+        do_sample = temperature > 0.0
+        with torch.inference_mode():
+            output = self._model.generate(
+                input_ids,
+                attention_mask=torch.ones_like(input_ids),
+                max_new_tokens=max_new_tokens,
+                temperature=temperature if do_sample else 1.0,
+                top_p=top_p if do_sample else 1.0,
+                do_sample=do_sample,
+                eos_token_id=stop_ids if stop_ids else None,
+                pad_token_id=self._tok.eos_token_id,
+            )
+        return self._tok.decode(output[0][input_ids.shape[1]:], skip_special_tokens=True)
+
 
 def _patch_nothink(tok):
     """Disable <think> scaffolding — same logic as test.py."""

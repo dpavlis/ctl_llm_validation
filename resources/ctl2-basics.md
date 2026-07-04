@@ -20,7 +20,7 @@ description: Dense CTL2 language reference for CloverDX transformations: valid s
 - Records are NOT objects: no `.get()`, `.set()`, `.fields()`. Use record functions (**11.6**).
 - Null checks: `isnull(expr)` (1 arg, lowercase) and `expr == null` / `expr != null` are interchangeable for any type including records. `isNull(record, integer|string)` (2 args, camelCase) is a separate function for dynamic field access by index/name. `""` ≠ null. See **11.8**.
 - Output records: prefer `$out.<port>.* = $in.<port>.*;`. Full-record assignment is valid only when metadata is identical (e.g., `$out.1 = $out.0;`, `$out.0 = $in.0;`).
-- No implicit conversions except numeric upcasting. Use documented conversion functions.
+- No implicit conversions except numeric upcasting (`integer`->`long`->`number`->`decimal`, automatic; see **2.1.2**). Narrowing always needs an explicit documented conversion function.
 - Prefer **native literals** over conversion functions:
   - Use `date d = 2025-01-01;` instead of `str2date(...)`
   - Use `10.5D` instead of string-based decimal parsing
@@ -29,8 +29,8 @@ description: Dense CTL2 language reference for CloverDX transformations: valid s
 ## Fix CTL2: steps
 1. Braces, semicolons, function boundaries (see **1**, **4**).
 2. Port/record access — `$in`/`$out` syntax (see **6**).
-3. Every function call must exist in **10** with correct args/return type.
-4. Types & conversions — **2**, **3**. No implicit conversions.
+3. Every function call must exist in **11** with correct args/return type.
+4. Types & conversions — **2**, **3**. No implicit conversions except numeric widening (**2.1.2**).
 5. Null-safety — `isnull()`/`isNull()`; `nvl()` for fallbacks; `isBlank()` for null+empty. See **11.8**.
 6. No records/variants mixing (see **11.6**, **11**).
 
@@ -47,11 +47,11 @@ description: Dense CTL2 language reference for CloverDX transformations: valid s
 
 ```
 //#CTL2              — interpreted mode (default)
-//#CTL2:COMPILE      — compiled mode (faster; no conditional-fail expr, no DB lookups)
+//#CTL2:COMPILE      — compiled mode (faster; no DB lookups)
 ```
 
-Script order: imports → variable declarations → function declarations → statements/mappings.
-Declarations and statements can be interspersed. Variables/functions must be declared before use.
+Recommended order: imports → variable declarations → function declarations → statements/mappings.
+Declarations and statements can be interspersed. Variables must be declared before use; functions may be called before their declaration (forward references are allowed).
 
 #### Comments
 ```ctl
@@ -63,10 +63,10 @@ Declarations and statements can be interspersed. Variables/functions must be dec
 
 ### 1.1 Imports
 
-`import <path to .ctl>` - for CTL files - makes functions available for use; no namespace, so function names must be unique across imports.
+`import <path_to_ctl_file>` - for CTL files - makes functions available for use; no namespace, so a function signature (name + parameter types) must be unique across imports — same-named functions with different parameters are valid overloads.
 `import metadata <path to .fmt> <alias?>` - makes external metadata available for record variables.
 
-- Double-quoted paths: support escape sequences. Single-quoted: only `\'`.
+- Paths: double- or single-quoted. Escape sequences are not processed — backslashes stay literal (use `/` in paths).
 - Graph parameters (`${PARAM}`) allowed in paths.
 
 Example imports:
@@ -143,6 +143,19 @@ long id = 1234567890123L;
 | `byte` | `null` | (use `hex2byte()`) | Raw byte array. |
 | `cbyte` | `null` | | Compressed byte array. |
 
+### 2.1.2 Numeric widening (auto-upcasting)
+
+Numeric widening chain, narrowest to widest: **`integer` -> `long` -> `number` -> `decimal`**.
+
+> **Counter-intuitive vs. Java/C#/Python:** in most languages, a fixed-point/arbitrary-precision decimal is the "safer, more specific" type and converting a floating `double` into it looks like it should need an explicit, precision-losing step. CTL2 inverts this: `decimal` is the WIDEST type here, above `number` (an ordinary 64-bit double). So `number` -> `decimal` is automatic widening (no conversion needed), and `decimal` -> `number` is the narrowing direction that needs `decimal2double()`. Do not import the Java/C#/Python instinct here — it points the wrong way for this specific pair.
+
+- **Widening (upcast) is automatic** — a narrower numeric type is silently promoted to a wider one wherever a wider type is expected: mixed-type arithmetic (`decimalVal / integerVal` upcasts the `integer` to `decimal` before dividing), assignment/output-field assignment (`decimal d = someNumberVar;`), ternary branch unification (`cond ? decimalVal : integerVal` is valid — the `integer` branch upcasts to `decimal`), and passing a narrower argument where a function documents a wider parameter type.
+- **Narrowing (downcast) requires an explicit conversion function** — going the other direction (`decimal` -> `number`, `number` -> `long`, `long` -> `integer`, or skipping multiple steps backward) is NEVER implicit, even between two numeric types. Use the documented conversion functions (§11), e.g. `decimal2double`, `decimal2integer`, `decimal2long`, `double2integer`, `double2long`, `long2integer` — never invent a name not listed there.
+- This is the ONE exception to the "no implicit conversions" rule stated elsewhere in this document — it applies ONLY to numeric widening along the chain above. Do NOT invent conversions in other directions or between non-numeric types.
+- Do not report mixed-type numeric arithmetic, assignment, or ternary branches as an ERROR merely because the two sides differ (e.g. `decimal` and `integer`, or `decimal` and `number`) — check the widening direction first: if the narrower type is upcasting to the wider one, it is valid CTL2, not a defect.
+- This check is on the FINAL value being assigned, not an intermediate step: `decimal avg = decimal2double(round(sum / count, 2));` narrows to `number` via `decimal2double`, but that `number` result is then assigned into a `decimal` field, which upcasts again — valid, not a type error, just a redundant round-trip (at most a style remark, never an ERROR).
+- **Generic functions** (signature written with a type variable `T`, e.g. `T round(T, integer precision)`, `T abs(T)`): the return type equals whatever `T` was bound to from the argument actually passed, not a fixed type. `round(numberVar, 2)` returns `number` (T=`number`), not `decimal` — resolve `T` from the actual argument before judging a mismatch against the assignment target.
+
 ### 2.2 String Literals
 
 | Syntax | Escape sequences |
@@ -161,7 +174,7 @@ list[list[string]] nested;
 list[map[string, integer]] listOfMaps;
 // 0-based indexing; assigning beyond bounds auto-fills preceding with null
 
-map[string, integer] scores = {"Alice" -> 95, "Bob" -> 87};
+map[string, integer] scores = {"Alice" -> 95, "Bob" -> 87};   // literal separator is '->', NOT ':'
 // Key types: boolean, date, decimal, integer, long, number, string only
 // myMap["key"] returns null if key missing
 ```
@@ -174,8 +187,8 @@ variant vList = [];
 ```
 - Holds any type. No compile-time type checking.
 - **Must cast before typed operations**: `integer i = cast(myVariant, integer);`
-- `cast()` is for variant→strong type ONLY. Never `cast(decimal, integer)` — use `decimal2integer()`.
-- Check type: `typeof` operator or `getType()`.
+- `cast()`'s first argument is a value (typically a variant), the second is the target type; for a plain decimal→integer conversion use `decimal2integer()`, not `cast`.
+- Check type: the **infix** `typeof` operator — `myVariant typeof string` (see §3.3), or the `getType(variant)` function which returns the type name as a string. There is **no** `instanceof` function in CTL2.
 - Access: `v["key"]` (map), `v[0]` (list).
 - Most container functions work with variant if it contains the proper container type.
 
@@ -208,10 +221,10 @@ const string[] TAGS = ["a", "b", "c"];
 
 | Operator | Notes |
 |---|---|
-| `+` | numeric / string concat (string must be left operand) / list concat / map merge |
+| `+` | numeric / string concat (concat triggers when either operand is a string) / list concat / map merge |
 | `-` `*` `%` | numeric |
 | `/` | integer division truncates; ÷0 → exception for integer/long/decimal, Infinity for double |
-| `++` `--` | pre/post; **cannot use on**: literals, record fields, map/list values |
+| `++` `--` | pre/post; **cannot use on**: literals, input fields (`$in.N.field`), list/map elements (`list[i]`, `map[k]`) |
 
 ### 3.2 Relational
 
@@ -239,17 +252,19 @@ if (!isnull($in.0.amount) && !isnull($in.0.threshold) && $in.0.amount > $in.0.th
 ### 3.3 Type Check
 
 ```ctl
-value typeof type   // returns boolean; false if null; does NOT check element types
+value typeof type   // INFIX, returns boolean; false if null; does NOT check element types
 ```
 Valid types: `integer`, `long`, `number`, `decimal`, `string`, `boolean`, `date`, `byte`, `cbyte`, `list`, `map`, `record`, `variant`, any metadata name.
+
+> **Infix only.** Write `myVariant typeof string`, not prefix `typeof myVariant` (a parser error). There is no `instanceof`; use `getType(variant)` (§11.9) if you need the type name. Often you don't need the check — `cast(v, string)` works on a numeric variant too.
 
 ### 3.4 Logical
 
 | Operator | Alternative | Notes |
 |---|---|---|
-| `&&` | `and`, `.and.` | Short-circuit |
-| `\|\|` | `or`, `.or.` | Short-circuit |
-| `!` | `not`, `.not.` | |
+| `&&` | `and` | Short-circuit |
+| `\|\|` | `or` | Short-circuit |
+| `!` | `not` | |
 
 ### 3.5 Assignment
 
@@ -269,16 +284,17 @@ s = s + "hello";   // s = "nullhello" (null concatenated as "null")
 ### 3.6 Ternary
 
 ```ctl
-result = condition ? valueIfTrue : valueIfFalse;   // both branches must be same type
+result = condition ? valueIfTrue : valueIfFalse;
+// both branches must be the same type, OR both numeric with one upcastable
+// to the other per the widening chain in 2.1.2 (e.g. decimal : integer is valid)
 ```
 
-### 3.7 Conditional Fail Expression (interpreted mode only, NOT compiled)
+### 3.7 Conditional Fail Expression
 
 ```ctl
 expr1 : expr2 : ... : exprN;
 ```
 
-- `//#CTL2` only (not `//#CTL2:COMPILE`).
 - Evaluate left → right; first non-throwing expression wins; rest are skipped.
 - If all expressions throw, graph fails.
 - Usable in assignment, output mapping, and function arguments.
@@ -295,7 +311,7 @@ date d = str2date($in.0.text, "yyyy-MM-dd") : str2date($in.0.text, "dd.MM.yyyy")
 ```ctl
 if (cond) { ... } else if (cond2) { ... } else { ... }
 
-switch (expr) {          // expr: integer, string, boolean; labels must be unique literals
+switch (expr) {          // expr: any primitive (integer, long, number, decimal, string, boolean, date); labels must be unique literals
     case "v1": ...; break;
     case "v2":
     case "v3": ...; break;  // fall-through
@@ -306,7 +322,7 @@ for (integer i = 0; i < 10; i++) { ... }
 while (cond) { ... }
 do { ... } while (cond);
 foreach (string item : myStringList) { ... }
-// foreach: list→elements, map→values (use getKeys() for keys), record→field values
+// foreach: list→elements; map→values (keys via getKeys()); record/$in.N/$out.N with T => only T fields; variant source must use variant var and hold list|map|record; semantics = underlying type.
 break; continue; return; return expression;
 ```
 
@@ -319,7 +335,8 @@ function returnType functionName(type1 arg1, type2 arg2) {
     return value;
 }
 ```
-- Return type: any type or `void`. Can be nested. Must be declared before use.
+- Return type: any type or `void`. Functions are declared only at top level (not lexically nested), but any function may call any other and is resolved globally by name regardless of textual order, so a function may be called before its declaration.
+- Prefer built-in functions (§11) over custom ones — never reimplement an existing built-in (e.g. do not write your own `isBlank`/`trim`/`nvl`; they already exist). Define a custom function only when no built-in covers the need.
 
 **Calling conventions:**
 ```ctl
@@ -477,7 +494,7 @@ function integer getOutputPortOnError(string errorMessage, string stackTrace) { 
 
 ### 8.7 Rollup
 
-> **Placeholder warning:** `GroupAccMeta` and `groupAccumulator` in the snippet below are **examples only**. Substitute the actual `<Record name="…">` of the metadata you wire via the Rollup component's `groupAccumulator` attribute. The CTL2 type checker resolves the parameter type against the Record `name`, **not** against `<Metadata id="…">`. Mismatch fails the graph with `"Error loading job file"` and a CTL compile error.
+> **Placeholder warning:** `GroupAccMeta` and `groupAccumulator` in the snippet below are **examples only**. Substitute the actual `<Record name="…">` of the metadata you wire via the Rollup component's `groupAccumulatorMetadataId` attribute. The CTL2 type checker resolves the parameter type against the Record `name`, **not** against `<Metadata id="…">`. Mismatch fails the graph with `"Error loading job file"` and a CTL compile error.
 
 **All five functions are mandatory — the component fails init if any is missing** (`Required function(s) … are missing!`): `initGroup`, `updateGroup`, `updateTransform`, `finishGroup`, `transform`. Note the two distinct emit functions: `updateTransform` is the per-record emit (called when `updateGroup` returns `true`), `transform` is the per-group emit (called when `finishGroup` returns `true`). Even when you emit only once per group via `transform`, you must still define `updateTransform` — give it a `return SKIP;` body. Return types are fixed: `void initGroup`, `boolean updateGroup`/`finishGroup`, `integer updateTransform`/`transform`.
 
@@ -538,7 +555,7 @@ Do NOT use lookup functions in `init()`, `preExecute()`, or `postExecute()`.
 
 - **get(keyValue)** — returns first matching record or `null`. Access fields: `.fieldName` or `.*`.
 - **next()** — returns next record with same key (after `get`), or `null` when exhausted.
-- **count(keyValue)** — returns number of matching records. DB lookups may return `-1` if `Max cached size` is 0.
+- **count(keyValue)** — returns the number of matching records.
 - **put(record)** — stores record in lookup; returns `boolean`. Record metadata must match. Not supported by DB lookups. Stored records may not be available for reading in the same phase.
 
 DB lookups require interpreted mode (`//#CTL2`), not compiled (`//#CTL2:COMPILE`).
@@ -584,12 +601,11 @@ Metadata defines the structure of records flowing between components. Fields in 
 |---|---|---|
 | `string` | `string` | |
 | `integer` | `integer` | 32-bit signed |
-| `long` | `0` | `257L`, `9562307813123123L` | 64-bit signed. **`L` suffix required**. Use long literals instead of implicit integer widening when value exceeds integer range. |
-| `number` (alias `double`) | `0.0` | `123.45`, `1.5e2` | 64-bit IEEE 754 double-precision. Default floating-point type. |
-| `decimal` | `0` | `123.45D`, `10.50D` | Fixed-precision. **`D` suffix required on literals**. Prefer decimal literals for precise arithmetic instead of `number`. |
-| `number` | `number` (`double`) | Floating-point |
+| `long` | `long` | 64-bit signed. **`L` suffix required on literals**. |
+| `number` | `number` | 64-bit IEEE 754 double-precision floating-point. |
+| `decimal` | `decimal` | Fixed-precision. **`D` suffix required on literals**. |
 | `boolean` | `boolean` | |
-| `date` | `1970-01-01 00:00:00 GMT` | `2025-01-01`, `2023-06-15 08:45:00` | Holds both date AND time. **CTL2 supports date and date-time literals**, which can be directly assigned to `date` variables or used as function parameters. No need for `str2date()` when using literal values. |
+| `date` | `date` | Holds both date AND time. Supports date/date-time literals. |
 | `byte` | `byte` | Raw bytes |
 | `cbyte` | `cbyte` | Compressed bytes |
 | `variant` | `variant` | Dynamic type |
@@ -608,8 +624,8 @@ Metadata defines the structure of records flowing between components. Fields in 
 | `nullValue` | (not set) | Which source string(s) map to null on read. Default (not set): `""` → null. Custom value (e.g. `"N/A"`): only that string → null; `""` is no longer null. Multiple: `"NULL\|N/A\|none"` (pipe-separated). |
 | `default` | (not set) | Default value if field is null/missing. Applied at read time. |
 | `format` | (not set) | For `date` fields: Java SimpleDateFormat pattern used during parsing/formatting. |
-| `length` | type-dependent | Max length for `string`/`decimal`. |
-| `scale` | `0` | Decimal places for `decimal`. |
+| `length` | `12` | For `decimal`: total precision (number of digits). No effect on `string`. |
+| `scale` | `2` | Decimal places for `decimal`. |
 
 ### 10.4 Example Metadata XML
 
@@ -678,7 +694,7 @@ Metadata defines the structure of records flowing between components. Fields in 
 | `long2packDecimal` | `byte long2packDecimal(long)` | Long → packed decimal bytes. |
 | `num2bool` | `boolean num2bool(integer\|long\|number\|decimal)` | 0→false, nonzero→true. |
 | `num2str` | `string num2str(numeric)` | Number → string. |
-| | `string num2str(integer\|long\|double, integer radix)` | Base 2–36. |
+| | `string num2str(integer\|long\|double, integer radix)` | Base 2–36 for integer/long; double only radix 10 or 16. |
 | | `string num2str(numeric, string format)` | Java DecimalFormat. |
 | | `string num2str(numeric, string format, string locale)` | |
 | `packDecimal2long` | `long packDecimal2long(byte)` | |
@@ -714,25 +730,28 @@ Metadata defines the structure of records flowing between components. Fields in 
 | `writeAvro` | `byte writeAvro(variant, string schema)` | |
 | `writeBson` | `byte writeBson(variant)` | Variant → BSON. Top-level must be map. |
 | | `byte writeBson(map)` | |
+| `writeExtendedBson` | `byte writeExtendedBson(list\|map)` | **DEPRECATED** — use variant record fields to pass variant on edges. |
 | `writeJson` | `string writeJson(variant)` | Variant → JSON. Dates: ISO-8601 UTC. |
 | `xml2json` | `string xml2json(string)` | |
 
 ### 11.2 String Functions
 
+LLM rule: unless row says otherwise, null primary string arg => string return null, boolean return false; null in any other arg => runtime error.
+
 | Function | Signature(s) | Description |
 |---|---|---|
 | `charAt` | `string charAt(string, integer index)` | Char at index (0-based). |
-| `chop` | `string chop(string)` | Remove trailing newline/CR. |
-| | `string chop(string, string regex)` | Remove trailing chars matching regex. |
+| `chop` | `string chop(string)` | Remove all newline/CR characters. |
+| | `string chop(string, string regex)` | Remove all substrings matching regex. |
 | `codePointAt` | `integer codePointAt(string, integer index)` | Unicode code point at index. |
 | `codePointLength` | `integer codePointLength(integer code)` | Char count for code point (1 or 2). |
 | `codePointToChar` | `string codePointToChar(integer code)` | Code point → character. |
 | `concat` | `string concat(string, string, ...)` | Concatenate. Null args → "null". Faster than `+` for 3+. |
 | `concatWithSeparator` | `string concatWithSeparator(string sep, string, string, ...)` | Join with separator. |
-| `contains` | `boolean contains(string, string substring)` | Contains substring? **input null → false. substring null → fails.** |
+| `contains` | `boolean contains(string, string substring)` | Contains substring? **substring null → fails.** |
 | `countChar` | `integer countChar(string, string char)` | Count occurrences of char. |
 | `cut` | `string[] cut(string, integer[] indices)` | Returns substrings by `indices` position/length pairs `[pos1,len1,pos2,len2,...]` (even count required; `null`/`""` input fails). Example: `cut("somestringasanexample",[2,3,1,5]) = ["mes","omest"]`. |
-| `editDistance` | `integer editDistance(string, string)` | Levenshtein distance. Defaults: strength=4, locale=system, maxDifference=3; null/empty args fail. |
+| `editDistance` | `integer editDistance(string, string)` | Levenshtein distance. Defaults: strength=4, locale=system, maxDifference=3. A null arg fails (NPE). |
 | | `integer editDistance(string, string, string locale)` | |
 | | `integer editDistance(string, string, integer strength)` | |
 | | `integer editDistance(string, string, integer strength, string locale)` | |
@@ -786,20 +805,21 @@ Metadata defines the structure of records flowing between components. Fields in 
 | | `boolean isNumber(string, string format, string locale)` | |
 | `isUrl` | `boolean isUrl(string)` | |
 | `join` | `string join(string delimiter, type[] array)` | Join array with delimiter. |
-| `lastIndexOf` | `integer lastIndexOf(string, string substring)` | Last index. **2 args only — no fromIndex.** |
+| `lastIndexOf` | `integer lastIndexOf(string, string substring)` | Last index of substring. |
+| | `integer lastIndexOf(string, string substring, integer fromIndex)` | Searches backwards from `fromIndex`. |
 | `left` | `string left(string, integer length)` | Leftmost N chars. |
 | `length` | `integer length(string)` | Also works on lists, maps, records. **null or `""` → 0.** |
-| `lowerCase` | `string lowerCase(string)` | **null → null.** |
+| `lowerCase` | `string lowerCase(string)` | |
 | `lpad` | `string lpad(string, integer length)` | Left-pad with spaces. |
 | | `string lpad(string input, integer length, string filler)` | Left-pad using filler. |
 | `matches` | `boolean matches(string, string regex)` | Whole-string match. |
 | `matchGroups` | `string[] matchGroups(string, string regex)` | Capture groups. |
 | `metaphone` | `string metaphone(string)` | Phonetic code. |
-| `normalizeDecimal` | `string normalizeDecimal(string arg)` | Normalize decimal-like strings by stripping non-numeric chars and using the rightmost `,` or `.` as decimal separator. Heuristic only. **null → null.** |
+| `normalizeDecimal` | `string normalizeDecimal(string arg)` | Normalize decimal-like strings by stripping non-numeric chars and using the rightmost `,` or `.` as decimal separator. Heuristic only. |
 | `normalizeWhitespaces` | `string normalizeWhitespaces(string)` | Trim + collapse internal whitespace. |
-| `normalizePath` | `string normalizePath(string arg)` | Normalize path/URL: remove `.` and resolvable `..`, convert `\` to `/`. Unresolvable `..` or null input → null. |
-| `properCase` | `string properCase(string)` | Title Case. **null → null.** |
-| | `string properCase(string, string locale)` | Locale-aware (e.g. Dutch "ij" digraph). locale null or `""` → default locale. **string null → null.** |
+| `normalizePath` | `string normalizePath(string arg)` | Normalize path/URL: remove `.` and resolvable `..`, convert `\` to `/`. Unresolvable `..` |
+| `properCase` | `string properCase(string)` | Title Case. |
+| | `string properCase(string, string locale)` | Locale-aware (e.g. Dutch "ij" digraph). locale null or `""` → default locale.|
 | `randomString` | `string randomString(integer minLen, integer maxLen)` | |
 | `randomUUID` | `string randomUUID()` | |
 | `removeBlankSpace` | `string removeBlankSpace(string)` | Remove all whitespace. |
@@ -813,11 +833,11 @@ Metadata defines the structure of records flowing between components. Fields in 
 | | `string rpad(string input, integer length, string filler)` | Right-pad using filler. |
 | `soundex` | `string soundex(string)` | Phonetic code. |
 | `split` | `string[] split(string, string regex)` | Split on regex. **Pattern is always regex.** |
-| `startsWith` | `boolean startsWith(string, string prefix)` | **str null → false. prefix null → fails.** |
+| `startsWith` | `boolean startsWith(string, string prefix)` | **prefix null → fails.** |
 | `substring` | `string substring(string, integer fromIndex)` | From index to end. Returns null if arg null; fails if fromIndex negative/null. |
 | | `string substring(string, integer fromIndex, integer length)` | **`length` = max chars, NOT end index.** Fails if length negative/null. |
-| `trim` | `string trim(string)` | Remove leading/trailing whitespace. **null → null; `""` → `""`.** |
-| `upperCase` | `string upperCase(string)` | **null → null.** |
+| `trim` | `string trim(string)` | Remove leading/trailing whitespace. `""` → `""`.** |
+| `upperCase` | `string upperCase(string)` | |
 
 ### 11.3 Date Functions
 
@@ -833,6 +853,8 @@ Metadata defines the structure of records flowing between components. Fields in 
 | `dateDiff` | `long dateDiff(date later, date earlier, unit)` | Difference in units (truncated). |
 | `extractDate` | `date extractDate(date)` | Zero out time part. |
 | `extractTime` | `date extractTime(date)` | Zero out date part. |
+| `trunc` | `date trunc(date)` | **DEPRECATED** — use `extractDate()`. Still registered/compiles, so legacy graphs are valid: in validate flag as INFO, never ERROR. |
+| `truncDate` | `date truncDate(date)` | **DEPRECATED** — use `extractTime()`. Still registered/compiles: in validate flag as INFO, never ERROR. |
 | `getDay` | `integer getDay(date)` | Day of month. |
 | | `integer getDay(date, string timeZone)` | |
 | `getDayOfWeek` | `integer getDayOfWeek(date)` | 1=Monday … 7=Sunday. |
@@ -868,7 +890,7 @@ Date format patterns: Java SimpleDateFormat — `yyyy`, `MM`, `dd`, `HH`, `mm`, 
 | `abs` | `T abs(T)` — T: integer\|long\|number\|decimal | Absolute value. |
 | `acos` | `number acos(number\|decimal)` | Arc cosine (radians). |
 | `addNoise` | `T addNoise(T value, T noise)` | Add random noise ±noise. |
-| | `date addNoise(date, long noise)` | Noise in ms. |
+| | `date addNoise(date, long noise)` | Noise in days (default unit DAY). |
 | | `date addNoise(date, long noise, unit)` | |
 | `asin` | `number asin(number\|decimal)` | |
 | `atan` | `number atan(number\|decimal)` | |
@@ -904,11 +926,11 @@ Date format patterns: Java SimpleDateFormat — `yyyy`, `MM`, `dd`, `HH`, `mm`, 
 | `randomLong` | `long randomLong()` | |
 | | `long randomLong(long min, long max)` | |
 | `round` | `long round(number)`, `decimal round(decimal)` | Half-up. |
-| | `T round(T, integer precision)` | Negative precision rounds before decimal. |
+| | `T round(T, integer precision)` | Negative precision rounds before decimal. **Generic**: `T` is bound to the type of the value argument actually passed (e.g. `round(numberVar, 2)` returns `number`, not `decimal`) — see **2.1.2** before assuming a mismatch with the assignment target. |
 | `roundHalfToEven` | `decimal roundHalfToEven(decimal)` | Banker's rounding. |
 | | `decimal roundHalfToEven(decimal, integer precision)` | |
 | `setRandomSeed` | `void setRandomSeed(long)` | Seed RNG. Use in `init()`. |
-| `signum` | `integer signum(integer\|long\|decimal)`, `number signum(number)` | −1, 0, or 1. |
+| `signum` | `integer signum(integer\|decimal)`, `long signum(long)`, `number signum(number)` | −1, 0, or 1. |
 | `sin` | `number sin(number\|decimal)` | |
 | `sqrt` | `number sqrt(number\|decimal)` | |
 | `tan` | `number tan(number\|decimal)` | |
@@ -921,7 +943,7 @@ Date format patterns: Java SimpleDateFormat — `yyyy`, `MM`, `dd`, `HH`, `mm`, 
 
 | Function | Signature(s) | Description |
 |---|---|---|
-| `append` | `T[] append(T[], T element)` | Append to end. Returns modified list. `append(nullList, x)` is valid; `x` becomes the first item automatically. |
+| `append` | `T[] append(T[], T element)` | Append to end. Returns modified list. |
 | | `variant append(variant, variant)` | variant must contain list. |
 | `appendAll` | `list[E] appendAll(list[E] target, list[E] source)` | Append `source` to `target`; returns mutated `target`. `target==null` fails. Since 6.4.0. |
 | | `map[K,V] appendAll(map[K,V] target, map[K,V] source)` | Merge into `target`; existing keys in `target` are preserved (left wins). `target==null` or `source==null` fails. Since 6.4.0. |
@@ -946,10 +968,8 @@ Date format patterns: Java SimpleDateFormat — `yyyy`, `MM`, `dd`, `HH`, `mm`, 
 | | `variant insert(variant, integer index, variant)` | |
 | `isEmpty` | `boolean isEmpty(list\|map)` | |
 | `length` | `integer length(list\|map\|string\|record\|variant)` | Elements/chars/fields. For maps: key-value pair count; nested list: top-level size only. **null → 0.** |
-| `poll` | `T poll(T[])` | Remove and return first element. **Empty list → fails.** |
-| | `variant poll(variant)` | variant must contain list. |
-| `pop` | `T pop(T[])` | Remove and return last element. **Empty list → fails.** |
-| | `variant pop(variant)` | variant must contain list. |
+| `poll` | `T poll(T[])` | Remove and return first element. **Empty list → returns null.** |
+| `pop` | `T pop(T[])` | Remove and return last element. **Empty list → returns null.** |
 | `push` | `list[T] push(list[T], T element)` | Add to end (alias of `append`). |
 | | `variant push(variant, variant)` | variant must contain list. |
 | `remove` | `T remove(T[], integer index)` | Remove at index (0-based). Mutates list. Returns removed. **null → fails.** |
@@ -958,9 +978,7 @@ Date format patterns: Java SimpleDateFormat — `yyyy`, `MM`, `dd`, `HH`, `mm`, 
 | `reverse` | `T[] reverse(T[])` | Reverse list. Returns modified list. **null → fails.** |
 | | `variant reverse(variant)` | variant must contain list, else fails. |
 | `sort` | `T[] sort(T[])` | Ascending. |
-| | `variant sort(variant)` | variant must contain list. |
-| `toMap` | `map toMap(variant)` | Convert variant containing map to typed map. |
-| | `map[K,V] toMap(K[] keys, V[] values)` | Build map from equal-length key and value lists. **keys null → fails. values null → fails.** |
+| `toMap` | `map[K,V] toMap(K[] keys, V[] values)` | Build map from equal-length key and value lists. **keys null → fails. values null → fails.** |
 | | `map[K,V] toMap(K[] keys, V value)` | Build map: all keys map to same value. **keys null → fails. value null → all keys map to null.** |
 
 Variant access: `v["key"]`, `v[0]`, `v["key"] = val`, `v[0] = val`.
@@ -1033,10 +1051,11 @@ Record metadata helpers return `map[string,string]`, not `variant`.
 |---|---|---|
 | `md5` | `byte md5(byte\|string)` | |
 | `md5HexString` | `string md5HexString(byte\|string)` | |
-| `sha1` | `string sha1(byte\|string)` | |
+| `sha1` | `byte sha1(byte\|string)` | |
 | `sha1HexString` | `string sha1HexString(byte\|string)` | |
 | `sha256` | `byte sha256(byte\|string)` | |
 | `sha256HexString` | `string sha256HexString(byte\|string)` | |
+| `sha` | `byte sha(byte\|string)` | **DEPRECATED** (SHA-1) — use `sha256()`. |
 | `hashCode` | `integer hashCode(integer\|long\|number\|decimal\|boolean\|date\|string\|record\|map\|variant)` | Java-style hash. |
 
 ### 11.8 Null Handling
@@ -1122,7 +1141,7 @@ isNull($in.0, "field2")  // field "field2" null?
 | `getRawParamValue` | `string getRawParamValue(string paramName)` | Unresolved param. |
 | `getRawParamValues` | `map getRawParamValues()` | All unresolved params. |
 | `getType` | `string getType(variant)` | Type name string. Returns `"double"` for `number`/`double` values. |
-| `currentTimeMillis` | `long currentTimeMillis()` | Current time as ms since UNIX epoch (1970-01-01 00:00:00 UTC). Available since CloverDX 6.4.0. |
+| `currentTimeMillis` | `long currentTimeMillis()` | Epoch ms. |
 | `getOAuth2Token` | `string getOAuth2Token(string connName)` | |
 | `parseProperties` | `map parseProperties(string)` | Parse properties format. |
 | `printErr` | `void printErr(any message)` | |
@@ -1212,7 +1231,7 @@ In `replace(str, regex, repl)` and `split(str, regex)`: pattern is always regex.
 - No lambdas, closures, arrow functions, anonymous functions.
 - No generics — type specified at declaration.
 - Only `CTLException` in catch — no exception hierarchy, no `finally`.
-- No `interface`, `abstract`, `enum`, `this`/`self`.
+- No `interface`, `abstract`, `class`, `this`/`self`, `enum`.
 - No Java class imports — only CTL files and metadata.
 - No `??` — use `nvl()`. No `?.` optional chaining.
 - No `in` operator syntax — use `in()` function: `in(x, list)` or `x.in(list)`.
@@ -1249,23 +1268,23 @@ In `replace(str, regex, repl)` and `split(str, regex)`: pattern is always regex.
 4. **`split()` regex**: `split(s, ".")` splits every char. Use `split(s, "\\.")`.
 5. **`~=` whole string**: `"bookcase" ~= "book"` is FALSE. Use `?=` or `".*book.*"`.
 6. **`getMonth()` 1-based**: January = 1.
-7. **`substring()` out-of-bounds throws**: unlike Python slicing.
+7. **`substring()` out-of-bounds clamps**: a start past the end returns `""`; a negative start or length throws.
 8. **`null + "text"` = `"nulltext"`**: use `nvl()` first.
 9. **Variant requires cast**: `integer i = myVariant;` INVALID. Use `cast(myVariant, integer)`.
 10. **No date setters**: use `createDate()` to reconstruct.
-11. **`++` on record fields**: `$out.0.count++` INVALID. Use `$out.0.count = $out.0.count + 1;`.
+11. **`++`/`--` on record fields**: VALID on output fields via new syntax (`$out.0.count++`, `++$out.0.count`). INVALID on input fields (`$in.0.count`).
 12. **Map foreach yields values**: use `getKeys(myMap)` for keys.
 13. **`iif()` not `if()`**: `if(cond, a, b)` INVALID — #1 LLM error (37×).
 14. **Conversion naming**: `str2integer()` not `toInteger()`/`parseInt()`.
 15. **`foreach` colon not `in`**: `foreach (string s : myList)`. No tuple unpacking.
 16. **Exception**: `catch(CTLException e)` only. `e.message` property, not `e.getMessage()`.
 17. **Port syntax**: `$in.0.field` — NOT `$in0.field`, NOT `$field`.
-18. **`lastIndexOf()` 2 args only** — no `fromIndex` param.
-19. **`date2num()` needs unit**: `date2num(date, day)` — not bare `date2num(date)`.
-20. **`double` is valid alias** for `number`. `double x = 1.5;` is valid.
-21. **`cast()` strong-type conversion INVALID**: `cast(decimal, integer)` is wrong. Use `decimal2integer()`.
-22. **Null function confusion**: `isnull(expr)` (1 arg, lowercase) and `expr == null` are interchangeable. `isNull(record, idx/name)` (2 args, camelCase) is a different function for dynamic field access. `isnull("")` = false. Local primitive vars NOT null. See **11.8**.
-23. **Null in ordering comparisons throws**: `<`, `>`, `<=`, `>=` throw `CTLException` if either operand is null. `==`/`!=` are null-safe. Use `isnull()` guards or `nvl()` fallbacks.
+18. **`date2num()` needs unit**: `date2num(date, day)` — not bare `date2num(date)`.
+19. **`double` is valid alias** for `number`. `double x = 1.5;` is valid.
+20. **`cast()` strong-type conversion**: For a plain decimal->integer conversion use `decimal2integer()`.
+21. **Null function confusion**: `isnull(expr)` (1 arg, lowercase) and `expr == null` are interchangeable. `isNull(record, idx/name)` (2 args, camelCase) is a different function for dynamic field access. `isnull("")` = false. Local primitive vars NOT null. See **11.8**.
+22. **Null in ordering comparisons throws**: `<`, `>`, `<=`, `>=` throw `CTLException` if either operand is null. `==`/`!=` are null-safe. Use `isnull()` guards or `nvl()` fallbacks.
+23. **Map literal uses `->` not `:`**: `{ "k" -> v }` — NOT `{ "k" : v }` (JSON/Python style INVALID, won't compile). Key-by-key assignment after declaration uses `=`: `m["k"] = v`.
 
 ---
 
@@ -1274,17 +1293,17 @@ In `replace(str, regex, repl)` and `split(str, regex)`: pattern is always regex.
 1. Header `//#CTL2` or `//#CTL2:COMPILE` (optional).
 2. Imports at top. Syntax: `import "path";` or `import metadata "path";`.
 3. Types: only from **2**. No `int`, `float`, `str`, `char`, `object`, `HashMap`, `ArrayList`.
-4. Literals: `D` suffix for decimal, `L` for long. No `f`/`F`.
+4. Literals: `D` suffix for decimal, `L` for long. There is no distinct float type.
 5. String literals: `"..."`, `'...'`, `"""..."""` only. No backticks.
 6. Operators: only **3**. No `===`, `>>>`, `instanceof`, `is`, `not in`, `in` as operator.
 7. Control flow: only `if/else`, `switch/case`, `for`, `while`, `do-while`, `foreach`, `break`, `continue`, `return`. No `for-in`, `for-of`, `yield`, `async/await`, `try-finally`.
 8. Functions: `function returnType name(args)`. No `def`, `fun`, `fn`, arrow, anonymous.
-9. Built-in functions: only **10**. Top hallucinations: `size()`→`length()` (32×), `toInteger()`→`str2integer()` (13×), `if(cond,a,b)`→`iif()` (37×), `parseDate()`→`str2date()` (5×), `parseInt()`→`str2integer()` (4×), `now()`→`today()` (2×), `toDouble()`→`str2double()`, `toDecimal()`→`str2decimal()`, `asc()`→`codePointAt()`, `parseDecimal()`→`str2decimal()`, `removeAt()`→`remove()`, `addDays()`→`dateAdd()`, `number2decimal()`→`cast(n,decimal)`, `regexReplace()`→`replace()`, `printJson`→`writeJson`, `containerSize`→`length`, `decode`→DNE, `format`→`formatMessage`, `toUpperCase`→`upperCase`, `toLowerCase`→`lowerCase`, `strip`→`trim`, `len`→`length`, `print`→`printLog`/`printErr`, `JSON.parse`→`parseJson`, `JSON.stringify`→`writeJson`.
+9. Built-in functions: only **11**. Top hallucinations: `size()`→`length()` (32×), `toInteger()`→`str2integer()` (13×), `if(cond,a,b)`→`iif()` (37×), `parseDate()`→`str2date()` (5×), `parseInt()`→`str2integer()` (4×), `now()`→`today()` (2×), `toDouble()`→`str2double()`, `toDecimal()`→`str2decimal()`, `asc()`→`codePointAt()`, `parseDecimal()`→`str2decimal()`, `removeAt()`→`remove()`, `addDays()`→`dateAdd()`, `number2decimal()`→`cast(n,decimal)`, `regexReplace()`→`replace()`, `printJson`→`writeJson`, `containerSize`→`length`, `format`→`formatMessage`, `toUpperCase`→`upperCase`, `toLowerCase`→`lowerCase`, `strip`→`trim`, `len`→`length`, `print`→`printLog`/`printErr`, `JSON.parse`→`parseJson`, `JSON.stringify`→`writeJson`.
 10. Port access: `$in.N.field` / `$out.N.field`. No `input[0]`, `record.get()`.
 11. Type casting: `cast(variant, type)` for variants ONLY. No C-style `(int)x`, no `as`.
 12. Null: `isnull(expr)` and `expr == null` interchangeable for all types. `isNull(record, int/string)` (2 args, camelCase) is separate — dynamic field access only. No `??`, `?.`, `== NULL`. `""` ≠ null. Ordering operators throw on null.
 13. Collections: `type[]` or `list[type]`; `map[keyType, valueType]`. No `List<>`, `Map<>`, `Dictionary`, `Array`, `Set`.
-14. Semicolons: all statements end with `;`. Blocks `{}` do NOT.
+14. Semicolons: simple statements (assignments, calls, `return`, `break`, `continue`) end with `;`. Control-flow statements (`if`/`for`/`while`/`switch`/`foreach`/`do`/`try`) and blocks `{}` do NOT.
 15. Component functions match expected signatures for component type.
 16. Return values: `OK`, `ALL`, `SKIP`, `STOP`, or port number.
 
