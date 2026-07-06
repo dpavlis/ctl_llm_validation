@@ -19,12 +19,16 @@ ISSUES / SUGGESTIONS / VERDICT text format (no CloverDX execution involved).
   --tweak: before any of the above, the judge LLM rewrites the prompt into a
   different-but-structurally-similar task (new domain, new field names/types,
   a genuinely different business rule, same component type) — so the MUT is
-  tested on something it wasn't trained on verbatim.
+  tested on something it wasn't trained on verbatim. The business domain,
+  process, and region are picked from curated lists (review_judge.py) rather
+  than left for the model to invent — it otherwise reliably converges on the
+  same few domains. Deterministic per example by default (reproducible
+  re-runs); pass --tweak-random too for a fresh random domain every run.
 
 Usage:
   /home/pavlisd/venv/bin/python mut_validate.py <input_file>
       [--config configs/mut_validate.yaml] [--index N] [--limit N]
-      [--verbose] [--dry-run] [--overwrite] [--tweak]
+      [--verbose] [--dry-run] [--overwrite] [--tweak] [--tweak-random]
 
 Runs on GPU 1 by default (CUDA_VISIBLE_DEVICES=1) so it doesn't collide with
 the judge server, typically running on GPU 0. Override by exporting
@@ -35,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import random
 import re
 import sys
 import time
@@ -87,8 +92,22 @@ DEFAULT_CONFIG: dict = {
         "api_key": None,
         "base_url": None,
         "max_retries": 2,
-        "max_tokens": 2048,          # cap on the judge's response length per call
-        "request_timeout_s": 180,    # hard cap on a single judge HTTP call
+        "max_completion_tokens": 4096,  # cap on the judge's response length per call (OpenAI provider only; ignored by anthropic)
+        "reasoning_effort": "medium",   # OpenAI provider only: none | minimal | low | medium | high | xhigh
+        # OpenAI provider only — see ReviewJudgeClient's class docstring in
+        # review_judge.py. The review/fix system prompts are large (~25K
+        # tokens) and near-fully stable, but calls are spaced out by local
+        # MUT generation time in between, which was expiring the default
+        # short-lived cache before the next call arrived.
+        # Versioned ("v7") so bumping it deliberately busts the cache
+        # namespace whenever review_judge.py's shared system-prompt content
+        # (rules/reference/notes) changes materially — bump this alongside
+        # such edits. Each call suffixes its own purpose (review/fix).
+        "prompt_cache_key": "ctl-reviewer:v7",
+        # SDK only accepts exactly "in_memory" (short default) or "24h"
+        # (extended) — there is no shorter non-default option to pick.
+        "prompt_cache_retention": "24h",      # "24h" | "in_memory" | null to omit the field entirely
+        "request_timeout_s": 180,       # hard cap on a single judge HTTP call
     },
     # Used only with --tweak. A separate, usually cheaper/local, LLM that rewrites
     # each prompt (new domain/fields/logic) before it's shown to the MUT. Kept
@@ -102,7 +121,16 @@ DEFAULT_CONFIG: dict = {
         "api_key": "not-needed",
         "base_url": "http://virt-ai:3000/v1",
         "max_retries": 2,
-        "max_tokens": 2048,
+        "max_completion_tokens": 4096,
+        "reasoning_effort": "medium",
+        # Local vLLM servers typically don't recognize these OpenAI-specific
+        # fields; ReviewJudgeClient auto-detects the rejection and stops
+        # sending them after the first failed attempt, so leaving them set
+        # here is harmless even against a local server. Own version counter
+        # since this covers a different prompt family (tweak/numeric-check)
+        # — bump independently of "ctl-reviewer" above.
+        "prompt_cache_key": "ctl-tweak:v1",
+        "prompt_cache_retention": "24h",
         "request_timeout_s": 180,
     },
     "output": {
@@ -247,6 +275,27 @@ def _log_usage_delta(label: str, judge, before: tuple[int, int, int], log_fh=Non
     _log(f"    [{label}] tokens: in={d_in} cached={d_cached} ({pct}) generated={d_out}", log_fh)
 
 
+def _log_usage_breakdown(label: str, client, log_fh=None) -> None:
+    """Print token usage split by purpose (review/fix/tweak/numeric-check),
+    not just the aggregate — a single client instance handles more than one
+    prompt "family" with very different caching behavior (e.g. the judge
+    client's review() calls share a large, cacheable system prompt; its
+    fix() calls use a different, unrelated one), so a combined-only number
+    dilutes the real per-purpose cache hit rate. See
+    ReviewJudgeClient.usage_by_purpose."""
+    if not client.usage.calls:
+        return
+    _log(f"  {label} (by purpose):", log_fh)
+    for purpose, u in sorted(client.usage_by_purpose.items()):
+        pct = f"{100*u.cache_hit_rate:.1f}%" if u.input_tokens else "—"
+        _log(f"    {purpose:<16} {u.calls:>3} calls  in={u.input_tokens:>9}  "
+             f"(cached: {u.cached_tokens:>8}, {pct:>6})  out={u.output_tokens:>7}", log_fh)
+    u = client.usage
+    pct = f"{100*u.cache_hit_rate:.1f}%" if u.input_tokens else "—"
+    _log(f"    {'TOTAL':<16} {u.calls:>3} calls  in={u.input_tokens:>9}  "
+         f"(cached: {u.cached_tokens:>8}, {pct:>6})  out={u.output_tokens:>7}  total={u.total_tokens}", log_fh)
+
+
 # ---------------------------------------------------------------------------
 # Main run
 # ---------------------------------------------------------------------------
@@ -276,7 +325,7 @@ def cmd_run(args: argparse.Namespace) -> None:
         f"started: {run_stamp}\n"
         f"input: {input_path}\n"
         f"config: {config_path}\n"
-        f"index: {args.index}  limit: {args.limit}  tweak: {args.tweak}\n"
+        f"index: {args.index}  limit: {args.limit}  tweak: {args.tweak}  tweak_random: {args.tweak_random}\n"
         f"judge: {cfg['judge'].get('provider')} / {cfg['judge'].get('model')}\n"
         + (f"tweak_llm: {cfg['tweak_llm'].get('provider')} / {cfg['tweak_llm'].get('model')}\n" if args.tweak else "")
         + f"MUT checkpoint: {cfg['model'].get('checkpoint_dir')}\n\n"
@@ -295,6 +344,7 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     from dpo_forge.generator import LocalGenerator, normalize_ctl
     from dpo_forge.review_judge import (
         ReviewJudgeClient, describe_component_resolution, infer_component_type_from_prompt,
+        pick_business_domain,
     )
     from dpo_forge.output import write_conversation_jsonl
 
@@ -323,11 +373,25 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     _log(f"[mut-validate] Processing {len(filtered)} example(s)"
          + (f" (from index {start_index})" if start_index else "")
          + (f", limit {args.limit}" if args.limit is not None else ""), log_fh)
+    # Business-domain-hint randomness source for --tweak, per the module
+    # comment above review_judge.pick_business_domain():
+    #   --tweak alone        -> deterministic per example (seeded from the
+    #                            example's own id) -> reproducible re-runs,
+    #                            still varied across examples in one run.
+    #   --tweak --tweak-random -> one shared, unseeded (OS-entropy-seeded)
+    #                            rng -> different domains on every run.
+    shared_domain_rng = random.Random() if args.tweak_random else None
+
+    def _domain_rng_for(example) -> random.Random:
+        return shared_domain_rng if shared_domain_rng is not None else random.Random(example.id)
+
     if args.tweak:
         tweak_cfg = cfg["tweak_llm"]
         _log(f"[mut-validate] --tweak enabled: each prompt is rewritten by "
              f"{tweak_cfg.get('provider')}/{tweak_cfg.get('model')} "
-             f"(new domain/fields/logic, same component type) before use", log_fh)
+             f"(new domain/fields/logic, same component type) before use "
+             f"— business domain is {'freshly randomized each run (--tweak-random)' if args.tweak_random else 'deterministic per example (stable across re-runs)'}",
+             log_fh)
 
     # ── Init clients ─────────────────────────────────────────────────────
     model_cfg = cfg["model"]
@@ -388,9 +452,11 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
 
         prompt = example.prompt
         if args.tweak:
+            business_domain = pick_business_domain(_domain_rng_for(example))
+            _log(f"  [tweak] business domain: {business_domain.replace(chr(10), ' / ')}", log_fh)
             print("  [tweak] rewriting prompt (new domain/fields/logic, same component) …")
             try:
-                tweaked_prompt = tweak_client.tweak(example.prompt, component_type)
+                tweaked_prompt = tweak_client.tweak(example.prompt, component_type, business_domain=business_domain)
             except Exception as e:
                 _log(f"  [tweak] ERROR ({e}) — falling back to the original (untweaked) prompt. "
                      f"{_source_identity(example)}", log_fh)
@@ -488,6 +554,7 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
         if args.tweak:
             extra["tweaked"] = True
             extra["original_prompt"] = example.prompt
+            extra["business_domain"] = business_domain
 
         if review_2.verdict == "PASS":
             _log(f"  [{example.id}] -> CORRECT on 2nd pass (MUT self-corrected)", log_fh)
@@ -537,16 +604,13 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             _log(f"  Skipped (unparseable):     {n_unparseable}", log_fh)
         if n_missing_component:
             _log(f"  Missing component type:    {n_missing_component}  (see [component] WARNING lines above/in log for source identification)", log_fh)
-    u = judge.usage
-    _log(f"  Judge calls:               {u.calls}", log_fh)
-    _log(f"  Judge input tokens:        {u.input_tokens}"
-         + (f"  (cached: {u.cached_tokens}, {100*u.cache_hit_rate:.1f}%)" if u.input_tokens else ""), log_fh)
-    _log(f"  Judge generated tokens:    {u.output_tokens}", log_fh)
-    _log(f"  Judge total tokens:        {u.total_tokens}", log_fh)
-    tu = tweak_llm_client.usage
-    if tu.calls:
-        _log(f"  Tweak/numeric-check LLM calls:        {tu.calls}", log_fh)
-        _log(f"  Tweak/numeric-check LLM total tokens: {tu.total_tokens}", log_fh)
+    # Split by purpose rather than one mixed aggregate — review() and fix()
+    # (or tweak() and check_numeric_claim()) share a client instance but use
+    # unrelated system prompts with very different caching behavior; a single
+    # combined cache-hit % hides which prompt family actually caches. See
+    # _log_usage_breakdown / ReviewJudgeClient.usage_by_purpose.
+    _log_usage_breakdown("Judge", judge, log_fh)
+    _log_usage_breakdown("Tweak/numeric-check LLM", tweak_llm_client, log_fh)
     _log(f"  Wall clock:                {wall_clock:.1f}s", log_fh)
     _log("=" * 60, log_fh)
 
@@ -583,6 +647,7 @@ examples:
   ./mut_validate.py data/sft_input/foo.json --config configs/mut_validate.yaml --limit 20
   ./mut_validate.py data/sft_input/foo.json --index 20 --limit 20 --verbose
   ./mut_validate.py data/sft_input/foo.json --tweak --limit 20
+  ./mut_validate.py data/sft_input/foo.json --tweak --tweak-random --limit 20
 
 (runs on GPU 1 by default; uses /home/pavlisd/venv via the shebang)
 """,
@@ -603,9 +668,17 @@ examples:
     parser.add_argument("--tweak", action="store_true",
                         help="Have the judge LLM rewrite each prompt (new domain, field names/types, "
                              "and a genuinely different business rule, same component type) before "
-                             "sending it to the MUT — avoids testing on prompts the MUT was trained on verbatim")
+                             "sending it to the MUT — avoids testing on prompts the MUT was trained on verbatim. "
+                             "The business domain/process/region is picked deterministically per example "
+                             "(stable across re-runs of the same input file) unless --tweak-random is also given.")
+    parser.add_argument("--tweak-random", action="store_true",
+                        help="Modifier for --tweak (implies it): pick each example's business domain/process/"
+                             "region from a freshly-seeded random source instead of a per-example-deterministic "
+                             "one, so repeated runs land on different domains instead of the same ones every time")
 
     args = parser.parse_args()
+    if args.tweak_random:
+        args.tweak = True  # --tweak-random is a modifier of --tweak, not a separate feature
     cmd_run(args)
 
 

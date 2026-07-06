@@ -662,6 +662,20 @@ function integer transform() {
 - ++ is valid on module/local variables.
 - Don't use STOP or SKIP return constatns. STOP means ABORT.
 - For sequence values, use internal counter or sequence(Name).next().
+- The TOTAL NUMBER OF RECORDS to generate is a component-level configuration
+  property (e.g. "Number of records"/"Run Count"), set outside the CTL —
+  it is NEVER the CTL's job to count, cap, or stop generation once some
+  target total is reached. generate()'s only contract is: produce exactly
+  ONE output record per call, using module-level state to vary/derive its
+  content, and return OK (single output port) or ALL (route to all
+  connected outputs). Do NOT flag the absence of a record-count check,
+  a total/limit counter, or any other self-imposed stopping condition as an
+  issue — there is nothing to add; the component's own configuration is
+  solely responsible for how many times generate() gets called, and the CTL
+  has no visibility into or control over that number.
+- Returning anything other than OK or ALL from generate() (STOP, SKIP, an
+  output-port index used as a stopping signal, etc.) is itself the error,
+  not a missing check for one — see (f).
 
 (e) Minimal correct skeleton
 ```ctl
@@ -677,6 +691,12 @@ function integer generate() {
 (f) Canonical mistake
 - Wrong: expecting $in.0 in DATAGENERATOR.
 - Correct: no input; generate from module state and constants.
+- Wrong: flagging generate() as broken/incomplete because it "can emit more
+  than N records" or "never enforces the required total of N records" when
+  N comes from the task description.
+- Correct: N is a component-configuration value the CTL cannot see or
+  control; generate() emitting one record per call with no internal count
+  check is correct by contract, not a defect.
 
 ## AI OpenAIClient component
 

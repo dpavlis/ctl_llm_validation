@@ -949,7 +949,7 @@ Date format patterns: Java SimpleDateFormat — `yyyy`, `MM`, `dd`, `HH`, `mm`, 
 | | `map[K,V] appendAll(map[K,V] target, map[K,V] source)` | Merge into `target`; existing keys in `target` are preserved (left wins). `target==null` or `source==null` fails. Since 6.4.0. |
 | | `variant appendAll(variant target, variant source)` | Same semantics for list/map variants; fails on non-container, mixed types, or null-invalid cases. Since 6.4.0. |
 | `binarySearch` | `integer binarySearch(T[], T)` | Binary search on **pre-sorted** list. Returns 0-based index if found; negative value `-(insertionPoint+1)` if not found. |
-| `clear` | `void clear(list\|map\|variant)` | Remove all elements. |
+| `clear` | `void clear(list\|map\|variant)` | Remove all elements. **Prefer over reassigning to an empty literal** (`x = {};` / `x = [];`) to reset a previously-declared `map`/`list` variable — `clear()` empties the existing structure in place, reusing it instead of allocating a new one and letting the old one be garbage-collected. Typical in a component's `clean()`/reset lifecycle function, e.g. `clear(zoneCounts);` instead of `zoneCounts = {};`. |
 | `containsAll` | `boolean containsAll(T[], T[])` | List contains all from another? |
 | `containsKey` | `boolean containsKey(map, key)` | Map contains key? **map null → fails.** |
 | | `boolean containsKey(variant, variant key)` | variant must contain map. |

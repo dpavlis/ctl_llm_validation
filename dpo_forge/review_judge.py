@@ -23,6 +23,7 @@ pipeline.
 from __future__ import annotations
 
 import os
+import random
 import re
 import time
 from dataclasses import dataclass, field
@@ -491,6 +492,14 @@ _SIMPLIFICATION_PATTERNS: list[tuple[str, str]] = [
         '`isnull(x) || trim(x) == ""` (or the reverse order)',
         '`isBlank(x)`',
     ),
+    (
+        '`x = {};` to reset a previously-declared `map` variable back to empty',
+        '`clear(x);`',
+    ),
+    (
+        '`x = [];` to reset a previously-declared `list`/array variable back to empty',
+        '`clear(x);`',
+    ),
 ]
 
 
@@ -642,6 +651,71 @@ Component type: {component_type}
 
 
 # ---------------------------------------------------------------------------
+# Business domain hint (--tweak / --tweak-random)
+#
+# The tweak model previously invented its own "different business scenario"
+# and reliably converged on the same few domains (e.g. sensor telemetry) for
+# similarly-shaped originals — a direct result of (a) _TWEAK_SYSTEM's own
+# example list below biasing it, and (b) the tweak call running at
+# temperature=0.0, i.e. fully deterministic decoding with zero sampling
+# diversity of its own. Rather than ask the model to pick a domain, an
+# external (industry, process, region) triple is picked from these curated
+# lists and handed to it as a hard constraint — see pick_business_domain().
+#
+# Caller controls the actual randomness source:
+#   --tweak         : deterministic per example (seed the rng from a stable
+#                      example identifier) — reproducible across re-runs of
+#                      the same input file, but varied across examples.
+#   --tweak-random  : caller passes an unseeded/entropy-seeded rng instead,
+#                      so repeated runs land on different domains.
+# This module only picks from a given rng; it does not decide which kind.
+# ---------------------------------------------------------------------------
+
+_TWEAK_INDUSTRIES = [
+    "banking", "telecommunications", "airline", "insurance", "healthcare",
+    "pharmaceutical research", "retail", "e-commerce", "manufacturing",
+    "logistics and freight", "energy and utilities", "government and public sector",
+    "higher education", "hospitality and hotels", "real estate",
+    "media and streaming", "agriculture", "automotive", "public transit",
+    "food and beverage", "construction", "legal services", "non-profit and NGO",
+    "sports and entertainment", "mining and natural resources",
+]
+
+_TWEAK_PROCESSES = [
+    "order taking", "claims processing", "customer onboarding", "fraud detection",
+    "billing and invoicing", "inventory management", "HR and payroll",
+    "supply chain management", "research and development", "marketing analytics",
+    "compliance and audit", "customer support", "procurement", "quality assurance",
+    "network operations", "reservation and booking", "returns processing",
+    "asset maintenance", "loyalty program management", "dispatch and scheduling",
+    "underwriting", "warehouse management", "payment processing",
+    "employee scheduling", "incident management",
+]
+
+_TWEAK_REGIONS = [
+    "North America", "Latin America", "Western Europe", "Eastern Europe",
+    "Nordics", "United Kingdom and Ireland", "Iberia", "Benelux",
+    "DACH (Germany, Austria, Switzerland)", "Balkans", "Middle East",
+    "North Africa", "Sub-Saharan Africa", "South Asia", "Southeast Asia",
+    "East Asia", "Greater China", "Australia and New Zealand",
+    "Pacific Islands", "Central Asia", "Caribbean", "Andean region",
+    "Southern Cone", "Gulf Cooperation Council states", "Central America",
+]
+
+
+def pick_business_domain(rng: random.Random) -> str:
+    """Pick one (industry, process, region) triple from the curated lists
+    above using the given rng, and format it as the hint block injected into
+    _TWEAK_USER. Whether rng is deterministic (--tweak) or entropy-seeded
+    (--tweak-random) is entirely the caller's choice — this function just
+    draws from it."""
+    industry = rng.choice(_TWEAK_INDUSTRIES)
+    process = rng.choice(_TWEAK_PROCESSES)
+    region = rng.choice(_TWEAK_REGIONS)
+    return f"Business domain: {industry} {process}\nRegion: {region}"
+
+
+# ---------------------------------------------------------------------------
 # Prompts — tweak mode (--tweak)
 #
 # Rewrites an SFT example's prompt into a different-but-structurally-similar
@@ -660,24 +734,50 @@ scenario — this gives learners fresh material to practice the same skill on,
 instead of everyone working from one fixed example.
 
 ## What to change
-1. Business domain: pick a different scenario unrelated to the original (e.g.
-   if the original is about customer orders, move to something like sensor
-   telemetry, warehouse inventory, employee shifts, flight bookings, etc.).
+1. Business domain: the task below specifies an EXACT business domain and
+   region to use — adopt it precisely. Do NOT invent a different domain, do
+   NOT fall back to a generic example of your own (sensor telemetry,
+   warehouse inventory, employee shifts, flight bookings, etc. are NOT valid
+   choices unless they are literally the domain given below), and do not
+   ignore the region. Let the region inform natural local flavor where it
+   fits (currency, units, terminology, local business norms) — it does not
+   need to change the CTL2 structure itself.
 2. Field names: every field gets a new name fitting the new domain. Do not
    reuse the original field names.
 3. Field types / nullability: vary at least some field types and nullable
    attributes from the original (e.g. swap integer <-> long, add or remove
    nullable="false", change a string to decimal where it still makes sense).
-4. Business logic: rewrite the instruction to use the new field names, AND
-   make a genuine small change to what the transformation must do — a
-   different condition, threshold, derived value, or edge case — not just a
-   find-and-replace of names into the same logic. The correct code for the
-   new task must differ from the correct code for the original task.
+4. Business logic — STRUCTURAL change required, not parameter substitution.
+   The most common failure here is producing the same expression tree with
+   new names/thresholds swapped in (e.g. original: "`status` is A or B, AND
+   `amount` <= 5000, AND `flag` is false" -> bad rewrite: "`status2` is C or
+   D, AND `amount2` >= 50, AND `flag2` is true" — same shape: one set-
+   membership check, one numeric threshold, one boolean check, joined by AND.
+   That is NOT acceptable; renaming a threshold or flipping an operator
+   direction/boolean value is not a structural change.
+   Do AT LEAST ONE of the following, chosen to fit the new domain naturally
+   (do not force all of them):
+     - Change the condition COUNT (one fewer or one more than the original).
+     - Change how conditions COMBINE: flat AND-of-N -> nested grouping like
+       (A OR B) AND (C OR D); AND-dominant -> OR-dominant; add a NOT.
+     - Introduce a condition TYPE absent from the original: a null/missing-
+       value check, a string prefix/contains/pattern match, a date or
+       date-range comparison, a derived/computed value (e.g. a ratio, a sum
+       of two fields, a length), or a comparison BETWEEN two input fields
+       instead of a field against a constant.
+     - Swap which field plays the "categorical set membership" role vs. the
+       "numeric threshold" role vs. the "boolean flag" role, or drop one of
+       those roles and add a different one instead.
+   Also rewrite the instruction to use the new field names throughout.
+   The correct CTL2 code for the new task must be structurally different
+   from the correct code for the original task, not just a relabeling of the
+   same conditions.
 
 ## What to keep
-- Component type: the new task is for the exact same CTL2 component type as
-  the original ({component_type}) — do not change which component this is
-  for, only what it does.
+- Component type: the new task MUST be for the exact same CTL2 component
+  type as the original — do not change which component this is for, only
+  what it does. (The original's component type is named in the task given
+  below, under "Original task".)
 - Overall shape: roughly the same number of input/output fields, the same
   `<Metadata>` XML structure and phrasing style as the original (e.g. "Given
   Input Metadata on Port 0: ... And Output Metadata on Port 0: ... Write a
@@ -699,11 +799,17 @@ _TWEAK_USER = """\
 
 {original_prompt}
 
+## Required business domain for the new task
+{business_domain}
+
 ---
-Rewrite this into a new task per the rules above. Remember: different domain,
+Rewrite this into a new task per the rules above. Remember: use the EXACT
+business domain and region given above (do not substitute your own), give it
 different field names, at least one changed field type/nullability, and a
-genuinely different (not just renamed) business rule — while staying the same
-component type and roughly the same shape/difficulty.
+STRUCTURALLY different business rule (different condition count, combination,
+or condition type — not the same expression shape with renamed fields and
+swapped thresholds/operators) — while staying the same component type and
+roughly the same shape/difficulty.
 """
 
 
@@ -1013,16 +1119,52 @@ _MODERATION_BACKOFF_S = [7.0, 15.0, 30.0, 60.0, 90.0]
 
 
 class ReviewJudgeClient:
+    """
+    Judge prompt caching: the review/fix system prompts are large (~25K
+    tokens: rules + the full CTL2 reference + a component contract) and
+    almost fully stable across calls, but consecutive judge calls are spaced
+    out by however long local MUT generation takes in between (tens of
+    seconds or more) — long enough that OpenAI's default ("in_memory", short
+    TTL) prompt cache retention often expires before the next call arrives.
+    _call_openai sends `prompt_cache_key` (a stable per-purpose string, so
+    OpenAI can bucket repeat requests to the same warm backend) and
+    `prompt_cache_retention: "24h"` (extends how long the cached prefix stays
+    active) to address this — both configurable via the "prompt_cache_key"/
+    "prompt_cache_retention" cfg keys. Confirmed via a real run's per-call
+    logs that cache hits were sparse and inconsistent even for back-to-back
+    calls reviewing the SAME candidate, consistent with retention expiring
+    between calls rather than a prefix-construction bug.
+    """
 
     def __init__(self, cfg: dict, log_file: Optional[TextIO] = None):
         self._cfg = cfg
         self._llm = None
         self.usage = UsageStats()
+        # One client instance is reused across genuinely different prompt
+        # "families" (e.g. the judge client handles both review() and fix()
+        # calls; the tweak_llm client handles both tweak() and
+        # check_numeric_claim() calls) that have DIFFERENT system prompts
+        # and therefore very different caching behavior — review's ~25K
+        # token, near-fully-shared prompt caches well; fix()'s distinct
+        # system prompt shares nothing with it; numeric-check's tiny prompt
+        # is under the 1024-token minimum and can never cache at all.
+        # Aggregating them into self.usage alone dilutes the visible cache
+        # hit rate and hides which prompt family is actually caching.
+        # Keyed by the same `purpose` string passed to _call().
+        self.usage_by_purpose: dict[str, UsageStats] = {}
         # Newer OpenAI models (gpt-5.x) require max_completion_tokens instead of
-        # max_tokens, and some reject a non-default temperature. Auto-detected on
-        # first call and cached so we don't eat a failed round-trip every time.
+        # max_tokens, and some reject a non-default temperature or reasoning_effort.
+        # Auto-detected on first call and cached so we don't eat a failed
+        # round-trip every time.
         self._openai_token_param: Optional[str] = None
         self._openai_supports_temperature: bool = True
+        self._openai_supports_reasoning_effort: bool = True
+        # prompt_cache_key/prompt_cache_retention are OpenAI-specific fields a
+        # local/self-hosted OpenAI-compatible server (e.g. the vLLM-served
+        # tweak_llm) will very likely reject outright — same auto-detect-and-
+        # drop treatment as the flags above.
+        self._openai_supports_prompt_cache_key: bool = True
+        self._openai_supports_prompt_cache_retention: bool = True
         # Optional run-log file — receives full, untruncated diagnostics
         # (unparseable raw responses, flagged prompts) that console output
         # only shows a short preview of.
@@ -1052,16 +1194,22 @@ class ReviewJudgeClient:
             raise ValueError(f"Unknown judge provider: {provider!r}")
         return self._llm
 
-    def _call(self, system: str, user_message: str) -> str:
+    def _call(self, system: str, user_message: str, purpose: str = "") -> str:
         provider = self._cfg.get("provider", "anthropic")
         if provider == "anthropic":
-            return self._call_anthropic(system, user_message)
+            return self._call_anthropic(system, user_message, purpose)
         elif provider == "openai":
-            return self._call_openai(system, user_message)
+            return self._call_openai(system, user_message, purpose)
         else:
             raise ValueError(f"Unknown judge provider: {provider!r}")
 
-    def _call_anthropic(self, system: str, user_message: str) -> str:
+    def _record_usage(self, purpose: str, input_tokens: int, cached_tokens: int, output_tokens: int) -> None:
+        self.usage.add(input_tokens=input_tokens, cached_tokens=cached_tokens, output_tokens=output_tokens)
+        self.usage_by_purpose.setdefault(purpose or "unknown", UsageStats()).add(
+            input_tokens=input_tokens, cached_tokens=cached_tokens, output_tokens=output_tokens,
+        )
+
+    def _call_anthropic(self, system: str, user_message: str, purpose: str = "") -> str:
         llm = self._get_llm()
         model = self._cfg.get("model", "claude-opus-4-20250514")
         max_tokens = self._cfg.get("max_tokens", 2048)
@@ -1075,7 +1223,8 @@ class ReviewJudgeClient:
         u = resp.usage
         # cache_read_input_tokens is the portion of input_tokens served from
         # Anthropic's prompt cache — a subset of input_tokens, not additional.
-        self.usage.add(
+        self._record_usage(
+            purpose,
             input_tokens=u.input_tokens,
             cached_tokens=getattr(u, "cache_read_input_tokens", 0) or 0,
             output_tokens=u.output_tokens,
@@ -1085,11 +1234,14 @@ class ReviewJudgeClient:
     def _create_openai_chat_completion(self, llm, kwargs: dict, max_flag_retries: Optional[int] = None):
         """Call chat.completions.create(), transparently working around two
         provider quirks: (1) newer OpenAI models need max_completion_tokens
-        instead of max_tokens, or reject a non-default temperature — detected
-        once and cached on self; (2) OpenAI's moderation classifier can flag a
-        completely benign prompt intermittently (confirmed: identical request,
-        different outcome on repeat) — retrying the identical request a few
-        times resolves it more often than not."""
+        instead of max_tokens, or reject a non-default temperature,
+        reasoning_effort, prompt_cache_key, or prompt_cache_retention —
+        detected once and cached on self (the last two matter for a
+        local/self-hosted OpenAI-compatible server that doesn't recognize
+        OpenAI-specific caching fields); (2) OpenAI's moderation classifier
+        can flag a completely benign prompt intermittently (confirmed:
+        identical request, different outcome on repeat) — retrying the
+        identical request a few times resolves it more often than not."""
         from openai import BadRequestError
 
         if max_flag_retries is None:
@@ -1108,6 +1260,18 @@ class ReviewJudgeClient:
                 if "temperature" in msg and "temperature" in kwargs:
                     self._openai_supports_temperature = False
                     kwargs.pop("temperature")
+                    continue
+                if "reasoning_effort" in msg and "reasoning_effort" in kwargs:
+                    self._openai_supports_reasoning_effort = False
+                    kwargs.pop("reasoning_effort")
+                    continue
+                if "prompt_cache_key" in msg and "prompt_cache_key" in kwargs:
+                    self._openai_supports_prompt_cache_key = False
+                    kwargs.pop("prompt_cache_key")
+                    continue
+                if "prompt_cache_retention" in msg and "prompt_cache_retention" in kwargs:
+                    self._openai_supports_prompt_cache_retention = False
+                    kwargs.pop("prompt_cache_retention")
                     continue
                 if "invalid_prompt" in msg or "flagged as potentially violating" in msg:
                     flagged_msgs = "--- START flagged messages ---\n" + "\n\n".join(
@@ -1128,10 +1292,16 @@ class ReviewJudgeClient:
                 raise
         raise RuntimeError("unreachable")  # loop always returns or raises
 
-    def _call_openai(self, system: str, user_message: str) -> str:
+    def _call_openai(self, system: str, user_message: str, purpose: str = "") -> str:
         llm = self._get_llm()
         model = self._cfg.get("model", "claude-opus-4-20250514")
-        max_tokens = self._cfg.get("max_tokens", 2048)
+        # "max_completion_tokens" is the config key going forward (matches the
+        # OpenAI request field name for reasoning-tier models); "max_tokens"
+        # is kept as a fallback so existing configs that only set the older
+        # key keep working. Which wire parameter NAME is actually sent
+        # ("max_tokens" vs "max_completion_tokens") is a separate, runtime-
+        # detected concern — see self._openai_token_param above.
+        max_tokens = self._cfg.get("max_completion_tokens", self._cfg.get("max_tokens", 4096))
         kwargs: dict = {
             "model": model,
             "messages": [
@@ -1142,6 +1312,25 @@ class ReviewJudgeClient:
         kwargs[self._openai_token_param or "max_tokens"] = max_tokens
         if self._openai_supports_temperature:
             kwargs["temperature"] = 0.0
+        if self._openai_supports_reasoning_effort and self._cfg.get("reasoning_effort"):
+            kwargs["reasoning_effort"] = self._cfg["reasoning_effort"]
+
+        # Prompt caching hints (see "Judge prompt caching" note near the top
+        # of this class): our system prompts are large (~25K tokens) and
+        # near-fully stable across calls, but calls are spaced out by
+        # however long local MUT generation takes in between — long enough
+        # that the SHORT default ("in_memory") cache retention often expires
+        # before the next call arrives, and with no cache key set, OpenAI has
+        # no extra hint to route repeat requests back to the same warm
+        # backend. Both together are what was producing near-0% cache hits
+        # even for back-to-back calls in the same review() retry loop.
+        if self._openai_supports_prompt_cache_key:
+            base_key = self._cfg.get("prompt_cache_key") or "ctl-reviewer:v1"
+            kwargs["prompt_cache_key"] = f"{base_key}-{purpose}" if purpose else base_key
+        if self._openai_supports_prompt_cache_retention:
+            retention = self._cfg.get("prompt_cache_retention", "24h")
+            if retention:
+                kwargs["prompt_cache_retention"] = retention
 
         resp = self._create_openai_chat_completion(llm, kwargs)
 
@@ -1152,7 +1341,8 @@ class ReviewJudgeClient:
             # / self-hosted servers (e.g. vLLM) often leave this null.
             details = getattr(u, "prompt_tokens_details", None)
             cached = getattr(details, "cached_tokens", 0) if details else 0
-            self.usage.add(
+            self._record_usage(
+                purpose,
                 input_tokens=u.prompt_tokens,
                 cached_tokens=cached or 0,
                 output_tokens=u.completion_tokens,
@@ -1215,7 +1405,7 @@ class ReviewJudgeClient:
                     "\n\n**Respond with ONLY the ISSUES/SUGGESTIONS/VERDICT "
                     "format described above — no other text.**"
                 )
-            raw = self._call(review_system, msg)
+            raw = self._call(review_system, msg, purpose="review")
             result = _parse_review(raw)
             if result is not None:
                 if numeric_verifier is not None:
@@ -1272,6 +1462,7 @@ class ReviewJudgeClient:
         raw = self._call(
             _NUMERIC_CLAIM_CHECK_SYSTEM,
             _NUMERIC_CLAIM_CHECK_USER.format(code=code, description=description),
+            purpose="numeric-check",
         )
         return "HALLUCINATION" not in raw.upper()
 
@@ -1291,7 +1482,7 @@ class ReviewJudgeClient:
             candidate=code,
             review_text=review.render(),
         )
-        raw = self._call(fix_system, user_msg)
+        raw = self._call(fix_system, user_msg, purpose="fix")
         # Defensive cleanup: strip anything before a stray "===FINAL ANSWER==="
         # marker if the model emits one unprompted, then extract just the
         # fenced code — covers models that ramble in prose right up to the
@@ -1301,18 +1492,25 @@ class ReviewJudgeClient:
         code = normalize_ctl(_extract_final_answer(raw))
         return f"```ctl\n{code}\n```"
 
-    def tweak(self, prompt: str, component_type: str = "") -> str:
+    def tweak(self, prompt: str, component_type: str = "", business_domain: str = "") -> str:
         """Rewrite an SFT example's prompt into a different-but-structurally-
         similar task (new domain, new field names/types, a genuinely different
         business rule) so the MUT is tested on something it wasn't trained on
         verbatim. component_type is the type detected on the ORIGINAL prompt —
-        passed in as the constraint the rewrite must preserve."""
-        tweak_system = _TWEAK_SYSTEM.format(
-            component_type=component_type or "(not explicitly stated — infer it from the prompt and keep it unchanged)"
-        )
+        passed in as the constraint the rewrite must preserve. business_domain
+        is the externally-picked "Business domain: ...\\nRegion: ..." hint from
+        pick_business_domain() — passed in as a hard constraint rather than
+        left for the model to invent, since it otherwise reliably converges on
+        the same few domains (see the module comment above pick_business_domain)."""
+        # _TWEAK_SYSTEM is now a fixed string with no per-call interpolation
+        # (component_type lives only in _TWEAK_USER) — maximizes the
+        # byte-identical shared prefix across every tweak() call regardless
+        # of component type, the same way _build_review_system orders its
+        # stable content first for prompt-cache reuse.
         user_msg = _TWEAK_USER.format(
             component_type=component_type or "unknown",
             original_prompt=prompt,
+            business_domain=business_domain or "(not specified — pick any business domain and region distinct from the original)",
         )
-        raw = self._call(tweak_system, user_msg)
+        raw = self._call(_TWEAK_SYSTEM, user_msg, purpose="tweak")
         return _extract_tweaked_prompt(raw)
