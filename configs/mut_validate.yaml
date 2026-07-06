@@ -1,0 +1,88 @@
+# mut_validate configuration
+# Run: python mut_validate.py data/sft_input/your_file.json --config configs/mut_validate.yaml
+
+model:
+  # Path to the merged/exported safetensors checkpoint (the MUT)
+  checkpoint_dir: /home/pavlisd/exports/qwen35-9B-CTLv20
+  adapter_dir: null      # optional LoRA adapter dir (unmerged checkpoint)
+  dtype: bfloat16        # float16 | bfloat16 | float32
+  attn_impl: flash_attention_2   # flash_attention_2 | sdpa
+  # System prompt sent to the MUT — must match test.py's canonical prompt
+  system_prompt: |
+    You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+    Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+    Prefer correct, practical, minimal solutions.
+  generation:
+    temperature: 0.3
+    top_p: 1.0
+    max_new_tokens: 2048
+    seed: 42
+
+judge:
+  provider: openai
+    #model: Qwen3-Coder-Next
+    #api_key: not-needed      # local server doesn't check it; kept non-empty for the OpenAI client
+    #base_url: http://virt-ai:3000/v1
+  max_retries: 2           # retries on an unparseable review response
+  # Official OpenAI API — kept here for quick swap-back, see prior comparison run.
+  model: gpt-5.4
+  api_key: ${OPENAI_API_KEY}
+    #base_url: null           # null = official OpenAI API
+  max_completion_tokens: 4096   # cap on the judge's response length per call (includes hidden reasoning tokens)
+  # Reasoning effort for OpenAI reasoning-tier models. One of:
+  #   none | minimal | low | medium | high | xhigh
+  reasoning_effort: medium
+    #reasoning_effort: none
+    #reasoning_effort: minimal
+    #reasoning_effort: low
+    #reasoning_effort: high
+    #reasoning_effort: xhigh
+  # Prompt caching: the review/fix system prompt is ~25K tokens and almost
+  # fully stable across calls, but calls are spaced out by local MUT
+  # generation time in between — long enough that the default short-lived
+  # ("in_memory") cache retention often expires before the next call
+  # arrives. prompt_cache_key hints OpenAI to route repeat requests to the
+  # same warm backend; prompt_cache_retention: 24h keeps the cached prefix
+  # alive far longer than the default. See ReviewJudgeClient's class
+  # docstring in review_judge.py for the full rationale.
+  # "v7": bump when review_judge.py's shared system-prompt content
+  # (rules/reference/notes) changes materially, to deliberately start a
+  # fresh cache namespace.
+  prompt_cache_key: ctl-reviewer:v7
+  # SDK only accepts exactly "in_memory" (short default) or "24h" (extended)
+  # — no shorter non-default option is available.
+  prompt_cache_retention: "24h"   # "24h" | "in_memory" | null to omit the field entirely
+
+# Used only with --tweak. Kept separate from "judge" — defaults to the local
+# Qwen server since OpenAI's moderation classifier has intermittently flagged
+# the tweak prompt (a benign "rewrite this into a new practice task" request)
+# on some reasoning-tier OpenAI models. Also doubles as the numeric-claim
+# fact-checker for any judge ISSUE that mentions a numeric type, regardless
+# of --tweak — see review_judge.check_numeric_claim().
+tweak_llm:
+  provider: openai
+  model: Qwen3-Coder-Next
+  api_key: not-needed
+  base_url: http://virt-ai:3000/v1
+  max_retries: 2
+  max_completion_tokens: 4096
+  # Reasoning effort — same options as judge above. Qwen3-Coder-Next is not a
+  # reasoning-tier model; if the local server rejects this field, the client
+  # detects that automatically and stops sending it (see
+  # ReviewJudgeClient._create_openai_chat_completion), so this is harmless
+  # even if unsupported.
+  reasoning_effort: medium
+    #reasoning_effort: none
+    #reasoning_effort: minimal
+    #reasoning_effort: low
+    #reasoning_effort: high
+    #reasoning_effort: xhigh
+  # Harmless even against the local vLLM server — auto-dropped on first
+  # rejection, same as reasoning_effort above. Own version counter — bump
+  # independently of ctl-reviewer above when the tweak/numeric-check prompts change.
+  prompt_cache_key: ctl-tweak:v1
+  prompt_cache_retention: "24h"
+
+output:
+  self_corrected_file: results/mut_validate/self_corrected.jsonl
+  judge_corrected_file: results/mut_validate/judge_corrected.jsonl

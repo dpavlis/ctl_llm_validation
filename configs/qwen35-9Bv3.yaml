@@ -75,9 +75,10 @@ sft:
   dataset: clover_ctl_trainign_data
   eval_dataset: clover_ctl_eval_data
   cutoff_len: 2400
-  lr_scheduler_type: cosine_with_min_lr  #linear # #constant_with_warmupa
+  lr_scheduler_type: cosine_with_restarts #cosine_with_min_lr  #linear # #constant_with_warmupa
   lr_scheduler_kwargs:
-        min_lr: 5.0e-6
+    #min_lr: 5.0e-6
+        num_cycles: 2
   learning_rate: 5.0e-5
   num_train_epochs: 2
   max_samples: 150000

@@ -109,9 +109,10 @@ judge:
 
   # Uncomment to use OpenAI as judge:
   provider: openai
-  model: gpt-5.4
+  model: gpt-5.4 #Qwen3-Coder-Next
   api_key: ${OPENAI_API_KEY}
  
+    #base_url: "http://localhost:3000/v1"
 
   # Optional base_url override for self-hosted OpenAI-compatible judge endpoint:
   # base_url: "http://localhost:11434/v1"

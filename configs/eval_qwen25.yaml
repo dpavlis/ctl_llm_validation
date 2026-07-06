@@ -50,7 +50,7 @@ mut:
   enable_thinking: false
 
   # Maximum new tokens per response
-  max_new_tokens: 2048
+  max_new_tokens: 4096
 
   # ---------------------------------------------------------------------------
   # Per-type inference overrides (generate / validate).
@@ -58,7 +58,7 @@ mut:
   # ---------------------------------------------------------------------------
   generate:
     # Suite default temperature: 0.1
-    #temperature: 0.3
+    temperature: 0.2
     # top_p: 1.0
     # system_prompt: |
     #   You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
@@ -109,7 +109,7 @@ judge:
 
   # Uncomment to use OpenAI as judge:
   provider: openai
-  model: gpt-5.4-mini
+  model: gpt-5.4
   api_key: ${OPENAI_API_KEY}
  
 
