@@ -419,6 +419,38 @@ produces a false positive here. Rank comparison (steps 3-5) is the only valid
 basis for a numeric-type ISSUE.
 """
 
+_LITERAL_PREFERENCE_NOTE = """\
+
+## Constant string parsed into a type — always WARNING, never ERROR or a mere SUGGESTION
+CTL2 has native literal syntax for every non-string type: date/date-time
+(`2005-01-01`, `2023-06-15 08:45:00`), decimal (`103.10D`), long (`123L`),
+integer/number/boolean (plain literals). A `str2date`/`str2decimal`/
+`str2long`/`str2integer`/`str2double`/`str2bool`-family conversion function is
+meant for parsing a value that is genuinely a runtime string — external data,
+a field read from `$in.*`, a variable, a concatenation, anything not fully
+known at the point the code is written. Calling one of these functions on a
+STRING LITERAL CONSTANT is valid, correct CTL2 (it compiles and produces the
+right value) but is always suboptimal: the same constant should be written
+directly as a native literal instead.
+
+Report this as a WARNING (a real ISSUE, not merely a style SUGGESTION —
+unlike the "Optimization hints" category below, which only covers patterns
+that are pure efficiency polish with no bearing on how the value was
+authored). Two worked examples:
+  - `str2date("2005-01-01", "yyyy-MM-dd")` -> should be written as the native
+    date literal `2005-01-01` directly.
+  - `str2decimal("103.10")` -> should be written as the native decimal
+    literal `103.10D` directly.
+The same applies to `str2long("123")` (-> `123L`), `str2integer("5")` (->
+`5`), `str2double("1.5")` (-> `1.5`), `str2bool("true")` (-> `true`), and any
+other conversion function in this family applied to a literal string.
+
+Do NOT flag this when the string argument is not a literal constant — e.g.
+`str2date($in.0.dateStr, "yyyy-MM-dd")`, `str2decimal(someVar)`, or a
+computed/concatenated string are all legitimate, necessary parsing of
+runtime data and must never be flagged under this rule.
+"""
+
 _EVIDENCE_DISCIPLINE_NOTE = """\
 
 ## Evidence discipline — do not hallucinate issues
@@ -537,7 +569,7 @@ _OPTIMIZATION_HINTS_NOTE = _build_optimization_hints_note()
 # component type, maximizing the shared cache prefix.
 _REVIEW_RULES_FULL = (
     _REVIEW_RULES + _EVIDENCE_DISCIPLINE_NOTE + _NULL_HANDLING_NOTE
-    + _NUMERIC_WIDENING_NOTE + _OPTIMIZATION_HINTS_NOTE
+    + _NUMERIC_WIDENING_NOTE + _LITERAL_PREFERENCE_NOTE + _OPTIMIZATION_HINTS_NOTE
 )
 
 # Final, stable hardening check — asks the model to verify its own OUTPUT
@@ -778,10 +810,41 @@ instead of everyone working from one fixed example.
   type as the original — do not change which component this is for, only
   what it does. (The original's component type is named in the task given
   below, under "Original task".)
-- Overall shape: roughly the same number of input/output fields, the same
-  `<Metadata>` XML structure and phrasing style as the original (e.g. "Given
-  Input Metadata on Port 0: ... And Output Metadata on Port 0: ... Write a
-  ... that ..."), and about the same difficulty level.
+- Overall shape: roughly the same number of input/output fields and about
+  the same difficulty level.
+- Metadata FORMAT: match the original EXACTLY — do not switch formats.
+    - If the original describes ports as XML `<Metadata>` blocks, the new
+      task must also use XML `<Metadata>` blocks (see the required XML
+      structure below).
+    - If the original describes ports as plain prose/a bullet list (e.g.
+      "Input metadata (port 0):\n- field_name: type\n- ..." with no XML at
+      all), the new task must ALSO use that same plain prose/bullet-list
+      style — do NOT introduce `<Metadata>`/`<Record>`/`<Field>` XML where
+      the original had none.
+
+## Required XML structure — ONLY when the original itself uses XML metadata
+A `<Metadata>` element always wraps EXACTLY ONE `<Record>` element, which in
+turn wraps the `<Field>` elements. `<Field>` must NEVER appear directly
+under `<Metadata>` — omitting the `<Record>` wrapper produces invalid
+CloverDX metadata that cannot be parsed, even though it looks plausible:
+```xml
+<Metadata id="SomeId">
+  <Record name="SomeRecordName" fieldDelimiter="," recordDelimiter="\\n" type="delimited">
+    <Field name="field_one" type="string"/>
+    <Field name="field_two" type="integer" nullable="true"/>
+  </Record>
+</Metadata>
+```
+  WRONG (missing `<Record>` — do not do this):
+```xml
+<Metadata name="SomeId">
+  <Field name="field_one" type="string"/>
+</Metadata>
+```
+This applies whenever you output XML metadata, regardless of whether the
+original prompt phrased its port headers as "Given Input Metadata on Port 0:",
+"Input metadata (port 0):", or any other wording — the `<Record>` wrapper
+inside `<Metadata>` is a hard CloverDX schema requirement, never optional.
 
 ## Valid CTL2 field types
 integer, long, number, decimal, string, boolean, date, byte, cbyte
@@ -809,7 +872,11 @@ different field names, at least one changed field type/nullability, and a
 STRUCTURALLY different business rule (different condition count, combination,
 or condition type — not the same expression shape with renamed fields and
 swapped thresholds/operators) — while staying the same component type and
-roughly the same shape/difficulty.
+roughly the same shape/difficulty. Match the ORIGINAL TASK's metadata format
+exactly as it appears above — if it has no `<Metadata>`/`<Record>`/`<Field>`
+XML, do not introduce any; if it does use that XML, every `<Metadata>` must
+wrap a `<Record>` that wraps the `<Field>`s (never `<Field>` directly under
+`<Metadata>`).
 """
 
 
@@ -909,7 +976,7 @@ def _build_review_system(component_type: str) -> str:
 
 
 def _build_fix_system(component_type: str) -> str:
-    parts = [_FIX_SYSTEM_BASE, _NULL_HANDLING_NOTE, _NUMERIC_WIDENING_NOTE]
+    parts = [_FIX_SYSTEM_BASE, _NULL_HANDLING_NOTE, _NUMERIC_WIDENING_NOTE, _LITERAL_PREFERENCE_NOTE]
     if _CTL2_REFERENCE:
         parts.append(f"\n<CTL2_REFERENCE>\n{_CTL2_REFERENCE}\n</CTL2_REFERENCE>\n")
     note = _component_note(component_type)
@@ -1347,7 +1414,37 @@ class ReviewJudgeClient:
                 cached_tokens=cached or 0,
                 output_tokens=u.completion_tokens,
             )
-        return resp.choices[0].message.content or ""
+        content = resp.choices[0].message.content or ""
+        # Reasoning-tier models can spend the ENTIRE max_completion_tokens
+        # budget on hidden reasoning tokens on a hard task, leaving nothing
+        # for the visible answer — finish_reason=="length" with empty
+        # content is the unambiguous signature (confirmed: two real
+        # judge_corrected.jsonl records ended up with an empty
+        # ```ctl\n\n``` fix() result, and one self_corrected.jsonl record
+        # ended up with a completely empty tweak()ed prompt, both traced to
+        # a call that reported generated tokens == max_completion_tokens
+        # exactly, i.e. cut off mid-reasoning). Raising here — rather than
+        # returning "" silently — routes into each caller's EXISTING
+        # exception handling: review()/fix() calls are wrapped by
+        # mut_validate.py's skip-and-log except-blocks, tweak() calls fall
+        # back to the untweaked prompt, and check_numeric_claim() calls fail
+        # open — all already-correct behaviors that just weren't reachable
+        # before because this condition never surfaced as an error.
+        finish_reason = getattr(resp.choices[0], "finish_reason", None)
+        if not content.strip() and finish_reason == "length":
+            reasoning_tokens = None
+            if resp.usage:
+                ctd = getattr(resp.usage, "completion_tokens_details", None)
+                reasoning_tokens = getattr(ctd, "reasoning_tokens", None) if ctd else None
+            raise RuntimeError(
+                f"OpenAI call (purpose={purpose or 'unknown'!r}, model={model!r}) returned empty "
+                f"content with finish_reason='length' — the model exhausted its "
+                f"max_completion_tokens={max_tokens} budget"
+                + (f" ({reasoning_tokens} reasoning tokens)" if reasoning_tokens is not None else "")
+                + " before producing a visible answer. Consider raising max_completion_tokens "
+                "or lowering reasoning_effort in the config."
+            )
+        return content
 
     def _log_full(self, text: str) -> None:
         """Write full, untruncated diagnostic text to the run log file, if one

@@ -123,6 +123,15 @@ function integer getOutputPort() {
 - function boolean finishGroup(<accumulator>)
 - function integer updateTransform(integer counter, <accumulator>)
 - function integer transform(integer counter, <accumulator>)
+- Optional error-handling counterparts (same errorMessage/stackTrace-first
+  convention used by every other component's OnError functions in this file
+  and in ctl2-basics.md; parameter order beyond that mirrors the non-error
+  function's own parameters):
+    - function void initGroupOnError(string errorMessage, string stackTrace, <accumulator>)
+    - function boolean updateGroupOnError(string errorMessage, string stackTrace, <accumulator>)
+    - function boolean finishGroupOnError(string errorMessage, string stackTrace, <accumulator>)
+    - function integer updateTransformOnError(string errorMessage, string stackTrace, integer counter, <accumulator>)
+    - function integer transformOnError(string errorMessage, string stackTrace, integer counter, <accumulator>)
 - Important: <accumulator> is a placeholder for the real accumulator metadata type, for example Acc or GroupAcc.
 - Important: transform() has no trailing boolean parameter.
 - Important: updateTransform() and transform() are output-generation loops, not single-shot callbacks.
@@ -142,11 +151,24 @@ function integer getOutputPort() {
     - CloverDX calls the function repeatedly with counter = 0, 1, 2, ...
     - the loop stops only when the function returns SKIP
     
-(c) Port model
+(c) Port model — access rules (authoritative; supersedes any narrower rule elsewhere in this section)
 - One input ($in.0), one or more outputs ($out.N), and one accumulator argument.
-- Read $in.0 only in updateGroup.
-- Write $out only in updateTransform / transform.
-- Do not write $out in initGroup, updateGroup, or finishGroup.
+- Input records/fields ($in.0.*) are readable in ALL of: initGroup, updateGroup,
+  finishGroup, initGroupOnError, updateGroupOnError, finishGroupOnError,
+  updateTransform, transform, updateTransformOnError, transformOnError.
+  This is broader than a typical component contract — $in.0 access is NOT
+  restricted to updateGroup alone; reading $in.0 inside updateTransform() or
+  transform() is legitimate and must never be flagged as an ERROR.
+- Output records/fields ($out.*) are writable ONLY in: updateTransform,
+  transform, updateTransformOnError, transformOnError. Writing $out in
+  initGroup, updateGroup, finishGroup, or their OnError counterparts is an
+  ERROR (accumulator-phase functions build state, not output).
+- The group accumulator is accessible in the SAME set of functions as input:
+  initGroup, updateGroup, finishGroup, initGroupOnError, updateGroupOnError,
+  finishGroupOnError, updateTransform, transform, updateTransformOnError,
+  transformOnError.
+- No other CTL function (e.g. a generic init()/clean() outside the Rollup
+  group lifecycle) has access to $in, $out, or the accumulator at all.
 
 (d) Critical return semantics
 - updateGroup(<accumulator>) return value:
@@ -196,9 +218,14 @@ function integer getOutputPort() {
 (g) Accumulator guidance
 - Initialize every accumulator field in initGroup.
 - Null arithmetic throws, so never rely on implicit initialization.
-- Store any values needed later for output in accumulator fields.
-- If final output needs a group key, keep it in the accumulator during updateGroup.
-- Do not rely on $in.0 inside transform / updateTransform.
+- Store any values needed later for output in accumulator fields — this
+  remains the right pattern for values that must survive across the whole
+  group (e.g. a group key needed in the final transform()).
+- $in.0 IS directly accessible inside updateTransform/transform too (see (c)
+  — access is not restricted to updateGroup), so reading it there is
+  legitimate; it does not need to be relayed through the accumulator purely
+  to be reachable. Do not flag direct $in.0 reads in updateTransform/transform
+  as an ERROR.
 
 (h) Divide-by-zero / null safety
 - Guard divide-by-zero before computing averages or ratios.
@@ -292,10 +319,10 @@ function integer transform(integer counter, acc_type acc) {
 - Correct: function integer transform(integer counter, acc_type acc)
 - Wrong: unconditional return ALL in updateTransform/transform
 - Correct: emit for the needed counter values, then return SKIP
-- Wrong: using $in.0 in transform
-- Correct: store needed values in the accumulator during updateGroup
-- Wrong: writing $out in updateGroup
-- Correct: write $out only in updateTransform/transform
+- Wrong: writing $out in initGroup, updateGroup, or finishGroup
+- Correct: write $out only in updateTransform/transform (and their OnError counterparts)
+- Note: reading $in.0 in updateTransform/transform is NOT a mistake — it is
+  explicitly allowed (see (c)); do not flag it.
 
 (m) Short rule the model should memorize
 - updateGroup / finishGroup decide whether an output loop starts.

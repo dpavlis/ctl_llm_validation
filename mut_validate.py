@@ -9,12 +9,14 @@ and has a stronger judge LLM review the resulting CTL2 code against a fixed
 ISSUES / SUGGESTIONS / VERDICT text format (no CloverDX execution involved).
 
   - If the MUT is right first try (PASS, no WARNING) -> counted, no output.
-  - If not, the review is fed back to the MUT for one retry.
-      - If the retry then reviews as PASS -> a 4-turn "MUT self-corrected"
-        SFT conversation is appended to output.self_corrected_file.
-      - If the retry still fails -> the judge rewrites the code itself, and
-        a 4-turn "judge corrected it" SFT conversation is appended to
-        output.judge_corrected_file.
+  - If not, the review is fed back to the MUT for another attempt, up to
+    --attempts total (default: 2, i.e. one retry — the original behavior).
+      - If a later attempt then reviews as PASS -> a "MUT self-corrected"
+        SFT conversation (the full multi-turn attempt/feedback history) is
+        appended to output.self_corrected_file.
+      - If every attempt is exhausted without a PASS -> the judge rewrites
+        the LAST attempt's code itself, and a 4-turn "judge corrected it"
+        SFT conversation is appended to output.judge_corrected_file.
 
   --tweak: before any of the above, the judge LLM rewrites the prompt into a
   different-but-structurally-similar task (new domain, new field names/types,
@@ -28,7 +30,7 @@ ISSUES / SUGGESTIONS / VERDICT text format (no CloverDX execution involved).
 Usage:
   /home/pavlisd/venv/bin/python mut_validate.py <input_file>
       [--config configs/mut_validate.yaml] [--index N] [--limit N]
-      [--verbose] [--dry-run] [--overwrite] [--tweak] [--tweak-random]
+      [--attempts N] [--verbose] [--dry-run] [--overwrite] [--tweak] [--tweak-random]
 
 Runs on GPU 1 by default (CUDA_VISIBLE_DEVICES=1) so it doesn't collide with
 the judge server, typically running on GPU 0. Override by exporting
@@ -82,6 +84,8 @@ DEFAULT_CONFIG: dict = {
         "generation": {
             "temperature": 0.3,
             "top_p": 1.0,
+            "top_k": 50,
+            "repetition_penalty": 1.0,
             "max_new_tokens": 2048,
             "seed": 42,
         },
@@ -92,7 +96,13 @@ DEFAULT_CONFIG: dict = {
         "api_key": None,
         "base_url": None,
         "max_retries": 2,
-        "max_completion_tokens": 4096,  # cap on the judge's response length per call (OpenAI provider only; ignored by anthropic)
+        # Confirmed via real runs: reasoning-tier models can spend the ENTIRE
+        # budget on hidden reasoning tokens on a hard fix() task and return
+        # empty content (finish_reason="length") — see ReviewJudgeClient
+        # ._call_openai's exhaustion check. 8192 gives more headroom than
+        # the 4096 that was observed to run out; still bounded, and a
+        # genuine exhaustion now raises instead of silently corrupting output.
+        "max_completion_tokens": 8192,  # cap on the judge's response length per call (OpenAI provider only; ignored by anthropic)
         "reasoning_effort": "medium",   # OpenAI provider only: none | minimal | low | medium | high | xhigh
         # OpenAI provider only — see ReviewJudgeClient's class docstring in
         # review_judge.py. The review/fix system prompts are large (~25K
@@ -121,7 +131,7 @@ DEFAULT_CONFIG: dict = {
         "api_key": "not-needed",
         "base_url": "http://virt-ai:3000/v1",
         "max_retries": 2,
-        "max_completion_tokens": 4096,
+        "max_completion_tokens": 8192,  # see the judge section's comment on this — same exhaustion risk when tweak_llm is swapped to a reasoning-tier OpenAI model
         "reasoning_effort": "medium",
         # Local vLLM servers typically don't recognize these OpenAI-specific
         # fields; ReviewJudgeClient auto-detects the rejection and stops
@@ -132,6 +142,16 @@ DEFAULT_CONFIG: dict = {
         "prompt_cache_key": "ctl-tweak:v1",
         "prompt_cache_retention": "24h",
         "request_timeout_s": 180,
+    },
+    # Optional: a real CTL2 compiler/metadata check via an MCP server's
+    # `ctl_validate` tool (Streamable HTTP transport), used as a fast,
+    # deterministic pre-filter in front of the LLM judge — see
+    # dpo_forge/ctl_validate_mcp.py for the full rationale. Disabled by
+    # default since it depends on an external server actually running.
+    "ctl_validate_mcp": {
+        "enabled": False,
+        "url": "http://localhost:8083/clover/mcp/mcp",
+        "timeout_s": 30,
     },
     "output": {
         "self_corrected_file": "data/mut_validate/self_corrected.jsonl",
@@ -180,9 +200,14 @@ def load_config(path: Path) -> dict:
 # Filter: "contains metadata and a clear instruction to generate code"
 # ---------------------------------------------------------------------------
 
-_METADATA_RE = re.compile(r"<Metadata\b", re.IGNORECASE)
+_METADATA_RE = re.compile(
+    r"<Metadata\b"              # XML block, e.g. <Metadata id="...">
+    r"|\binput\s+metadata\b"    # prose header, e.g. "Input metadata (port 0):"
+    r"|\boutput\s+metadata\b",  # prose header, e.g. "Output metadata (port 0):"
+    re.IGNORECASE,
+)
 _INSTRUCTION_RE = re.compile(
-    r"\b(write|create|generate|implement|produce|build|provide|fix|correct|refactor)\b"
+    r"\b(write|create|generate|implement|produce|build|provide|fix|correct|refactor|show|give)\b"
     r"[^.\n]{0,100}\b(ctl2?|transform|component|reformat|rollup|filter|normalizer|"
     r"denormalizer|partition|join|lookup|sequence|data\s*generator|code|solution|"
     r"implementation|expression|records?)\b"
@@ -192,11 +217,22 @@ _INSTRUCTION_RE = re.compile(
 
 
 def _is_codegen_with_metadata(example) -> bool:
-    """True if the user prompt has both an XML <Metadata> block and a
-    recognizable code-generation instruction. A simple regex heuristic
-    (mirrors loader.py's substring-based failure_mode_filter) — false
-    negatives just mean fewer examples processed, not incorrect ones."""
+    """True if the user prompt has both a metadata block — an XML
+    <Metadata> block, or a prose "Input/Output metadata" header (some SFT
+    sources describe ports as a plain field list instead of XML, e.g.
+    "Input metadata (port 0):\\n- field: type") — and a recognizable
+    code-generation instruction. A simple regex heuristic (mirrors loader.py's
+    substring-based failure_mode_filter) — false negatives just mean fewer
+    examples processed, not incorrect ones."""
     return bool(_METADATA_RE.search(example.prompt)) and bool(_INSTRUCTION_RE.search(example.prompt))
+
+
+def _ordinal(n: int) -> str:
+    if 10 <= n % 100 <= 20:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
 
 
 def _source_identity(example) -> str:
@@ -325,7 +361,8 @@ def cmd_run(args: argparse.Namespace) -> None:
         f"started: {run_stamp}\n"
         f"input: {input_path}\n"
         f"config: {config_path}\n"
-        f"index: {args.index}  limit: {args.limit}  tweak: {args.tweak}  tweak_random: {args.tweak_random}\n"
+        f"index: {args.index}  limit: {args.limit}  attempts: {args.attempts}  "
+        f"tweak: {args.tweak}  tweak_random: {args.tweak_random}\n"
         f"judge: {cfg['judge'].get('provider')} / {cfg['judge'].get('model')}\n"
         + (f"tweak_llm: {cfg['tweak_llm'].get('provider')} / {cfg['tweak_llm'].get('model')}\n" if args.tweak else "")
         + f"MUT checkpoint: {cfg['model'].get('checkpoint_dir')}\n\n"
@@ -346,6 +383,7 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
         ReviewJudgeClient, describe_component_resolution, infer_component_type_from_prompt,
         pick_business_domain,
     )
+    from dpo_forge.ctl_validate_mcp import validate_ctl
     from dpo_forge.output import write_conversation_jsonl
 
     # ── Load + filter examples ──────────────────────────────────────────
@@ -409,9 +447,16 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     tweak_client = tweak_llm_client if args.tweak else None
     numeric_verifier = tweak_llm_client
 
+    ctl_validate_cfg = cfg.get("ctl_validate_mcp") or {}
+    if ctl_validate_cfg.get("enabled"):
+        _log(f"[mut-validate] ctl_validate MCP pre-filter enabled: {ctl_validate_cfg.get('url')} "
+             f"(ERROR-severity results skip the LLM judge for that attempt)", log_fh)
+
     gen_cfg = model_cfg.get("generation") or {}
     temperature = gen_cfg.get("temperature", 0.3)
     top_p = gen_cfg.get("top_p", 1.0)
+    top_k = gen_cfg.get("top_k", 50)
+    repetition_penalty = gen_cfg.get("repetition_penalty", 1.0)
     max_new_tokens = gen_cfg.get("max_new_tokens", 2048)
     seed = gen_cfg.get("seed")
     mut_system_prompt: Optional[str] = model_cfg.get("system_prompt")
@@ -428,7 +473,8 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
                 _log(f"[mut-validate] --overwrite: removed existing {path}", log_fh)
 
     n_first_pass = 0
-    n_second_pass = 0
+    n_self_corrected = 0
+    n_self_corrected_by_attempt: dict[int, int] = {}
     n_judge_fixed = 0
     n_unparseable = 0
     n_missing_component = 0
@@ -470,80 +516,112 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             component_type = tweaked_component_type or component_type
             prompt = tweaked_prompt
 
-        messages_1: list[dict] = []
+        messages: list[dict] = []
         if system:
-            messages_1.append({"role": "system", "content": system})
-        messages_1.append({"role": "user", "content": prompt})
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
 
         _log_full_body("prompt", prompt, log_fh, console=args.verbose)
 
-        print("  [MUT] generating (pass 1) …")
-        mut_text_1 = generator.generate_reply(
-            messages_1, temperature=temperature, top_p=top_p,
-            max_new_tokens=max_new_tokens, seed=seed,
-        )
-        code_1 = normalize_ctl(mut_text_1)
-        _log_full_body("MUT response (pass 1)", mut_text_1, log_fh, console=args.verbose)
+        # ── Attempt loop: MUT generates, judge reviews, feedback appended on
+        # failure, up to args.attempts tries. Attempt 1 requires PASS with no
+        # WARNING to count as "correct first try"; later attempts only
+        # require PASS (self-correction via feedback need not be pristine).
+        # `messages` accumulates the full conversation across attempts, so a
+        # self-corrected write on attempt k naturally includes every prior
+        # failed attempt + feedback round — a direct generalization of the
+        # old fixed 2-attempt shape (which is exactly what this produces
+        # when args.attempts == 2, the previous hardcoded behavior).
+        prior_review = None
+        last_mut_text = last_code = last_review = None
+        outcome = None  # "first_pass" | "self_corrected" | "exhausted" | "skip"
 
-        # Log which component-type bucket this example actually resolves to —
-        # the dataset's own label and the code-inferred one can disagree.
-        resolution = describe_component_resolution(component_type, code_1)
-        _log(f"  component: {resolution}", log_fh)
-
-        print("  [judge] reviewing pass 1 …")
-        usage_before = _usage_snapshot(judge)
-        try:
-            review_1 = judge.review(prompt, code_1, component_type, numeric_verifier=numeric_verifier)
-        except Exception as e:
-            _log(f"  [{example.id}] -> SKIPPED (judge review-1 raised: {e})", log_fh)
-            n_unparseable += 1
-            continue
-        _log_usage_delta("review-1", judge, usage_before, log_fh)
-        if review_1 is None:
-            _log(f"  [{example.id}] -> SKIPPED (judge review unparseable)", log_fh)
-            n_unparseable += 1
-            continue
-        _log_review("review-1", review_1, log_fh)
-
-        if review_1.verdict == "PASS" and not review_1.has_warning:
-            _log(f"  [{example.id}] -> CORRECT on 1st MUT pass", log_fh)
-            n_first_pass += 1
-            continue
-
-        _log(f"  [{example.id}] -> review-1 {review_1.verdict} "
-             f"({'warnings present' if review_1.has_warning else 'errors present'}) -> retrying MUT", log_fh)
-
-        feedback_1 = review_1.render() + "\n\nPlease fix the issues above and provide the corrected code."
-        messages_2 = messages_1 + [
-            {"role": "assistant", "content": mut_text_1},
-            {"role": "user", "content": feedback_1},
-        ]
-
-        print("  [MUT] generating (pass 2, with review feedback) …")
-        mut_text_2 = generator.generate_reply(
-            messages_2, temperature=temperature, top_p=top_p,
-            max_new_tokens=max_new_tokens, seed=seed,
-        )
-        code_2 = normalize_ctl(mut_text_2)
-        _log_full_body("MUT response (pass 2)", mut_text_2, log_fh, console=args.verbose)
-
-        print("  [judge] reviewing pass 2 …")
-        usage_before = _usage_snapshot(judge)
-        try:
-            review_2 = judge.review(
-                prompt, code_2, component_type,
-                prior_issues=review_1.issues, numeric_verifier=numeric_verifier,
+        for attempt in range(1, args.attempts + 1):
+            print(f"  [MUT] generating (attempt {attempt}/{args.attempts}) …")
+            mut_text = generator.generate_reply(
+                messages, temperature=temperature, top_p=top_p, top_k=top_k,
+                repetition_penalty=repetition_penalty, max_new_tokens=max_new_tokens, seed=seed,
             )
-        except Exception as e:
-            _log(f"  [{example.id}] -> SKIPPED (judge review-2 raised: {e})", log_fh)
-            n_unparseable += 1
+            code = normalize_ctl(mut_text)
+            _log_full_body(f"MUT response (attempt {attempt})", mut_text, log_fh, console=args.verbose)
+
+            if attempt == 1:
+                # Log which component-type bucket this example actually
+                # resolves to — the dataset's own label and the code-inferred
+                # one can disagree.
+                resolution = describe_component_resolution(component_type, code)
+                _log(f"  component: {resolution}", log_fh)
+
+            print(f"  [judge] reviewing attempt {attempt} …")
+
+            # Fast, deterministic compile/metadata pre-filter (optional —
+            # see ctl_validate_mcp.py). A real compile error found here
+            # becomes the review directly; the LLM judge is skipped for
+            # this attempt entirely, since a compile error needs no
+            # semantic opinion. Falls through to the LLM judge on PASS,
+            # or whenever this step can't run (disabled, no metadata XML
+            # in the prompt, MCP call failed, etc.).
+            mcp_review = validate_ctl(ctl_validate_cfg, component_type, prompt, code,
+                                       log_fn=lambda msg: _log(msg, log_fh))
+            if mcp_review is not None:
+                _log_review(f"ctl-validate-{attempt}", mcp_review, log_fh)
+
+            if mcp_review is not None and mcp_review.verdict == "FAIL":
+                _log(f"  [{example.id}] -> ctl_validate FAIL on attempt {attempt} "
+                     f"(compile/metadata error) — skipping LLM judge for this attempt", log_fh)
+                review = mcp_review
+            else:
+                usage_before = _usage_snapshot(judge)
+                try:
+                    review = judge.review(
+                        prompt, code, component_type,
+                        prior_issues=(prior_review.issues if prior_review else None),
+                        numeric_verifier=numeric_verifier,
+                    )
+                except Exception as e:
+                    _log(f"  [{example.id}] -> SKIPPED (judge review attempt {attempt} raised: {e})", log_fh)
+                    n_unparseable += 1
+                    outcome = "skip"
+                    break
+                _log_usage_delta(f"review-{attempt}", judge, usage_before, log_fh)
+                if review is None:
+                    _log(f"  [{example.id}] -> SKIPPED (judge review unparseable on attempt {attempt})", log_fh)
+                    n_unparseable += 1
+                    outcome = "skip"
+                    break
+                _log_review(f"review-{attempt}", review, log_fh)
+
+            messages.append({"role": "assistant", "content": mut_text})
+            last_mut_text, last_code, last_review = mut_text, code, review
+
+            is_pass = review.verdict == "PASS" and (attempt > 1 or not review.has_warning)
+            if is_pass:
+                if attempt == 1:
+                    _log(f"  [{example.id}] -> CORRECT on 1st MUT pass", log_fh)
+                    n_first_pass += 1
+                    outcome = "first_pass"
+                else:
+                    _log(f"  [{example.id}] -> CORRECT on {_ordinal(attempt)} attempt (MUT self-corrected)", log_fh)
+                    n_self_corrected += 1
+                    n_self_corrected_by_attempt[attempt] = n_self_corrected_by_attempt.get(attempt, 0) + 1
+                    outcome = "self_corrected"
+                break
+
+            _log(f"  [{example.id}] -> attempt {attempt} {review.verdict} "
+                 f"({'warnings present' if review.has_warning else 'errors present'})"
+                 + (" -> retrying MUT" if attempt < args.attempts else ""), log_fh)
+            if attempt < args.attempts:
+                feedback = review.render() + "\n\nPlease fix the issues above and provide the corrected code."
+                messages.append({"role": "user", "content": feedback})
+            prior_review = review
+        else:
+            # for/else: fires only when the loop ran to completion without
+            # ever hitting a `break` — i.e. every attempt failed review,
+            # including the last one (which has no feedback round after it).
+            outcome = "exhausted"
+
+        if outcome == "skip" or outcome == "first_pass":
             continue
-        _log_usage_delta("review-2", judge, usage_before, log_fh)
-        if review_2 is None:
-            _log(f"  [{example.id}] -> SKIPPED (judge review unparseable on pass 2)", log_fh)
-            n_unparseable += 1
-            continue
-        _log_review("review-2", review_2, log_fh)
 
         extra = {
             "example_id": example.id,
@@ -556,34 +634,28 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             extra["original_prompt"] = example.prompt
             extra["business_domain"] = business_domain
 
-        if review_2.verdict == "PASS":
-            _log(f"  [{example.id}] -> CORRECT on 2nd pass (MUT self-corrected)", log_fh)
-            n_second_pass += 1
-            conversation = [
-                {"role": "system", "content": system} if system else None,
-                {"role": "user", "content": prompt},
-                {"role": "assistant", "content": mut_text_1},
-                {"role": "user", "content": feedback_1},
-                {"role": "assistant", "content": mut_text_2},
-            ]
-            conversation = [m for m in conversation if m is not None]
+        if outcome == "self_corrected":
+            extra["attempts_used"] = attempt
+            conversation = [m for m in messages if m is not None]
             write_conversation_jsonl(conversation, self_corrected_path, extra)
         else:
-            _log(f"  [{example.id}] -> MUT FAILED to self-correct (review-2 FAIL) -> judge fixes the code", log_fh)
+            _log(f"  [{example.id}] -> MUT FAILED to self-correct after {args.attempts} attempt(s) "
+                 f"(review-{args.attempts} FAIL) -> judge fixes the code", log_fh)
             usage_before = _usage_snapshot(judge)
             try:
-                fixed_code = judge.fix(prompt, code_2, review_2, component_type)
+                fixed_code = judge.fix(prompt, last_code, last_review, component_type)
             except Exception as e:
                 _log(f"  [{example.id}] -> SKIPPED (judge fix raised: {e})", log_fh)
                 n_unparseable += 1
                 continue
             n_judge_fixed += 1
             _log_usage_delta("fix", judge, usage_before, log_fh)
+            extra["attempts_used"] = args.attempts
             conversation = [
                 {"role": "system", "content": system} if system else None,
                 {"role": "user", "content": prompt},
-                {"role": "assistant", "content": mut_text_2},
-                {"role": "user", "content": review_2.render() + "\n\nPlease fix the issues above and provide the corrected code."},
+                {"role": "assistant", "content": last_mut_text},
+                {"role": "user", "content": last_review.render() + "\n\nPlease fix the issues above and provide the corrected code."},
                 {"role": "assistant", "content": fixed_code},
             ]
             conversation = [m for m in conversation if m is not None]
@@ -598,7 +670,15 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     _log(f"  Examples processed:        {total}", log_fh)
     if total:
         _log(f"  Correct on 1st MUT pass:   {n_first_pass}  ({100*n_first_pass/total:.1f}%)", log_fh)
-        _log(f"  Correct on 2nd pass:       {n_second_pass}  ({100*n_second_pass/total:.1f}%)  -> {self_corrected_path}", log_fh)
+        self_corrected_label = "Self-corrected (no retry: --attempts=1)" if args.attempts < 2 \
+            else f"Self-corrected (attempts 2-{args.attempts})"
+        _log(f"  {self_corrected_label}: {n_self_corrected}  "
+             f"({100*n_self_corrected/total:.1f}%)  -> {self_corrected_path}", log_fh)
+        if args.attempts > 2 and n_self_corrected_by_attempt:
+            breakdown = ", ".join(
+                f"attempt {k}: {v}" for k, v in sorted(n_self_corrected_by_attempt.items())
+            )
+            _log(f"    ({breakdown})", log_fh)
         _log(f"  MUT failed (judge fixed):  {n_judge_fixed}  ({100*n_judge_fixed/total:.1f}%)  -> {judge_corrected_path}", log_fh)
         if n_unparseable:
             _log(f"  Skipped (unparseable):     {n_unparseable}", log_fh)
@@ -648,6 +728,7 @@ examples:
   ./mut_validate.py data/sft_input/foo.json --index 20 --limit 20 --verbose
   ./mut_validate.py data/sft_input/foo.json --tweak --limit 20
   ./mut_validate.py data/sft_input/foo.json --tweak --tweak-random --limit 20
+  ./mut_validate.py data/sft_input/foo.json --attempts 4 --limit 20
 
 (runs on GPU 1 by default; uses /home/pavlisd/venv via the shebang)
 """,
@@ -659,6 +740,11 @@ examples:
                         help="Skip the first N filtered examples (0-based start index)")
     parser.add_argument("--limit", "-n", type=int, default=None, metavar="N",
                         help="Process at most N filtered examples (default: all)")
+    parser.add_argument("--attempts", type=int, default=2, metavar="N",
+                        help="Max MUT generate+review attempts per example before the judge fixes the code "
+                             "directly (default: 2, the original fixed pass-1/pass-2 behavior). Attempt 1 must "
+                             "PASS with no WARNING to count as correct-first-try; later attempts only need PASS. "
+                             "--attempts 1 disables the feedback retry entirely.")
     parser.add_argument("--verbose", "-v", action="store_true",
                         help="Show MUT prompts/responses for each example")
     parser.add_argument("--dry-run", action="store_true",
@@ -677,6 +763,8 @@ examples:
                              "one, so repeated runs land on different domains instead of the same ones every time")
 
     args = parser.parse_args()
+    if args.attempts < 1:
+        parser.error("--attempts must be >= 1")
     if args.tweak_random:
         args.tweak = True  # --tweak-random is a modifier of --tweak, not a separate feature
     cmd_run(args)

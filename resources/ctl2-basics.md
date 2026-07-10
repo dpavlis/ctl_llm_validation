@@ -224,7 +224,7 @@ const string[] TAGS = ["a", "b", "c"];
 | `+` | numeric / string concat (concat triggers when either operand is a string) / list concat / map merge |
 | `-` `*` `%` | numeric |
 | `/` | integer division truncates; ÷0 → exception for integer/long/decimal, Infinity for double |
-| `++` `--` | pre/post; **cannot use on**: literals, input fields (`$in.N.field`), list/map elements (`list[i]`, `map[k]`) |
+| `++` `--` | pre/post; **allowed on**: local/module variables, output fields (`$out.N.field++`, `--$out.N.field`); **cannot use on**: literals, input fields (`$in.N.field`), list/map elements (`list[i]`, `map[k]`) |
 
 ### 3.2 Relational
 

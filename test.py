@@ -406,7 +406,7 @@ class LocalMUTClient:
         """Eagerly load the model so it is ready before the first test."""
         self._load()
 
-    def generate(self, system_prompt: str, user_message: str, temperature: float, top_p: float = 1.0) -> str:
+    def generate(self, system_prompt: str, user_message: str, temperature: float, top_p: float = 1.0, top_k: int = 50, repetition_penalty: float = 1.0) -> str:
         import torch
 
         self._load()
@@ -446,6 +446,8 @@ class LocalMUTClient:
                 max_new_tokens=self._cfg.get("max_new_tokens", 2048),
                 temperature=temperature if do_sample else 1.0,
                 top_p=top_p if do_sample else 1.0,
+                top_k=top_k if do_sample else 50,
+                repetition_penalty=repetition_penalty,
                 do_sample=do_sample,
                 eos_token_id=stop_ids if stop_ids else None,
                 pad_token_id=self._tok.eos_token_id,
@@ -466,7 +468,7 @@ class APIMUTClient:
         self._model = cfg.get("model") or ""
         self._timeout = timeout
 
-    def generate(self, system_prompt: str, user_message: str, temperature: float, top_p: float = 1.0) -> str:
+    def generate(self, system_prompt: str, user_message: str, temperature: float, top_p: float = 1.0, top_k: int = 50, repetition_penalty: float = 1.0) -> str:
         resp = self._client.chat.completions.create(
             model=self._model,
             messages=[
@@ -906,13 +908,15 @@ def append_eval_log(
 # Single-test runner
 # ---------------------------------------------------------------------------
 
-def _resolve_mut_overrides(mut_cfg: dict, test_type: str, test: dict) -> tuple[str, float, float]:
+def _resolve_mut_overrides(mut_cfg: dict, test_type: str, test: dict) -> tuple[str, float, float, int, float]:
     """Return (system_prompt, temperature, top_p) applying any per-type MUT config overrides."""
     type_cfg = mut_cfg.get(test_type) or {}
     system_prompt = type_cfg.get("system_prompt") or test["system_prompt"]
     temperature = type_cfg["temperature"] if "temperature" in type_cfg else test.get("temperature", 0.1)
     top_p = type_cfg.get("top_p", 1.0)
-    return system_prompt, temperature, top_p
+    top_k = type_cfg.get("top_k", 50)
+    repetition_penalty = type_cfg.get("repetition_penalty", 1.0)
+    return system_prompt, temperature, top_p, top_k, repetition_penalty
 
 
 def _build_mut_user_message(test: dict) -> str:
@@ -934,14 +938,14 @@ def _build_mut_user_message(test: dict) -> str:
 
 def _call_mut_with_retry(mut_client, test: dict, timeout: int, mut_cfg: dict) -> tuple[str, float]:
     test_type = test.get("type", "generate")
-    system_prompt, temperature, top_p = _resolve_mut_overrides(mut_cfg, test_type, test)
+    system_prompt, temperature, top_p, top_k, repetition_penalty = _resolve_mut_overrides(mut_cfg, test_type, test)
     user_message = _build_mut_user_message(test)
 
     last_exc: Optional[Exception] = None
     for attempt in range(2):
         t0 = time.monotonic()
         try:
-            response = mut_client.generate(system_prompt, user_message, temperature, top_p)
+            response = mut_client.generate(system_prompt, user_message, temperature, top_p, top_k, repetition_penalty)
             return response or "", time.monotonic() - t0
         except Exception as exc:  # noqa: BLE001
             elapsed = time.monotonic() - t0
@@ -985,17 +989,25 @@ def run_single_test(
     timeout: int,
     mut_cfg: dict,
     run_index: int = 1,
+    debug: bool = False,
 ) -> dict:
     test_id = test["test_id"]
     t_global = time.monotonic()
 
     # Resolve prompts once so we can store the exact values sent to MUT
     test_type = test.get("type", "generate")
-    mut_system_prompt, _temperature, _top_p = _resolve_mut_overrides(mut_cfg, test_type, test)
+    mut_system_prompt, _temperature, _top_p , _top_k, _repetition_penalty= _resolve_mut_overrides(mut_cfg, test_type, test)
     mut_user_message = _build_mut_user_message(test)
 
+    # Debug: print full messages to console
+    if debug:
+        _print(f"    [bold magenta]→ MUT SYSTEM MESSAGE:[/bold magenta]")
+        _print(f"    [dim]{mut_system_prompt}[/dim]")
+        _print(f"    [bold magenta]→ MUT USER MESSAGE:[/bold magenta]")
+        _print(f"    [dim]{mut_user_message}[/dim]")
+
     # Step 1: MUT
-    _print(f"    → MUT call (run {run_index}) …  [dim]temp={_temperature}, top-p={_top_p}[/dim]")
+    _print(f"    → MUT call (run {run_index}) …  [dim]temp={_temperature}, top-p={_top_p}, top-k={_top_k}, rep_penalty={_repetition_penalty}[/dim]")
     try:
         mut_response, mut_duration = _call_mut_with_retry(mut_client, test, timeout, mut_cfg)
     except Exception as exc:  # noqa: BLE001
@@ -1088,7 +1100,7 @@ def _error_result(test: dict, run_index: int, reason: str, duration: float) -> d
 # Suite runner
 # ---------------------------------------------------------------------------
 
-def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str) -> dict:
+def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug: bool = False) -> dict:
     """Run the full (or filtered) test suite. Returns the results dict."""
     with open(suite_file) as f:
         suite = json.load(f)
@@ -1159,7 +1171,7 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str) -> di
             result = run_single_test(
                 test, mut_client, judge_client,
                 judge_system_prompt,
-                timeout, mut_cfg, run_index=run_i,
+                timeout, mut_cfg, run_index=run_i, debug=debug,
             )
             all_results.append(result)
 
@@ -1699,6 +1711,8 @@ eval_config.yaml schema:
                         help="Skip the LLM-generated failure analysis after the run.")
     parser.add_argument("--no-log", action="store_true",
                         help="Skip writing eval results to the shared run log.")
+    parser.add_argument("--debug", action="store_true",
+                        help="Print full MUT messages (system + user) for each test to console.")
 
     args = parser.parse_args()
 
@@ -1761,7 +1775,7 @@ eval_config.yaml schema:
         return
 
     # ── Run suite ─────────────────────────────────────────────────────────
-    results = run_suite(cfg, suite_file, run_name=run_name, base_model=base_model)
+    results = run_suite(cfg, suite_file, run_name=run_name, base_model=base_model, debug=args.debug)
 
     # ── Write outputs ─────────────────────────────────────────────────────
     output_dir = Path(cfg["output_dir"])

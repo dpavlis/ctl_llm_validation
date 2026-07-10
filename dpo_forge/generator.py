@@ -201,6 +201,8 @@ class LocalGenerator:
         messages: list[dict],
         temperature: float = 0.3,
         top_p: float = 1.0,
+        top_k: int = 50,
+        repetition_penalty: float = 1.0,
         max_new_tokens: int = 2048,
         seed: Optional[int] = None,
     ) -> str:
@@ -248,6 +250,8 @@ class LocalGenerator:
                 max_new_tokens=max_new_tokens,
                 temperature=temperature if do_sample else 1.0,
                 top_p=top_p if do_sample else 1.0,
+                top_k=top_k if do_sample else 1,
+                repetition_penalty=repetition_penalty if do_sample else 1.0,
                 do_sample=do_sample,
                 eos_token_id=stop_ids if stop_ids else None,
                 pad_token_id=self._tok.eos_token_id,
