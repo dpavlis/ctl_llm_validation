@@ -103,14 +103,22 @@ def map_component_type(bucket: str) -> str:
 # ---------------------------------------------------------------------------
 
 _RECORD_RE = re.compile(r"<Record\b.*?</Record>", re.IGNORECASE | re.DOTALL)
-# Requires "metadata" to actually follow within a few words — plain "input"/
-# "output" show up constantly as ordinary English (e.g. "roll up daily
-# machine output into a summary") and must NOT be mistaken for a metadata
-# section label; only "Input/Output/Accumulator Metadata"-style headers
-# (in either word order, e.g. "Metadata input has fields:") should count.
+# Requires "metadata" to actually follow within a short character window —
+# plain "input"/"output" show up constantly as ordinary English (e.g. "roll
+# up daily machine output into a summary") and must NOT be mistaken for a
+# metadata section label; only "Input/Output/Accumulator Metadata"-style
+# headers (in either word order, e.g. "Metadata input has fields:") should
+# count. Character-distance (not word-count) on purpose: headers like
+# "Input port 1:\n<Metadata id=\"S1\">" have "metadata" glued directly to a
+# preceding "<" with no whitespace in between (the XML tag itself, not prose)
+# — a word-boundary-only \b still matches there (since "<" is a non-word
+# char), but a stricter "must be preceded by whitespace" check does not, so
+# this must NOT require whitespace immediately before "metadata". The
+# {0,30} character budget (not crossing a sentence end) covers "input"/
+# "output" followed by a port label ("port 1:") before the tag starts.
 _KEYWORD_RE = re.compile(
-    r"\b(input|output|accumulator)\b(?=(?:\s+\S+){0,3}\s+metadata\b)"
-    r"|\bmetadata\b(?:\s+\S+){0,3}?\s+(input|output|accumulator)\b",
+    r"\b(input|output|accumulator)\b(?=[^.!?]{0,30}?\bmetadata\b)"
+    r"|\bmetadata\b(?=[^.!?]{0,30}?\b(input|output|accumulator)\b)",
     re.IGNORECASE,
 )
 

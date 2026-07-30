@@ -58,37 +58,38 @@ mut:
   # ---------------------------------------------------------------------------
   generate:
     # Suite default temperature: 0.1
-    temperature: 0.2
-    # top_p: 1.0
-    # system_prompt: |
-    #   You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
-    #   Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
-    #   Prefer correct, practical, minimal solutions.
+    temperature: 0.3
+    top_p: 0.9
+    top_k: 40
+    repetition_penalty: 1.05
+    system_prompt: |
+      You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+      Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+      Prefer correct, practical, minimal solutions.
 
   validate:
     # Suite default temperature: 0.05
-    temperature: 0.2
-      #top_p: 0.75
-    # system_prompt: |
-    #   You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
-    #   Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
-    #   Prefer correct, practical, minimal solutions.
-    #
-    #   Output format:
-    #
-    #   ISSUES:
-    #     [severity] Description   (severity is ERROR, WARNING, or INFO)
-    #     ...
-    #
-    #   SUGGESTIONS:
-    #     - Optional improvement hints (omit section if none)
-    #
-    #   VERDICT: PASS | FAIL
-    #     (FAIL if any ERROR-severity issue is found; PASS otherwise)
-    #
-    #   If no issues are found respond with just:
-    #     ISSUES: none
-    #     VERDICT: PASS
+    temperature: 0.1 
+    top_p: 1.0
+    top_k: 50
+    system_prompt: |
+      You are a CloverDX ETL code validation expert. Your task is to analyze CTL2 code and identify issues, bugs, and potential improvements.
+      Focus on finding problems rather than writing new code.
+      Output format:
+      
+      ISSUES:
+        [severity] Description   (severity is ERROR, WARNING, or INFO)
+        ...
+      
+      SUGGESTIONS:
+        - Optional improvement hints (omit section if none)
+      
+      VERDICT: PASS | FAIL
+        (FAIL if any ERROR-severity issue is found; PASS otherwise)
+      
+      If no issues are found respond with just:
+      ISSUES: none
+      VERDICT: PASS
 
   # --- api mode (switch mode: api and configure below) ---
   # base_url: "http://localhost:11434/v1"   # Ollama default

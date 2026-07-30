@@ -476,6 +476,7 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     n_self_corrected = 0
     n_self_corrected_by_attempt: dict[int, int] = {}
     n_judge_fixed = 0
+    n_judge_fix_failed = 0
     n_unparseable = 0
     n_missing_component = 0
     t_start = time.monotonic()
@@ -504,9 +505,16 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             try:
                 tweaked_prompt = tweak_client.tweak(example.prompt, component_type, business_domain=business_domain)
             except Exception as e:
-                _log(f"  [tweak] ERROR ({e}) — falling back to the original (untweaked) prompt. "
-                     f"{_source_identity(example)}", log_fh)
-                tweaked_prompt = example.prompt
+                # A silent fallback to the untweaked prompt would defeat the
+                # purpose of --tweak (testing on genuinely novel prompts) and
+                # produce examples mislabeled as "tweaked" that are actually
+                # verbatim originals, without any indication in the output.
+                # Stop the whole run instead of masking the failure.
+                _log(f"  [tweak] FATAL: tweak LLM call failed for {_source_identity(example)}: {e}", log_fh)
+                raise SystemExit(
+                    f"[mut-validate] FATAL: --tweak LLM call failed ({e}) -- stopping run "
+                    f"rather than silently falling back to the untweaked prompt. See run log for details."
+                )
             _log_full_body("original prompt (pre-tweak)", example.prompt, log_fh, console=args.verbose)
             _log_full_body("tweaked prompt", tweaked_prompt, log_fh, console=args.verbose)
             tweaked_component_type = infer_component_type_from_prompt(tweaked_prompt)
@@ -648,8 +656,48 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
                 _log(f"  [{example.id}] -> SKIPPED (judge fix raised: {e})", log_fh)
                 n_unparseable += 1
                 continue
-            n_judge_fixed += 1
             _log_usage_delta("fix", judge, usage_before, log_fh)
+
+            # The judge's own fix can still be uncompilable CTL2 — verify it
+            # with the same ctl_validate pre-filter used on MUT attempts. On
+            # a real compile/metadata FAIL, feed that error straight back to
+            # the judge via fix() again (it already accepts any ReviewResult,
+            # so a ctl_validate result works exactly like an LLM review) and
+            # ask for a correction. Up to MAX_JUDGE_FIX_ROUNDS such
+            # correction rounds; if it still fails after that, give up on
+            # this example rather than write uncompilable CTL2 to the SFT
+            # output.
+            MAX_JUDGE_FIX_ROUNDS = 2
+            judge_fix_failed = False
+            for fix_round in range(1, MAX_JUDGE_FIX_ROUNDS + 2):
+                fix_code = normalize_ctl(fixed_code)
+                fix_review = validate_ctl(ctl_validate_cfg, component_type, prompt, fix_code,
+                                           log_fn=lambda msg: _log(msg, log_fh))
+                if fix_review is not None:
+                    _log_review(f"ctl-validate-fix-{fix_round}", fix_review, log_fh)
+                if fix_review is None or fix_review.verdict != "FAIL":
+                    break
+                if fix_round > MAX_JUDGE_FIX_ROUNDS:
+                    _log(f"  [{example.id}] -> SKIPPED (judge fix still fails ctl_validate "
+                         f"after {MAX_JUDGE_FIX_ROUNDS} correction round(s))", log_fh)
+                    judge_fix_failed = True
+                    break
+                _log(f"  [{example.id}] -> judge fix failed ctl_validate (round {fix_round}) "
+                     f"-- sending error back to judge for correction", log_fh)
+                usage_before = _usage_snapshot(judge)
+                try:
+                    fixed_code = judge.fix(prompt, fix_code, fix_review, component_type)
+                except Exception as e:
+                    _log(f"  [{example.id}] -> SKIPPED (judge fix correction round {fix_round} raised: {e})", log_fh)
+                    judge_fix_failed = True
+                    break
+                _log_usage_delta(f"fix-retry-{fix_round}", judge, usage_before, log_fh)
+
+            if judge_fix_failed:
+                n_judge_fix_failed += 1
+                continue
+
+            n_judge_fixed += 1
             extra["attempts_used"] = args.attempts
             conversation = [
                 {"role": "system", "content": system} if system else None,
@@ -680,6 +728,8 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             )
             _log(f"    ({breakdown})", log_fh)
         _log(f"  MUT failed (judge fixed):  {n_judge_fixed}  ({100*n_judge_fixed/total:.1f}%)  -> {judge_corrected_path}", log_fh)
+        if n_judge_fix_failed:
+            _log(f"  Skipped (judge fix still failed ctl_validate): {n_judge_fix_failed}", log_fh)
         if n_unparseable:
             _log(f"  Skipped (unparseable):     {n_unparseable}", log_fh)
         if n_missing_component:

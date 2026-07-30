@@ -1184,6 +1184,28 @@ class UsageStats:
 # triggered it cool off. One entry per gap, so len(...) + 1 = total attempts.
 _MODERATION_BACKOFF_S = [7.0, 15.0, 30.0, 60.0, 90.0]
 
+# Extra attempts (beyond the first) when a reasoning-tier model burns its
+# entire token budget on hidden reasoning and returns empty visible content
+# (finish_reason == "length"). Confirmed non-deterministic on a local
+# reasoning model (laguna-s-2.1-fp8): an identical request failed once at
+# max_completion_tokens=16000, then succeeded moments later using under 4000
+# tokens — sampling variance in reasoning length, not a real error. No
+# backoff delay: unlike moderation flags, this isn't a rate/volume signal,
+# just re-sampling the same request against a local server.
+_LENGTH_EXHAUSTION_RETRIES = 2
+
+
+def _is_length_exhausted(resp) -> bool:
+    """True if `resp` is the empty-content/finish_reason='length' signature
+    of a reasoning-tier model exhausting its token budget on hidden
+    reasoning before producing any visible answer (see
+    _LENGTH_EXHAUSTION_RETRIES)."""
+    if not resp.choices:
+        return False
+    content = resp.choices[0].message.content or ""
+    finish_reason = getattr(resp.choices[0], "finish_reason", None)
+    return not content.strip() and finish_reason == "length"
+
 
 class ReviewJudgeClient:
     """
@@ -1252,8 +1274,14 @@ class ReviewJudgeClient:
         elif provider == "openai":
             from openai import OpenAI
             key = _resolve_key(self._cfg.get("api_key"), "OPENAI_API_KEY")
+            # A local/self-hosted OpenAI-compatible server (vLLM, etc.) never
+            # checks this value, but the OpenAI SDK's client constructor
+            # still requires a non-empty string or it raises before any
+            # request is even sent — so an omitted api_key + no
+            # OPENAI_API_KEY env var breaks local usage even though the
+            # actual HTTP call would have worked fine.
             self._llm = OpenAI(
-                api_key=key,
+                api_key=key or "not-needed",
                 base_url=self._cfg.get("base_url"),
                 timeout=self._cfg.get("request_timeout_s", 180),
             )
@@ -1401,6 +1429,18 @@ class ReviewJudgeClient:
 
         resp = self._create_openai_chat_completion(llm, kwargs)
 
+        retry = 0
+        while _is_length_exhausted(resp) and retry < _LENGTH_EXHAUSTION_RETRIES:
+            retry += 1
+            self._log_full(
+                f"[review-judge] purpose={purpose!r} model={model!r} exhausted its token budget "
+                f"on hidden reasoning with no visible answer (retry {retry}/{_LENGTH_EXHAUSTION_RETRIES}) "
+                f"-- retrying identical request"
+            )
+            print(f"[review-judge] Reasoning-token exhaustion (purpose={purpose!r}) "
+                  f"-- retry {retry}/{_LENGTH_EXHAUSTION_RETRIES} …")
+            resp = self._create_openai_chat_completion(llm, kwargs)
+
         if resp.usage:
             u = resp.usage
             # prompt_tokens_details.cached_tokens is the portion of prompt_tokens
@@ -1423,13 +1463,14 @@ class ReviewJudgeClient:
         # ```ctl\n\n``` fix() result, and one self_corrected.jsonl record
         # ended up with a completely empty tweak()ed prompt, both traced to
         # a call that reported generated tokens == max_completion_tokens
-        # exactly, i.e. cut off mid-reasoning). Raising here — rather than
-        # returning "" silently — routes into each caller's EXISTING
-        # exception handling: review()/fix() calls are wrapped by
-        # mut_validate.py's skip-and-log except-blocks, tweak() calls fall
-        # back to the untweaked prompt, and check_numeric_claim() calls fail
-        # open — all already-correct behaviors that just weren't reachable
-        # before because this condition never surfaced as an error.
+        # exactly, i.e. cut off mid-reasoning). The caller above already
+        # retries a few times on this exact signature (_LENGTH_EXHAUSTION_RETRIES)
+        # since it's been confirmed non-deterministic; raising here — rather
+        # than returning "" silently — only fires once retries are
+        # exhausted, and routes into each caller's EXISTING exception
+        # handling: review()/fix() calls are wrapped by mut_validate.py's
+        # skip-and-log except-blocks, tweak() calls now stop the whole run
+        # (see mut_validate.py), and check_numeric_claim() calls fail open.
         finish_reason = getattr(resp.choices[0], "finish_reason", None)
         if not content.strip() and finish_reason == "length":
             reasoning_tokens = None

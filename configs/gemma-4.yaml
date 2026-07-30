@@ -12,7 +12,7 @@
 # =============================================================================
 
 # --- Pipeline identity (not passed to LlamaFactory) -------------------------
-run_name: qwen35-9B-CTLv5
+run_name: gemma-4-31B-it
 output_base: saves          # All outputs land under saves/<run_name>/<timestamp>_<phase>/
 
 # =============================================================================
@@ -20,12 +20,12 @@ output_base: saves          # All outputs land under saves/<run_name>/<timestamp
 # =============================================================================
 
 # Model
-model_name_or_path: Qwen/Qwen3.5-9B
+model_name_or_path: google/gemma-4-31B-it
 trust_remote_code: true
 
 # Architecture / efficiency
 finetuning_type: lora
-template: qwen3_nothink          # Use qwen3_5_nothink for Qwen3.5 variants
+template: gemma
 flash_attn: auto
 preprocessing_num_workers: 16
 ddp_timeout: 180000000
@@ -77,12 +77,12 @@ sft:
   cutoff_len: 2780
   lr_scheduler_type: cosine_with_restarts #cosine_with_min_lr  #linear # #constant_with_warmupa
   lr_scheduler_kwargs:
-    #min_lr: 5.0e-6
-        num_cycles: 2
+    #  min_lr: 5.0e-6
+      num_cycles: 2
   learning_rate: 5.0e-5
   num_train_epochs: 2
   max_samples: 150000
-  per_device_train_batch_size: 4
+  per_device_train_batch_size: 2
   gradient_accumulation_steps: 6
   per_device_eval_batch_size: 1
 
@@ -105,7 +105,7 @@ sft:
 # =============================================================================
 dpo:
   dataset: clover_dpo_data
-  cutoff_len:  1280
+  cutoff_len: 1280
   learning_rate: 8.0e-6 #1.0e-6
   lr_scheduler_type: cosine   # Ensures smooth decay over the shorter step count
   warmup_ratio: 0.1       
@@ -119,7 +119,7 @@ dpo:
   lora_alpha: 16 
 
   # DPO objective
-  pref_beta: 0.05 #0.075
+  pref_beta: 0.1 #0.05 #0.075
   pref_ftx: 0.05 #also 0.1  0.2
   pref_loss: ipo #sigmoid            # choices: sigmoid (DPO), orpo, simpo
 
@@ -136,4 +136,4 @@ export:
   export_legacy_format: false
 
   # Override the auto-generated export path if you want a fixed location:
-  export_dir: /home/pavlisd/exports/qwen35-9B-CTLv20/
+  export_dir: /home/pavlisd/exports/gemma-4-31B-it/
