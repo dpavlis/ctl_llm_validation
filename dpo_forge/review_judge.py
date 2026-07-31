@@ -451,6 +451,57 @@ computed/concatenated string are all legitimate, necessary parsing of
 runtime data and must never be flagged under this rule.
 """
 
+_ONERROR_HANDLING_NOTE = """\
+
+## No-op *OnError functions — silently swallowing a runtime error (ERROR)
+Every component type has one or more optional `*OnError` counterpart
+functions — `transformOnError`, `updateTransformOnError`, `appendOnError`,
+`countOnError`, `updateGroupOnError`, `initGroupOnError`,
+`finishGroupOnError`, `generateOnError`, `getOutputPortOnError`, and other
+per-component variants (see the component contract for the exact set) — that
+only run when their non-`OnError` counterpart (`transform`, `append`,
+`count`, `updateGroup`, …) throws an uncaught RUNTIME exception.
+
+- A component with NO `*OnError` function at all is correct by default: the
+  graph aborts on that record, which is the right behavior unless the user
+  prompt explicitly asks for runtime-error tolerance (e.g. "skip invalid
+  records", "log and continue", "don't fail the graph on a bad row"). Do NOT
+  flag the mere ABSENCE of an `*OnError` function.
+- An `*OnError` function whose body does nothing but return a "continue as
+  if nothing happened" code — `{ return OK; }`, `{ return 0; }`, an empty
+  body, or equivalent — WITHOUT doing anything with the `errorMessage`/
+  `stackTrace` it received (at minimum a `printLog`/`printErr` call, or some
+  other real corrective action) IS a defect: report it as an ERROR. It tells
+  the runtime the record was handled successfully while its actual
+  contribution (e.g. an aggregate accumulator update, an emitted record) was
+  silently dropped — the graph reports success while producing wrong or
+  incomplete output, with no indication anywhere that anything went wrong.
+  Canonical example: `function integer appendOnError(string errorMessage,
+  string stackTrace) { return OK; }` on a Denormalizer — `append()`'s
+  contribution to the running accumulator never happened, but nothing about
+  the run signals that.
+- An `*OnError` function that DOES something meaningful — logs the error,
+  genuinely discards the record (e.g. `return SKIP;` where SKIP is a valid
+  return for that function), or routes it to an error port — is legitimate
+  and must NOT be flagged.
+"""
+
+_TRY_CATCH_FIX_NOTE = """\
+
+## When writing the fix: prefer try-catch over *OnError functions
+The `*OnError` function family (`transformOnError`, `updateTransformOnError`,
+`appendOnError`, `countOnError`, `updateGroupOnError`, `generateOnError`,
+`getOutputPortOnError`, etc.) pre-dates CTL2's `try { ... } catch
+(CTLException ex) { ... }` construct. When your corrected code needs to add
+or fix runtime-error handling, wrap the risky expression(s) in a `try-catch`
+block INSIDE the existing function body instead of introducing or keeping a
+no-op `*OnError` function. Only keep an `*OnError` function in your rewrite
+if it already does something meaningful (see the rule above) or the
+component contract requires the function to exist at all (check the
+component contract) — do not newly introduce an empty/no-op one as a
+"fix" for a compile or missing-function error.
+"""
+
 _EVIDENCE_DISCIPLINE_NOTE = """\
 
 ## Evidence discipline — do not hallucinate issues
@@ -569,7 +620,8 @@ _OPTIMIZATION_HINTS_NOTE = _build_optimization_hints_note()
 # component type, maximizing the shared cache prefix.
 _REVIEW_RULES_FULL = (
     _REVIEW_RULES + _EVIDENCE_DISCIPLINE_NOTE + _NULL_HANDLING_NOTE
-    + _NUMERIC_WIDENING_NOTE + _LITERAL_PREFERENCE_NOTE + _OPTIMIZATION_HINTS_NOTE
+    + _NUMERIC_WIDENING_NOTE + _LITERAL_PREFERENCE_NOTE + _ONERROR_HANDLING_NOTE
+    + _OPTIMIZATION_HINTS_NOTE
 )
 
 # Final, stable hardening check — asks the model to verify its own OUTPUT
@@ -976,7 +1028,10 @@ def _build_review_system(component_type: str) -> str:
 
 
 def _build_fix_system(component_type: str) -> str:
-    parts = [_FIX_SYSTEM_BASE, _NULL_HANDLING_NOTE, _NUMERIC_WIDENING_NOTE, _LITERAL_PREFERENCE_NOTE]
+    parts = [
+        _FIX_SYSTEM_BASE, _NULL_HANDLING_NOTE, _NUMERIC_WIDENING_NOTE, _LITERAL_PREFERENCE_NOTE,
+        _ONERROR_HANDLING_NOTE, _TRY_CATCH_FIX_NOTE,
+    ]
     if _CTL2_REFERENCE:
         parts.append(f"\n<CTL2_REFERENCE>\n{_CTL2_REFERENCE}\n</CTL2_REFERENCE>\n")
     note = _component_note(component_type)

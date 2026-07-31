@@ -477,6 +477,7 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     n_self_corrected_by_attempt: dict[int, int] = {}
     n_judge_fixed = 0
     n_judge_fix_failed = 0
+    n_ctl_validate_fail = 0
     n_unparseable = 0
     n_missing_component = 0
     t_start = time.monotonic()
@@ -569,12 +570,18 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             # semantic opinion. Falls through to the LLM judge on PASS,
             # or whenever this step can't run (disabled, no metadata XML
             # in the prompt, MCP call failed, etc.).
+            _log(
+                f"  [ctl-validate] calling ctl_validate on attempt {attempt} "
+                f"with component_type={component_type!r}",
+                log_fh,
+            )
             mcp_review = validate_ctl(ctl_validate_cfg, component_type, prompt, code,
                                        log_fn=lambda msg: _log(msg, log_fh))
             if mcp_review is not None:
                 _log_review(f"ctl-validate-{attempt}", mcp_review, log_fh)
 
             if mcp_review is not None and mcp_review.verdict == "FAIL":
+                n_ctl_validate_fail += 1
                 _log(f"  [{example.id}] -> ctl_validate FAIL on attempt {attempt} "
                      f"(compile/metadata error) — skipping LLM judge for this attempt", log_fh)
                 review = mcp_review
@@ -671,12 +678,18 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             judge_fix_failed = False
             for fix_round in range(1, MAX_JUDGE_FIX_ROUNDS + 2):
                 fix_code = normalize_ctl(fixed_code)
+                _log(
+                    f"  [ctl-validate] calling ctl_validate for judge-fix round {fix_round} "
+                    f"with component_type={component_type!r}",
+                    log_fh,
+                )
                 fix_review = validate_ctl(ctl_validate_cfg, component_type, prompt, fix_code,
                                            log_fn=lambda msg: _log(msg, log_fh))
                 if fix_review is not None:
                     _log_review(f"ctl-validate-fix-{fix_round}", fix_review, log_fh)
                 if fix_review is None or fix_review.verdict != "FAIL":
                     break
+                n_ctl_validate_fail += 1
                 if fix_round > MAX_JUDGE_FIX_ROUNDS:
                     _log(f"  [{example.id}] -> SKIPPED (judge fix still fails ctl_validate "
                          f"after {MAX_JUDGE_FIX_ROUNDS} correction round(s))", log_fh)
@@ -728,6 +741,9 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             )
             _log(f"    ({breakdown})", log_fh)
         _log(f"  MUT failed (judge fixed):  {n_judge_fixed}  ({100*n_judge_fixed/total:.1f}%)  -> {judge_corrected_path}", log_fh)
+        if ctl_validate_cfg.get("enabled"):
+            _log(f"  ctl_validate FAILs (syntax/metadata errors): {n_ctl_validate_fail}  "
+                 f"(across all MUT attempts + judge-fix rounds)", log_fh)
         if n_judge_fix_failed:
             _log(f"  Skipped (judge fix still failed ctl_validate): {n_judge_fix_failed}", log_fh)
         if n_unparseable:

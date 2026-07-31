@@ -251,6 +251,22 @@ async def _call_ctl_validate_async(
     raise RuntimeError("ctl_validate returned neither structuredContent nor a parseable text block")
 
 
+# ctl_validate compiles the candidate CTL2 code in isolation, without the
+# rest of the graph — it therefore can never resolve a sequence or lookup
+# table by name (those are graph-level objects defined outside the CTL being
+# checked). "Unable to resolve sequence/lookup '...'" is a known limitation
+# of the tool itself, not a real defect in the candidate code: still surface
+# it (kept in the issue list, visible in the log) but never let it fail
+# compilation — downgraded to INFO regardless of what severity the tool
+# reported, and excluded from has_error/has_warning/verdict.
+# Allows for filler words between the keyword and the quoted name — the tool
+# has been observed phrasing this both as "Unable to resolve lookup 'X'" and
+# "Unable to resolve lookup table 'X'" (likewise "sequence" / "sequence
+# object" etc.), so match up to a short run of non-quote characters rather
+# than requiring the quote immediately after the keyword.
+_UNVERIFIABLE_REF_RE = re.compile(r"Unable to resolve (?:sequence|lookup)\b[^']{0,20}'", re.IGNORECASE)
+
+
 def _build_review_result(data: dict[str, Any]) -> ReviewResult:
     """Convert the tool's {overall, problems[]} output into a ReviewResult,
     so it slots into mut_validate.py's review loop exactly like a judge
@@ -258,10 +274,13 @@ def _build_review_result(data: dict[str, Any]) -> ReviewResult:
     carry-forward on the next attempt if this one fails."""
     issues: list[ReviewIssue] = []
     for p in data.get("problems", []):
+        message = (p.get("message") or "").strip()
         severity = (p.get("severity") or "WARNING").upper()
         if severity not in ("ERROR", "WARNING"):
             severity = "WARNING"
-        bits = [f"[{p.get('stage', '?')}]", (p.get("message") or "").strip()]
+        if _UNVERIFIABLE_REF_RE.search(message):
+            severity = "INFO"
+        bits = [f"[{p.get('stage', '?')}]", message]
         loc_bits = []
         if p.get("line") is not None:
             loc = f"line {p['line']}"
