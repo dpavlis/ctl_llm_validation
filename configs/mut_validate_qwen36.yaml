@@ -1,0 +1,80 @@
+# mut_validate configuration
+# Run: python mut_validate.py data/sft_input/your_file.json --config configs/mut_validate.yaml
+
+model:
+  # Path to the merged/exported safetensors checkpoint (the MUT)
+  checkpoint_dir: /home/pavlisd/exports/qwen36/
+  adapter_dir: null      # optional LoRA adapter dir (unmerged checkpoint)
+  dtype: bfloat16        # float16 | bfloat16 | float32
+  attn_impl: flash_attention_2   # flash_attention_2 | sdpa
+  # System prompt sent to the MUT — must match test.py's canonical prompt
+  system_prompt: |
+    You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+    Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+    Prefer correct, practical, minimal solutions.
+  generation:
+    temperature: 0.3
+    top_p: 0.9
+    top_k: 40
+    repetition_penalty: 1.05
+    max_new_tokens: 2048
+    seed: 42
+
+judge:
+  provider: openai
+    #model: Qwen3-Coder-Next
+    #api_key: not-needed      # local server doesn't check it; kept non-empty for the OpenAI client
+    #base_url: http://virt-ai:3000/v1
+  max_retries: 2           # retries on an unparseable review response
+  # Official OpenAI API — kept here for quick swap-back, see prior comparison run.
+  model: gpt-5.4
+  api_key: ${OPENAI_API_KEY}
+    #base_url: null           # null = official OpenAI API
+  reasoning_effort: medium
+  # Confirmed via real runs: at reasoning_effort=medium, gpt-5.4 can spend
+  # the entire budget on hidden reasoning tokens on a hard fix() task and
+  # return empty content — see ReviewJudgeClient._call_openai's exhaustion
+  # check, which now raises instead of silently returning empty output.
+  max_completion_tokens: 8192
+  # Prompt caching: the review/fix system prompt is ~25K tokens and almost
+  # fully stable across calls; calls are spaced out by local MUT generation
+  # time in between, which was expiring the default short-lived cache
+  # before the next call arrived. See ReviewJudgeClient's class docstring
+  # in review_judge.py.
+  prompt_cache_key: ctl-reviewer:v7
+  prompt_cache_retention: "24h"
+
+# Used only with --tweak. Kept separate from "judge" — defaults to the local
+# Qwen server since OpenAI's moderation classifier has intermittently flagged
+# the tweak prompt (a benign "rewrite this into a new practice task" request)
+# on some reasoning-tier OpenAI models.
+tweak_llm:
+  provider: openai
+    #model: Qwen3-Coder-Next
+    #api_key: not-needed
+    #base_url: http://virt-ai:3000/v1
+  model: gpt-5.4
+  api_key: ${OPENAI_API_KEY}
+  # tweak_llm's own default base_url (in mut_validate.py's DEFAULT_CONFIG) is
+  # the LOCAL vLLM server, unlike "judge" whose default is already null —
+  # commenting this out here (like above) would silently keep sending
+  # gpt-5.4 requests to the local server instead of the real OpenAI API.
+  # Must be set explicitly to null when swapping tweak_llm to an OpenAI model.
+  base_url: null
+  max_retries: 2
+  reasoning_effort: medium
+  max_completion_tokens: 8192
+  prompt_cache_key: ctl-tweak:v1
+  prompt_cache_retention: "24h"
+
+# Optional: a real CTL2 compiler/metadata check via an MCP server's
+# ctl_validate tool. See configs/mut_validate.yaml's comment for the full
+# rationale, and dpo_forge/ctl_validate_mcp.py.
+ctl_validate_mcp:
+  enabled: true
+  url: http://localhost:8083/clover/mcp/mcp
+  timeout_s: 30
+
+output:
+  self_corrected_file: results/mut_validate/self_corrected.jsonl
+  judge_corrected_file: results/mut_validate/judge_corrected.jsonl

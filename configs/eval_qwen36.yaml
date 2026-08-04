@@ -1,0 +1,136 @@
+# =============================================================================
+# CTL2 model evaluation config
+#
+# Usage:
+#   cd ~/llama_train
+#   python test.py configs/eval_config.yaml
+#   python test.py configs/eval_config.yaml --tests T4,T5,T7     # validate only
+#   python test.py configs/eval_config.yaml --runs 3              # 3× per test
+#   python test.py configs/eval_config.yaml --dry-run             # preview
+#   python test.py --compare results/a.json results/b.json        # diff two runs
+#
+# Shared config with train.py:
+#   Set training_config below.  test.py will:
+#     • inherit output_base / run_name from the training config
+#     • auto-discover the most recent completed export directory
+#     • append eval scores to the shared logs/<BaseModel>.yaml run log
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Link to the training config (enables auto-discovery + shared run log)
+# ---------------------------------------------------------------------------
+# Point this at the same YAML you pass to train.py.
+training_config: configs/qwen36.yaml
+
+# ---------------------------------------------------------------------------
+# Model under test (MUT)
+# ---------------------------------------------------------------------------
+mut:
+  # "local"  — load exported safetensors directly via transformers (GPU required)
+  # "api"    — call an OpenAI-compatible endpoint (Ollama, OpenAI, vLLM, etc.)
+  mode: local
+
+  # Path to the exported model directory produced by train.py.
+  # Leave null (or omit) to auto-discover from training_config paths.
+  # Set explicitly to test a specific export, e.g. after --skip-export:
+  #   model_path: saves/qwen3-clover/2026-05-10-12-00-00_export
+  model_path: null
+
+  # Data type for inference: float16 | bfloat16 | float32
+  # Use bfloat16 for Ampere+ (A100, RTX 30xx+), float16 for older GPUs
+  dtype: bfloat16
+
+  # HuggingFace device map: "auto" distributes across all available GPUs/CPU
+  device_map: auto
+
+  # Whether to allow the model to produce chain-of-thought <think> tokens.
+  # Set to false for models trained with a nothink template (qwen3_nothink etc.)
+  # — the tokenizer's built-in thinking scaffold is disabled so the model sees
+  # exactly the same prompt format it was trained on.
+  enable_thinking: false
+
+  # Maximum new tokens per response
+  max_new_tokens: 2048
+
+  # ---------------------------------------------------------------------------
+  # Per-type inference overrides (generate / validate).
+  # Each key is optional — omit or comment out to use the test suite defaults.
+  # ---------------------------------------------------------------------------
+  generate:
+    # Suite default temperature: 0.1
+    #temperature: 0.3
+    # top_p: 1.0
+    system_prompt: |
+      You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+      Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+      Prefer correct, practical, minimal solutions.
+
+  validate:
+    # Suite default temperature: 0.05
+    #temperature: 0.2
+    #top_p: 0.75
+    system_prompt: |
+      You are a CloverDX CTL2 code validation expert. Your task is to analyze CTL2 code and identify issues, bugs, and potential improvements.
+      Focus on finding problems rather than writing new code.
+      Output format:
+      
+      ISSUES:
+        [severity] Description   (severity is ERROR, WARNING, or INFO)
+        ...
+      
+      SUGGESTIONS:
+        - Optional improvement hints (omit section if none)
+      
+      VERDICT: PASS | FAIL
+        (FAIL if any ERROR-severity issue is found; PASS otherwise)
+      
+      If no issues are found respond with just:
+      ISSUES: none
+      VERDICT: PASS
+
+  # --- api mode (switch mode: api and configure below) ---
+  # base_url: "http://localhost:11434/v1"   # Ollama default
+  # model: "qwen3-clover-merged"            # model name as registered in Ollama
+  # api_key: "ollama"                       # any non-empty string for Ollama
+
+# ---------------------------------------------------------------------------
+# Judge LLM
+# ---------------------------------------------------------------------------
+judge:
+  # "anthropic" — Anthropic SDK, recommended: claude-opus-4 or claude-sonnet-4
+  # "openai"    — OpenAI SDK (also works for any OpenAI-compatible self-hosted judge)
+  #provider: anthropic
+  #model: claude-opus-4-20250514
+
+  # API key — supports ${ENV_VAR} expansion
+  #api_key: ${ANTHROPIC_API_KEY}
+
+  # Uncomment to use OpenAI as judge:
+  provider: openai
+  model: gpt-5.4 #Qwen3-Coder-Next
+  api_key: ${OPENAI_API_KEY}
+ 
+    #base_url: "http://localhost:3000/v1"
+
+  # Optional base_url override for self-hosted OpenAI-compatible judge endpoint:
+  # base_url: "http://localhost:11434/v1"
+
+# ---------------------------------------------------------------------------
+# Execution settings
+# ---------------------------------------------------------------------------
+
+# Repeat each test N times.  Use 1 for fast evaluation, 3 for statistics.
+runs_per_test: 1
+
+# Seconds to wait per MUT response before timeout (retried once).
+timeout_seconds: 240
+
+# Where to write results_*.json and summary_*.md.
+output_dir: ./results
+
+# Test subset filter.  null = run all 8 tests.
+# Can also be specified on the command line: --tests T4,T5,T7
+test_ids: null
+
+# Explicit path to ctl2_test_suite.json — auto-discovered from resources/ if omitted.
+suite_file: /home/pavlisd/llama_train/resources/ctl2_test_suite_v2.json

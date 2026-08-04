@@ -29,9 +29,24 @@ Config layout:
     model_name_or_path: Qwen/Qwen3-8B
     ...
 
-    sft:          # SFT-specific overrides
+    sft:          # SFT-specific overrides (single round)
       dataset: sft_data
       ...
+
+    # Or, to run multiple SFT rounds back-to-back (e.g. small examples first,
+    # then a second round with a larger cutoff_len and "thinking" examples),
+    # give sft: a list instead of a mapping. Rounds run in order; each round
+    # after the first chains from the previous round's best checkpoint via
+    # adapter_name_or_path (continuing the same LoRA weights by default —
+    # override create_new_adapter: true per-round to start a fresh adapter
+    # instead). Output dirs are suffixed _sft, _sft2, _sft3, ...
+    #
+    # sft:
+    #   - dataset: sft_data_small
+    #     cutoff_len: 1024
+    #   - dataset: sft_data_large_thinking
+    #     cutoff_len: 4096
+    #     enable_thinking: true
 
     dpo:          # DPO-specific overrides
       dataset: dpo_data
@@ -63,6 +78,7 @@ import argparse
 import copy
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime
@@ -162,20 +178,26 @@ def is_export_complete(export_dir: str) -> bool:
     return p.is_dir() and any(p.glob("*.safetensors"))
 
 
+_SFT_DIR_RE = re.compile(r"^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}_sft\d*$")
+_PHASE_DIR_RE = re.compile(r"^(\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})_(?:sft\d*|dpo|export)$")
+
+
 def find_latest_sft_checkpoint(run_dir: Path) -> Optional[str]:
     """
-    Find the best checkpoint from the most recent completed SFT run under
-    run_dir.  Returns the checkpoint path, or None if no SFT run exists.
+    Find the best checkpoint from the most recent completed SFT round under
+    run_dir (the last round of a multi-round SFT config, if applicable).
+    Returns the checkpoint path, or None if no SFT run exists.
+
+    Rounds within a run are named _sft, _sft2, _sft3, ... and always created
+    in order, so the directory with the newest mtime is the last round of the
+    most recently run SFT pipeline.
     """
     if not run_dir.is_dir():
         return None
-    sft_dirs = sorted(
-        [d for d in run_dir.iterdir() if d.is_dir() and d.name.endswith("_sft")],
-        key=lambda d: d.name,   # YYYY-MM-DD-HH-MM-SS_sft sorts chronologically
-    )
+    sft_dirs = [d for d in run_dir.iterdir() if d.is_dir() and _SFT_DIR_RE.match(d.name)]
     if not sft_dirs:
         return None
-    latest_sft = sft_dirs[-1]
+    latest_sft = max(sft_dirs, key=lambda d: d.stat().st_mtime)
     state = read_trainer_state(str(latest_sft))
     return find_best_checkpoint(str(latest_sft), state)
 
@@ -191,10 +213,9 @@ def find_latest_run_timestamp(run_dir: Path) -> Optional[str]:
     for d in run_dir.iterdir():
         if not d.is_dir():
             continue
-        for suffix in ("_sft", "_dpo", "_export"):
-            if d.name.endswith(suffix):
-                timestamps.add(d.name[: -len(suffix)])
-                break
+        m = _PHASE_DIR_RE.match(d.name)
+        if m:
+            timestamps.add(m.group(1))
     return max(timestamps) if timestamps else None  # lexicographic == chronological
 
 
@@ -312,7 +333,7 @@ def print_pipeline_summary(
     run_name: str,
     base_model: str,
     timestamp: str,
-    sft_results: Optional[dict],
+    sft_results: Optional[list],
     dpo_results: Optional[dict],
     export_dir: Optional[str],
     skipped_sft: bool,
@@ -337,14 +358,22 @@ def print_pipeline_summary(
     elif skipped_sft:
         print("  skipped")
     elif sft_results:
-        best_train = sft_results.get("best_train_loss")
-        best_eval  = sft_results.get("best_eval_loss")
-        best_ckpt  = sft_results.get("best_checkpoint", "—")
-        if best_train is not None:
-            print(f"  Best train loss : {best_train:.5f}")
-        if best_eval is not None:
-            print(f"  Best eval  loss : {best_eval:.5f}  ← checkpoint selected for DPO")
-        print(f"  Checkpoint used : {best_ckpt}")
+        multi = len(sft_results) > 1
+        for i, result in enumerate(sft_results):
+            if multi:
+                print(f"  Round {i + 1}/{len(sft_results)}:")
+            best_train = result.get("best_train_loss")
+            best_eval  = result.get("best_eval_loss")
+            best_ckpt  = result.get("best_checkpoint", "—")
+            is_last = i == len(sft_results) - 1
+            if best_train is not None:
+                print(f"  Best train loss : {best_train:.5f}")
+            if best_eval is not None:
+                suffix = "  ← checkpoint selected for DPO" if is_last else ""
+                print(f"  Best eval  loss : {best_eval:.5f}{suffix}")
+            print(f"  Checkpoint used : {best_ckpt}")
+            if multi and not is_last:
+                print()
     else:
         print("  No trainer state found — metrics unavailable")
 
@@ -478,7 +507,7 @@ def append_run_log(
     timestamp: str,
     run_name: str,
     raw_config: dict,
-    sft_results: Optional[dict],
+    sft_results: Optional[list],
     dpo_results: Optional[dict],
     export_dir: Optional[str] = None,
 ) -> Path:
@@ -601,16 +630,25 @@ def main():
 
     run_name       = cfg.pop("run_name", "run")
     output_base    = cfg.pop("output_base", "saves")
-    sft_section    = cfg.pop("sft", {})
+    sft_section_raw = cfg.pop("sft", {})
     dpo_section    = cfg.pop("dpo", {})
     export_section = cfg.pop("export", {})
     common         = cfg
+
+    # sft: may be a single mapping (one round) or a list of mappings (multiple
+    # rounds run in order, each chaining from the previous round's checkpoint).
+    sft_stages_cfg = sft_section_raw if isinstance(sft_section_raw, list) else [sft_section_raw]
+
+    def _sft_stage_suffix(i: int) -> str:
+        return "_sft" if i == 0 else f"_sft{i + 1}"
 
     timestamp  = args.timestamp or datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     # output_base is relative to LLAMAFACTORY_DIR (LlamaFactory's cwd), so resolve
     # all phase output paths the same way to ensure read_trainer_state etc. find files.
     run_dir    = LLAMAFACTORY_DIR / output_base / run_name
-    sft_output    = str(run_dir / f"{timestamp}_sft")
+    sft_stage_outputs = [
+        str(run_dir / f"{timestamp}{_sft_stage_suffix(i)}") for i in range(len(sft_stages_cfg))
+    ]
     dpo_output    = str(run_dir / f"{timestamp}_dpo")
     export_output = str(run_dir / f"{timestamp}_export")
 
@@ -622,6 +660,10 @@ def main():
         sys.exit(1)
 
     # ── Resume logic ─────────────────────────────────────────────────────
+    # sft_precomplete[i] holds the best checkpoint for stage i if that round's
+    # training already finished in a previous invocation; None otherwise.
+    sft_precomplete = [None] * len(sft_stages_cfg)
+
     if args.resume:
         found_ts = find_latest_run_timestamp(run_dir)
         if not found_ts:
@@ -629,28 +671,38 @@ def main():
         else:
             timestamp = found_ts
             # Recompute paths for the found run
-            sft_output    = str(run_dir / f"{timestamp}_sft")
+            sft_stage_outputs = [
+                str(run_dir / f"{timestamp}{_sft_stage_suffix(i)}") for i in range(len(sft_stages_cfg))
+            ]
             dpo_output    = str(run_dir / f"{timestamp}_dpo")
             export_output = str(run_dir / f"{timestamp}_export")
 
             print(f"\n[resume] Found run {timestamp}")
 
-            # ── SFT status ──
-            if is_training_complete(sft_output):
-                sft_state = read_trainer_state(sft_output)
-                sft_best  = find_best_checkpoint(sft_output, sft_state)
-                args.sft_adapter = sft_best   # implies --skip-sft
+            # ── SFT status (per round; stops at the first non-complete round) ──
+            n_stages = len(sft_stage_outputs)
+            for i, stage_out in enumerate(sft_stage_outputs):
+                label = "SFT" if n_stages == 1 else f"SFT[{i + 1}/{n_stages}]"
+                if is_training_complete(stage_out):
+                    stage_state = read_trainer_state(stage_out)
+                    stage_best  = find_best_checkpoint(stage_out, stage_state)
+                    sft_precomplete[i] = stage_best
+                    print(f"[resume] {label}: complete — best checkpoint: {stage_best}")
+                elif last_checkpoint_in(stage_out):
+                    ckpt = last_checkpoint_in(stage_out)
+                    print(f"[resume] {label}: interrupted — resuming from {ckpt}")
+                    # LlamaFactory auto-resumes when output_dir has checkpoints and
+                    # overwrite_output_dir is not set; no config change needed.
+                    # Do NOT force create_new_adapter since the adapter already exists.
+                    sft_stages_cfg[i].pop("create_new_adapter", None)
+                    break
+                else:
+                    print(f"[resume] {label}: not started — running fresh")
+                    break
+
+            if all(c is not None for c in sft_precomplete):
+                args.sft_adapter = sft_precomplete[-1]   # implies --skip-sft
                 args.skip_sft    = True
-                print(f"[resume] SFT    : complete — best checkpoint: {sft_best}")
-            elif last_checkpoint_in(sft_output):
-                ckpt = last_checkpoint_in(sft_output)
-                print(f"[resume] SFT    : interrupted — resuming from {ckpt}")
-                # LlamaFactory auto-resumes when output_dir has checkpoints and
-                # overwrite_output_dir is not set; no config change needed.
-                # Do NOT force create_new_adapter since the adapter already exists.
-                sft_section.pop("create_new_adapter", None)
-            else:
-                print(f"[resume] SFT    : not started — running fresh")
 
             # ── DPO status (only meaningful once SFT is complete) ──
             if args.skip_sft:   # SFT confirmed complete above
@@ -674,42 +726,69 @@ def main():
     print(f"  LlamaFactory  : {LLAMAFACTORY_DIR}")
     print(f"  Run name      : {run_name}")
     print(f"  Timestamp     : {timestamp}")
-    print(f"  SFT out   : {sft_output}")
+    for i, stage_out in enumerate(sft_stage_outputs):
+        tag = "SFT out" if len(sft_stage_outputs) == 1 else f"SFT out[{i + 1}]"
+        print(f"  {tag:<10}: {stage_out}")
     print(f"  DPO out   : {dpo_output}")
     print(f"  Export    : {export_output}")
 
-    sft_results: Optional[dict] = None
+    sft_results: list = []
     dpo_results: Optional[dict] = None
 
     # ── SFT ─────────────────────────────────────────────────────────────
     if not args.skip_sft:
-        sft_config = {**common, **sft_section}
-        sft_config.update({
-            "stage": "sft",
-            "do_train": True,
-            "output_dir": sft_output,
-        })
-        sft_config.setdefault("create_new_adapter", True)
+        n_stages = len(sft_stages_cfg)
+        prev_ckpt = None
+        for i, (stage_section, stage_output) in enumerate(zip(sft_stages_cfg, sft_stage_outputs)):
+            label = "SFT" if n_stages == 1 else f"SFT[{i + 1}/{n_stages}]"
 
-        run_train_phase(
-            "SFT",
-            sft_config,
-            Path(sft_output) / "training_config.yaml",
-            args.dry_run,
-        )
+            if sft_precomplete[i] is not None:
+                print(f"\n[skip] {label} phase (already complete)")
+                prev_ckpt = sft_precomplete[i]
+                continue
 
-        if not args.dry_run:
-            sft_state = read_trainer_state(sft_output)
-            if sft_state:
-                print_phase_summary("SFT", sft_state, sft_output)
-                sft_best_ckpt = find_best_checkpoint(sft_output, sft_state)
-                sft_results = extract_sft_results(sft_state, sft_best_ckpt)
+            stage_config = {**common, **stage_section}
+            stage_config.update({
+                "stage": "sft",
+                "do_train": True,
+                "output_dir": stage_output,
+            })
+            if i == 0:
+                stage_config.setdefault("create_new_adapter", True)
             else:
-                print(f"\n[warn] trainer_state.json not found in {sft_output}")
-                sft_best_ckpt = sft_output
+                # Chain from the previous round's checkpoint. By default this
+                # continues training the same LoRA weights (create_new_adapter
+                # left False); a stage can override create_new_adapter: true
+                # to merge the previous round in and start a fresh adapter.
+                stage_config.setdefault("adapter_name_or_path", prev_ckpt)
+                stage_config.setdefault("create_new_adapter", False)
+
+            run_train_phase(
+                label,
+                stage_config,
+                Path(stage_output) / "training_config.yaml",
+                args.dry_run,
+            )
+
+            if not args.dry_run:
+                stage_state = read_trainer_state(stage_output)
+                if stage_state:
+                    print_phase_summary(label, stage_state, stage_output)
+                    stage_best_ckpt = find_best_checkpoint(stage_output, stage_state)
+                    result = extract_sft_results(stage_state, stage_best_ckpt)
+                    result["round"] = i + 1
+                    sft_results.append(result)
+                    prev_ckpt = stage_best_ckpt
+                else:
+                    print(f"\n[warn] trainer_state.json not found in {stage_output}")
+                    prev_ckpt = stage_output
+            else:
+                prev_ckpt = stage_output
+
+        sft_best_ckpt = prev_ckpt
     else:
         print("\n[skip] SFT phase")
-        sft_best_ckpt = sft_output  # placeholder; overwritten below
+        sft_best_ckpt = sft_stage_outputs[-1]  # placeholder; overwritten below
 
     # ── Resolve SFT adapter for DPO ──────────────────────────────────────
     if args.sft_adapter:
@@ -717,8 +796,8 @@ def main():
         sft_adapter = args.sft_adapter
         print(f"\n  SFT adapter (provided)  : {sft_adapter}")
     elif not args.skip_sft:
-        # Just finished SFT — use the best checkpoint from this run
-        sft_adapter = sft_best_ckpt if not args.dry_run else sft_output
+        # Just finished SFT — use the best checkpoint from the final round
+        sft_adapter = sft_best_ckpt if not args.dry_run else sft_stage_outputs[-1]
         print(f"\n  SFT adapter (this run)  : {sft_adapter}")
     else:
         # --skip-sft with no --sft-adapter: resolve in priority order:

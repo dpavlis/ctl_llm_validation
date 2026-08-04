@@ -30,7 +30,8 @@ ISSUES / SUGGESTIONS / VERDICT text format (no CloverDX execution involved).
 Usage:
   /home/pavlisd/venv/bin/python mut_validate.py <input_file>
       [--config configs/mut_validate.yaml] [--index N] [--limit N]
-      [--attempts N] [--verbose] [--dry-run] [--overwrite] [--tweak] [--tweak-random]
+    [--attempts N] [--verbose] [--dry-run] [--overwrite] [--tweak] [--tweak-random]
+    [--skip-ctl-validate]
 
 Runs on GPU 1 by default (CUDA_VISIBLE_DEVICES=1) so it doesn't collide with
 the judge server, typically running on GPU 0. Override by exporting
@@ -40,12 +41,15 @@ CUDA_VISIBLE_DEVICES yourself before invoking.
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
 import random
 import re
 import sys
 import time
 from datetime import datetime
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
 
@@ -216,15 +220,113 @@ _INSTRUCTION_RE = re.compile(
 )
 
 
-def _is_codegen_with_metadata(example) -> bool:
-    """True if the user prompt has both a metadata block — an XML
-    <Metadata> block, or a prose "Input/Output metadata" header (some SFT
-    sources describe ports as a plain field list instead of XML, e.g.
-    "Input metadata (port 0):\\n- field: type") — and a recognizable
-    code-generation instruction. A simple regex heuristic (mirrors loader.py's
-    substring-based failure_mode_filter) — false negatives just mean fewer
-    examples processed, not incorrect ones."""
-    return bool(_METADATA_RE.search(example.prompt)) and bool(_INSTRUCTION_RE.search(example.prompt))
+def _is_codegen_prompt(prompt: str, require_metadata: bool) -> bool:
+    """True if the prompt contains a recognizable code-generation
+    instruction, and optionally a metadata block. When ctl_validate is not
+    being used, metadata is not required because the MUT only needs the user
+    request text."""
+    has_instruction = bool(_INSTRUCTION_RE.search(prompt))
+    if not has_instruction:
+        return False
+    if not require_metadata:
+        return True
+    return bool(_METADATA_RE.search(prompt))
+
+
+@dataclass
+class MutExample:
+    id: str
+    system: Optional[str]
+    prompt: str
+    reference: str = ""
+    source_file: str = ""
+    source_index: int = 0
+    meta: Optional[dict] = None
+
+    def __post_init__(self) -> None:
+        if self.meta is None:
+            self.meta = {}
+
+
+def _make_example_id(prompt: str) -> str:
+    return hashlib.sha256(re.sub(r"\s+", " ", prompt.strip()).encode("utf-8")).hexdigest()[:16]
+
+
+def _load_raw_records(path: Path) -> list[dict]:
+    text = path.read_text(encoding="utf-8")
+    stripped = text.strip()
+    if stripped.startswith(("[", "{")):
+        try:
+            obj = json.loads(stripped)
+            return obj if isinstance(obj, list) else [obj]
+        except json.JSONDecodeError:
+            pass
+
+    records = []
+    for line in stripped.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            records.append(json.loads(line))
+        except json.JSONDecodeError:
+            continue
+    return records
+
+
+def _parse_input_record(record: dict) -> Optional[tuple[Optional[str], str, str, dict]]:
+    if "messages" in record:
+        msgs = record.get("messages") or []
+        if not msgs:
+            return None
+        system = None
+        user_turns: list[str] = []
+        assistant_turns: list[str] = []
+        for msg in msgs:
+            role = msg.get("role", "")
+            content = msg.get("content", "")
+            if role == "system":
+                system = content
+            elif role == "user":
+                user_turns.append(content)
+            elif role == "assistant":
+                assistant_turns.append(content)
+        if len(user_turns) != 1 or len(assistant_turns) > 1:
+            return None
+        meta = {k: v for k, v in record.items() if k != "messages"}
+        reference = assistant_turns[0] if assistant_turns else ""
+        return system, user_turns[0], reference, meta
+
+    if "instruction" in record or "prompt" in record:
+        instruction = (record.get("instruction") or record.get("prompt") or "").strip()
+        inp = (record.get("input") or "").strip()
+        prompt = (instruction + "\n\n" + inp) if inp else instruction
+        if not prompt:
+            return None
+        reference = (record.get("output") or record.get("response") or "").strip()
+        meta = {k: v for k, v in record.items() if k not in ("instruction", "prompt", "input", "output", "response")}
+        return None, prompt, reference, meta
+
+    return None
+
+
+def _load_mut_examples(path: Path) -> list[MutExample]:
+    examples: list[MutExample] = []
+    for rec_idx, record in enumerate(_load_raw_records(path)):
+        parsed = _parse_input_record(record)
+        if not parsed:
+            continue
+        system, prompt, reference, meta = parsed
+        examples.append(MutExample(
+            id=_make_example_id(prompt),
+            system=system,
+            prompt=prompt,
+            reference=reference,
+            source_file=path.name,
+            source_index=rec_idx,
+            meta=meta,
+        ))
+    return examples
 
 
 def _ordinal(n: int) -> str:
@@ -249,6 +351,10 @@ def _source_identity(example) -> str:
         parts.append(f"original_id={orig_id!r}")
     parts.append(f"example_id={example.id}")
     return "  ".join(parts)
+
+
+def _is_mut_candidate(example: MutExample, require_metadata: bool) -> bool:
+    return _is_codegen_prompt(example.prompt, require_metadata=require_metadata)
 
 
 # ---------------------------------------------------------------------------
@@ -377,7 +483,6 @@ def cmd_run(args: argparse.Namespace) -> None:
 
 
 def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh) -> None:
-    from dpo_forge.loader import load_examples
     from dpo_forge.generator import LocalGenerator, normalize_ctl
     from dpo_forge.review_judge import (
         ReviewJudgeClient, describe_component_resolution, infer_component_type_from_prompt,
@@ -386,17 +491,25 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     from dpo_forge.ctl_validate_mcp import validate_ctl
     from dpo_forge.output import write_conversation_jsonl
 
+    ctl_validate_cfg = cfg.get("ctl_validate_mcp") or {}
+    skip_ctl_validate = bool(args.skip_ctl_validate)
+    ctl_validate_active = bool(ctl_validate_cfg.get("enabled") and not skip_ctl_validate)
+    if skip_ctl_validate:
+        _log("[mut-validate] --skip-ctl-validate enabled: skipping all ctl_validate prechecks", log_fh)
+
     # ── Load + filter examples ──────────────────────────────────────────
-    examples = load_examples(sft_files=[str(input_path)], shuffle=False)
+    examples = _load_mut_examples(input_path)
     if not examples:
         sys.exit("No examples found in the input file.")
 
-    filtered = [e for e in examples if _is_codegen_with_metadata(e)]
+    require_metadata = ctl_validate_active
+    filtered = [e for e in examples if _is_mut_candidate(e, require_metadata=require_metadata)]
+    filter_label = "metadata+codegen" if require_metadata else "codegen-only"
     _log(f"[mut-validate] Loaded {len(examples)} example(s); "
-         f"{len(filtered)} match the metadata+codegen filter "
+         f"{len(filtered)} match the {filter_label} filter "
          f"({len(examples) - len(filtered)} skipped)", log_fh)
     if not filtered:
-        sys.exit("No examples matched the metadata+codegen filter.")
+        sys.exit(f"No examples matched the {filter_label} filter.")
 
     start_index = args.index or 0
     if start_index:
@@ -447,8 +560,7 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     tweak_client = tweak_llm_client if args.tweak else None
     numeric_verifier = tweak_llm_client
 
-    ctl_validate_cfg = cfg.get("ctl_validate_mcp") or {}
-    if ctl_validate_cfg.get("enabled"):
+    if ctl_validate_active:
         _log(f"[mut-validate] ctl_validate MCP pre-filter enabled: {ctl_validate_cfg.get('url')} "
              f"(ERROR-severity results skip the LLM judge for that attempt)", log_fh)
 
@@ -570,13 +682,15 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             # semantic opinion. Falls through to the LLM judge on PASS,
             # or whenever this step can't run (disabled, no metadata XML
             # in the prompt, MCP call failed, etc.).
-            _log(
-                f"  [ctl-validate] calling ctl_validate on attempt {attempt} "
-                f"with component_type={component_type!r}",
-                log_fh,
-            )
-            mcp_review = validate_ctl(ctl_validate_cfg, component_type, prompt, code,
-                                       log_fn=lambda msg: _log(msg, log_fh))
+            mcp_review = None
+            if ctl_validate_active:
+                _log(
+                    f"  [ctl-validate] calling ctl_validate on attempt {attempt} "
+                    f"with component_type={component_type!r}",
+                    log_fh,
+                )
+                mcp_review = validate_ctl(ctl_validate_cfg, component_type, prompt, code,
+                                           log_fn=lambda msg: _log(msg, log_fh))
             if mcp_review is not None:
                 _log_review(f"ctl-validate-{attempt}", mcp_review, log_fh)
 
@@ -678,13 +792,15 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             judge_fix_failed = False
             for fix_round in range(1, MAX_JUDGE_FIX_ROUNDS + 2):
                 fix_code = normalize_ctl(fixed_code)
-                _log(
-                    f"  [ctl-validate] calling ctl_validate for judge-fix round {fix_round} "
-                    f"with component_type={component_type!r}",
-                    log_fh,
-                )
-                fix_review = validate_ctl(ctl_validate_cfg, component_type, prompt, fix_code,
-                                           log_fn=lambda msg: _log(msg, log_fh))
+                fix_review = None
+                if ctl_validate_active:
+                    _log(
+                        f"  [ctl-validate] calling ctl_validate for judge-fix round {fix_round} "
+                        f"with component_type={component_type!r}",
+                        log_fh,
+                    )
+                    fix_review = validate_ctl(ctl_validate_cfg, component_type, prompt, fix_code,
+                                               log_fn=lambda msg: _log(msg, log_fh))
                 if fix_review is not None:
                     _log_review(f"ctl-validate-fix-{fix_round}", fix_review, log_fh)
                 if fix_review is None or fix_review.verdict != "FAIL":
@@ -771,11 +887,12 @@ def _dry_run(cfg: dict, input_path: Path) -> None:
     print(f"[dry-run] Self-corrected output: {cfg['output']['self_corrected_file']}")
     print(f"[dry-run] Judge-corrected output: {cfg['output']['judge_corrected_file']}")
 
-    from dpo_forge.loader import load_examples
-    examples = load_examples(sft_files=[str(input_path)], shuffle=False)
-    filtered = [e for e in examples if _is_codegen_with_metadata(e)]
+    examples = _load_mut_examples(input_path)
+    ctl_validate_active = bool(cfg.get("ctl_validate_mcp", {}).get("enabled", False))
+    filtered = [e for e in examples if _is_mut_candidate(e, require_metadata=ctl_validate_active)]
+    filter_label = "metadata+codegen" if ctl_validate_active else "codegen-only"
     print(f"[dry-run] {len(examples)} example(s) loaded, "
-          f"{len(filtered)} match the metadata+codegen filter")
+          f"{len(filtered)} match the {filter_label} filter")
 
 
 # ---------------------------------------------------------------------------
@@ -793,7 +910,7 @@ examples:
   ./mut_validate.py data/sft_input/foo.json --config configs/mut_validate.yaml --limit 20
   ./mut_validate.py data/sft_input/foo.json --index 20 --limit 20 --verbose
   ./mut_validate.py data/sft_input/foo.json --tweak --limit 20
-  ./mut_validate.py data/sft_input/foo.json --tweak --tweak-random --limit 20
+    ./mut_validate.py data/sft_input/foo.json --tweak --tweak-random --limit 20
   ./mut_validate.py data/sft_input/foo.json --attempts 4 --limit 20
 
 (runs on GPU 1 by default; uses /home/pavlisd/venv via the shebang)
@@ -827,6 +944,8 @@ examples:
                         help="Modifier for --tweak (implies it): pick each example's business domain/process/"
                              "region from a freshly-seeded random source instead of a per-example-deterministic "
                              "one, so repeated runs land on different domains instead of the same ones every time")
+    parser.add_argument("--skip-ctl-validate", dest="skip_ctl_validate", action="store_true",
+                        help="Skip the ctl_validate precheck step entirely and rely only on the LLM judge")
 
     args = parser.parse_args()
     if args.attempts < 1:

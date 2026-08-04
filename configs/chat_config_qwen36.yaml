@@ -18,7 +18,7 @@
 # ---------------------------------------------------------------------------
 # Link to training config (enables export auto-discovery)
 # ---------------------------------------------------------------------------
-training_config: configs/qwen35-9Bv3.yaml
+training_config: configs/qwen36.yaml
 
 # ---------------------------------------------------------------------------
 # Model
@@ -40,16 +40,20 @@ model:
   device_map: auto
 
   # Maximum new tokens per response
-  max_new_tokens: 2048
+  max_new_tokens: 8192
 
   # Whether to allow the model to produce chain-of-thought <think> tokens.
   # Set false for models trained with a nothink template (qwen3_nothink etc.)
-  enable_thinking: false
+  enable_thinking: true
 
   # Optional: use a LlamaFactory template by name (same naming as train.py,
   # for example qwen3_6, qwen3_nothink, qwen3_5_nothink).
   # If omitted, chat.py auto-reads template from training_config when available.
-  # chat_template_name: qwen3_nothink
+  #chat_template_name: qwen3_6
+
+  # Prefer template embedded in exported tokenizer/chat_template.jinja.
+  template_source: tokenizer
+  
 
   # Optional explicit Jinja template string override.
   # If set, this takes precedence over chat_template_name.
@@ -59,6 +63,7 @@ model:
   #   {{ message['content'] }}<|im_end|>
   #   {% elif message['role'] == 'user' %}<|im_start|>user
   #   {{ message['content'] }}<|im_end|>
+  #   <|im_start|>assistant
   #   {% elif message['role'] == 'assistant' %}{{ message['content'] }}<|im_end|>
   #   {% endif %}
   #   {% endfor %}

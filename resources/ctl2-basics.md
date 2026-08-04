@@ -226,6 +226,9 @@ const string[] TAGS = ["a", "b", "c"];
 | `/` | integer division truncates; ÷0 → exception for integer/long/decimal, Infinity for double |
 | `++` `--` | pre/post; **allowed on**: local/module variables, output fields (`$out.N.field++`, `--$out.N.field`); **cannot use on**: literals, input fields (`$in.N.field`), list/map elements (`list[i]`, `map[k]`) |
 
+**Numeric type promotion** (automatic, per expression): `integer < long < number(double) < decimal`. int+long→long; int/long+number→number (⚠ long→number may lose precision); int/long+decimal→decimal. No implicit downcast on assignment — use explicit conversion (`decimal2double()`, `decimal2long()`, `double2long()`, …).
+⚠ **`number` is contagious**: if any operand is `number` (or an unsuffixed float literal like `0.15`, which is `number`), the whole expression becomes floating-point and decimal precision is lost. Use `D`-suffixed literals throughout to stay in decimal math. Integer/long overflow silently (no error); a null operand throws at runtime.
+
 ### 3.2 Relational
 
 | Operator | Alternative | Notes |
@@ -450,7 +453,10 @@ function integer append() {
     total += $in.0.amount;
     return OK;
 }
-function integer appendOnError(string errorMessage, string stackTrace) { return OK; }
+function integer appendOnError(string errorMessage, string stackTrace) {
+    printLog(error, "append() failed: " + errorMessage);
+    return SKIP;   // exclude this record from the accumulation rather than silently pretending it succeeded
+}
 function integer transform() {
     $out.0.count = count;
     $out.0.total = total;
