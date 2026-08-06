@@ -43,6 +43,8 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+from threading import Thread
+from types import SimpleNamespace
 from typing import Any, Optional
 
 import yaml
@@ -142,6 +144,21 @@ DEFAULT_CONFIG: dict = {
         "torch_dtype": "float16",  # float16 | bfloat16 | float32
         "device_map": "auto",
         "max_new_tokens": 2048,
+        # Optional: LlamaFactory template registry name (e.g. qwen3_6).
+        # If null, test.py can read training_config.template automatically.
+        "chat_template_name": None,
+        # Template source strategy:
+        # auto        -> if chat_template_name is set, try applying that template;
+        #                otherwise use tokenizer built-in template.
+        # tokenizer   -> always use tokenizer built-in template.
+        # llamafactory -> force applying mut.chat_template_name from
+        #                LlamaFactory registry.
+        "template_source": "auto",
+        # Optional: explicit Jinja template string override.
+        # If set, this takes precedence over chat_template_name.
+        "chat_template": None,
+        # Set false for models trained with a nothink template.
+        "enable_thinking": False,
 
         # --- api mode ---
         "base_url": "http://localhost:11434/v1",
@@ -308,6 +325,65 @@ def resolve_mut_model_path(cfg: dict, config_dir: Path) -> tuple[str, str, str]:
     return model_path, run_name, base_model
 
 
+def resolve_training_enable_thinking(cfg: dict, config_dir: Path) -> Optional[bool]:
+    """Read enable_thinking from linked training config when available."""
+    tc_ref = cfg.get("training_config")
+    if not tc_ref:
+        return None
+
+    tc_path = Path(tc_ref)
+    if not tc_path.is_absolute():
+        for base in [Path.cwd(), Path(__file__).parent, config_dir]:
+            candidate = (base / tc_path).resolve()
+            if candidate.exists():
+                tc_path = candidate
+                break
+
+    if not tc_path.exists():
+        return None
+
+    try:
+        tc = load_config(tc_path)
+    except Exception:
+        return None
+
+    value = tc.get("enable_thinking")
+    if value is None:
+        return None
+    return bool(value)
+
+
+def resolve_template_name(cfg: dict, config_dir: Path) -> Optional[str]:
+    """Resolve chat template name from MUT config or linked training config."""
+    mut_cfg = cfg.get("mut", {})
+    template_name = mut_cfg.get("chat_template_name")
+    if template_name:
+        return str(template_name)
+
+    tc_ref = cfg.get("training_config")
+    if not tc_ref:
+        return None
+
+    tc_path = Path(tc_ref)
+    if not tc_path.is_absolute():
+        for base in [Path.cwd(), Path(__file__).parent, config_dir]:
+            candidate = (base / tc_path).resolve()
+            if candidate.exists():
+                tc_path = candidate
+                break
+
+    if not tc_path.exists():
+        return None
+
+    try:
+        tc = load_config(tc_path)
+    except Exception:
+        return None
+
+    name = tc.get("template")
+    return str(name) if name else None
+
+
 # ---------------------------------------------------------------------------
 # MUT clients
 # ---------------------------------------------------------------------------
@@ -358,6 +434,40 @@ def _patch_tokenizer_nothink(tok):
     return tok
 
 
+def _try_apply_llamafactory_template(tok, template_name: str, enable_thinking: bool) -> bool:
+    """Apply a LlamaFactory template by name to tokenizer.chat_template."""
+    llamafactory_dir = Path(os.environ.get("LLAMAFACTORY_DIR", "~/LlamaFactory")).expanduser().resolve()
+    src_dir = llamafactory_dir / "src"
+
+    if not src_dir.is_dir():
+        _print(f"  [yellow]Warning:[/yellow] LLAMAFACTORY src not found: {src_dir}")
+        return False
+
+    src_dir_str = str(src_dir)
+    if src_dir_str not in sys.path:
+        sys.path.insert(0, src_dir_str)
+
+    try:
+        from llamafactory.data.template import get_template_and_fix_tokenizer
+
+        data_args = SimpleNamespace(
+            template=template_name,
+            train_on_prompt=False,
+            tool_format=None,
+            default_system=None,
+            enable_thinking=enable_thinking,
+            preserve_thinking=False,
+        )
+        get_template_and_fix_tokenizer(tok, data_args)
+        return True
+    except Exception as exc:
+        _print(
+            f"  [yellow]Warning:[/yellow] could not apply template name "
+            f"'{template_name}' from LlamaFactory: {exc}"
+        )
+        return False
+
+
 class LocalMUTClient:
     """Loads an exported model (safetensors) from disk and runs local inference."""
 
@@ -365,6 +475,7 @@ class LocalMUTClient:
         self._cfg = cfg
         self._model = None
         self._tok = None
+        self._enable_thinking = bool(cfg.get("enable_thinking", False))
 
     def _load(self):
         if self._model is not None:
@@ -386,12 +497,51 @@ class LocalMUTClient:
         _print(f"  Loading model from [cyan]{model_path}[/cyan] …")
         self._tok = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
 
-        # Patch the tokenizer's chat template when thinking is disabled.
-        # Qwen3 tokenizers default to a template that injects <think> scaffolding;
-        # models trained with nothink never saw that and produce garbled output.
-        enable_thinking = self._cfg.get("enable_thinking", False)
-        if not enable_thinking:
-            self._tok = _patch_tokenizer_nothink(self._tok)
+        # Apply chat template from config/name, otherwise keep tokenizer default.
+        template_name = self._cfg.get("chat_template_name")
+        template_source = str(self._cfg.get("template_source", "auto")).lower()
+        custom_template = self._cfg.get("chat_template")
+        applied = False
+        if custom_template:
+            self._tok.chat_template = custom_template
+            _print("  [dim]Chat template: custom template from config[/dim]")
+            applied = True
+        elif template_source == "llamafactory":
+            if template_name and _try_apply_llamafactory_template(
+                self._tok, str(template_name), enable_thinking=self._enable_thinking
+            ):
+                _print(f"  [dim]Chat template: LlamaFactory template '{template_name}'[/dim]")
+                applied = True
+            elif template_name:
+                _print(
+                    f"  [yellow]Warning:[/yellow] could not apply LlamaFactory template "
+                    f"'{template_name}', using tokenizer built-in template"
+                )
+        elif template_source == "auto":
+            # If a template name is configured, prefer applying it explicitly.
+            if template_name and _try_apply_llamafactory_template(
+                self._tok, str(template_name), enable_thinking=self._enable_thinking
+            ):
+                _print(f"  [dim]Chat template: LlamaFactory template '{template_name}'[/dim]")
+                applied = True
+            elif self._tok.chat_template:
+                _print("  [dim]Chat template: tokenizer built-in template[/dim]")
+                applied = True
+        elif template_source == "tokenizer":
+            _print("  [dim]Chat template: tokenizer built-in template[/dim]")
+            applied = True
+        else:
+            _print(
+                f"  [yellow]Warning:[/yellow] unknown template_source={template_source!r}; "
+                "falling back to tokenizer built-in template"
+            )
+            applied = True
+
+        if not applied:
+            if not self._enable_thinking:
+                self._tok = _patch_tokenizer_nothink(self._tok)
+            else:
+                _print("  [dim]Chat template: tokenizer built-in template[/dim]")
 
         self._model = AutoModelForCausalLM.from_pretrained(
             model_path,
@@ -400,7 +550,25 @@ class LocalMUTClient:
             trust_remote_code=True,
         )
         self._model.eval()
-        _print(f"  Model loaded.  [dim](thinking={'enabled' if enable_thinking else 'disabled'})[/dim]")
+        _print(
+            f"  Model loaded.  [dim](thinking={'enabled' if self._enable_thinking else 'disabled'})[/dim]"
+        )
+
+    def _tokenize_messages(self, messages: list[dict]):
+        kwargs = dict(
+            tokenize=True,
+            add_generation_prompt=True,
+            return_tensors="pt",
+        )
+        try:
+            return self._tok.apply_chat_template(
+                messages,
+                enable_thinking=self._enable_thinking,
+                **kwargs,
+            )
+        except TypeError:
+            # Older tokenizer implementations may not accept enable_thinking.
+            return self._tok.apply_chat_template(messages, **kwargs)
 
     def warm_up(self):
         """Eagerly load the model so it is ready before the first test."""
@@ -414,9 +582,7 @@ class LocalMUTClient:
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_message},
         ]
-        tokenized = self._tok.apply_chat_template(
-            messages, tokenize=True, add_generation_prompt=True, return_tensors="pt",
-        )
+        tokenized = self._tokenize_messages(messages)
         # apply_chat_template may return a BatchEncoding or a plain tensor depending
         # on the transformers version — normalise to a plain input_ids tensor.
         if hasattr(tokenized, "input_ids"):
@@ -454,6 +620,66 @@ class LocalMUTClient:
             )
         return self._tok.decode(output[0][input_ids.shape[1]:], skip_special_tokens=True)
 
+    def generate_stream(self, system_prompt: str, user_message: str, temperature: float, top_p: float = 1.0, top_k: int = 50, repetition_penalty: float = 1.0):
+        import torch
+        from transformers import TextIteratorStreamer
+
+        self._load()
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_message},
+        ]
+        tokenized = self._tokenize_messages(messages)
+        if hasattr(tokenized, "input_ids"):
+            input_ids = tokenized.input_ids.to(self._model.device)
+        else:
+            input_ids = tokenized.to(self._model.device)
+
+        stop_ids: list[int] = []
+        if self._tok.eos_token_id is not None:
+            stop_ids.append(self._tok.eos_token_id)
+        im_end_id = self._tok.convert_tokens_to_ids("<|im_end|>")
+        if (
+            im_end_id is not None
+            and im_end_id != self._tok.unk_token_id
+            and im_end_id not in stop_ids
+        ):
+            stop_ids.append(im_end_id)
+
+        do_sample = temperature > 0.0
+        streamer = TextIteratorStreamer(self._tok, skip_prompt=True, skip_special_tokens=True)
+        exc: list[Exception] = []
+
+        def _worker():
+            try:
+                with torch.inference_mode():
+                    self._model.generate(
+                        input_ids,
+                        attention_mask=torch.ones_like(input_ids),
+                        max_new_tokens=self._cfg.get("max_new_tokens", 2048),
+                        temperature=temperature if do_sample else 1.0,
+                        top_p=top_p if do_sample else 1.0,
+                        top_k=top_k if do_sample else 50,
+                        repetition_penalty=repetition_penalty,
+                        do_sample=do_sample,
+                        eos_token_id=stop_ids if stop_ids else None,
+                        pad_token_id=self._tok.eos_token_id,
+                        streamer=streamer,
+                    )
+            except Exception as err:
+                exc.append(err)
+                streamer.end()
+
+        t = Thread(target=_worker, daemon=True)
+        t.start()
+
+        for text in streamer:
+            yield text
+
+        t.join()
+        if exc:
+            raise exc[0]
+
 
 class APIMUTClient:
     """Calls an OpenAI-compatible endpoint (Ollama, OpenAI, vLLM, etc.)."""
@@ -480,6 +706,25 @@ class APIMUTClient:
             timeout=self._timeout,
         )
         return resp.choices[0].message.content or ""
+
+    def generate_stream(self, system_prompt: str, user_message: str, temperature: float, top_p: float = 1.0, top_k: int = 50, repetition_penalty: float = 1.0):
+        stream = self._client.chat.completions.create(
+            model=self._model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message},
+            ],
+            temperature=temperature,
+            top_p=top_p,
+            timeout=self._timeout,
+            stream=True,
+        )
+        for event in stream:
+            if not event.choices:
+                continue
+            delta = event.choices[0].delta.content or ""
+            if delta:
+                yield delta
 
 
 def make_mut_client(cfg: dict, timeout: int):
@@ -936,7 +1181,7 @@ def _build_mut_user_message(test: dict) -> str:
     return user_message
 
 
-def _call_mut_with_retry(mut_client, test: dict, timeout: int, mut_cfg: dict) -> tuple[str, float]:
+def _call_mut_with_retry(mut_client, test: dict, timeout: int, mut_cfg: dict, debug: bool = False) -> tuple[str, float]:
     test_type = test.get("type", "generate")
     system_prompt, temperature, top_p, top_k, repetition_penalty = _resolve_mut_overrides(mut_cfg, test_type, test)
     user_message = _build_mut_user_message(test)
@@ -945,7 +1190,23 @@ def _call_mut_with_retry(mut_client, test: dict, timeout: int, mut_cfg: dict) ->
     for attempt in range(2):
         t0 = time.monotonic()
         try:
-            response = mut_client.generate(system_prompt, user_message, temperature, top_p, top_k, repetition_penalty)
+            if debug and hasattr(mut_client, "generate_stream"):
+                chunks: list[str] = []
+                for chunk in mut_client.generate_stream(
+                    system_prompt, user_message, temperature, top_p, top_k, repetition_penalty
+                ):
+                    chunks.append(chunk)
+                    if _HAVE_RICH:
+                        _console.print(chunk, end="", markup=False, highlight=False)
+                    else:
+                        print(chunk, end="", flush=True)
+                if _HAVE_RICH:
+                    _console.print()
+                else:
+                    print()
+                response = "".join(chunks)
+            else:
+                response = mut_client.generate(system_prompt, user_message, temperature, top_p, top_k, repetition_penalty)
             return response or "", time.monotonic() - t0
         except Exception as exc:  # noqa: BLE001
             elapsed = time.monotonic() - t0
@@ -1008,8 +1269,10 @@ def run_single_test(
 
     # Step 1: MUT
     _print(f"    → MUT call (run {run_index}) …  [dim]temp={_temperature}, top-p={_top_p}, top-k={_top_k}, rep_penalty={_repetition_penalty}[/dim]")
+    if debug:
+        _print("    [bold magenta]→ MUT STREAM:[/bold magenta]")
     try:
-        mut_response, mut_duration = _call_mut_with_retry(mut_client, test, timeout, mut_cfg)
+        mut_response, mut_duration = _call_mut_with_retry(mut_client, test, timeout, mut_cfg, debug=debug)
     except Exception as exc:  # noqa: BLE001
         import traceback
         exc_repr = repr(exc) if not str(exc) else f"{type(exc).__name__}: {exc}"
@@ -1678,6 +1941,10 @@ eval_config.yaml schema:
     torch_dtype: float16      # float16 | bfloat16 | float32
     device_map: auto
     max_new_tokens: 2048
+    chat_template_name: null  # optional LlamaFactory template name
+    template_source: auto     # auto | tokenizer | llamafactory
+    chat_template: null       # optional explicit Jinja template override
+    enable_thinking: false
     base_url: http://localhost:11434/v1  # for mode=api
     model: my-model                     # for mode=api
     api_key: ollama                     # for mode=api
@@ -1750,7 +2017,32 @@ eval_config.yaml schema:
 
     # ── Resolve model path + run identity ─────────────────────────────────
     model_path, run_name, base_model = resolve_mut_model_path(cfg, config_dir)
-    cfg.setdefault("mut", {})["model_path"] = model_path  # ensure it's set for client
+    mut_cfg = cfg.setdefault("mut", {})
+    mut_cfg["model_path"] = model_path  # ensure it's set for client
+
+    # Keep template resolution behavior aligned with chat.py.
+    template_name = resolve_template_name(cfg, config_dir)
+    if template_name and not mut_cfg.get("chat_template_name"):
+        mut_cfg["chat_template_name"] = template_name
+        _print(f"  [dim]Template name from training config:[/dim] {template_name}")
+
+    _print(
+        "  [dim]Template selection:[/dim] "
+        f"source={mut_cfg.get('template_source', 'auto')} "
+        f"name={mut_cfg.get('chat_template_name')!r}"
+    )
+
+    train_enable_thinking = resolve_training_enable_thinking(cfg, config_dir)
+    mut_enable_thinking = bool(mut_cfg.get("enable_thinking", False))
+    if (
+        train_enable_thinking is not None
+        and train_enable_thinking != mut_enable_thinking
+    ):
+        _print(
+            "  [yellow]Warning:[/yellow] enable_thinking mismatch between training_config "
+            f"({train_enable_thinking}) and eval config ({mut_enable_thinking}). "
+            "This can degrade output quality."
+        )
 
     # ── Locate suite file ─────────────────────────────────────────────────
     suite_file = _find_suite_file(cfg, config_dir)
