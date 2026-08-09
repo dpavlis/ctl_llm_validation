@@ -42,7 +42,7 @@ seed: 42
 
 # Training dynamics (shared defaults — phases override as needed)
 packing: false
-enable_thinking: true
+enable_thinking: false    #true
 optim: adamw_torch
 weight_decay: 0.05
 max_grad_norm: 1.0
@@ -72,8 +72,7 @@ dataset_dir: data
 # SFT phase  (merged on top of common; these keys take precedence)
 # =============================================================================
 sft:
-  - dataset: clover_ctl_trainign_data
-    #dataset: ctl_general,ctl_business_logic
+  - dataset: clover_ctl_trainign_data #, clover_ctl_thinking_data
     #mix_strategy: interleave_over
     #interleave_probs: 0.90,0.10
     eval_dataset: clover_ctl_eval_data
@@ -128,13 +127,13 @@ sft:
 # =============================================================================
 dpo:
   dataset: clover_dpo_data
-  cutoff_len:  1328
+  cutoff_len:  2736
   learning_rate: 8.0e-6 #1.0e-6
   lr_scheduler_type: cosine   # Ensures smooth decay over the shorter step count
   warmup_ratio: 0.1       
   num_train_epochs: 3.0
   max_samples: 150000
-  per_device_train_batch_size: 2
+  per_device_train_batch_size: 1
   gradient_accumulation_steps: 6
 
   # LoRA dims for DPO

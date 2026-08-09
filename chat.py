@@ -26,6 +26,7 @@ Prompt entry:
 from __future__ import annotations
 
 import argparse
+import math
 import os
 import re
 import sys
@@ -170,6 +171,25 @@ def _deep_merge(base: dict, override: dict) -> dict:
         else:
             result[k] = v
     return result
+
+
+def _sanitize_temperature(value: float) -> float:
+    """Return a safe temperature value for generation."""
+    if not math.isfinite(value):
+        raise ValueError(f"temperature must be finite, got {value!r}")
+    # 0.0 means greedy decoding in this script.
+    return max(0.0, float(value))
+
+
+def _sanitize_top_p(value: float) -> float:
+    """Return a safe nucleus-sampling probability in (0, 1]."""
+    if not math.isfinite(value):
+        raise ValueError(f"top_p must be finite, got {value!r}")
+    if value <= 0.0:
+        return 1e-6
+    if value > 1.0:
+        return 1.0
+    return float(value)
 
 
 def load_config(path: Path) -> dict:
@@ -478,8 +498,52 @@ class LocalModel:
             # Older tokenizer implementations may not accept enable_thinking.
             return self._tok.apply_chat_template(messages, **kwargs)
 
+    def _generate_with_safety(
+        self,
+        input_ids,
+        temperature: float,
+        top_p: float,
+        stop_ids: list[int],
+        streamer=None,
+    ):
+        import torch
+
+        do_sample = temperature > 0.0
+        kwargs = {
+            "max_new_tokens": self._max_new_tokens,
+            "temperature": temperature if do_sample else 1.0,
+            "top_p": top_p if do_sample else 1.0,
+            "do_sample": do_sample,
+            "eos_token_id": stop_ids if stop_ids else None,
+            "pad_token_id": self._tok.eos_token_id,
+            # Prevent NaN/Inf logits from becoming invalid multinomial probs.
+            "remove_invalid_values": True,
+            "renormalize_logits": True,
+        }
+        if streamer is not None:
+            kwargs["streamer"] = streamer
+
+        try:
+            return self._model.generate(
+                input_ids,
+                attention_mask=torch.ones_like(input_ids),
+                **kwargs,
+            )
+        except TypeError:
+            # Compatibility fallback for older transformers versions.
+            kwargs.pop("remove_invalid_values", None)
+            kwargs.pop("renormalize_logits", None)
+            return self._model.generate(
+                input_ids,
+                attention_mask=torch.ones_like(input_ids),
+                **kwargs,
+            )
+
     def generate(self, messages: list[dict], temperature: float, top_p: float) -> str:
         import torch
+
+        temperature = _sanitize_temperature(temperature)
+        top_p = _sanitize_top_p(top_p)
 
         tokenized = self._tokenize_messages(messages)
         if hasattr(tokenized, "input_ids"):
@@ -502,23 +566,21 @@ class LocalModel:
         ):
             stop_ids.append(im_end_id)
 
-        do_sample = temperature > 0.0
         with torch.inference_mode():
-            output = self._model.generate(
-                input_ids,
-                attention_mask=torch.ones_like(input_ids),
-                max_new_tokens=self._max_new_tokens,
-                temperature=temperature if do_sample else 1.0,
-                top_p=top_p if do_sample else 1.0,
-                do_sample=do_sample,
-                eos_token_id=stop_ids if stop_ids else None,
-                pad_token_id=self._tok.eos_token_id,
+            output = self._generate_with_safety(
+                input_ids=input_ids,
+                temperature=temperature,
+                top_p=top_p,
+                stop_ids=stop_ids,
             )
         return self._tok.decode(output[0][input_ids.shape[1]:], skip_special_tokens=True)
 
     def generate_stream(self, messages: list[dict], temperature: float, top_p: float) -> Iterator[str]:
         import torch
         from transformers import TextIteratorStreamer
+
+        temperature = _sanitize_temperature(temperature)
+        top_p = _sanitize_top_p(top_p)
 
         tokenized = self._tokenize_messages(messages)
         if hasattr(tokenized, "input_ids"):
@@ -537,22 +599,17 @@ class LocalModel:
         ):
             stop_ids.append(im_end_id)
 
-        do_sample = temperature > 0.0
         streamer = TextIteratorStreamer(self._tok, skip_prompt=True, skip_special_tokens=True)
         exc: list[Exception] = []
 
         def _worker():
             try:
                 with torch.inference_mode():
-                    self._model.generate(
-                        input_ids,
-                        attention_mask=torch.ones_like(input_ids),
-                        max_new_tokens=self._max_new_tokens,
-                        temperature=temperature if do_sample else 1.0,
-                        top_p=top_p if do_sample else 1.0,
-                        do_sample=do_sample,
-                        eos_token_id=stop_ids if stop_ids else None,
-                        pad_token_id=self._tok.eos_token_id,
+                    self._generate_with_safety(
+                        input_ids=input_ids,
+                        temperature=temperature,
+                        top_p=top_p,
+                        stop_ids=stop_ids,
                         streamer=streamer,
                     )
             except Exception as err:
@@ -843,9 +900,18 @@ def main():
     if args.no_stream:
         cfg["model"]["stream_output"] = False
 
-    temperature  = float(cfg.get("temperature", 0.7))
-    top_p        = float(cfg.get("top_p", 0.95))
+    raw_temperature = float(cfg.get("temperature", 0.7))
+    raw_top_p = float(cfg.get("top_p", 0.95))
+    temperature = _sanitize_temperature(raw_temperature)
+    top_p = _sanitize_top_p(raw_top_p)
     system_prompt = cfg.get("system_prompt", "You are a helpful assistant.")
+
+    if temperature != raw_temperature:
+        _print(
+            f"  [yellow]Warning:[/yellow] adjusted temperature from {raw_temperature} to {temperature}"
+        )
+    if top_p != raw_top_p:
+        _print(f"  [yellow]Warning:[/yellow] adjusted top_p from {raw_top_p} to {top_p}")
 
     # Resolve model path
     model_cfg = cfg.get("model", {})

@@ -545,7 +545,7 @@ class LocalMUTClient:
 
         self._model = AutoModelForCausalLM.from_pretrained(
             model_path,
-            dtype=dtype,
+            torch_dtype=dtype,
             device_map=self._cfg.get("device_map", "auto"),
             trust_remote_code=True,
         )
@@ -1363,6 +1363,18 @@ def _error_result(test: dict, run_index: int, reason: str, duration: float) -> d
 # Suite runner
 # ---------------------------------------------------------------------------
 
+def _filter_tests_by_type(tests: list[dict], test_type: Optional[str]) -> list[dict]:
+    """Return only tests matching the requested type (generate/validate)."""
+    if not test_type:
+        return tests
+
+    normalized = str(test_type).lower()
+    if normalized not in {"generate", "validate"}:
+        raise ValueError(f"Unsupported test type filter: {test_type}")
+
+    return [t for t in tests if str(t.get("type", "generate")).lower() == normalized]
+
+
 def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug: bool = False) -> dict:
     """Run the full (or filtered) test suite. Returns the results dict."""
     with open(suite_file) as f:
@@ -1390,8 +1402,18 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug
     if test_ids_filter:
         tests = [t for t in tests if t["test_id"] in test_ids_filter]
 
+    # Filter by test type (generate/validate)
+    test_type_filter = cfg.get("test_type_filter")
+    if test_type_filter:
+        tests = _filter_tests_by_type(tests, test_type_filter)
+
     if not tests:
-        _print("[red]No tests match the requested IDs.[/red]")
+        if test_ids_filter:
+            _print("[red]No tests match the requested IDs.[/red]")
+        elif test_type_filter:
+            _print(f"[red]No {test_type_filter} tests match the requested filter.[/red]")
+        else:
+            _print("[red]No tests match the requested filter.[/red]")
         sys.exit(1)
 
     timeout = int(cfg.get("timeout_seconds", 240))
@@ -1964,6 +1986,10 @@ eval_config.yaml schema:
     parser.add_argument("config", nargs="?", help="Path to YAML eval config file.")
     parser.add_argument("--tests", "-t", metavar="T1,T2,…",
                         help="Comma-separated test IDs to run (default: all).")
+    parser.add_argument("--generate-only", action="store_true",
+                        help="Run only generate-type tests.")
+    parser.add_argument("--validate-only", action="store_true",
+                        help="Run only validate-type tests.")
     parser.add_argument("--runs", "-n", type=int, metavar="N",
                         help="Runs per test — overrides config runs_per_test.")
     parser.add_argument("--output-dir", "-o", metavar="DIR",
@@ -1982,6 +2008,9 @@ eval_config.yaml schema:
                         help="Print full MUT messages (system + user) for each test to console.")
 
     args = parser.parse_args()
+
+    if args.generate_only and args.validate_only:
+        parser.error("--generate-only and --validate-only cannot be used together")
 
     # ── Compare mode ──────────────────────────────────────────────────────
     if args.compare:
@@ -2008,6 +2037,10 @@ eval_config.yaml schema:
     # CLI overrides
     if args.tests:
         cfg["test_ids"] = [t.strip() for t in args.tests.split(",")]
+    if args.generate_only:
+        cfg["test_type_filter"] = "generate"
+    elif args.validate_only:
+        cfg["test_type_filter"] = "validate"
     if args.runs:
         cfg["runs_per_test"] = args.runs
     if args.output_dir:
