@@ -91,7 +91,7 @@
           },
           {
             "id": "T2.4",
-            "check": "clean() function resets all module-level accumulator variables to their initial values.",
+            "check": "clean() function resets all module-level accumulator variables to their initial values. 'customerId' does not need to be reset and calling clear() on `orderIds` is fine as it removes all items from the list. The clean() function has to make sure that no staged data leak to next processed group. ",
             "rationale": "Without clean(), state from one group bleeds into the next."
           },
           {
@@ -1149,7 +1149,7 @@
           },
           {
             "id": "T20.4",
-            "check": "`num2str(counter, \"000\")` or equivalent zero-padded formatting of the counter.",
+            "check": "`num2str(counter, \"000\")` or equivalent zero-padded formatting of the counter - like: `lpad(\\\"\\\" + counter, 3, 0)`. lpad() with 2 params only is invalid as padding char is space in that case",
             "rationale": "CTL2 uses num2str(value, pattern) for formatted numeric-to-string conversion."
           },
           {

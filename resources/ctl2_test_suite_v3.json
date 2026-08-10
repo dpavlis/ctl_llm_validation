@@ -1,0 +1,695 @@
+{
+  "version": "3.0",
+  "description": "CTL2 model evaluation test suite V3 — 8 generate tests (T29-T36) derived from held-out sampled examples: DataGenerator with random values, Partition first-match routing, Filter bare-expression implication logic, Normalizer over a JSON array via variant, Denormalizer distinct list aggregation, ExtHashJoin LEFT OUTER decision cascade, Reformat conditional string label, and summary-only Rollup with a custom accumulator. Test IDs continue from V2 (T1-T28) so results from both suites can be merged.",
+  "judge_system_prompt": "You are an expert CTL2 code reviewer evaluating LLM responses against a rubric.\nFor each test you receive:\n  - The prompt sent to the model\n  - The model's response\n  - The evaluation rubric\n\nScore each required finding as: CAUGHT | MISSED | WRONG (caught but incorrect fix/explanation).\nScore forbidden content as: PRESENT (bad) | ABSENT (good).\nProvide a final verdict: PASS | PARTIAL | FAIL with a brief justification.",
+  "judge_instructions": "For each test, you will receive:\n  1. This test definition (system_prompt, user_message, rubric)\n  2. The model's actual response\n\nEvaluate the response against the rubric:\n  - For GENERATE tests: check each required item as PRESENT | MISSING | WRONG\n  - For VALIDATE tests: check each required finding as CAUGHT | MISSED | WRONG\n  - For VALIDATE tests: check each false-positive trap as TRIGGERED | AVOIDED\n  - Check all forbidden items as ABSENT (good) | PRESENT (bad)\n\nOutput a structured evaluation:\n  FINDINGS: [list each rubric item with its status]\n  FALSE_POSITIVES: [for validate tests — any wrong flags not in rubric]\n  VERDICT: PASS | PARTIAL | FAIL\n  SCORE: N/M (required items met)\n  NOTES: brief justification\n\nFor VALIDATE tests: always cross-check every $out.N.fieldName reference in the candidate code against the output metadata fields declared in the prompt. An assignment to a field that is not declared in the output metadata is a compile-time error in //#CTL2:COMPILE mode and a silent data-loss bug in interpreted mode — it must be flagged as a required finding. Do not assume the model caught it; verify explicitly.\n\nFor VALIDATE tests on Rollup components: the minimum required Rollup lifecycle functions are initGroup, updateGroup, finishGroup, updateTransform, and transform — all five must be defined in the code regardless of runtime control flow. In particular, updateGroup returning false only means updateTransform() is not invoked for that record (the accumulation logic in updateGroup's body still runs); it does NOT make defining updateTransform() itself optional. A candidate that omits updateTransform() is missing a required function and this must be flagged as a required finding, not dismissed as a false positive.\n\nCrediting required findings from SUGGESTIONS, not just ISSUES: when a required bug sits on the same token/line as another required bug (e.g. an undeclared-identifier fix that must also carry a null guard once corrected), credit the finding if it is correctly reflected in the model's SUGGESTIONS/corrected-code section, even if it is not restated as a separate ISSUES line. Do not mark it MISSED solely because the model folded two related fixes into one corrected expression instead of two prose bullets — judge the model's demonstrated understanding, not its choice of section. Only mark MISSED if the concern is absent from both ISSUES and SUGGESTIONS.\n\nOperator null-safety in CTL2 (recurring confusion — verify carefully both directions): == and != are null-safe (evaluate to false/true on null operands, never throw). Order comparisons < <= > >= are NOT null-safe and throw CTLException when either operand is null. Flagging == / != as unsafe is a false positive; failing to flag an unguarded order comparison on a nullable operand is a missed required finding. Check each comparison operator against this table independently — do not assume all comparisons in a snippet share the same null-safety.\n\nIncrement/decrement operators (++/--) in CTL2: allowed on output fields ($out.N.field++, --$out.N.field) and on local/module-level variables. NOT allowed on input fields ($in.N.field), literals, or list/map elements (list[i], map[k]). Flagging $out.N.field++ / --$out.N.field as invalid is a false positive; flagging ++/-- on an input field, literal, or list/map element as invalid is a correct required finding.",
+  "tests": [
+    {
+      "test_id": "T29",
+      "type": "generate",
+      "component": "DataGenerator (random values)",
+      "temperature": 0.1,
+      "source_example_id": "eval-data-generator-001",
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions.",
+      "user_message": "A DataGenerator is needed to create 750 synthetic maintenance-inspection records for a rail operator.\n\nOutput port 0 uses:\n```xml\n<Record name=\"InspectionSample\" type=\"delimited\">\n  <Field name=\"inspection_ref\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"operating_region\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"inspection_month\" type=\"date\" format=\"yyyy-MM-dd\" nullable=\"false\"/>\n  <Field name=\"measured_wear_mm\" type=\"decimal\" length=\"7\" scale=\"2\" nullable=\"false\"/>\n  <Field name=\"requires_engineer_review\" type=\"boolean\" nullable=\"true\"/>\n</Record>\n```\n\nConfigure the component to generate 750 rows. For every call to `generate()`:\n\n- Choose `operating_region` randomly from `NORTH`, `CENTRAL`, and `COASTAL`.\n- Set `inspection_month` to the first day of a random month in 2026 or 2027.\n- For `COASTAL`, generate wear from 1.50 through 12.00 mm and leave `requires_engineer_review` null.\n- For the other regions, generate wear from 0.25 through 8.50 mm. Require review when wear exceeds 6.00 mm; otherwise choose the flag randomly.\n- Round wear to two decimal places.\n\nProvide the CTL2 for the DataGenerator. The row limit belongs in the component configuration.",
+      "rubric": {
+        "description": "Generate a DataGenerator using generate() with CTL2 random* functions, a random pick from a string list, createDate() for the first day of a random month, decimal literals in randomDecimal(), round() to 2 places, and a conditional null on the nullable boolean. The 750-row limit belongs in the component configuration, not in the CTL.",
+        "required": [
+          {
+            "id": "T29.1",
+            "check": "`function integer generate()` — correct DataGenerator entry point, with the //#CTL2 header.",
+            "rationale": "DataGenerator uses generate(); transform() is for record-processing components."
+          },
+          {
+            "id": "T29.2",
+            "check": "`randomLong(...)` (or randomInteger cast to long) assigned to `inspection_ref`, with long literals (e.g. 200000000L) if bounds are given.",
+            "rationale": "inspection_ref is type long; randomLong() is the CTL2 long-valued random function and L-suffixed literals keep the type clean."
+          },
+          {
+            "id": "T29.3",
+            "check": "Random region chosen from a string list/array by index — e.g. `string[] regions = [\"NORTH\",\"CENTRAL\",\"COASTAL\"];` indexed with `randomInteger(0, length(regions) - 1)`. A 3-way if/else on randomInteger(0,2) is equally acceptable.",
+            "rationale": "The upper index bound must be length-1; randomInteger(min,max) is inclusive on both ends, so randomInteger(0, length(regions)) would index out of range."
+          },
+          {
+            "id": "T29.4",
+            "check": "The region value is stored in a local variable (or otherwise reused) so the later wear/review branching tests the same value that was written to `operating_region`.",
+            "rationale": "Calling the random pick twice would decouple the emitted region from the branch that depends on it."
+          },
+          {
+            "id": "T29.5",
+            "check": "`createDate(randomInteger(2026, 2027), randomInteger(1, 12), 1)` — first day of a random month in 2026 or 2027.",
+            "rationale": "createDate(year, month, day) is the CTL2 date constructor; day fixed at 1 gives the first day of the month. Month range must be 1–12 (CTL2 createDate months are 1-based)."
+          },
+          {
+            "id": "T29.6",
+            "check": "`randomDecimal(...)` with decimal literals for both branches — 1.50D–12.00D for COASTAL, 0.25D–8.50D otherwise.",
+            "rationale": "measured_wear_mm is decimal(7,2); randomDecimal() with D-suffixed literals avoids double/decimal mixing."
+          },
+          {
+            "id": "T29.7",
+            "check": "`round(<wear>, 2)` — wear rounded to two decimal places.",
+            "rationale": "Explicitly required by the spec; the field is scale=2."
+          },
+          {
+            "id": "T29.8",
+            "check": "COASTAL branch sets `$out.0.requires_engineer_review = null;` explicitly.",
+            "rationale": "The field is nullable=true and the spec says COASTAL rows must leave it null. In a DataGenerator the output record is reused across calls, so an unassigned field can retain the previous row's value — the null must be assigned, not omitted."
+          },
+          {
+            "id": "T29.9",
+            "check": "Non-COASTAL branch: review required when wear > 6.00D, otherwise `randomBoolean()` — e.g. `wear > 6.00D ? true : randomBoolean()`.",
+            "rationale": "Core business rule; the comparison must be against the rounded/assigned wear value, and the else case must be random, not a constant false."
+          },
+          {
+            "id": "T29.10",
+            "check": "generate() returns ALL (or OK).",
+            "rationale": "Both are valid successful-emission return codes for generate()."
+          }
+        ],
+        "optional": [
+          {
+            "id": "T29.O1",
+            "check": "Response states that the record count (750) is set in the DataGenerator component configuration rather than in CTL.",
+            "rationale": "The prompt explicitly says the row limit belongs in the component configuration; noting it shows the model understands the component contract."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T29.F1",
+            "check": "Must not use `function integer transform()` as the entry point.",
+            "rationale": "DataGenerator requires generate()."
+          },
+          {
+            "id": "T29.F2",
+            "check": "Must not implement the 750-row limit inside the CTL (e.g. a module-level counter with `return STOP`/`return SKIP` after 750 calls).",
+            "rationale": "The prompt explicitly assigns the row limit to the component configuration."
+          },
+          {
+            "id": "T29.F3",
+            "check": "Must not use Java/JS APIs — `Math.random()`, `new Random()`, `new Date()`, `String.format()`, `LocalDate`.",
+            "rationale": "CTL2 has its own random*/createDate functions; Java APIs are not callable from CTL2."
+          },
+          {
+            "id": "T29.F4",
+            "check": "Must not build `inspection_month` by string formatting/parsing (e.g. str2date of a concatenated string) when createDate() is available.",
+            "rationale": "createDate() is the direct, type-correct construction; string round-tripping is an anti-pattern."
+          }
+        ],
+        "scoring": {
+          "PASS": "generate() entry point, random region picked with a correct index bound and reused for branching, createDate(y, m, 1), randomDecimal with D literals in both ranges, round(...,2), explicit null for COASTAL review flag, wear > 6.00D ? true : randomBoolean(), returns ALL/OK.",
+          "PARTIAL": "generate() and overall structure correct, but one of: index bound off by one, wear not rounded, COASTAL null not explicitly assigned, or integer/double literals used instead of decimal literals.",
+          "FAIL": "Uses transform() instead of generate(), OR implements the 750-row limit in CTL, OR uses Java random/date APIs, OR the region used for branching is re-randomised independently of the emitted value."
+        }
+      }
+    },
+    {
+      "test_id": "T30",
+      "type": "generate",
+      "component": "Partition (first-match routing)",
+      "temperature": 0.1,
+      "source_example_id": "eval-partition-001",
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions.",
+      "user_message": "A customs-screening graph has a Partition component with four connected output ports. Its input is:\n\n```xml\n<Record name=\"ImportDeclaration\" type=\"delimited\">\n  <Field name=\"declaration_id\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"screening_code\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"declared_value_eur\" type=\"number\" nullable=\"true\"/>\n  <Field name=\"destination_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"submitted_on\" type=\"date\" format=\"yyyy-MM-dd\" nullable=\"false\"/>\n</Record>\n```\n\nRoute each row using the first matching rule:\n\n1. Port 0 when `screening_code` starts with `SAN_` or `EMB_`.\n2. Otherwise port 1 when `declared_value_eur` is null or at least 35000.\n3. Otherwise port 2 when the destination is `SERBIA` or `MOLDOVA` and the submission date is earlier than 1 July 2025.\n4. Port 3 for everything else.\n\nWrite the complete Partition CTL2.",
+      "rubric": {
+        "description": "Generate a Partition getOutputPort() implementing four first-match rules: prefix tests with startsWith(), a null-or-threshold test on a nullable number with the isnull() check first, a date comparison built with createDate(), and a default port. Returns port numbers, never OK/ALL.",
+        "required": [
+          {
+            "id": "T30.1",
+            "check": "`function integer getOutputPort()` — correct Partition entry point, with the //#CTL2 header.",
+            "rationale": "Partition's transformation contract is getOutputPort(), not transform()."
+          },
+          {
+            "id": "T30.2",
+            "check": "`startsWith($in.0.screening_code, \"SAN_\") || startsWith($in.0.screening_code, \"EMB_\")` → `return 0;`.",
+            "rationale": "startsWith() is the CTL2 prefix test; screening_code is nullable=false so no guard is needed."
+          },
+          {
+            "id": "T30.3",
+            "check": "`isnull($in.0.declared_value_eur) || $in.0.declared_value_eur >= 35000` → `return 1;` — the isnull() test must come FIRST in the ||.",
+            "rationale": "declared_value_eur is nullable=true and >= is not null-safe in CTL2 (order comparisons throw CTLException on null). Only left-to-right short-circuit evaluation makes this safe."
+          },
+          {
+            "id": "T30.4",
+            "check": "Rule 3 combines the destination test and the date test with && : `($in.0.destination_market == \"SERBIA\" || $in.0.destination_market == \"MOLDOVA\") && $in.0.submitted_on < <1 July 2025>` → `return 2;`, with the OR group correctly parenthesised.",
+            "rationale": "Missing parentheses around the || group would change operator precedence and route rows incorrectly. Note == is null-safe in CTL2, so nullable destination_market needs no isnull() guard — adding one is harmless but not required."
+          },
+          {
+            "id": "T30.5",
+            "check": "The 1 July 2025 boundary is a real date value — `createDate(2025, 7, 1)` (or `str2date(\"2025-07-01\", \"yyyy-MM-dd\")`), compared with `<` (strictly earlier).",
+            "rationale": "Dates must be compared as dates, not strings; createDate months are 1-based so July is 7. `<` (not `<=`) matches 'earlier than'. submitted_on is nullable=false, so no guard is needed."
+          },
+          {
+            "id": "T30.6",
+            "check": "Rules are evaluated in order as sequential early returns (0, then 1, then 2), with `return 3;` as the unconditional fallthrough.",
+            "rationale": "The spec is explicitly first-match; a non-sequential structure (e.g. independent ifs, or checking rule 3 before rule 2) changes routing for rows matching several rules."
+          },
+          {
+            "id": "T30.7",
+            "check": "All returns are integer port numbers 0–3 covering every input row.",
+            "rationale": "getOutputPort() must return the target port index; every row must be routed."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T30.F1",
+            "check": "Must not use `function integer transform()` or assign to `$out.N.*`.",
+            "rationale": "Partition only selects a port; it does not build output records."
+          },
+          {
+            "id": "T30.F2",
+            "check": "Must not `return ALL`, `return OK`, `return SKIP`, or a boolean.",
+            "rationale": "Those are transform()-style return codes; getOutputPort() returns a port index."
+          },
+          {
+            "id": "T30.F3",
+            "check": "Must not compare `submitted_on` against a string literal (e.g. `$in.0.submitted_on < \"2025-07-01\"`).",
+            "rationale": "Type-mismatched comparison; the boundary must be a date value."
+          },
+          {
+            "id": "T30.F4",
+            "check": "Must not place `$in.0.declared_value_eur >= 35000` before or without the isnull() check.",
+            "rationale": "Unguarded order comparison on a nullable field throws CTLException at runtime."
+          }
+        ],
+        "scoring": {
+          "PASS": "getOutputPort() entry point, all four rules in first-match order with correct early returns, startsWith prefix tests, isnull() first in the port-1 condition, parenthesised destination OR group, createDate-based date comparison with <, default return 3.",
+          "PARTIAL": "Correct entry point and routing logic, but the nullable guard is missing/ordered wrong, or the date boundary is built imprecisely, or the OR group is mis-parenthesised.",
+          "FAIL": "Uses transform()/$out, OR returns ALL/OK/boolean instead of port numbers, OR the rules are not first-match ordered, OR a row can fall through with no return."
+        }
+      }
+    },
+    {
+      "test_id": "T31",
+      "type": "generate",
+      "component": "Filter (bare boolean expression, implication logic)",
+      "temperature": 0.1,
+      "source_example_id": "eval-filter-001",
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions.",
+      "user_message": "Write the bare CTL2 expression for a Filter component processing telecommunications supplier invoices.\n\n```xml\n<Record name=\"SupplierInvoice\" type=\"delimited\">\n  <Field name=\"invoice_no\" type=\"long\"/>\n  <Field name=\"legal_entity\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"invoice_date\" type=\"date\" format=\"yyyy-MM-dd\"/>\n  <Field name=\"service_start\" type=\"date\" format=\"yyyy-MM-dd\" nullable=\"true\"/>\n  <Field name=\"invoice_total_eur\" type=\"decimal\" length=\"13\" scale=\"2\"/>\n  <Field name=\"bid_count\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"procurement_route\" type=\"string\"/>\n  <Field name=\"exception_memo\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nA row passes only when all applicable rules hold:\n\n- Reject `legal_entity == \"SANDBOX\"` and entities whose code begins with `TMP-`.\n- Acceptable sourcing evidence is at least one of: route `COMPETITIVE` with a non-null `bid_count` of 2 or more; route `RATE_CARD`; or a nonblank exception memo beginning with `CFO-APPROVED:`.\n- A present `service_start` may not precede `invoice_date`. A null service start is allowed.\n- An invoice above 175000.00 must not use route `EMPLOYEE_EXPENSE`.\n- Route `SOLE_SOURCE` additionally requires a nonblank exception memo.\n\nReturn only one top-level boolean expression—no function and no `return` statement.",
+      "rubric": {
+        "description": "Filter CTL2 is a bare boolean expression — no function wrapper, no return. The hard parts are null-guarding bid_count before >=, allowing a null service_start, and expressing the two 'must not / additionally requires' rules as implications (!A || B) rather than conjunctions.",
+        "required": [
+          {
+            "id": "T31.1",
+            "check": "Response is a bare boolean expression preceded by the //#CTL2 header — no `function ... { }` wrapper and no `return` statement.",
+            "rationale": "The Filter component takes a boolean expression directly. The prompt states this explicitly."
+          },
+          {
+            "id": "T31.2",
+            "check": "`$in.0.legal_entity != \"SANDBOX\" && !startsWith($in.0.legal_entity, \"TMP-\")`.",
+            "rationale": "Both exclusions must be present and negated; legal_entity is nullable=false. != is null-safe in CTL2 regardless."
+          },
+          {
+            "id": "T31.3",
+            "check": "Sourcing evidence is a parenthesised OR group of exactly the three alternatives, ANDed into the whole expression.",
+            "rationale": "'at least one of' is a disjunction; without parentheses, && binding tighter than || would silently change the semantics."
+          },
+          {
+            "id": "T31.4",
+            "check": "Inside the COMPETITIVE alternative, bid_count is null-guarded before the comparison: `!isnull($in.0.bid_count) && $in.0.bid_count >= 2`.",
+            "rationale": "bid_count is nullable=true and >= is not null-safe in CTL2 — it throws CTLException on null. The prompt also calls out 'non-null bid_count'."
+          },
+          {
+            "id": "T31.5",
+            "check": "The memo alternative uses `!isBlank($in.0.exception_memo) && startsWith($in.0.exception_memo, \"CFO-APPROVED:\")`.",
+            "rationale": "'nonblank' maps to isBlank(), which is null-safe and also rejects whitespace-only values."
+          },
+          {
+            "id": "T31.6",
+            "check": "Service-start rule written as `isnull($in.0.service_start) || $in.0.service_start >= $in.0.invoice_date` — null service start passes.",
+            "rationale": "A null must pass, not fail; and the order comparison must sit behind the isnull() short-circuit. 'may not precede' means >= (equal dates are allowed)."
+          },
+          {
+            "id": "T31.7",
+            "check": "The 175000.00 rule is an implication, not a conjunction: `$in.0.invoice_total_eur <= 175000.00D || $in.0.procurement_route != \"EMPLOYEE_EXPENSE\"` (equivalently `!(total > 175000.00D && route == \"EMPLOYEE_EXPENSE\")`), using a decimal literal.",
+            "rationale": "'An invoice above X must not use route Y' rejects only the combination. Writing it as a plain && would reject almost every row."
+          },
+          {
+            "id": "T31.8",
+            "check": "The SOLE_SOURCE rule is an implication: `$in.0.procurement_route != \"SOLE_SOURCE\" || !isBlank($in.0.exception_memo)`.",
+            "rationale": "The memo is required only for that route; a conjunction would demand a memo from every row."
+          },
+          {
+            "id": "T31.9",
+            "check": "All five rule groups combined with && at the top level.",
+            "rationale": "'passes only when all applicable rules hold'."
+          }
+        ],
+        "optional": [
+          {
+            "id": "T31.O1",
+            "check": "invoice_total_eur and/or invoice_date additionally isnull()-guarded before being compared.",
+            "rationale": "Neither field declares nullable=\"false\", so CloverDX's nullable default applies and a defensive guard ahead of the order comparison is legitimate. Not required, since the prompt frames only service_start and bid_count as nullable."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T31.F1",
+            "check": "Must NOT wrap the expression in `function integer transform()`, `function boolean isValid()`, or any other function declaration.",
+            "rationale": "Bare expression only — the prompt says 'no function and no return statement'."
+          },
+          {
+            "id": "T31.F2",
+            "check": "Must NOT contain `return`, `return true`, `return ALL`, or `return SKIP`.",
+            "rationale": "The expression itself is the value."
+          },
+          {
+            "id": "T31.F3",
+            "check": "Must NOT compare `$in.0.bid_count` with >= without an isnull() guard evaluated first.",
+            "rationale": "Unguarded order comparison on a nullable integer throws CTLException."
+          },
+          {
+            "id": "T31.F4",
+            "check": "Must NOT express the 175000 or SOLE_SOURCE rules as conjunctions that require the antecedent of every row.",
+            "rationale": "Turns a conditional restriction into a universal one and drops valid rows."
+          }
+        ],
+        "scoring": {
+          "PASS": "Bare expression, no wrapper/return, all five rule groups present and correctly parenthesised, bid_count null-guarded, null service_start allowed, both restriction rules written as implications.",
+          "PARTIAL": "Correct logic but wrapped in a function declaration, or one implication written as a conjunction, or a missing null guard.",
+          "FAIL": "Function wrapper plus return statements, OR the sourcing-evidence group is ANDed instead of ORed, OR unguarded comparison on bid_count, OR null service_start rejected."
+        }
+      }
+    },
+    {
+      "test_id": "T32",
+      "type": "generate",
+      "component": "Normalizer (JSON array, variant)",
+      "temperature": 0.1,
+      "source_example_id": "eval-normalizer-001",
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions.",
+      "user_message": "Create a Normalizer for an appliance-warranty system.\n\nInput port 0:\n```xml\n<Record name=\"WarrantyCase\" type=\"delimited\">\n  <Field name=\"case_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"events_json\" type=\"string\" nullable=\"false\"/>\n</Record>\n```\n\nOutput port 0:\n```xml\n<Record name=\"WarrantyAction\" type=\"delimited\">\n  <Field name=\"case_id\" type=\"long\"/>\n  <Field name=\"action_code\" type=\"string\"/>\n  <Field name=\"urgent\" type=\"boolean\"/>\n  <Field name=\"estimated_cost_eur\" type=\"decimal\"/>\n</Record>\n```\n\n`events_json` is an array such as:\n`[{\"action\":\"PART_REPLACE\",\"urgent\":true,\"cost\":82.40},{\"action\":\"PHONE_GUIDANCE\",\"urgent\":false,\"cost\":0.00}]`.\n\nEmit an element only when `action` is not blank and either `urgent` is true or `cost` is at least 25.00. Map the JSON properties to the corresponding output fields. A non-array top-level value should produce zero rows. Include `count()`, `transform(integer idx)`, and `clean()`.",
+      "rubric": {
+        "description": "Generate a Normalizer that parses a JSON array with parseJson() into a module-level variant, returns its length from count() (0 for a non-list), reads elements in transform(idx), converts variant members to concrete types, skips non-qualifying elements with SKIP, and resets state in clean().",
+        "required": [
+          {
+            "id": "T32.1",
+            "check": "All three lifecycle functions present with correct signatures: `function integer count()`, `function integer transform(integer idx)`, `function void clean()`, under a //#CTL2 header.",
+            "rationale": "The Normalizer contract; the prompt requires all three explicitly."
+          },
+          {
+            "id": "T32.2",
+            "check": "Parsed JSON held in a module-level (global) `variant` variable declared outside the functions, so count() and transform() see the same data.",
+            "rationale": "transform(idx) is called after count(); a local inside count() would be out of scope and re-parsing per element is wasteful and incorrect in spirit."
+          },
+          {
+            "id": "T32.3",
+            "check": "`parseJson($in.0.events_json)` used to parse the string.",
+            "rationale": "parseJson() is the CTL2 JSON entry point and yields a variant."
+          },
+          {
+            "id": "T32.4",
+            "check": "count() returns `length(<parsed>)` only when the parsed value is a list, and 0 otherwise — e.g. `<parsed> typeof list ? length(<parsed>) : 0`.",
+            "rationale": "The prompt requires a non-array top-level value to produce zero rows; calling length() on a non-list variant fails."
+          },
+          {
+            "id": "T32.5",
+            "check": "transform() indexes the parsed list by the idx parameter (`<parsed>[idx]`) rather than iterating or maintaining its own counter.",
+            "rationale": "Normalizer drives the index; transform() is invoked once per element with idx supplied."
+          },
+          {
+            "id": "T32.6",
+            "check": "Variant members read by key (`event[\"action\"]`, `event[\"urgent\"]`, `event[\"cost\"]`) and converted to concrete types with `cast(..., string/boolean/decimal)`, ideally with a fallback (e.g. `cast(x, decimal) : 0D`) for missing keys.",
+            "rationale": "Variant values must be narrowed before assignment to typed output fields; the fallback form keeps a missing key from failing the whole record."
+          },
+          {
+            "id": "T32.7",
+            "check": "Filter condition `isBlank(action) || (!urgent && cost < 25.00D)` (or its equivalent) leads to `return SKIP;`.",
+            "rationale": "Emit only when action is non-blank AND (urgent OR cost >= 25.00). SKIP suppresses that element without failing the record."
+          },
+          {
+            "id": "T32.8",
+            "check": "Qualifying elements assign all four output fields — `case_id` carried from `$in.0.case_id`, plus action_code, urgent, estimated_cost_eur — and `return OK;`.",
+            "rationale": "case_id comes from the input record, not the JSON; the other three map from the JSON properties."
+          },
+          {
+            "id": "T32.9",
+            "check": "clean() resets the module-level variant state (e.g. back to null).",
+            "rationale": "State must not leak between input records."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T32.F1",
+            "check": "Must not use Java/JS JSON APIs — `JSON.parse`, `new JSONArray`, `ObjectMapper`, `getJson*` — instead of parseJson().",
+            "rationale": "Not available in CTL2."
+          },
+          {
+            "id": "T32.F2",
+            "check": "count() must not return a hardcoded constant, and must not call `length($in.0.events_json)` (the raw string).",
+            "rationale": "That returns the character count of the JSON text, not the element count."
+          },
+          {
+            "id": "T32.F3",
+            "check": "Must not return ALL/SKIP from count(), or loop inside transform() emitting several rows per call.",
+            "rationale": "count() returns the number of output rows; transform() emits exactly one element per invocation."
+          },
+          {
+            "id": "T32.F4",
+            "check": "Must not assign raw variant values straight to typed output fields with no cast/conversion.",
+            "rationale": "Type narrowing is required when moving from variant to typed metadata fields."
+          }
+        ],
+        "scoring": {
+          "PASS": "count()/transform(idx)/clean() present, module-level variant holding parseJson() output, list type-check returning 0 for non-arrays, keyed variant access with casts, correct SKIP condition, all four output fields set with OK, clean() resets state.",
+          "PARTIAL": "Structure and parsing correct but the non-list case is unhandled, or casts are missing, or the skip condition is inverted/incomplete, or clean() is a no-op.",
+          "FAIL": "Missing count() or transform(idx), OR the parsed data is local to count() and unreachable from transform(), OR a Java JSON API is used, OR count() measures the raw string."
+        }
+      }
+    },
+    {
+      "test_id": "T33",
+      "type": "generate",
+      "component": "Denormalizer (distinct list aggregation)",
+      "temperature": 0.1,
+      "source_example_id": "eval-denormalizer-001",
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions.",
+      "user_message": "A cold-chain Denormalizer receives rows already grouped by `shipment_batch_id`. Each batch may contain repeated exception codes from several scanning stations.\n\nInput metadata:\n```xml\n<Record name=\"ColdChainScan\" type=\"delimited\">\n  <Field name=\"shipment_batch_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"exception_code\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nOutput metadata:\n```xml\n<Record name=\"BatchExceptions\" type=\"delimited\">\n  <Field name=\"shipment_batch_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"exception_codes\" type=\"string\" containerType=\"list\"/>\n</Record>\n```\n\nWrite the complete Denormalizer CTL2. Capture the batch key once, preserve the first-seen order of codes, ignore null or empty codes, and include each distinct code only once. The output list must be a typed string list.",
+      "rubric": {
+        "description": "Generate a Denormalizer that accumulates a first-seen-ordered, de-duplicated typed string list across a group, captures the group key exactly once, ignores null/empty codes, emits in transform(), and resets state in clean().",
+        "required": [
+          {
+            "id": "T33.1",
+            "check": "`function integer append()` and `function integer transform()` both present under a //#CTL2 header (clean() as well — see T33.7).",
+            "rationale": "Denormalizer contract: append() per input row, transform() once per group."
+          },
+          {
+            "id": "T33.2",
+            "check": "Module-level state declared outside the functions: the batch key, and a typed `string[]` list (e.g. `string[] exceptionCodes = [];`).",
+            "rationale": "State must survive across append() calls within a group; the output field has containerType=\"list\" over a string, so the accumulator must be string[], not a joined string or a map."
+          },
+          {
+            "id": "T33.3",
+            "check": "The batch key is captured once — a boolean 'captured' flag (or an isnull() check on the stored key) guards the assignment.",
+            "rationale": "The prompt says 'capture the batch key once'. Reassigning per row happens to work here but the guard is what is asked for and is robust."
+          },
+          {
+            "id": "T33.4",
+            "check": "Null and empty codes skipped: `!isnull(code) && code != \"\"` or `!isBlank(code)`.",
+            "rationale": "exception_code is nullable=true and the spec excludes empty values."
+          },
+          {
+            "id": "T33.5",
+            "check": "Duplicate suppression via `containsValue(<list>, code)` before appending.",
+            "rationale": "containsValue() is the CTL2 list membership test (containsKey() is for maps). Checking membership on the growing list is what preserves first-seen order while keeping values distinct."
+          },
+          {
+            "id": "T33.6",
+            "check": "New values added with `append(<list>, code)` (or `<list>[length(<list>)] = code`), preserving arrival order; append() returns OK.",
+            "rationale": "append() adds to the end, so insertion order is first-seen order. No sorting or re-ordering may be applied."
+          },
+          {
+            "id": "T33.7",
+            "check": "transform() assigns `$out.0.shipment_batch_id` from the captured key and `$out.0.exception_codes` from the accumulated string[] list, returning OK/ALL; `function void clean()` resets the key, the flag, and the list (e.g. `clear(<list>)`).",
+            "rationale": "Without clean(), codes from one batch leak into the next. clear() empties the existing list; reassigning to [] is also acceptable."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T33.F1",
+            "check": "Must not emit `exception_codes` as a delimited/concatenated string (e.g. via join()).",
+            "rationale": "The output field is a typed string list (containerType=\"list\"), not a string."
+          },
+          {
+            "id": "T33.F2",
+            "check": "Must not sort the list or otherwise reorder it.",
+            "rationale": "First-seen order must be preserved."
+          },
+          {
+            "id": "T33.F3",
+            "check": "Must not use Java collection APIs or method-call syntax — `new ArrayList()`, `list.add(...)`, `list.contains(...)`, `HashSet`.",
+            "rationale": "CTL2 uses free functions append()/containsValue()/clear() on typed list variables."
+          },
+          {
+            "id": "T33.F4",
+            "check": "Must not accumulate into a map/set purely for de-duplication and emit its values.",
+            "rationale": "CTL2 map iteration order is not the first-seen input order, so this loses the required ordering."
+          }
+        ],
+        "scoring": {
+          "PASS": "append()/transform()/clean() present, module-level string[] plus key and captured flag, key captured once, null/empty codes skipped, containsValue() de-duplication before append(), list emitted as a typed list, clean() clears all state.",
+          "PARTIAL": "Correct accumulation but the key is captured unguarded per row, or clean() omits the list, or isBlank/empty handling is incomplete.",
+          "FAIL": "Missing clean() so state leaks between batches, OR the list is emitted as a joined string, OR duplicates are not suppressed, OR Java collection APIs are used."
+        }
+      }
+    },
+    {
+      "test_id": "T34",
+      "type": "generate",
+      "component": "Join (ExtHashJoin LEFT OUTER)",
+      "temperature": 0.1,
+      "source_example_id": "eval-joiner-001",
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions.",
+      "user_message": "Write CTL2 for an ExtHashJoin configured as a left outer join from invoice rows on port 0 to credit-profile rows on port 1. The join key is `account_id`, and at most one profile matches an invoice.\n\nPort 0:\n`CustomerInvoice(invoice_id:string, account_id:string, issued_on:date, invoice_currency:string, amount_due:decimal, fallback_terms_days:integer, compliance_check_required:boolean)`\n\nPort 1:\n`CreditProfile(account_id:string, account_name:string, risk_grade:string, payment_terms_days:integer, preferred_currency:string, compliance_valid_until:date)`\n\nOutput:\n`InvoiceDecision(invoice_id:string, account_name:string, payment_due_on:date, decision:string, decision_reason:string, currency_adjustment:decimal)`\n\nRules:\n\n- A missing profile produces account name `UNREGISTERED`, due date equal to `issued_on`, decision `HOLD`, reason `PROFILE_MISSING`, and zero adjustment.\n- With a profile, add `payment_terms_days` to `issued_on` for the due date.\n- When compliance checking is required, a null compliance date or a date before `issued_on` yields `HOLD / COMPLIANCE_LAPSED`.\n- Otherwise use `REVIEW / PRIORITY_RISK` for risk grade `P1`, then `REVIEW / LARGE_BALANCE` when amount due is greater than 85000. All other matched rows are `APPROVED` with a null reason.\n- Currency matching is case-sensitive. A mismatch produces a 2.5% adjustment rounded to two decimals; a match produces zero.\n\nProvide the complete transform function and guard the outer-join slave through a concrete slave field.",
+      "rubric": {
+        "description": "Generate an ExtHashJoin transform for a left outer join: detect the unmatched slave through a concrete slave FIELD (not the record), emit the full UNREGISTERED/HOLD default row and return early, then apply the matched-row decision cascade in the right precedence with dateAdd() for the due date and a case-sensitive currency comparison.",
+        "required": [
+          {
+            "id": "T34.1",
+            "check": "`function integer transform()` under a //#CTL2 header, with `$out.0.invoice_id = $in.0.invoice_id;` from the master port.",
+            "rationale": "Join transformation entry point; invoice_id always comes from port 0."
+          },
+          {
+            "id": "T34.2",
+            "check": "Unmatched slave detected as `isnull($in.1.account_id)` — a concrete slave field, exactly as the prompt requires.",
+            "rationale": "In CTL2 the unmatched slave record's fields read as null; testing a named field is the supported idiom."
+          },
+          {
+            "id": "T34.3",
+            "check": "Unmatched branch sets ALL remaining outputs — account_name \"UNREGISTERED\", payment_due_on = $in.0.issued_on, decision \"HOLD\", decision_reason \"PROFILE_MISSING\", currency_adjustment 0D — and returns early (return ALL/OK) so no slave field is dereferenced afterwards.",
+            "rationale": "Every output field must be assigned on every path; falling through would read slave fields that are null."
+          },
+          {
+            "id": "T34.4",
+            "check": "Matched due date computed as `dateAdd($in.0.issued_on, $in.1.payment_terms_days, day)` — dateAdd() with the bare `day` unit constant.",
+            "rationale": "dateAdd(date, amount, unit) is the CTL2 date arithmetic function; the unit is an unquoted symbolic constant, not a string."
+          },
+          {
+            "id": "T34.5",
+            "check": "Compliance test: `$in.0.compliance_check_required && (isnull($in.1.compliance_valid_until) || $in.1.compliance_valid_until < $in.0.issued_on)` → HOLD / COMPLIANCE_LAPSED.",
+            "rationale": "Only applies when checking is required; the null case must be tested before the order comparison, which is not null-safe."
+          },
+          {
+            "id": "T34.6",
+            "check": "Decision cascade in exactly this precedence as if/else-if: COMPLIANCE_LAPSED, then risk_grade \"P1\" → REVIEW/PRIORITY_RISK, then amount_due > 85000 → REVIEW/LARGE_BALANCE, else APPROVED with `decision_reason = null`.",
+            "rationale": "The rules overlap; independent ifs or a different order would produce the wrong label for rows matching more than one. APPROVED must explicitly assign a null reason."
+          },
+          {
+            "id": "T34.7",
+            "check": "Currency comparison is case-sensitive `$in.0.invoice_currency == $in.1.preferred_currency`, with mismatch → `round($in.0.amount_due * 0.025D, 2)` and match → 0D.",
+            "rationale": "The prompt states matching is case-sensitive; the 2.5% factor must be a decimal literal and the result rounded to 2 places."
+          },
+          {
+            "id": "T34.8",
+            "check": "transform() returns ALL (or OK) on the matched path.",
+            "rationale": "Successful emission to the output port."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T34.F1",
+            "check": "Must not test the slave record itself — `isnull($in.1)`, `$in.1 == null`, `$in.1 != null`.",
+            "rationale": "The prompt explicitly requires guarding through a concrete slave field; testing the record is not valid CTL2."
+          },
+          {
+            "id": "T34.F2",
+            "check": "Must not use `equalsIgnoreCase()`, or upperCase()/lowerCase() on both currency operands.",
+            "rationale": "Currency matching is specified as case-sensitive."
+          },
+          {
+            "id": "T34.F3",
+            "check": "Must not pass the dateAdd unit as a string (`dateAdd(d, n, \"day\")`) or use Java date APIs / manual millisecond arithmetic.",
+            "rationale": "The unit is a symbolic constant in CTL2."
+          },
+          {
+            "id": "T34.F4",
+            "check": "Must not dereference slave fields ($in.1.*) on the unmatched path.",
+            "rationale": "Those values are null for an unmatched left outer row."
+          }
+        ],
+        "scoring": {
+          "PASS": "transform() with isnull($in.1.account_id) guard, complete unmatched branch with early return, dateAdd(..., day), correct compliance test with null-first ordering, decision cascade in the specified precedence with null reason on APPROVED, case-sensitive currency comparison with round(amount * 0.025D, 2), returns ALL/OK.",
+          "PARTIAL": "Correct outer-join guard and overall shape, but the decision precedence is off, or the APPROVED reason is left unassigned, or the adjustment is unrounded / uses a non-decimal factor.",
+          "FAIL": "Guards the outer join with isnull($in.1) / $in.1 == null, OR omits the unmatched branch, OR dereferences slave fields when unmatched, OR uses case-insensitive currency comparison, OR leaves output fields unassigned on some path."
+        }
+      }
+    },
+    {
+      "test_id": "T35",
+      "type": "generate",
+      "component": "Reformat (string manipulation, branching label)",
+      "temperature": 0.1,
+      "source_example_id": "eval-reformat-001",
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions.",
+      "user_message": "A Reformat component prepares service-booking labels for a home-repair platform.\n\nInput port 0:\n```xml\n<Record name=\"ServiceBooking\" type=\"delimited\">\n  <Field name=\"booking_no\" type=\"long\"/>\n  <Field name=\"customer_name\" type=\"string\"/>\n  <Field name=\"service_city\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"priority_code\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nOutput port 0 contains the same first three fields plus `dispatch_label:string`.\n\nCopy `booking_no`, `customer_name`, and `service_city` unchanged. Build `dispatch_label` as follows:\n\n- If `priority_code` is null or empty, uppercase the city and remove all literal spaces.\n- Otherwise, when the city starts with `New` or `Fort`, concatenate the booking number, `#`, and the uppercased priority code.\n- For every other city, remove literal spaces from the customer name, append `/`, and append the lowercased priority code.\n\nProvide the CTL2 `transform()` function.",
+      "rubric": {
+        "description": "Generate a Reformat transform() that copies three fields through and builds a conditional label using CTL2 string functions: isnull/empty test, replace(), upperCase()/lowerCase(), startsWith(), and an explicit long-to-string conversion in concatenation.",
+        "required": [
+          {
+            "id": "T35.1",
+            "check": "`function integer transform()` under a //#CTL2 header, returning OK (or ALL).",
+            "rationale": "Reformat transformation entry point."
+          },
+          {
+            "id": "T35.2",
+            "check": "booking_no, customer_name and service_city copied unchanged from $in.0 to $out.0.",
+            "rationale": "Explicitly required; all output fields must be assigned."
+          },
+          {
+            "id": "T35.3",
+            "check": "Branch 1 condition tests null OR empty priority_code — `isnull($in.0.priority_code) || $in.0.priority_code == \"\"` (or isBlank()) — and is checked FIRST.",
+            "rationale": "priority_code is nullable=true; the other two branches pass it to upperCase()/lowerCase(), so the null case must be eliminated first."
+          },
+          {
+            "id": "T35.4",
+            "check": "Branch 1 value: `upperCase(replace($in.0.service_city, \" \", \"\"))` — spaces removed and the city uppercased.",
+            "rationale": "replace(string, regex, replacement) is the CTL2 replacement function; a literal space is a valid regex here."
+          },
+          {
+            "id": "T35.5",
+            "check": "Branch 2 condition: `startsWith(city, \"New\") || startsWith(city, \"Fort\")`, case-sensitive as written.",
+            "rationale": "startsWith() is the CTL2 prefix test; the prompt gives the prefixes in exact case."
+          },
+          {
+            "id": "T35.6",
+            "check": "Branch 2 value concatenates the booking number, \"#\", and the UPPERCASED priority — with the long converted explicitly, e.g. `num2str($in.0.booking_no) + \"#\" + upperCase(priority)`.",
+            "rationale": "num2str() is the CTL2 numeric-to-string conversion; `\"\" + booking_no` style concatenation is also acceptable, but no Java String.valueOf/format."
+          },
+          {
+            "id": "T35.7",
+            "check": "Branch 3 (else) value: `replace($in.0.customer_name, \" \", \"\") + \"/\" + lowerCase(priority)`.",
+            "rationale": "Spaces stripped from the customer name, slash separator, lowercased priority."
+          },
+          {
+            "id": "T35.8",
+            "check": "The three branches form one if / else-if / else chain so exactly one label is produced per row.",
+            "rationale": "The rules are ordered and mutually exclusive; independent ifs would let a later branch overwrite an earlier one."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T35.F1",
+            "check": "Must not use Java string methods — `.toUpperCase()`, `.toLowerCase()`, `.replace()`, `.startsWith()`, `String.valueOf()`, `String.format()`.",
+            "rationale": "CTL2 uses free functions upperCase()/lowerCase()/replace()/startsWith()/num2str()."
+          },
+          {
+            "id": "T35.F2",
+            "check": "Must not pass a possibly-null priority_code to upperCase()/lowerCase() outside the guarded branches.",
+            "rationale": "The null case must be handled by the first branch."
+          },
+          {
+            "id": "T35.F3",
+            "check": "Must not use `$out.0.* = $in.0.*` wildcard/implicit record copy in place of the three explicit assignments if the output metadata differs.",
+            "rationale": "The output record adds dispatch_label, so a blanket copy is not a substitute for assigning each declared field. (An explicit field-by-field copy plus the label is what is expected.)"
+          },
+          {
+            "id": "T35.F4",
+            "check": "Must not assign to any $out.0 field that is not declared in the output metadata.",
+            "rationale": "Undeclared field assignment is a compile error in //#CTL2:COMPILE mode and silent data loss otherwise."
+          }
+        ],
+        "scoring": {
+          "PASS": "transform() returning OK, three fields copied, null/empty priority branch first using replace()+upperCase(), New/Fort startsWith branch with num2str concatenation and upperCase, else branch with replace()+\"/\"+lowerCase, single if/else-if/else chain.",
+          "PARTIAL": "Correct structure but the empty-string case is not covered alongside null, or the long is concatenated without an explicit conversion, or the branch order lets a later rule shadow an earlier one.",
+          "FAIL": "Java string methods used, OR the null priority_code reaches upperCase()/lowerCase(), OR branches are independent ifs producing the wrong label, OR fields left unassigned."
+        }
+      }
+    },
+    {
+      "test_id": "T36",
+      "type": "generate",
+      "component": "Rollup (summary-only, custom accumulator)",
+      "temperature": 0.1,
+      "source_example_id": "eval-rollup-001",
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions.",
+      "user_message": "Build a summary-only Rollup for equipment-repair claims grouped by `service_partner_code`.\n\nInput port 0:\n```xml\n<Record name=\"RepairClaim\" type=\"delimited\">\n  <Field name=\"service_partner_code\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"claim_received_on\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"repair_completed_on\" type=\"date\" nullable=\"true\"/>\n  <Field name=\"labour_amount\" type=\"decimal\" nullable=\"false\"/>\n  <Field name=\"parts_amount\" type=\"decimal\" nullable=\"true\"/>\n  <Field name=\"deductible_amount\" type=\"decimal\" nullable=\"true\"/>\n  <Field name=\"handling_queue\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nThe registered accumulator type is:\n```xml\n<Record name=\"RepairPartnerAcc\" type=\"delimited\">\n  <Field name=\"service_partner_code\" type=\"string\"/>\n  <Field name=\"claim_count\" type=\"long\"/>\n  <Field name=\"net_claim_total\" type=\"decimal\"/>\n  <Field name=\"manual_queue_count\" type=\"integer\"/>\n  <Field name=\"earliest_completion\" type=\"date\"/>\n  <Field name=\"latest_received\" type=\"date\"/>\n  <Field name=\"key_captured\" type=\"boolean\"/>\n</Record>\n```\n\nOutput port 0:\n```xml\n<Record name=\"RepairPartnerSummary\" type=\"delimited\">\n  <Field name=\"service_partner_code\" type=\"string\"/>\n  <Field name=\"claim_count\" type=\"long\"/>\n  <Field name=\"average_net_claim\" type=\"decimal\"/>\n  <Field name=\"manual_queue_count\" type=\"integer\"/>\n  <Field name=\"earliest_completion\" type=\"date\"/>\n  <Field name=\"latest_received\" type=\"date\"/>\n</Record>\n```\n\nFor each group:\n\n- Net claim amount is `labour_amount + nvl(parts_amount, 0D) - nvl(deductible_amount, 0D)`.\n- Count rows whose queue is null or begins with `MAN-`.\n- Track the earliest non-null completion date and latest received date.\n- Emit exactly one final row, with average net claim equal to total divided by claim count.\n\nProvide all five Rollup lifecycle functions using `RepairPartnerAcc`. Do not emit per-input rows.",
+      "rubric": {
+        "description": "Generate all five Rollup lifecycle functions against a named accumulator metadata type. The discriminators are: updateGroup returning false and updateTransform returning SKIP so nothing is emitted per input row, a one-row-per-group transform() guarded on counter, initGroup resetting every accumulator field, and null-safe min/max tracking.",
+        "required": [
+          {
+            "id": "T36.1",
+            "check": "All five lifecycle functions present with the accumulator typed as `RepairPartnerAcc`: `function void initGroup(RepairPartnerAcc acc)`, `function boolean updateGroup(RepairPartnerAcc acc)`, `function boolean finishGroup(RepairPartnerAcc acc)`, `function integer updateTransform(integer counter, RepairPartnerAcc acc)`, `function integer transform(integer counter, RepairPartnerAcc acc)` — under a //#CTL2 header.",
+            "rationale": "All five are required regardless of control flow; the registered accumulator metadata name must be used as the parameter type, not a generic record type."
+          },
+          {
+            "id": "T36.2",
+            "check": "initGroup() resets EVERY accumulator field, including claim_count = 0L, net_claim_total = 0D, manual_queue_count = 0, both dates to null, and key_captured = false.",
+            "rationale": "The accumulator is reused across groups; any field left unreset leaks the previous group's value. Note the type-correct literals: 0L for long, 0D for decimal, 0 for integer."
+          },
+          {
+            "id": "T36.3",
+            "check": "updateGroup() captures service_partner_code once, guarded by the key_captured flag.",
+            "rationale": "The accumulator carries an explicit key_captured field for exactly this purpose."
+          },
+          {
+            "id": "T36.4",
+            "check": "Net claim accumulated as `acc.net_claim_total + $in.0.labour_amount + nvl($in.0.parts_amount, 0D) - nvl($in.0.deductible_amount, 0D)`, and claim_count incremented by 1L.",
+            "rationale": "parts_amount and deductible_amount are nullable — unguarded arithmetic on null throws; the nvl() fallbacks must be decimal literals (0D). claim_count is long, so 1L keeps the type clean."
+          },
+          {
+            "id": "T36.5",
+            "check": "Manual-queue counter incremented when `isnull($in.0.handling_queue) || startsWith($in.0.handling_queue, \"MAN-\")` — isnull first.",
+            "rationale": "handling_queue is nullable and a null must COUNT here (not be skipped); startsWith() on null would fail, so the isnull() test must short-circuit ahead of it."
+          },
+          {
+            "id": "T36.6",
+            "check": "earliest_completion tracked as a min over NON-NULL repair_completed_on values: `!isnull($in.0.repair_completed_on) && (isnull(acc.earliest_completion) || $in.0.repair_completed_on < acc.earliest_completion)`.",
+            "rationale": "repair_completed_on is nullable and must be excluded; the accumulator seed is null, so the first non-null value must be taken via the isnull(acc...) branch before any order comparison."
+          },
+          {
+            "id": "T36.7",
+            "check": "latest_received tracked as a max with the accumulator's null seed handled: `isnull(acc.latest_received) || $in.0.claim_received_on > acc.latest_received`.",
+            "rationale": "claim_received_on is non-nullable, but the accumulator starts null and > is not null-safe."
+          },
+          {
+            "id": "T36.8",
+            "check": "updateGroup() returns false AND updateTransform() returns SKIP.",
+            "rationale": "Summary-only: returning true from updateGroup would invoke updateTransform per input row, and updateTransform must not emit even if called. The prompt says 'do not emit per-input rows'."
+          },
+          {
+            "id": "T36.9",
+            "check": "finishGroup() returns true.",
+            "rationale": "Returning true is what triggers the final transform() call for the group; returning false would emit nothing at all."
+          },
+          {
+            "id": "T36.10",
+            "check": "transform() emits exactly one row per group — guarded with `if (counter > 0) return SKIP;` — assigns all six output fields, computes `average_net_claim = acc.net_claim_total / acc.claim_count`, and returns ALL (or OK).",
+            "rationale": "transform() can be re-invoked while it returns a non-SKIP code; the counter guard bounds it to one row. The average must divide by the accumulated count, with the decimal total on the left so the result stays decimal."
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T36.F1",
+            "check": "Must not omit updateTransform() (or any of the five functions), even though updateGroup returns false.",
+            "rationale": "All five must be defined; updateGroup returning false only means updateTransform is not invoked, it does not make the definition optional."
+          },
+          {
+            "id": "T36.F2",
+            "check": "Must not return true from updateGroup() or emit rows (assign $out and return ALL/OK) from updateTransform().",
+            "rationale": "That produces per-input-row output, which the prompt forbids."
+          },
+          {
+            "id": "T36.F3",
+            "check": "Must not use a generic/untyped accumulator parameter or a different record type name instead of `RepairPartnerAcc`.",
+            "rationale": "The accumulator metadata type is given and registered on the component."
+          },
+          {
+            "id": "T36.F4",
+            "check": "Must not compare against the nullable accumulator dates or nullable inputs without an isnull() guard evaluated first.",
+            "rationale": "Order comparisons (<, >) throw CTLException on null in CTL2."
+          },
+          {
+            "id": "T36.F5",
+            "check": "Must not assign to any $out.0 field not declared in RepairPartnerSummary (e.g. writing net_claim_total or key_captured to the output).",
+            "rationale": "The output metadata has six fields; the accumulator's extra fields are internal."
+          }
+        ],
+        "scoring": {
+          "PASS": "All five functions with RepairPartnerAcc typing, initGroup resets every field with type-correct literals, key captured once, nvl()-guarded net accumulation, isnull-first manual-queue test, null-safe min/max tracking, updateGroup false + updateTransform SKIP, finishGroup true, counter-guarded single-row transform with the correct average.",
+          "PARTIAL": "All five functions present and mostly correct, but initGroup misses a field, or a nvl()/isnull guard is absent, or the counter guard in transform() is missing.",
+          "FAIL": "Any of the five functions missing, OR updateGroup returns true / updateTransform emits rows, OR the accumulator parameter is untyped or wrongly typed, OR unguarded comparisons on nullable dates, OR the average is not derived from the accumulated total and count."
+        }
+      }
+    }
+  ]
+}
