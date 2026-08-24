@@ -1460,10 +1460,13 @@ class ReviewJudgeClient:
             ],
         }
         kwargs[self._openai_token_param or "max_tokens"] = max_tokens
-        if self._openai_supports_temperature:
-            kwargs["temperature"] = 0.0
-        if self._openai_supports_reasoning_effort and self._cfg.get("reasoning_effort"):
-            kwargs["reasoning_effort"] = self._cfg["reasoning_effort"]
+        temperature = self._cfg.get("temperature")
+        if self._openai_supports_temperature and temperature is not None:
+            kwargs["temperature"] = temperature
+
+        effort = self._cfg.get("reasoning_effort", self._cfg.get("effort"))
+        if self._openai_supports_reasoning_effort and effort:
+            kwargs["reasoning_effort"] = effort
 
         # Prompt caching hints (see "Judge prompt caching" note near the top
         # of this class): our system prompts are large (~25K tokens) and

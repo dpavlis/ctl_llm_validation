@@ -75,7 +75,7 @@ sft:
     #mix_strategy: interleave_over
     #interleave_probs: 0.90,0.10
     eval_dataset: clover_ctl_eval_data
-    cutoff_len: 3072
+    cutoff_len:  3200
     lr_scheduler_type: cosine_with_restarts #cosine_with_min_lr  #linear # #constant_with_warmupa
     lr_scheduler_kwargs:
       #min_lr: 5.0e-6
@@ -129,7 +129,7 @@ sft:
 dpo:
   dataset: clover_dpo_data
   eval_dataset: clover_dpo_eval_data
-  cutoff_len: 2736
+  cutoff_len:  4160
   learning_rate: 5.0e-6
   lr_scheduler_type: cosine   # Ensures smooth decay over the shorter step count
   warmup_ratio: 0.1       
@@ -152,6 +152,7 @@ dpo:
   # Evaluation / checkpoint selection during DPO
   eval_strategy: steps
   eval_steps: 25
+  save_steps: 25
   load_best_model_at_end: true
   metric_for_best_model: eval_loss
   greater_is_better: false

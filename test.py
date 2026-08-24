@@ -170,6 +170,9 @@ DEFAULT_CONFIG: dict = {
         "model": _DEFAULT_JUDGE_MODEL,
         "api_key": None,
         "base_url": None,
+        "temperature": None,
+        "reasoning_effort": None,
+        "effort": None,
     },
     "runs_per_test": 1,
     "timeout_seconds": 240,
@@ -763,19 +766,32 @@ class OpenAIJudgeClient:
     def __init__(self, cfg: dict):
         from openai import OpenAI
 
+        self._cfg = cfg
         api_key = cfg.get("api_key") or os.environ.get("OPENAI_API_KEY")
         self._client = OpenAI(api_key=api_key, base_url=cfg.get("base_url"))
         self._model = cfg.get("model", "gpt-4o")
 
     def evaluate(self, system_prompt: str, user_message: str) -> str:
-        resp = self._client.chat.completions.create(
-            model=self._model,
-            messages=[
+        kwargs: dict = {
+            "model": self._model,
+            "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_message},
             ],
-            temperature=0.0,
-        )
+        }
+
+        # Some OpenAI models only support default temperature. Keep omitted
+        # unless judge.temperature is explicitly set in config.
+        temperature = self._cfg.get("temperature")
+        if temperature is not None:
+            kwargs["temperature"] = temperature
+
+        # Accept both judge.reasoning_effort and judge.effort aliases.
+        effort = self._cfg.get("reasoning_effort", self._cfg.get("effort"))
+        if effort:
+            kwargs["reasoning_effort"] = effort
+
+        resp = self._client.chat.completions.create(**kwargs)
         return resp.choices[0].message.content or ""
 
 

@@ -451,14 +451,25 @@ class JudgeClient:
             self.total_tokens += resp.usage.input_tokens + resp.usage.output_tokens
             return resp.content[0].text
         else:
-            resp = llm.chat.completions.create(
-                model=model,
-                messages=[
+            kwargs: dict = {
+                "model": model,
+                "messages": [
                     {"role": "system", "content": system},
                     {"role": "user", "content": user_message},
                 ],
-                temperature=0.0,
-            )
+            }
+            # Some OpenAI models (e.g. terra tier) only allow default temperature.
+            # Send temperature only when explicitly configured.
+            temperature = self._cfg.get("temperature")
+            if temperature is not None:
+                kwargs["temperature"] = temperature
+
+            # Support both legacy "reasoning_effort" and shorter "effort" config keys.
+            effort = self._cfg.get("reasoning_effort", self._cfg.get("effort"))
+            if effort:
+                kwargs["reasoning_effort"] = effort
+
+            resp = llm.chat.completions.create(**kwargs)
             if resp.usage:
                 self.total_tokens += resp.usage.prompt_tokens + resp.usage.completion_tokens
             return resp.choices[0].message.content or ""

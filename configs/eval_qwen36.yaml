@@ -20,7 +20,7 @@
 # Link to the training config (enables auto-discovery + shared run log)
 # ---------------------------------------------------------------------------
 # Point this at the same YAML you pass to train.py.
-training_config: configs/qwen36.yaml
+training_config: configs/qwen36_v2.yaml
 
 # ---------------------------------------------------------------------------
 # Model under test (MUT)
@@ -50,7 +50,7 @@ mut:
   enable_thinking: false
 
   # Maximum new tokens per response
-  max_new_tokens: 2048
+  max_new_tokens: 8192
 
   # ---------------------------------------------------------------------------
   # Per-type inference overrides (generate / validate).
@@ -58,7 +58,11 @@ mut:
   # ---------------------------------------------------------------------------
   generate:
     # Suite default temperature: 0.1
-    #temperature: 0.3
+    temperature: 0.5
+    top_p: 0.95
+    top_k: 20
+      #presence_penalty: 0
+      #repetition_penalty: 1.0
     # top_p: 1.0
     system_prompt: |
       You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
@@ -67,27 +71,16 @@ mut:
 
   validate:
     # Suite default temperature: 0.05
-    #temperature: 0.2
+    temperature: 0.2
+    top_p: 0.95
+    top_k: 20
+      #presence_penalty: 0
+      #repetition_penalty: 1.0
     #top_p: 0.75
     system_prompt: |
-      You are a CloverDX CTL2 code validation expert. Your task is to analyze CTL2 code and identify issues, bugs, and potential improvements.
-      Focus on finding problems rather than writing new code.
-      Output format:
-      
-      ISSUES:
-        [severity] Description   (severity is ERROR, WARNING, or INFO)
-        ...
-      
-      SUGGESTIONS:
-        - Optional improvement hints (omit section if none)
-      
-      VERDICT: PASS | FAIL
-        (FAIL if any ERROR-severity issue is found; PASS otherwise)
-      
-      If no issues are found respond with just:
-      ISSUES: none
-      VERDICT: PASS
-
+      You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+      Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+      Prefer correct, practical, minimal solutions.      
   # --- api mode (switch mode: api and configure below) ---
   # base_url: "http://localhost:11434/v1"   # Ollama default
   # model: "qwen3-clover-merged"            # model name as registered in Ollama
@@ -107,8 +100,13 @@ judge:
 
   # Uncomment to use OpenAI as judge:
   provider: openai
-  model: gpt-5.4 #Qwen3-Coder-Next
+  model: gpt-5.6-terra #gpt-5.4 #Qwen3-Coder-Next
+  reasoning_effort: medium
   api_key: ${OPENAI_API_KEY}
+  # Leave temperature unset for terra-tier models that only support default.
+  # temperature: 1.0
+  # OpenAI reasoning control (alias: effort).
+  # reasoning_effort: medium
  
     #base_url: "http://localhost:3000/v1"
 
