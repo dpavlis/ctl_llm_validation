@@ -26,9 +26,15 @@ Design, per how this is wired into mut_validate.py's review loop:
     that's a gap in the PROMPT's own metadata, not something the MUT's code
     could ever satisfy — it does not count as a candidate defect, and falls
     through to the LLM judge like any other skip below.
+  - Prompts that describe their ports in prose rather than .fmt XML (75% of
+    the batch2 SFT file, and all of CTL_LoRA_join_complex_prompts.json) have
+    that prose converted to <Record> XML so they get real compiler validation
+    too — see synthesize_ports_metadata(), which is all-or-nothing: it yields
+    nothing unless every port could be rebuilt with confidence, leaving the
+    prompt on the skip path below exactly as before.
   - If the feature is disabled, the prompt's metadata can't be extracted as
-    .fmt XML (e.g. the newer prose-format prompts with no <Record> XML at
-    all), the component type has no tool mapping we're confident in, or the
+    .fmt XML and can't be reconstructed from prose either, the component type
+    has no tool mapping we're confident in, or the
     MCP call itself fails (server down, network error, protocol error) —
     this is a best-effort feature, so all of these fall through to the
     LLM-only judge exactly as if this feature didn't exist. Nothing here
@@ -82,12 +88,16 @@ def map_component_type(bucket: str) -> str:
 # Metadata extraction — prompts embed one <Record>...</Record> (a CloverDX
 # .fmt XML document, usually wrapped in a <Metadata id="..."> tag we don't
 # need) per port. There's no structured field marking a given Record as
-# input/output/accumulator. Two-pass classification:
+# input/output/accumulator. Three-pass classification:
 #   1. Proximity: a Record preceded (anywhere earlier in the prompt) by the
 #      nearest "Input"/"Output"/"Accumulator" keyword gets that label —
 #      covers phrasings like "Given Input Metadata on Port 0:", "Input
 #      metadata (port 0):", "Accumulator metadata (to be used as ...):".
-#   2. Positional fallback for any Record left unlabeled by pass 1 — many
+#   2. Bare port headers — "Port 0 metadata:", "Port 1 metadata:", "Input
+#      port 1:" — which name a port WITHOUT saying input or output, so pass
+#      1 never sees them (see _PORT_HEADER_RE). A bare port is an input
+#      port; only an explicit "Output port N:" is an output.
+#   3. Positional fallback for any Record left unlabeled by passes 1-2 — many
 #      real prompts give bare <Metadata id="..."> blocks with no input/
 #      output keyword anywhere near them, relying purely on order (first
 #      block = input, later blocks = output; confirmed against real dataset
@@ -97,9 +107,14 @@ def map_component_type(bucket: str) -> str:
 #      becomes input only if no input has been found yet at all (labeled or
 #      not); every other unlabeled block becomes output. This assumes a
 #      single input port, which holds for every component type here except
-#      joiner — multi-input join prompts in this dataset consistently label
-#      each port explicitly (needed to tell the ports apart at all), so pass
-#      1 already handles that case before the fallback ever applies.
+#      joiner — so a multi-input join prompt MUST get its ports labeled by
+#      pass 1 or pass 2 before the fallback is reached, or every port after
+#      the master silently becomes an "output" record. That is exactly what
+#      pass 2 exists to prevent: the bare "Port N metadata:" join prompts
+#      match no input/output keyword at all, and under the fallback alone
+#      the slave ports were misfiled as outputs — making $out.0 resolve
+#      against the slave schema and $in.1 unreadable, so a correct candidate
+#      failed to compile with dozens of bogus errors.
 # ---------------------------------------------------------------------------
 
 _RECORD_RE = re.compile(r"<Record\b.*?</Record>", re.IGNORECASE | re.DOTALL)
@@ -120,6 +135,21 @@ _KEYWORD_RE = re.compile(
     r"\b(input|output|accumulator)\b(?=[^.!?]{0,30}?\bmetadata\b)"
     r"|\bmetadata\b(?=[^.!?]{0,30}?\b(input|output|accumulator)\b)",
     re.IGNORECASE,
+)
+
+# Port headers that name a port but never the word input/output — "Port 0
+# metadata:", "Port 1 metadata:" (the newer join prompt style), "Input port
+# 1:", "Output port 0 metadata:". _KEYWORD_RE cannot label these: the bare
+# ones contain no input/output token to match on at all. Anchored to the
+# start of a line so it only fires on an actual section header, never on
+# prose like "routes records to port 1" or on an inline "(port 0)" inside
+# an "Output metadata, port 0:" header (already handled by _KEYWORD_RE, and
+# left to it — this must not relabel those as inputs). An unqualified port
+# header means an INPUT port; a component's own output ports are spelled out
+# explicitly ("Output port 0:") in every prompt style seen in this dataset.
+_PORT_HEADER_RE = re.compile(
+    r"^[^\S\n]*(?:(input|output|accumulator)\s+)?port\s+\d+(?:\s+metadata)?\s*:",
+    re.IGNORECASE | re.MULTILINE,
 )
 
 
@@ -160,6 +190,8 @@ def extract_ports_metadata(
     if not records:
         return [], [], None
     keywords = [(m.start(), (m.group(1) or m.group(2)).lower()) for m in _KEYWORD_RE.finditer(prompt)]
+    keywords += [(m.start(), (m.group(1) or "input").lower()) for m in _PORT_HEADER_RE.finditer(prompt)]
+    keywords.sort()  # both passes feed one position-ordered list: nearest-preceding label wins
 
     labels: list[Optional[str]] = []
     for pos, _xml in records:
@@ -188,6 +220,240 @@ def extract_ports_metadata(
         else:
             output_records.append(xml)  # positional fallback: later unlabeled -> output
     return input_records, output_records, accumulator_record
+
+
+# ---------------------------------------------------------------------------
+# Prose metadata synthesis — a large and growing share of prompts describe
+# their ports in prose instead of .fmt XML (75% of the batch2 SFT file, and
+# every example in CTL_LoRA_join_complex_prompts.json). Those used to be
+# skipped outright for want of a <Record> to send. Three prose shapes occur:
+#
+#   inline, labelled     "Port 0 metadata: PurchaseOrder(po_id:string, ...)."
+#   inline, run-together "Port 0 Invoice(a:string). Port 1 Customer(b:date)."
+#   bulleted block       "Input metadata (port 0):\n- cust_id: string\n- ..."
+#
+# Correctness bar: synthesis must be ALL-OR-NOTHING per prompt. Half-built
+# metadata is worse than none — a port we failed to find makes perfectly good
+# code fail to compile ("Cannot read from input port '1'"), and because a
+# ctl_validate FAIL suppresses the LLM judge entirely, that bogus verdict
+# would stand as the whole review. So every helper below raises _Bail on the
+# first thing it cannot pin down, and _Bail discards the entire prompt back to
+# the pre-existing skip path. Validated against ground truth: the 10 prose
+# prompts in CTL_LoRA_join_complex_prompts.json restate the same scenarios as
+# the hand-written XML in CTL_LoRA_join_complex_prompts_with_meta.json, and
+# synthesis reproduces all 10 exactly — same record names, same port roles,
+# same field names and types.
+# ---------------------------------------------------------------------------
+
+_CTL_TYPES = {"string", "integer", "long", "number", "decimal", "boolean",
+              "date", "byte", "cbyte", "variant"}
+
+_INLINE_RECORD_RE = re.compile(r"\b([A-Za-z_]\w*)\s*\(([^()]*(?:\[[^\]]*\][^()]*)*)\)")
+_BULLET_FIELD_RE = re.compile(
+    r"^[^\S\n]*[-*][^\S\n]*(?P<name>[A-Za-z_]\w*)[^\S\n]*:[^\S\n]*(?P<spec>.+?)[^\S\n]*$")
+_FIELD_PAIR_RE = re.compile(r"^\s*[A-Za-z_]\w*\s*:\s*\S.*$")
+
+
+class _Bail(Exception):
+    """Raised on anything that cannot be pinned down with full confidence;
+    aborts synthesis for the whole prompt (see the section comment above)."""
+
+
+def _split_top_level_commas(body: str) -> list[str]:
+    """Split on commas outside [] — 'a:map[string, decimal], b:integer'."""
+    parts, depth, cur = [], 0, []
+    for ch in body:
+        if ch == "[":
+            depth += 1
+        elif ch == "]":
+            depth -= 1
+        if ch == "," and depth == 0:
+            parts.append("".join(cur))
+            cur = []
+        else:
+            cur.append(ch)
+    parts.append("".join(cur))
+    return [p for p in parts if p.strip()]
+
+
+def _parse_prose_type(spec: str) -> tuple[str, Optional[str], Optional[str]]:
+    """'integer[] (nullable)' -> ('integer', 'list', 'true').
+
+    Takes the base type from the first token and reads nullability only from
+    recognised markers, so trailing prose a prompt tacks on ("string  (the
+    file name without extension)", "integer (0=normal, 1=high)") is ignored
+    rather than confusing the parse. containerType spellings per
+    resources/ctl2-basics.md: type[] -> list, map[string, type] -> map."""
+    s = spec.split("//")[0].strip().rstrip(".").strip()
+    low = s.lower()
+    nullable = None
+    if re.search(r"\bnot\s*null\b", low) or 'nullable="false"' in low:
+        nullable = "false"
+    elif re.search(r"\bnullable\b", low):
+        nullable = "true"
+
+    container = None
+    m = re.match(r"^map\s*\[\s*string\s*,\s*(\w+)\s*\]", s, re.IGNORECASE)
+    if m:
+        base, container = m.group(1).lower(), "map"
+    elif re.match(r"^\w+\s*\[\s*\]", s):
+        base, container = re.match(r"^(\w+)", s).group(1).lower(), "list"
+    elif re.match(r"^\w+\s+list\b", s, re.IGNORECASE):
+        base, container = re.match(r"^(\w+)", s).group(1).lower(), "list"
+    else:
+        m = re.match(r"^(\w+)", s)
+        if not m:
+            raise _Bail(f"unparseable type spec: {spec!r}")
+        base = m.group(1).lower()
+
+    if base not in _CTL_TYPES:
+        raise _Bail(f"unknown CTL2 type {base!r} in {spec!r}")
+    return base, container, nullable
+
+
+def _classify_prose_header(hdr: str, seen_labelled_input: bool) -> tuple[str, Optional[str], bool]:
+    """Header text -> (role, record name or None, role_was_explicit).
+
+    Only the header's final clause is considered: these headers are often the
+    tail of a prose sentence ("...and port 1 to receive everything else.
+    Metadata:"), and role or port words from the sentence body must not be
+    read as a label for the block that follows."""
+    clause = re.split(r"[.?!]\s+", hdr.strip())[-1].strip().rstrip(":").strip()
+    if re.search(r"\blookup\b", clause, re.IGNORECASE):
+        # A lookup is a graph-level object, not a port — sending its schema as
+        # a port would invent an edge the component doesn't have.
+        raise _Bail(f"lookup block, not a port: {clause!r}")
+
+    roles = set()
+    for w in re.findall(r"\b(input|output|left|right|master|slave|accumulator)\b", clause, re.IGNORECASE):
+        w = w.lower()
+        # a joiner's right/slave IS an input port
+        roles.add({"output": "output", "accumulator": "accumulator"}.get(w, "input"))
+    if len(roles) > 1:
+        raise _Bail(f"header names more than one role: {clause!r}")
+
+    rec = None
+    m = (re.search(r"[`\"']([A-Za-z_]\w*)[`\"']", clause)
+         or re.search(r"\(\s*(?:port\s*\d+\s*,\s*)?(?:name\s*:\s*)?([A-Za-z_]\w*)\s*\)", clause, re.IGNORECASE))
+    if m and m.group(1).lower() not in (
+            "port", "name", "metadata", "master", "slave", "nullable", "lookup", "record"):
+        rec = m.group(1)
+
+    if roles:
+        return roles.pop(), rec, True
+    # No role word at all. A bare "Port N ..." header names an INPUT port —
+    # unless an explicitly labelled input block already appeared, in which case
+    # the bare port headers are enumerating this component's OUTPUT ports:
+    #   "Port 0 metadata: PurchaseOrder(..)" / "Port 1 metadata: Vendor(..)"
+    #        -> a joiner's two INPUT ports (no explicit input header anywhere)
+    #   "Input metadata: PaymentIn(..)" / "Port 0 metadata: MatchedPaymentOut(..)"
+    #        -> a Reformat's two OUTPUT ports, after an explicit input header
+    if re.search(r"\bport\s*\d+", clause, re.IGNORECASE):
+        return ("output" if seen_labelled_input else "input"), rec, False
+    raise _Bail(f"unclassifiable metadata header: {clause!r}")
+
+
+def _emit_record(rec_name: str, fields) -> str:
+    out = [f'<Record name="{rec_name}" type="delimited">']
+    for fname, ftype, container, nullable in fields:
+        attrs = f'<Field name="{fname}" type="{ftype}"'
+        if container:
+            attrs += f' containerType="{container}"'
+        if nullable:
+            attrs += f' nullable="{nullable}"'
+        out.append(attrs + "/>")
+    out.append("</Record>")
+    return "".join(out)
+
+
+def _collect_prose_blocks(prompt: str) -> list[tuple[int, str, Optional[str], list]]:
+    """-> [(offset, header text, record name or None, [(field, type spec)])]"""
+    blocks: list[tuple[int, str, Optional[str], list]] = []
+    consumed_lines: set[int] = set()
+
+    for m in _INLINE_RECORD_RE.finditer(prompt):
+        parts = _split_top_level_commas(m.group(2))
+        if not parts or not all(_FIELD_PAIR_RE.match(p) for p in parts):
+            continue  # ordinary prose or a function call, not a field list
+        pairs = [tuple(x.strip() for x in p.split(":", 1)) for p in parts]
+        line_start = prompt.rfind("\n", 0, m.start()) + 1
+        hdr_start = max(line_start, prompt.rfind(". ", line_start, m.start()) + 1)
+        blocks.append((m.start(), prompt[hdr_start:m.start()], m.group(1), pairs))
+        consumed_lines.add(prompt.count("\n", 0, m.start()))
+
+    lines = prompt.split("\n")
+    i = 0
+    while i < len(lines):
+        fields, j = [], i
+        while j < len(lines) and _BULLET_FIELD_RE.match(lines[j]):
+            b = _BULLET_FIELD_RE.match(lines[j])
+            fields.append((b.group("name"), b.group("spec")))
+            j += 1
+        if fields and i not in consumed_lines:
+            k = i - 1
+            while k >= 0 and not lines[k].strip():
+                k -= 1
+            if k >= 0:
+                blocks.append((sum(len(x) + 1 for x in lines[:k]), lines[k], None, fields))
+            i = j
+        else:
+            i = max(j, i + 1)
+
+    blocks.sort(key=lambda b: b[0])
+    return blocks
+
+
+def synthesize_ports_metadata(
+    prompt: str, component_type_bucket: str = "",
+) -> tuple[list[str], list[str], Optional[str]]:
+    """Build .fmt <Record> XML from a prompt that describes its ports in prose.
+
+    Same return shape as extract_ports_metadata. Returns ([], [], None) unless
+    every port in the prompt could be reconstructed with full confidence —
+    callers treat that exactly as "no metadata found" and skip, as before."""
+    try:
+        return _synthesize_ports_metadata(prompt, component_type_bucket)
+    except _Bail:
+        return [], [], None
+
+
+def _synthesize_ports_metadata(
+    prompt: str, component_type_bucket: str,
+) -> tuple[list[str], list[str], Optional[str]]:
+    blocks = _collect_prose_blocks(prompt)
+    if not blocks:
+        raise _Bail("no prose metadata blocks found")
+
+    ins: list[str] = []
+    outs: list[str] = []
+    acc: Optional[str] = None
+    seen_labelled_input = False
+    for _off, hdr, rec, pairs in blocks:
+        role, hdr_rec, explicit = _classify_prose_header(hdr, seen_labelled_input)
+        parsed = [(fname,) + _parse_prose_type(spec) for fname, spec in pairs]
+        if not parsed:
+            raise _Bail("empty field list")
+        name = rec or hdr_rec or (f"In{len(ins)}" if role == "input" else f"Out{len(outs)}")
+        xml = _emit_record(name, parsed)
+        if role == "accumulator":
+            if acc is not None:
+                raise _Bail("more than one accumulator record")
+            acc = xml
+        elif role == "input":
+            ins.append(xml)
+            seen_labelled_input = seen_labelled_input or explicit
+        else:
+            outs.append(xml)
+
+    # Completeness guard. Plenty of prompts spell out one side and leave the
+    # other to prose ("Output needs a normalized name field where..."), which
+    # would otherwise yield metadata missing a port the code legitimately uses.
+    bucket = (component_type_bucket or "").upper()
+    if bucket != "DATA_GENERATOR" and not ins:
+        raise _Bail("no input port recovered")
+    if bucket not in ("PARTITION", "FILTER") and not outs:
+        raise _Bail("no output port recovered")
+    return ins, outs, acc
 
 
 # Detects the accumulator TYPE NAME a Rollup candidate's group functions
@@ -336,11 +602,23 @@ def validate_ctl(
 
     no_input_port = (component_type_bucket or "").upper() == "DATA_GENERATOR"
     input_records, output_records, accumulator_record = extract_ports_metadata(prompt, no_input_port=no_input_port)
+    synthesized = False
+    if not input_records and not output_records:
+        # No .fmt XML in the prompt — try to rebuild the ports from a prose
+        # description of them instead. All-or-nothing: this yields nothing at
+        # all unless every port could be reconstructed with full confidence.
+        input_records, output_records, accumulator_record = synthesize_ports_metadata(
+            prompt, component_type_bucket)
+        synthesized = bool(input_records or output_records)
     if not input_records and not output_records:
         if log_fn:
-            log_fn("  [ctl-validate] skipped: no <Record> metadata XML found in the prompt "
-                   "(likely a prose-metadata-format example)")
+            log_fn("  [ctl-validate] skipped: no <Record> metadata XML in the prompt, and its "
+                   "prose metadata could not be reconstructed with confidence")
         return None
+    if synthesized and log_fn:
+        log_fn(f"  [ctl-validate] metadata synthesized from the prompt's prose description "
+               f"({len(input_records)} input, {len(output_records)} output"
+               f"{', 1 accumulator' if accumulator_record else ''})")
 
     tool_component_type = map_component_type(component_type_bucket)
     if tool_component_type == "rollup" and not accumulator_record and _rollup_needs_accumulator_metadata(code):
