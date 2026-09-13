@@ -32,6 +32,10 @@ Design, per how this is wired into mut_validate.py's review loop:
     too — see synthesize_ports_metadata(), which is all-or-nothing: it yields
     nothing unless every port could be rebuilt with confidence, leaving the
     prompt on the skip path below exactly as before.
+  - A task or candidate involving a lookup table is skipped before the call
+    is made: a lookup is a graph-level object the tool cannot resolve, so it
+    would fail such a candidate however correct it is. The LLM judge gives
+    the verdict instead.
   - If the feature is disabled, the prompt's metadata can't be extracted as
     .fmt XML and can't be reconstructed from prose either, the component type
     has no tool mapping we're confident in, or the
@@ -523,13 +527,60 @@ async def _call_ctl_validate_async(
 # checked). "Unable to resolve sequence/lookup '...'" is a known limitation
 # of the tool itself, not a real defect in the candidate code: still surface
 # it (kept in the issue list, visible in the log) but never let it fail
-# compilation — downgraded to INFO regardless of what severity the tool
+# compilation. Lookup-using candidates are now skipped before the call is
+# ever made (see _LOOKUP_IN_PROMPT_RE), so this is a backstop for whatever
+# slips past that — an unmentioned lookup reached by some other spelling,
+# or a sequence, which is not pre-filtered — downgraded to INFO regardless of what severity the tool
 # reported, and excluded from has_error/has_warning/verdict.
 # Allows for filler words between the keyword and the quoted name — the tool
 # has been observed phrasing this both as "Unable to resolve lookup 'X'" and
 # "Unable to resolve lookup table 'X'" (likewise "sequence" / "sequence
 # object" etc.), so match up to a short run of non-quote characters rather
 # than requiring the quote immediately after the keyword.
+# A lookup table is a graph-level object: its own metadata, key and data
+# source all live outside the CTL being checked, and none of that is in the
+# prompt's port metadata. ctl_validate therefore cannot resolve one, so a
+# candidate that uses a lookup can never be fairly compiled here — the tool
+# would report "Unable to resolve lookup" (or reject field access on the
+# lookup result) no matter how correct the code is. Skip the tool entirely
+# for these and let the LLM judge give the verdict.
+#
+# Detected from BOTH sides: the prompt (the task is specified in terms of a
+# lookup table, so a correct answer is bound to use one) and the candidate
+# code (`lookup(Name).get(...)` — the CTL2 lookup syntax per
+# resources/ctl2-basics.md). "lookup" as part of a longer identifier
+# (lookup_key) is not a match, since \b requires a non-word character.
+#
+# One exception on the prompt side: a joiner's slave port is often DESCRIBED
+# as a lookup while being an ordinary input port — "Right metadata (port 1,
+# lookup):", "Slave input on Port 1 (lookup table for client details):". The
+# code for those reads $in.1 and never calls lookup(), so the tool validates
+# them perfectly well and skipping would lose real coverage. A lookup given a
+# port number is therefore read as a port, not a lookup object; a real lookup
+# table never has one, since the component has no port for it. The code-side
+# check backstops the residual case of a genuine lookup that the prompt only
+# ever mentions in the same breath as a port.
+_LOOKUP_WORD_RE = re.compile(r"\blookups?\b", re.IGNORECASE)
+_PORT_REF_RE = re.compile(r"\bport\s*\d", re.IGNORECASE)
+_LOOKUP_IN_CODE_RE = re.compile(r"\blookup\s*\(", re.IGNORECASE)
+
+
+def _prompt_uses_lookup_table(prompt: str) -> bool:
+    """True if the prompt specifies a real lookup table, as opposed to merely
+    calling an input port a 'lookup'.
+
+    A single clause naming both a lookup and a port ("Right metadata (port 1,
+    lookup):") settles it for the whole prompt: this task's "lookup" IS a
+    port, so the loose prose around it ("the right side is a lookup table of
+    document templates") is describing that port too, and the code will read
+    $in.1 rather than call lookup(). A genuine lookup table is never given a
+    port number, because the component has no port for it."""
+    clauses = re.split(r"[\n.?!]+", prompt)
+    if any(_LOOKUP_WORD_RE.search(c) and _PORT_REF_RE.search(c) for c in clauses):
+        return False
+    return any(_LOOKUP_WORD_RE.search(c) for c in clauses)
+
+
 _UNVERIFIABLE_REF_RE = re.compile(r"Unable to resolve (?:sequence|lookup)\b[^']{0,20}'", re.IGNORECASE)
 
 
@@ -584,7 +635,8 @@ def validate_ctl(
     """Best-effort compile/metadata check via the ctl_validate MCP tool.
 
     Returns None whenever this step can't run or doesn't apply — disabled in
-    config, no <Record> XML found in the prompt, a Rollup candidate whose
+    config, a task or candidate that uses a lookup table (unresolvable here),
+    no port metadata recoverable from the prompt, a Rollup candidate whose
     accumulator type we can't supply metadata for, or any MCP-level failure
     (server unreachable, timeout, protocol error). Callers should treat None
     as "skip this step, proceed to the LLM judge exactly as before" — this
@@ -595,6 +647,14 @@ def validate_ctl(
     per this feature's whole point (a compile error needs no LLM opinion).
     """
     if not cfg.get("enabled"):
+        return None
+
+    if _prompt_uses_lookup_table(prompt) or _LOOKUP_IN_CODE_RE.search(code):
+        if log_fn:
+            where = "the prompt" if _prompt_uses_lookup_table(prompt) else "the candidate code"
+            log_fn(f"  [ctl-validate] skipped: {where} involves a lookup table, which the tool "
+                   f"cannot resolve (its metadata and data source live outside the CTL) — "
+                   f"falling back to the LLM judge")
         return None
 
     url = cfg.get("url", "http://localhost:8083/clover/mcp/mcp")
