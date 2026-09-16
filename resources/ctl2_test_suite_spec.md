@@ -2,16 +2,16 @@
 
 ## Purpose
 
-This document specifies how to execute the CTL2 model evaluation test suite and how to interpret results. The suite evaluates a CTL2 fine-tuned LLM across 8 standard tests covering code generation and code validation. A second LLM acts as a judge, scoring each response against a structured rubric.
+This document specifies how to execute the CTL2 model evaluation test suite and how to interpret results. The suite evaluates a CTL2 fine-tuned LLM across 37 tests (25 generate, 12 validate) covering code generation and code validation. A second LLM acts as a judge, scoring each response against a structured rubric.
 
-The test definitions live in `ctl2_test_suite.json`.
+The test definitions live in `ctl2_test_suite_v4.json`.
 
 ---
 
 ## Architecture
 
 ```
-ctl2_test_suite.json
+ctl2_test_suite_v4.json
         │
         ▼
 ┌───────────────────┐     user_message + system_prompt     ┌─────────────────┐
@@ -37,7 +37,7 @@ ctl2_test_suite.json
 
 ## Test Suite File Structure
 
-`ctl2_test_suite.json` contains:
+`ctl2_test_suite_v4.json` contains:
 
 ```
 {
@@ -410,7 +410,7 @@ Suggested comparison table format:
 
 The Python script should implement:
 
-- [ ] Load `ctl2_test_suite.json`
+- [ ] Load `ctl2_test_suite_v4.json`
 - [ ] Parse CLI args / config file (MUT endpoint, judge endpoint, runs per test)
 - [ ] For each test (or selected subset):
   - [ ] Call MUT with correct system prompt, user message, temperature

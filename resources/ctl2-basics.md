@@ -179,6 +179,8 @@ map[string, integer] scores = {"Alice" -> 95, "Bob" -> 87};   // literal separat
 // myMap["key"] returns null if key missing
 ```
 
+**Defaults:** a `list` or `map` declared without an initializer is **already an empty container, not null** — `string[] ids;` is equivalent to `string[] ids = [];`, and `map[string,integer] m;` to `m = {};`. `append()`, `clear()`, `length()` and iteration are safe on it from the first use; no `= []` / `= {}` is needed, and adding one is not a null-safety fix. (`variant` is the exception — it defaults to null, see below.) The same applies to scalars, which start at the type defaults in the table in **2.1** (`integer` 0, `decimal` 0, `string` `""`, `boolean` false, `date` the epoch) — only `byte`, `cbyte` and `variant` start null. This covers **declaration** only: nulls arriving from input fields, missing map keys, list elements or function results still need guarding.
+
 **Variant:**
 ```ctl
 variant v;                    // default: null

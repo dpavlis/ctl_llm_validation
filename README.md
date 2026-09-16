@@ -542,7 +542,7 @@ model under test (MUT), judges each response with a separate, stronger LLM
 (Anthropic or an OpenAI-compatible endpoint), scores it, and writes results.
 
 ```
-resources/ctl2_test_suite.json
+resources/ctl2_test_suite_v4.json
     ↓ (system_prompt + user_message + temperature)
 [MUT]  — local (transformers, safetensors export dir) OR api (OpenAI-compatible)
     ↓ (raw response)

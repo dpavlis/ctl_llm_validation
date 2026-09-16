@@ -2,13 +2,13 @@
 """
 test.py — CTL2 fine-tuned model evaluation script
 
-Runs ctl2_test_suite.json against a model under test (MUT), judges each
+Runs the CTL2 test suite against a model under test (MUT), judges each
 response with a separate LLM (Anthropic or OpenAI-compatible), writes
 structured results + a human-readable summary, and appends an eval entry
 to the shared run log (logs/<BaseModel>.yaml) used by train.py.
 
 Architecture:
-  resources/ctl2_test_suite.json
+  resources/ctl2_test_suite_v4.json
       ↓ (system_prompt + user_message + temperature)
   [MUT] — local (transformers, safetensors from export dir) OR api (OpenAI-compatible)
       ↓ (raw response)
@@ -116,7 +116,10 @@ _SCRIPT_DIR    = Path(__file__).parent
 _RESOURCES_DIR = _SCRIPT_DIR / "resources"
 _LOGS_DIR      = _SCRIPT_DIR / "logs"
 
-_SUITE_FILENAME      = "ctl2_test_suite.json"
+# Candidate suite filenames for auto-discovery, newest first. An explicit
+# suite_file in the config (or --suite-file) always wins over these.
+_SUITE_FILENAMES     = ("ctl2_test_suite_v4.json", "ctl2_test_suite_v2.json", "ctl2_test_suite.json")
+_SUITE_FILENAME      = _SUITE_FILENAMES[0]
 _CTL2_REF_FILENAME   = "ctl2-basics.md"
 _DEFAULT_JUDGE_MODEL = "claude-opus-4-20250514"
 
@@ -1921,12 +1924,16 @@ def _find_suite_file(cfg: dict, config_dir: Path) -> Path:
         p = Path(cfg["suite_file"])
         return p if p.is_absolute() else config_dir / p
 
-    # 2. resources/ next to test.py, then legacy locations
+    # 2. resources/ next to test.py, then legacy locations — newest suite first
     candidates = [
-        _RESOURCES_DIR / _SUITE_FILENAME,
-        _SCRIPT_DIR / _SUITE_FILENAME,              # legacy location
-        Path("resources") / _SUITE_FILENAME,
-        Path(_SUITE_FILENAME),
+        directory / name
+        for name in _SUITE_FILENAMES
+        for directory in (
+            _RESOURCES_DIR,
+            _SCRIPT_DIR,              # legacy location
+            Path("resources"),
+            Path("."),
+        )
     ]
     for p in candidates:
         if p.exists():
@@ -2011,7 +2018,7 @@ eval_config.yaml schema:
     parser.add_argument("--output-dir", "-o", metavar="DIR",
                         help="Output directory — overrides config output_dir.")
     parser.add_argument("--suite-file", "-s", metavar="FILE",
-                        help="Path to ctl2_test_suite.json (auto-discovered if omitted).")
+                        help="Path to the test suite JSON (auto-discovered if omitted).")
     parser.add_argument("--dry-run", action="store_true",
                         help="Print effective config and exit without running tests.")
     parser.add_argument("--compare", nargs="+", metavar="FILE",

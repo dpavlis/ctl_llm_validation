@@ -134,5 +134,5 @@ output_dir: ./results
 # Can also be specified on the command line: --tests T4,T5,T7
 test_ids: null
 
-# Explicit path to ctl2_test_suite.json — auto-discovered from resources/ if omitted.
-suite_file: /home/pavlisd/llama_train/resources/ctl2_test_suite_v2.json
+# Explicit path to the test suite JSON — auto-discovered from resources/ if omitted.
+suite_file: /home/pavlisd/llama_train/resources/ctl2_test_suite_v4.json
