@@ -132,7 +132,20 @@ function integer getOutputPort() {
     - function boolean finishGroupOnError(string errorMessage, string stackTrace, <accumulator>)
     - function integer updateTransformOnError(string errorMessage, string stackTrace, integer counter, <accumulator>)
     - function integer transformOnError(string errorMessage, string stackTrace, integer counter, <accumulator>)
-- Important: <accumulator> is a placeholder for the real accumulator metadata type, for example Acc or GroupAcc.
+- Important: <accumulator> is a placeholder for the accumulator type name. It has
+  TWO valid forms, and both are correct:
+    1. A real accumulator metadata record name (for example Acc or GroupAcc) —
+       used when accumulator/group-accumulator metadata IS supplied with the task.
+    2. `VoidMetadata` — a BUILT-IN CloverDX metadata type that needs no
+       declaration anywhere. This is the correct placeholder to use when NO
+       accumulator metadata is supplied with the task. A VoidMetadata
+       accumulator has no fields, so any state that must survive between
+       lifecycle calls is kept in global (module-level) CTL variables instead.
+- Important: `VoidMetadata` is never a missing/undeclared metadata record and is
+  never an invalid type. Never report an issue of any severity saying that
+  VoidMetadata is undefined, not supplied, not among the provided metadata,
+  must be declared, or should be replaced by `record`/a named accumulator type.
+  Its whole purpose is to stand in when there is no accumulator metadata.
 - Important: transform() has no trailing boolean parameter.
 - Important: updateTransform() and transform() are output-generation loops, not single-shot callbacks.
 
@@ -216,6 +229,14 @@ function integer getOutputPort() {
     - if (counter > 0) return SKIP;
     
 (g) Accumulator guidance
+- Which accumulator style is correct depends on the metadata supplied with the task:
+    - Accumulator metadata supplied -> declare the functions with that record name
+      and hold group state in accumulator fields (acc.count, acc.total, ...).
+    - No accumulator metadata supplied -> declare the functions with
+      `VoidMetadata` and hold group state in global (module-level) CTL variables,
+      resetting them in initGroup. This is the intended, fully supported pattern,
+      not a workaround — do not flag the VoidMetadata parameter, and do not flag
+      the use of global variables for accumulation in this case.
 - Initialize every accumulator field in initGroup.
 - Null arithmetic throws, so never rely on implicit initialization.
 - Store any values needed later for output in accumulator fields — this
@@ -296,6 +317,37 @@ function integer transform(integer counter, acc_type acc) {
 }
 ```
 
+The same task with NO accumulator metadata supplied — equally correct, using the
+built-in `VoidMetadata` placeholder plus global variables for the group state:
+```ctl
+//#CTL2
+integer count;
+decimal total;
+
+function void initGroup(VoidMetadata acc) {
+    count = 0;
+    total = 0D;
+}
+function boolean updateGroup(VoidMetadata acc) {
+    count = count + 1;
+    total = total + nvl($in.0.amount, 0D);
+    return false;
+}
+function boolean finishGroup(VoidMetadata acc) {
+    return true;
+}
+function integer updateTransform(integer counter, VoidMetadata acc) {
+    return SKIP;
+}
+function integer transform(integer counter, VoidMetadata acc) {
+    if (counter > 0) return SKIP;
+    $out.0.count = count;
+    $out.0.total = total;
+    $out.0.avg = count == 0 ? 0D : total / count;
+    return ALL;
+}
+```
+
 (k) Why the generated code loops forever
 - This is wrong:
     - function integer updateTransform(integer counter, Acc acc) {
@@ -323,6 +375,9 @@ function integer transform(integer counter, acc_type acc) {
 - Correct: write $out only in updateTransform/transform (and their OnError counterparts)
 - Note: reading $in.0 in updateTransform/transform is NOT a mistake — it is
   explicitly allowed (see (c)); do not flag it.
+- Note: `VoidMetadata` as the accumulator type when no accumulator metadata was
+  supplied is NOT a mistake — it is the built-in placeholder for exactly that
+  case (see (a) and (g)); do not flag it as undeclared, unsupplied, or invalid.
 
 (m) Short rule the model should memorize
 - updateGroup / finishGroup decide whether an output loop starts.

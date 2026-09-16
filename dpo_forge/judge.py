@@ -224,8 +224,14 @@ _JUDGE_ROLLUP_NOTE = """\
 
 ## ROLLUP component contract
 
-ROLLUP uses a TYPED groupAccumulator record parameter for group state. All five functions
-are MANDATORY — missing any one aborts with "Required function(s) … are missing!".
+ROLLUP always has a groupAccumulator parameter in all lifecycle functions.
+Type resolution has two valid modes:
+- If groupAccumulator metadata is defined: use that Record name as TYPE.
+- If groupAccumulator metadata is NOT defined: `VoidMetadata` built-in type is implicitly used as TYPE. 
+  In that case, the accumulator has no fields and group accumulation has to be done via global variables.
+
+All five functions are MANDATORY — missing any one aborts with
+"Required function(s) … are missing!".
 
   initGroup(TYPE groupAccumulator)  — First record of each group.
     $in.0 accessible. Initialize accumulator fields here.
@@ -251,6 +257,8 @@ are MANDATORY — missing any one aborts with "Required function(s) … are miss
   (transform), or omitting initGroup reset.
 - rollup_accumulator_mismatch: accumulator field names in CTL do not match the
   accumulator metadata record schema → runtime "Field not found" errors.
+- Do NOT flag `VoidMetadata` as an error when no accumulator metadata is provided.
+  In that case, `VoidMetadata` is the correct implicit accumulator type.
 - rollup_per_record_emission: emitting from transform() on every counter value
   instead of only counter==0, producing duplicate group-summary rows.
 """
