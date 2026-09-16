@@ -44,15 +44,15 @@ model:
 
   # Whether to allow the model to produce chain-of-thought <think> tokens.
   # Set false for models trained with a nothink template (qwen3_nothink etc.)
-  enable_thinking: false
+  enable_thinking: true
 
   # Optional: use a LlamaFactory template by name (same naming as train.py,
   # for example qwen3_6, qwen3_nothink, qwen3_5_nothink).
   # If omitted, chat.py auto-reads template from training_config when available.
-  chat_template_name: qwen3_6
+  #chat_template_name: qwen3_6
 
   # Prefer template embedded in exported tokenizer/chat_template.jinja.
-  #template_source: tokenizer
+  template_source: tokenizer
   
 
   # Optional explicit Jinja template string override.
@@ -76,8 +76,15 @@ model:
 # ---------------------------------------------------------------------------
 # Generation settings
 # ---------------------------------------------------------------------------
-temperature: 0.2
-top_p: 0.95
+  temperature: 0.3
+
+  do_sample: true
+  top_p: 0.95
+  top_k: 20
+  min_p: 0.0
+  presence_penalty: 0.0
+  repetition_penalty: 1.05
+
 
 # ---------------------------------------------------------------------------
 # System prompt

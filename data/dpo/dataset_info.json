@@ -1,0 +1,12 @@
+{
+  "forged": {
+    "file_name": "data/dpo/forged.jsonl",
+    "ranking": true,
+    "columns": {
+      "prompt": "prompt",
+      "system": "system",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    }
+  }
+}

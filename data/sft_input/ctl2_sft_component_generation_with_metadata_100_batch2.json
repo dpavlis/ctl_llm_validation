@@ -1,0 +1,1902 @@
+[
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Reformat component that reads product codes and a numeric column with a Unicode code point. I want to append the corresponding character to the code.\n\nMetadata for input port 0:\n- product_id: integer\n- base_code: string\n- suffix_code_point: integer\n\nMetadata for output port 0:\n- product_id: integer\n- full_code: string\n\nCan you show the CTL2 transform() function to build full_code = base_code + character_from_suffix?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.product_id = $in.0.product_id;\n    $out.0.full_code = $in.0.base_code + codePointToChar($in.0.suffix_code_point);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1005"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Map (Reformat) for a customer import. Input metadata:\n- cust_code: string (NOT NULL)\n- source_value: string (nullable)\n\nOutput metadata:\n- cust_code: string (NOT NULL)\n- number_flag: boolean (NOT NULL)\n\nI want number_flag to be true only when source_value is a valid long integer (otherwise false). Can you show the transform() function using the right CTL2 function for this?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.cust_code = $in.0.cust_code;\n    // true only if source_value can be parsed as a long\n    $out.0.number_flag = !isnull($in.0.source_value) && isLong($in.0.source_value);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1259"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Map (Reformat) that enriches bank transactions with the weekday. Metadata:\n\nInput (port 0):\n- tx_id: string\n- tx_date: date\n- amount: decimal\n\nOutput (port 0):\n- tx_id: string\n- tx_date: date\n- amount: decimal\n- weekday_num: integer\n\nPlease show the CTL2 transform() function that copies the fields and sets weekday_num so that Monday=1 and Sunday=7."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // copy input fields by name\n    $out.0.* = $in.0.*;\n\n    // Monday=1 .. Sunday=7\n    $out.0.weekday_num = getDayOfWeek($in.0.tx_date);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-132"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Reformat component that should output a human-readable address line for each customer.\n\nInput metadata (port 0):\n- street: string\n- city: string\n- state: string\n- zip: string\n\nOutput metadata (port 0):\n- address_line: string\n\nAll fields are required (not nullable). Show me the CTL2 transform() that builds an address like \"123 Main St, Springfield, IL 01101\" from these fields."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Build: \"street, city, state zip\"\n    $out.0.address_line = concatWithSeparator(\n        \", \",\n        $in.0.street,\n        concatWithSeparator(\" \", $in.0.city, $in.0.state),\n        $in.0.zip\n    );\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1365"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Reformat component that prepares a marketing export. Input metadata:\n\n- subscribed: boolean (NOT NULL)\n- bounced: boolean (NOT NULL)\n\nOutput metadata:\n\n- subscribed_flag: integer (NOT NULL)\n- bounced_flag: integer (NOT NULL)\n\nPlease show the `transform()` function that copies the flags as 1/0 integers based on the booleans."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // convert boolean flags to 1/0 integers\n    $out.0.subscribed_flag = bool2num($in.0.subscribed);\n    $out.0.bounced_flag    = bool2num($in.0.bounced);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1452"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Map (Reformat) that reads customer profile images as Base64 text and needs to output them as bytes.\n\nInput metadata (port 0):\n- customer_id: integer\n- image_b64: string\n\nOutput metadata (port 0):\n- customer_id: integer\n- image_raw: byte\n\nCan you show me the CTL2 transform() function for this Map to copy the id and decode the image?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // copy the non-encoded id as-is\n    $out.0.customer_id = $in.0.customer_id;\n\n    // decode Base64-encoded image to raw bytes\n    $out.0.image_raw = base64byte($in.0.image_b64);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1600"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Reformat component that calculates direction from x and y velocity components. Metadata:\n- Input port 0 (VelocityIn): `vx: decimal`, `vy: decimal`, `id: integer`\n- Output port 0 (VelocityOut): `id: integer`, `direction_rad: decimal`\n\nI want `direction_rad` to be the arctangent of `vy / vx` (in radians). Can you show me a CTL2 transform() for this Reformat?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // copy the id\n    $out.0.id = $in.0.id;\n\n    // compute vy/vx as number and then take arctangent in radians\n    number ratio = $in.0.vy / $in.0.vx;\n    $out.0.direction_rad = atan(ratio);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1642"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Map component that receives data from a sensor system. Metadata for the input and output ports:\n\nInput (port 0):\n- sensor_id: string\n- cos_theta: number\n\nOutput (port 0):\n- sensor_id: string\n- angle_rad: number\n\nI want to compute the angle in radians from the cosine value for each record. Can you show me the CTL2 transform() function for this Reformat component?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.sensor_id = $in.0.sensor_id;\n    $out.0.angle_rad = acos($in.0.cos_theta);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1667"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Reformat to post-process GPS data.\n\nInput metadata (port 0):\n- id: long\n- cos_bearing: number\n- sin_bearing: number\n\nOutput metadata (port 0):\n- id: long\n- bearing_rad: number\n\n`cos_bearing` is guaranteed to be in [-1,1]. Show me a CTL2 transform() implementation that copies id and computes the bearing angle in radians from cos_bearing using the appropriate trigonometric function."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.id = $in.0.id;\n    // Compute bearing angle in radians from its cosine\n    $out.0.bearing_rad = acos($in.0.cos_bearing);\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1675"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Reformat component that takes in a CSV of wave samples for a physics lab. Metadata for input port 0:\n- time_sec: number\n- phase_offset: number\n\nOutput port 0 should have:\n- time_sec: number\n- displacement: number\n\nThe displacement should be computed as sin(2 * pi * time_sec + phase_offset). Can you show me the CTL2 `transform()` function for this Reformat?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // copy time as-is\n    $out.0.time_sec = $in.0.time_sec;\n\n    number arg = 2.0 * pi() * $in.0.time_sec + $in.0.phase_offset;\n    $out.0.displacement = sin(arg);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1684"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a mapping where I need to categorize incoming URLs by scheme.\n\nInput metadata (port 0):\n- id: integer\n- raw_url: string\n\nOutput metadata (port 0):\n- id: integer\n- url_protocol: string\n- is_secure: boolean\n\nThis is a Reformat component. Can you show a suitable CTL2 transform() function that copies id, extracts the protocol from raw_url into url_protocol, and sets is_secure to true only when the protocol is \"https\"?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.id = $in.0.id;\n    $out.0.url_protocol = nvl(getUrlProtocol($in.0.raw_url), \"\");\n    $out.0.is_secure = (lowerCase($out.0.url_protocol) == \"https\");\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1785"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a small Map (Reformat) in CloverDX. Input metadata:\n- request_id: string\n- full_url: string\n\nOutput metadata:\n- request_id: string\n- url_port: integer\n- url_without_port: string\n\nI want to populate url_port from full_url and also keep the URL without changing it. Can you write the transform() function using the right CTL2 function to extract the port? Assume full_url is always a valid HTTP/HTTPS URL with a port."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.request_id = $in.0.request_id;\n    $out.0.url_port = getUrlPort($in.0.full_url);\n    $out.0.url_without_port = $in.0.full_url;\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1829"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Reformat component that processes clickstream data.\n\nInput metadata (ClickIn):\n- user_id: string\n- url: string\n- ts: date\n\nOutput metadata (ClickOut):\n- user_id: string\n- url_path: string\n- ts: date\n\nI want the output url_path to contain only the path portion of the URL (e.g. from \"https://news.example.com/world/article?id=5\" to \"/world/article\"). Can you show the CTL2 transform() function for this Reformat?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.user_id = $in.0.user_id;\n    $out.0.ts = $in.0.ts;\n    // Extract only the path from the full URL\n    $out.0.url_path = getUrlPath($in.0.url);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1846"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a small ETL around web tracking data.\n\nInput metadata (port 0):\n- hit_id: string\n- full_url: string\n- user_id: string\n\nOutput metadata (port 0):\n- hit_id: string\n- user_id: string\n- query_string: string\n\nUsing a Reformat component, can you show me a CTL2 transform() function that copies hit_id and user_id and fills query_string with just the query part of full_url?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Copy identifiers directly\n    $out.0.hit_id = $in.0.hit_id;\n    $out.0.user_id = $in.0.user_id;\n\n    // Extract the query portion from the full URL\n    $out.0.query_string = getUrlQuery($in.0.full_url);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1882"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a CloverDX Reformat for a logistics project I have:\n\nInput metadata (port 0):\n- source_path: string\n- shipment_id: string\n\nOutput metadata (port 0):\n- file_name_no_ext: string\n- shipment_id: string\n\nI want file_name_no_ext to be the file name of source_path without the extension, e.g. from \"/mnt/imports/labels/ship_7890.pdf\" I want \"ship_7890\". Could you show a minimal transform() implementation?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.shipment_id = $in.0.shipment_id;\n    $out.0.file_name_no_ext = getFileNameWithoutExtension($in.0.source_path);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2162"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Reformat component that normalizes uploaded image file paths.\n\nInput metadata (port 0):\n- img_id: integer\n- img_path: string\n\nOutput metadata (port 0):\n- img_id: integer\n- img_stem: string   (the file name without extension)\n\nCan you show the CTL2 transform() function that copies img_id and fills img_stem from img_path?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.img_id = $in.0.img_id;\n    // Extract filename without extension from full path\n    $out.0.img_stem = getFileNameWithoutExtension($in.0.img_path);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2167"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a CSV of drone telemetry and I want to normalize the heading value from radians to degrees in a Reformat. Metadata:\n\n- input port 0, field `heading_rad: number`\n- output port 0, field `heading_deg: number`\n\nCan you show me the CTL2 transform function for the Reformat that does this conversion and just passes the other fields through?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Copy all fields with matching names/types first\n    $out.0.* = $in.0.*;\n\n    // Convert heading from radians to degrees\n    $out.0.heading_deg = toDegrees($in.0.heading_rad);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2837"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Reformat component that reads raw paths and should produce cleaned, canonical paths.\n\nInput metadata (Port 0, name: RawPathIn):\n- id: integer\n- raw_path: string\n\nOutput metadata (Port 0, name: CleanPathOut):\n- id: integer\n- normalized_path: string\n\nPlease show the CTL2 transform() function that copies id and outputs a normalized version of raw_path."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.id = $in.0.id;\n    $out.0.normalized_path = normalizePath($in.0.raw_path);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2884"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Map (Reformat) component that needs to compute the angle of incidence from a stored sine value.\n\nInput metadata (port 0):\n- reading_id: integer\n- sensor_id: string\n- sine_value: number  // guaranteed between -1 and 1\n\nOutput metadata (port 0):\n- reading_id: integer\n- sensor_id: string\n- sine_value: number\n- angle_rad: number\n\nWrite the `transform()` function body in CTL2 that copies the existing fields and adds `angle_rad` from `sine_value`."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // copy by name, then compute angle\n    $out.0.* = $in.0.*;\n    $out.0.angle_rad = asin($in.0.sine_value);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-3000"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Reformat component that reads trade data and needs to keep the higher of two pricing values.\n\nInput metadata (port 0):\n- trade_id: string\n- bid_price: decimal\n- ask_price: decimal\n\nOutput metadata (port 0):\n- trade_id: string\n- worst_price: decimal\n\nCan you show the CTL2 transform() function that passes through the trade_id and sets worst_price to the higher of bid_price and ask_price?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.trade_id = $in.0.trade_id;\n    // choose the higher of bid and ask as the worst execution price\n    $out.0.worst_price = max($in.0.bid_price, $in.0.ask_price);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-3143"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Reformat I have a list field durations (integer[]) on input and I want to calculate the maximum duration into a scalar field duration_max on output. Metadata:\n\nInput (port 0):\n- job_id: string\n- durations: integer[] (nullable)\n\nOutput (port 0):\n- job_id: string\n- duration_max: integer (nullable)\n\nIf durations is null I want duration_max to be null. Can you show the transform() function?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.job_id = $in.0.job_id;\n\n    if (isnull($in.0.durations)) {\n        $out.0.duration_max = null;\n    } else {\n        $out.0.duration_max = max($in.0.durations);\n    }\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-3147"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Reformat in a telecom billing graph. Input metadata (port 0):\n- call_id: string\n- started_at: date\n- caller: string\n- callee: string\n\nOutput metadata (port 0):\n- call_id: string\n- start_second: integer\n- caller: string\n- callee: string\n\nI want start_second to hold just the seconds (0-59) from started_at. Can you show the CTL2 transform() function for this Reformat?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.call_id = $in.0.call_id;\n    $out.0.caller   = $in.0.caller;\n    $out.0.callee   = $in.0.callee;\n\n    // seconds (0-59) extracted from started_at\n    $out.0.start_second = getSecond($in.0.started_at);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-467"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Reformat (Map) component I need to normalize customer IDs to a fixed 12-character width.\n\nInput metadata (port 0):\n- cust_id: string\n- country: string\n\nOutput metadata (port 0):\n- norm_cust_id: string\n- country: string\n\nnorm_cust_id should be cust_id padded on the right with spaces up to 12 characters. Please provide the CTL2 transform() function."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.country = $in.0.country;\n\n    // pad customer ID to 12 characters using spaces on the right\n    $out.0.norm_cust_id = rpad($in.0.cust_id, 12);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-510"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have an HR import Reformat where I want to normalize employee codes. Input metadata:\n- emp_code_raw: string\n- full_name: string\n- department: string\n\nOutput metadata:\n- emp_code: string\n- full_name: string\n- department: string\n\nemp_code should be emp_code_raw but with all non-alphanumeric characters removed. Can you write the CTL2 transform() for this Map/Reformat?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.full_name = $in.0.full_name;\n    $out.0.department = $in.0.department;\n\n    // Keep only letters and digits in employee code\n    $out.0.emp_code = getAlphanumericChars($in.0.emp_code_raw);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-528"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Map (Reformat) that must copy a `double` measurement to the output, but with the fractional part removed, keeping only the integral part as a `number`. Input metadata for port 0:\n- measurement_id: integer\n- raw_value: number\n\nOutput metadata for port 0:\n- measurement_id: integer\n- value_int_part: number\n\nCan you show me the CTL2 transform() function using the right numeric truncation function?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.measurement_id = $in.0.measurement_id;\n    // discard fractional part of the measurement\n    $out.0.value_int_part = double2integer($in.0.raw_value);\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-635"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Reformat",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I'm building a Reformat component that takes a map of region codes to sales totals and needs to output all the totals as a list field.\n\nInput metadata (port 0):\n- id: string\n- regionTotals: map[string, decimal]\n\nOutput metadata (port 0):\n- id: string\n- totalsList: decimal[]\n\nHow should I write the CTL2 transform to copy the id and turn the map values into the list?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.id = $in.0.id;\n    // Collect all sales totals from the map into a decimal list\n    $out.0.totalsList = getValues($in.0.regionTotals);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-905"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Map",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Map component where I want to normalize patient surnames into a phonetic code so I can later group near-duplicates.\n\nInput metadata (port 0):\n- patient_id: integer\n- surname: string\n- given_name: string\n- birth_date: date\n\nOutput metadata (port 0):\n- patient_id: integer\n- surname: string\n- surname_soundex: string\n- given_name: string\n- birth_date: date\n\nCan you show the transform() function that fills surname_soundex appropriately?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Copy all existing fields by name first\n    $out.0.* = $in.0.*;\n\n    // Generate Soundex code for surname to help with fuzzy matching\n    $out.0.surname_soundex = soundex($in.0.surname);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1079"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Map",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Map I want to create a phonetic identifier for street names to cluster addresses.\n\nInput metadata (port 0):\n- addr_id: long\n- street: string\n- house_no: string\n- city: string\n\nOutput metadata (port 0):\n- addr_id: long\n- street: string\n- street_soundex: string\n- house_no: string\n- city: string\n\nCould you provide the CTL2 transform() implementation that creates street_soundex?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.* = $in.0.*;\n\n    // Phonetic code of street to help cluster similar street spellings\n    $out.0.street_soundex = soundex($in.0.street);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1083"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Map",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Map component that reads customer data. Input metadata (port 0):\n- cust_id: string\n- full_name: string\n- address_line1: string\n- address_line2: string (nullable)\n\nOutput needs a normalized name field where all whitespace is removed (for de-duplication) and the other fields are just copied. Can you show the CTL2 transform function for the Map?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Copy all fields by name first\n    $out.0.* = $in.0.*;\n\n    // Normalized name without any whitespace\n    $out.0.full_name = removeBlankSpace($in.0.full_name);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1617"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Map",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a logistics report I have an input metadata with:\n- route_id: string\n- cos_bearing: decimal\n\nOutput metadata:\n- route_id: string\n- bearing_rad: decimal\n\nThis is a Map component. I want to convert the cosine of the bearing to the bearing angle in radians using CTL2. Could you provide the full transform() implementation?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.route_id = $in.0.route_id;\n    // Compute bearing in radians from its cosine\n    $out.0.bearing_rad = acos($in.0.cos_bearing);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1669"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Map",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In my Map component for an insurance pricing flow I have this metadata.\n\nInput (port 0):\n- policy_id: integer\n- base_premium: number\n- risk_factor: number\n\nOutput (port 0):\n- policy_id: integer\n- final_premium: integer\n\nFinal premium should be `base_premium * risk_factor` and then stored as an integer by truncating the decimals (we charge in whole currency units only). Could you provide the CTL2 transform() function?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.policy_id = $in.0.policy_id;\n\n    number premium = $in.0.base_premium * $in.0.risk_factor;\n    $out.0.final_premium = double2integer(premium);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-978"
+  },
+  {
+    "source_file": "CTL_LoRA_with_metadata_set_1.json",
+    "inferred_component": "Map",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "Given Input Metadata on Port 0:\n<Metadata id=\"InMetaReg4\">\n<Record name=\"InMetaReg4_Record\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"rec_id\" type=\"long\"/>\n    <Field name=\"text_content\" type=\"string\"/>\n</Record>\n</Metadata>\n\nAnd Output Metadata on Port 0:\n<Metadata id=\"OutMetaReg4\">\n<Record name=\"OutMetaReg4_Record\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"rec_id\" type=\"long\"/>\n    <Field name=\"text_content\" type=\"string\"/>\n</Record>\n</Metadata>\n\nWrite a MAP transformation. Replace all occurrences of 'foo' with 'bar' in 'text_content' field."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.rec_id = $in.0.rec_id;\n    $out.0.text_content = replace(nvl($in.0.text_content, \"\"), \"foo\", \"bar\");\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "nvynk-14"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Join",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Join component combining customer and invoice records. The output metadata has:\n- customer_id: integer\n- invoice_id: integer\n- invoice_date: date\n- joined_key_text: string (this should hold the textual representation of the join key field from the left input)\n\nAssume the left input port (0) is the customer stream and the join key is its first field (index 0). Can you show a transform() for the Join that copies all fields by name and also fills joined_key_text with the left key value as a string?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Copy matching fields from joined record (port 0 is the combined record in Join)\n    $out.0.* = $in.0.*;\n\n    // Take the join key from the left-side portion: assume it is at index 0\n    $out.0.joined_key_text = getStringValue($in.0, 0);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1952"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Join",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Join component (FullOuterJoin), I have left port 0 with metadata `Invoice` and right port 1 with metadata `Payment`. Fields are:\n\nInvoice:\n- inv_id: integer\n- inv_amount: decimal\n- inv_currency: string\n\nPayment:\n- pay_id: integer\n- pay_amount: decimal\n- pay_currency: string\n\nInside the transform() of the Join, I want to copy everything from both sides to the output and also add a debug log that prints the label of the amount field from both input ports. Can you show the CTL2 transform function using the field-label function correctly?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Copy all common-name fields by name (adjust as needed for your metadata)\n    $out.0.* = $in.0.*;\n    $out.0.* = $in.1.*;\n\n    // Log the labels of the amount fields on both sides\n    string invAmountLabel = getFieldLabel($in.0, 1);\n    string payAmountLabel = getFieldLabel($in.1, 1);\n\n    printLog(debug, \"Invoice amount label: \" + invAmountLabel + \", Payment amount label: \" + payAmountLabel);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2738"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Join",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Join component where the right side is a lookup table of document templates stored as bytes.\n\nLeft metadata (port 0):\n- doc_id: integer\n- customer_id: integer\n\nRight metadata (port 1, lookup):\n- doc_id: integer\n- template_bytes: byte      // UTF-8 text template content\n\nOutput metadata (port 0):\n- doc_id: integer\n- customer_id: integer\n- template_text: string\n\nCan you write the CTL2 transform() for the Join that copies the ids and converts template_bytes to template_text as a UTF-8 string?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Assume left record on $in.0, right/lookup record on $in.1\n    $out.0.doc_id = $in.0.doc_id;\n    $out.0.customer_id = $in.0.customer_id;\n\n    // Convert the UTF-8 encoded template from bytes to string\n    $out.0.template_text = nvl(byte2str($in.1.template_bytes, \"UTF-8\"), \"\");\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-3132"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Join",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "For a logistics report I have a Join component combining shipment headers and detail weights. The output metadata (ShipmentJoined) is:\n- shipment_id: integer\n- carrier_code: string\n- total_weight: decimal\n- chargeable_weight: decimal\n- route: string (nullable)\n\nI want `chargeable_weight` to be the normalized version of `total_weight` (same numeric value, but strip unneeded trailing zeros) after the join. Could you show the CTL2 transform() body for this Join?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.shipment_id       = $in.0.shipment_id;\n    $out.0.carrier_code      = $in.0.carrier_code;\n    $out.0.total_weight      = $in.0.total_weight;\n    $out.0.route             = $in.0.route;\n    $out.0.chargeable_weight = $in.0.total_weight;\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-3227"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Join",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Join component I have a lookup table that stores a document hash as bytes, and I want to output a hex string.\n\nLeft (master) input metadata (port 0):\n- doc_id: string\n- customer_id: string\n\nRight (lookup) metadata (port 1):\n- doc_id: string\n- hash_bytes: byte\n\nOutput metadata:\n- doc_id: string\n- customer_id: string\n- hash_hex: string\n\nAssuming the join is already configured on doc_id, can you show me a suitable CTL2 transform() for the Join that converts hash_bytes to hex?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // copy identifiers from the left side\n    $out.0.doc_id = $in.0.doc_id;      // master\n    $out.0.customer_id = $in.0.customer_id;\n\n    // convert hash from right side (lookup) to hex string\n    $out.0.hash_hex = byte2hex($in.1.hash_bytes);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-665"
+  },
+  {
+    "source_file": "CTL_LoRA_with_metadata_set_1.json",
+    "inferred_component": "Join",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "Component: Joiner.\n\nShow how to write defensive code when slave record fields are present but nullable, and explain which CTL functions can access $in/$out in this template.\n\nInput port 0 metadata:\n<Metadata id=\"In0\"><Record name=\"A\"><Field name=\"id\" type=\"integer\" nullable=\"false\"/><Field name=\"amount\" type=\"decimal\"/></Record></Metadata>\nInput port 1 metadata:\n<Metadata id=\"In1\"><Record name=\"B\"><Field name=\"id\" type=\"integer\"/><Field name=\"discount\" type=\"decimal\"/></Record></Metadata>\nOutput metadata:\n<Metadata id=\"Out0\"><Record name=\"Out\"><Field name=\"id\" type=\"integer\"/><Field name=\"net\" type=\"decimal\"/></Record></Metadata>"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    decimal disc = nvl($in.1.discount, 0D);\n\n    $out.0.id = $in.0.id;\n    $out.0.net = nvl($in.0.amount, 0D) * (1D - disc);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "nvynk-150"
+  },
+  {
+    "source_file": "CTL_LoRA_with_metadata_set_1.json",
+    "inferred_component": "Join",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "Component: Joiner.\n\nShow how to implement a pure pass-through joiner mapping (copy master fields) while ignoring all slave fields, and explain why that still needs transform().\n\nInput port 0 metadata:\n<Metadata id=\"In0\"><Record name=\"Master\"><Field name=\"id\" type=\"integer\" nullable=\"false\"/><Field name=\"payload\" type=\"string\"/></Record></Metadata>\nInput port 1 metadata:\n<Metadata id=\"In1\"><Record name=\"Slave\"><Field name=\"id\" type=\"integer\"/><Field name=\"extra\" type=\"string\"/></Record></Metadata>\nOutput metadata:\n<Metadata id=\"Out0\"><Record name=\"Out\"><Field name=\"id\" type=\"integer\"/><Field name=\"payload\" type=\"string\"/></Record></Metadata>"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.* = $in.0.*; // if pass-through, use wildcard mapping instead of explicit\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "nvynk-153"
+  },
+  {
+    "source_file": "CTL_LoRA_with_metadata_set_1.json",
+    "inferred_component": "Join",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "Component: DataIntersection (uses the same CTL template as Joiners/Map).\n\nExplain which CTL functions are mandatory and provide a transform() that outputs an \"intersection\" row combining keys from both sides.\n\nInput port 0 metadata:\n<Metadata id=\"In0\"><Record name=\"Left\"><Field name=\"id\" type=\"integer\" nullable=\"false\"/><Field name=\"v1\" type=\"string\"/></Record></Metadata>\nInput port 1 metadata:\n<Metadata id=\"In1\"><Record name=\"Right\"><Field name=\"id\" type=\"integer\"/><Field name=\"v2\" type=\"string\"/></Record></Metadata>\nOutput metadata:\n<Metadata id=\"Out0\"><Record name=\"Out\"><Field name=\"id\" type=\"integer\"/><Field name=\"v1\" type=\"string\"/><Field name=\"v2\" type=\"string\"/></Record></Metadata>"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.id = $in.0.id;\n    $out.0.v1 = nvl($in.0.v1, \"\");\n    $out.0.v2 = nvl($in.1.v2, \"\");\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "nvynk-154"
+  },
+  {
+    "source_file": "CTL_LoRA_component_suggest_1.json",
+    "inferred_component": "Join",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "Component: JOINER\n\nProvide `function integer transform()` that outputs id and optionally name (from slave 1) and status (from slave 2).\n\nInput port 0:\n<Metadata id=\"M\"><Record name=\"Master\"><Field name=\"id\" type=\"integer\"/></Record></Metadata>\nInput port 1:\n<Metadata id=\"S1\"><Record name=\"S1\"><Field name=\"id\" type=\"integer\"/><Field name=\"name\" type=\"string\"/></Record></Metadata>\nInput port 2:\n<Metadata id=\"S2\"><Record name=\"S2\"><Field name=\"id\" type=\"integer\"/><Field name=\"status\" type=\"string\"/></Record></Metadata>\n\nOutput:\n<Metadata id=\"Out\"><Record name=\"OutRec\"><Field name=\"id\" type=\"integer\"/><Field name=\"name\" type=\"string\" nullable=\"true\"/><Field name=\"status\" type=\"string\" nullable=\"true\"/></Record></Metadata>"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.id = $in.0.id;\n    $out.0.name = $in.1.name;\n    $out.0.status = $in.2.status;\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "vsrjc-95"
+  },
+  {
+    "source_file": "CTL_LoRA_component_suggest_1.json",
+    "inferred_component": "Join",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "Component: JOINER\n\nOnly output a record when slave 1 is present (i.e., name is not null). Otherwise produce no output.\n\nInput port 0:\n<Metadata id=\"M\"><Record name=\"Master\"><Field name=\"id\" type=\"integer\"/></Record></Metadata>\nInput port 1:\n<Metadata id=\"S1\"><Record name=\"S1\"><Field name=\"id\" type=\"integer\"/><Field name=\"name\" type=\"string\" nullable=\"true\"/></Record></Metadata>\n\nOutput:\n<Metadata id=\"Out\"><Record name=\"OutRec\"><Field name=\"id\" type=\"integer\"/><Field name=\"name\" type=\"string\"/></Record></Metadata>"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    if (isnull($in.1.name)) return SKIP;\n\n    $out.0.id = $in.0.id;\n    $out.0.name = $in.1.name;\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "vsrjc-97"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Combine",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am configuring a **Join** component in CloverDX to combine customer profile data with their latest subscription status.\n\nThe join key is already set in the component to `client_id` on both inputs. I only need CTL2 for the Join's **transform** function to build the final output record.\n\nHere are the two input metadata definitions and the output metadata:\n\nInput 0 (CustomerDetails):\n\n```xml\n<Metadata id=\"CustomerDetails\">\n  <Record name=\"CustomerDetailsRec\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n    <Field name=\"client_id\" type=\"integer\"/>\n    <Field name=\"full_name\" type=\"string\"/>\n    <Field name=\"email\" type=\"string\" nullable=\"true\"/>\n    <Field name=\"signup_date\" type=\"date\"/>\n    <Field name=\"country_code\" type=\"string\"/>\n  </Record>\n</Metadata>\n```\n\nInput 1 (SubscriptionStatus):\n\n```xml\n<Metadata id=\"SubscriptionStatus\">\n  <Record name=\"SubscriptionStatusRec\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n    <Field name=\"client_id\" type=\"integer\"/>\n    <Field name=\"plan_code\" type=\"string\"/>\n    <Field name=\"status\" type=\"string\"/>\n    <Field name=\"status_updated_at\" type=\"date\"/>\n    <Field name=\"auto_renew\" type=\"boolean\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n```\n\nOutput 0 (CustomerSubscriptions):\n\n```xml\n<Metadata id=\"CustomerSubscriptions\">\n  <Record name=\"CustomerSubscriptionsRec\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n    <Field name=\"client_id\" type=\"integer\"/>\n    <Field name=\"full_name\" type=\"string\"/>\n    <Field name=\"primary_email\" type=\"string\" nullable=\"true\"/>\n    <Field name=\"country_code\" type=\"string\"/>\n    <Field name=\"signup_date\" type=\"date\"/>\n    <Field name=\"plan_code\" type=\"string\"/>\n    <Field name=\"status\" type=\"string\"/>\n    <Field name=\"status_group\" type=\"string\"/>\n    <Field name=\"is_auto_renew\" type=\"string\"/>\n    <Field name=\"status_updated_at\" type=\"date\"/>\n  </Record>\n</Metadata>\n```\n\nRequirements for the CTL2 transform function:\n\n1. `client_id`, `full_name`, `country_code`, `signup_date` should be copied directly from Input 0.\n2. `plan_code`, `status`, `status_updated_at` should be copied from Input 1.\n3. `primary_email` should be taken from Input 0 `email` as-is (nullable is allowed, no default).\n4. `status_group` should categorize the status from Input 1 as:\n   - `\"ACTIVE\"` for `status` in {\"ACTIVE\", \"TRIALING\"}\n   - `\"INACTIVE\"` for `status` in {\"CANCELED\", \"EXPIRED\"}\n   - `\"OTHER\"` for any other value\n   Use `switch` instead of a long if-else chain.\n5. `is_auto_renew` is a string:\n   - If `auto_renew` is `true`, set `\"YES\"`.\n   - If `auto_renew` is `false`, set `\"NO\"`.\n   - If `auto_renew` is `null` (it is nullable), set `\"UNKNOWN\"`.\n\nPlease provide the complete CTL2 code for the Join component's transform function (no imports, no external metadata). Keep it concise with minimal comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Copy fields from CustomerDetails (input 0)\n    $out.0.client_id    = $in.0.client_id;\n    $out.0.full_name    = $in.0.full_name;\n    $out.0.primary_email = $in.0.email;        // nullable allowed\n    $out.0.country_code = $in.0.country_code;\n    $out.0.signup_date  = $in.0.signup_date;\n\n    // Copy fields from SubscriptionStatus (input 1)\n    $out.0.plan_code          = $in.1.plan_code;\n    $out.0.status             = $in.1.status;\n    $out.0.status_updated_at  = $in.1.status_updated_at;\n\n    // Derive status_group from status\n    if (isnull($in.1.status)) {\n        $out.0.status_group = \"OTHER\";\n    } else {\n        switch ($in.1.status) {\n            case \"ACTIVE\":\n            case \"TRIALING\":\n                $out.0.status_group = \"ACTIVE\";\n                break;\n            case \"CANCELED\":\n            case \"EXPIRED\":\n                $out.0.status_group = \"INACTIVE\";\n                break;\n            default:\n                $out.0.status_group = \"OTHER\";\n        }\n    }\n\n    // Map nullable boolean auto_renew to string\n    if (isnull($in.1.auto_renew)) {\n        $out.0.is_auto_renew = \"UNKNOWN\";\n    } else if ($in.1.auto_renew) {\n        $out.0.is_auto_renew = \"YES\";\n    } else {\n        $out.0.is_auto_renew = \"NO\";\n    }\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-119"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Combine",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am configuring a **Join** component in CloverDX to combine web session headers with page view details. The join key is already set in the component properties to `session_id` on both inputs.\n\nPlease help me write the CTL2 `transform()` function for the Join so that it maps and enriches the joined data. I am not using any external imports or metadata aliases; metadata is defined directly in the graph as below.\n\nLeft input (port 0) metadata `SessionHeader`:\n\n- `session_id: string` (NOT NULL)\n- `user_id: string` (NOT NULL)\n- `start_ts: date` (NOT NULL)\n- `country_code: string` (nullable=\"true\")\n- `device_type: string` (NOT NULL)\n\nRight input (port 1) metadata `PageView`:\n\n- `session_id: string` (NOT NULL)\n- `page_url: string` (NOT NULL)\n- `referrer: string` (nullable=\"true\")\n- `view_ts: date` (NOT NULL)\n- `scroll_depth: integer` (nullable=\"true\")\n\nOutput metadata `SessionPageEnriched`:\n\n- `session_id: string` (NOT NULL)\n- `user_id: string` (NOT NULL)\n- `page_url: string` (NOT NULL)\n- `view_ts: date` (NOT NULL)\n- `country_code: string` (nullable=\"true\")\n- `device_type: string` (NOT NULL)\n- `scroll_depth: integer` (nullable=\"true\")\n- `engagement_score: decimal` (NOT NULL, default 0D)\n- `traffic_source: string` (nullable=\"true\")\n\nBusiness rules:\n\n1. `session_id`, `user_id`, `page_url`, `view_ts`, `country_code`, `device_type`, and `scroll_depth` should be copied from the matching input records with the same meaning.\n2. Compute `engagement_score` as:\n   - Base = 1.0D\n   - If `scroll_depth` is not null:\n     - If `scroll_depth` >= 80 then add 2.0D\n     - Else if `scroll_depth` >= 40 then add 1.0D\n   - If `referrer` is null then add 0.5D (direct traffic bonus)\n   The result must never be null (output field is NOT NULL).\n3. Derive `traffic_source` as:\n   - If `referrer` starts with \"https://search.\" then \"Search\"\n   - If `referrer` contains \"facebook.com\" or \"twitter.com\" then \"Social\"\n   - If `referrer` is null or blank (only spaces) then \"Direct\"\n   - Otherwise \"Other\"\n   `traffic_source` is nullable, but in practice we will always set a value from these rules.\n\nPlease provide the CTL2 `transform()` function for the Join component implementing this logic and returning `OK` or `ALL` as appropriate. No `init()` or error handler is needed."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Map basic fields\n    $out.0.session_id   = $in.0.session_id;\n    $out.0.user_id      = $in.0.user_id;\n    $out.0.page_url     = $in.1.page_url;\n    $out.0.view_ts      = $in.1.view_ts;\n    $out.0.country_code = $in.0.country_code;\n    $out.0.device_type  = $in.0.device_type;\n    $out.0.scroll_depth = $in.1.scroll_depth;\n\n    // Engagement score (non-nullable)\n    decimal score = 1.0D;\n\n    if (!isnull($in.1.scroll_depth)) {\n        if ($in.1.scroll_depth >= 80) {\n            score = score + 2.0D;\n        } else if ($in.1.scroll_depth >= 40) {\n            score = score + 1.0D;\n        }\n    }\n\n    if (isnull($in.1.referrer)) {\n        score = score + 0.5D;\n    }\n\n    $out.0.engagement_score = score;\n\n    // Traffic source (nullable output, but always set)\n    string src;\n    string ref = $in.1.referrer;\n\n    if (isnull(ref) || isBlank(ref)) {\n        src = \"Direct\";\n    } else if (startsWith(ref, \"https://search.\")) {\n        src = \"Search\";\n    } else if (ref ?= \"facebook.com\" || ref ?= \"twitter.com\") {\n        src = \"Social\";\n    } else {\n        src = \"Other\";\n    }\n\n    $out.0.traffic_source = src;\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-127"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Combine",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am configuring a **Join** component in CloverDX and need CTL2 code for the transform function that combines data from two inputs after they are joined.\n\nThe Join component setup:\n\n- Join type: inner join\n- Join key (set in component properties, not in CTL): `customer_id`\n- Input port 0 metadata: `CustomerCore`\n- Input port 1 metadata: `CustomerStatus`\n- Output port 0 metadata: `CustomerEnriched`\n\nHere is the relevant metadata (simplified):\n\n`CustomerCore` (input port 0):\n- `customer_id`: integer (NOT NULL)\n- `full_name`: string (NOT NULL)\n- `signup_date`: date (NOT NULL)\n- `email`: string (nullable=\"true\")\n- `country_code`: string (NOT NULL)\n\n`CustomerStatus` (input port 1):\n- `customer_id`: integer (NOT NULL)\n- `status_code`: string (NOT NULL)  // values like \"A\", \"S\", \"B\"\n- `status_updated`: date (NOT NULL)\n- `vip_flag`: boolean (nullable=\"true\")\n- `notes`: string (nullable=\"true\")\n\n`CustomerEnriched` (output port 0):\n- `customer_id`: integer (NOT NULL)\n- `full_name`: string (NOT NULL)\n- `email`: string (nullable=\"true\")\n- `country_code`: string (NOT NULL)\n- `signup_date`: date (NOT NULL)\n- `status_label`: string (NOT NULL)\n- `is_vip`: boolean (NOT NULL)\n- `status_updated`: date (NOT NULL)\n- `internal_comment`: string (nullable=\"true\")\n\nTransformation requirements:\n\n1. Copy `customer_id`, `full_name`, `signup_date`, and `country_code` directly from `CustomerCore`.\n2. Propagate `email` from `CustomerCore` to output (it can remain null).\n3. Derive `status_label` from `status_code` using this mapping:\n   - \"A\" -> \"Active\"\n   - \"S\" -> \"Suspended\"\n   - \"B\" -> \"Blocked\"\n   - any other value -> \"Unknown\"\n4. Output field `is_vip` must never be null:\n   - if `vip_flag` is true -> `is_vip = true`\n   - if `vip_flag` is false or null -> `is_vip = false`\n5. Copy `status_updated` from `CustomerStatus`.\n6. `internal_comment` should:\n   - be equal to `notes` if `notes` is not null\n   - otherwise be null (output field is nullable, so null is allowed)\n\nPlease provide the complete CTL2 transform function for this Join component that implements the above rules."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Copy core fields from CustomerCore (input 0)\n    $out.0.customer_id  = $in.0.customer_id;\n    $out.0.full_name    = $in.0.full_name;\n    $out.0.signup_date  = $in.0.signup_date;\n    $out.0.country_code = $in.0.country_code;\n    $out.0.email        = $in.0.email;          // nullable -> nullable\n\n    // Map status_code from CustomerStatus (input 1) to status_label\n    switch (nvl($in.1.status_code, \"\")) {\n        case \"A\":\n            $out.0.status_label = \"Active\";\n            break;\n        case \"S\":\n            $out.0.status_label = \"Suspended\";\n            break;\n        case \"B\":\n            $out.0.status_label = \"Blocked\";\n            break;\n        default:\n            $out.0.status_label = \"Unknown\";\n    }\n\n    // vip_flag is nullable, is_vip must be non-nullable boolean\n    $out.0.is_vip = nvl($in.1.vip_flag, false);\n\n    // Non-nullable date copied directly\n    $out.0.status_updated = $in.1.status_updated;\n\n    // Nullable notes -> nullable internal_comment\n    $out.0.internal_comment = $in.1.notes;\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-54"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Combine",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am configuring a **Join** component in CloverDX to combine orders with their shipment details. The join key will be set in the component properties, not in CTL. Please help me write the CTL2 **transform()** function that will run inside the Join component after records are matched.\n\nAssume:\n\n- Input port 0 (left side) metadata `OrderIn`:\n\n```xml\n<Metadata>\n  <Record name=\"OrderIn\">\n    <Field name=\"order_id\" type=\"integer\"/>\n    <Field name=\"customer_code\" type=\"string\"/>\n    <Field name=\"order_date\" type=\"date\"/>\n    <Field name=\"currency\" type=\"string\"/>\n    <Field name=\"gross_amount\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n    <Field name=\"promo_code\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n```\n\n- Input port 1 (right side) metadata `ShipmentIn`:\n\n```xml\n<Metadata>\n  <Record name=\"ShipmentIn\">\n    <Field name=\"order_id\" type=\"integer\"/>\n    <Field name=\"shipment_id\" type=\"string\"/>\n    <Field name=\"carrier\" type=\"string\"/>\n    <Field name=\"ship_date\" type=\"date\" nullable=\"true\"/>\n    <Field name=\"tracking_number\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n```\n\n- Output port 0 metadata `OrderShipmentOut`:\n\n```xml\n<Metadata>\n  <Record name=\"OrderShipmentOut\">\n    <Field name=\"order_id\" type=\"integer\"/>\n    <Field name=\"customer_code\" type=\"string\"/>\n    <Field name=\"order_date\" type=\"date\"/>\n    <Field name=\"shipment_id\" type=\"string\"/>\n    <Field name=\"carrier\" type=\"string\"/>\n    <Field name=\"ship_date\" type=\"date\" nullable=\"true\"/>\n    <Field name=\"tracking_number\" type=\"string\" nullable=\"true\"/>\n    <Field name=\"gross_amount\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n    <Field name=\"currency\" type=\"string\"/>\n    <Field name=\"net_amount\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n    <Field name=\"discount_note\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n```\n\nBusiness rules:\n\n1. Join key is `order_id` (configured on the component, not in CTL).\n2. `net_amount` = `gross_amount` minus a discount based on `promo_code`:\n   - If `promo_code` is `\"SALE10\"` use 10% discount\n   - If `promo_code` is `\"VIP15\"` use 15% discount\n   - If `promo_code` is `\"FREESHIP\"` no discount on amount (0%), just note text\n   - For any other non-null promo_code, use 5% discount\n   - If `promo_code` is null, no discount (0%)\n3. `discount_note` (nullable) should be:\n   - `\"10% promo applied\"` for `\"SALE10\"`\n   - `\"15% VIP promo applied\"` for `\"VIP15\"`\n   - `\"Free shipping only\"` for `\"FREESHIP\"`\n   - `\"5% generic promo applied\"` for any other non-null code\n   - null if no promo_code\n4. `ship_date` and `tracking_number` on output are directly taken from the right input. Both are nullable and should be passed through as-is.\n\nPlease provide the full CTL2 script for the Join component transform function, including the header and return value, using a switch or if-else as appropriate. Do not use any imports or external metadata references; just rely on the field names above. Keep comments minimal."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    // Map basic fields from both inputs\n    $out.0.order_id       = $in.0.order_id;\n    $out.0.customer_code  = $in.0.customer_code;\n    $out.0.order_date     = $in.0.order_date;\n    $out.0.gross_amount   = $in.0.gross_amount;\n    $out.0.currency       = $in.0.currency;\n\n    $out.0.shipment_id     = $in.1.shipment_id;\n    $out.0.carrier         = $in.1.carrier;\n    $out.0.ship_date       = $in.1.ship_date;\n    $out.0.tracking_number = $in.1.tracking_number;\n\n    decimal discountRate = 0D;\n    string note = null;\n\n    // promo_code is nullable\n    if (!isnull($in.0.promo_code)) {\n        switch ($in.0.promo_code) {\n            case \"SALE10\":\n                discountRate = 0.10D;\n                note = \"10% promo applied\";\n                break;\n            case \"VIP15\":\n                discountRate = 0.15D;\n                note = \"15% VIP promo applied\";\n                break;\n            case \"FREESHIP\":\n                discountRate = 0.00D;\n                note = \"Free shipping only\";\n                break;\n            default:\n                discountRate = 0.05D;\n                note = \"5% generic promo applied\";\n        }\n    }\n\n    $out.0.net_amount    = nvl($in.0.gross_amount, 0D) * (1D - discountRate);\n    $out.0.discount_note = note;\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-86"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Partition component for a logistics flow, my input metadata is:\n- shipment_id: integer\n- priority_level: integer (0=normal, 1=high)\n- damaged_units: integer\n\nI have 2 output ports: 0 for priority shipments, 1 for normal. I want to use the numeric `priority_level` as a boolean where non-zero means send to port 0. Can you show the `getOutputPort()` implementation using that conversion?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    boolean is_priority = num2bool($in.0.priority_level);\n\n    if (is_priority) {\n        return 0; // priority shipments\n    }\n\n    return 1; // normal shipments;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1161"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Partition component that should send records with a numeric shipment reference to port 0 and everything else to port 1. Field `shipment_ref` is string in the input metadata (never null). Can you show me the CTL2 implementation of `getOutputPort()` for this partitioning rule?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    if (isLong($in.0.shipment_ref)) {\n        // Numeric shipment references go to port 0\n        return 0;\n    } else {\n        // Non-numeric references go to port 1\n        return 1;\n    }\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1251"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am using a Partition component. Metadata `Txn`:\n- txn_id: long\n- approved: boolean\n\nThere are two output ports: 0 for rejected, 1 for approved. I would like to route based on the boolean `approved` value, but using a numeric expression (1 for true, 0 for false). Can you show the `getOutputPort()` CTL2 function?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    // approved = true -> 1; approved = false -> 0\n    return bool2num($in.0.approved);\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1447"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Partition component I want to route traffic based on URL scheme. Input metadata (TrafficIn):\n- visit_id: long\n- target_url: string\n\nThere are 3 output ports:\n- port 0: http\n- port 1: https\n- port 2: anything else (ftp, mailto, malformed, etc.)\n\nCan you show me the CTL2 getOutputPort() function using the URL protocol to select the port?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    string proto = getUrlProtocol($in.0.target_url);\n\n    switch (proto) {\n        case \"http\":\n            return 0;\n        case \"https\":\n            return 1;\n        default:\n            return 2;\n    }\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1798"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Partition component I want to send HTTP traffic to port 0, HTTPS traffic to port 1, and everything else to port 2. Input metadata:\n- request_url: string\n- client_id: string\n\nCan you write the `getOutputPort()` function using `getUrlProtocol`?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    string proto = getUrlProtocol($in.0.request_url);\n\n    switch (proto) {\n        case \"http\":\n            return 0;   // HTTP requests\n        case \"https\":\n            return 1;   // HTTPS requests\n        default:\n            return 2;   // Other or unknown protocols\n    }\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1807"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a partitioning rule in CloverDX. I have a Partition component that should send all records to output port 1 when a graph parameter TARGET_REGION is equal to the record's region field, otherwise to port 0.\n\nInput metadata (in0):\n- customer_id: integer\n- region: string\n\nCan you show me the getOutputPort() CTL2 function for this?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    string targetRegion = getParamValue(\"TARGET_REGION\");\n\n    // When parameter is not set or does not match, send to port 0\n    if (targetRegion == $in.0.region) {\n        return 1;\n    }\n\n    return 0;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2091"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a logistics project I have a Partition component that routes records based on where a shipment file is stored. Input metadata:\n- shipment_id: string\n- storage_path: string\n\nI want to send anything whose normalized path starts with \"/data/archive/\" to output port 1 and everything else to port 0. Can you show the getOutputPort() function using normalizePath correctly?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    string p = normalizePath($in.0.storage_path);\n\n    if (startsWith(p, \"/data/archive/\")) {\n        return 1;\n    }\n\n    return 0;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2899"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a customer import where I want to route records with non-normalized names to a separate port for cleanup. Metadata:\n- id: string\n- full_name: string\n- email: string (nullable)\n\nThis is a Partition component. If full_name is not Unicode-normalized to NFC, send to port 1, otherwise port 0. Can you show me how to implement getOutputPort() in CTL2?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    // If name is already NFC-normalized, go to port 0, otherwise to port 1\n    if (isUnicodeNormalized($in.0.full_name, \"NFC\")) {\n        return 0;\n    } else {\n        return 1;\n    }\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2945"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am using a Partition component to route customer records. I want port 0 to receive records whose `username` is ASCII-only, and port 1 to receive everything else. Metadata:\n- user_id: long\n- username: string\n- country: string\n\nCan you write the CTL2 routing function for this Partition setup?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    // ASCII usernames go to port 0, others to port 1\n    return isAscii($in.0.username) ? 0 : 1;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-409"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Partition component for a trading system. The input metadata is:\n- trade_id: string\n- pnl: decimal\n\nI want three output ports:\n- port 0: negative PnL\n- port 1: zero PnL\n- port 2: positive PnL\n\nCan you write the CTL2 getOutputPort() function using the signum function on the decimal pnl field?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    integer s = signum($in.0.pnl);\n\n    if (s == -1) {\n        return 0;   // negative PnL\n    } else if (s == 0) {\n        return 1;   // zero PnL\n    } else {\n        return 2;   // positive PnL (s == 1)\n    }\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-734"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Partition component that should route incoming marketing leads based on whether their provided website is a valid URL.\n\nInput metadata (LeadIn):\n- lead_id: long\n- company: string\n- website: string (nullable=\"true\")\n\nOutput ports:\n- port 0: valid URL in website\n- port 1: invalid or missing URL\n\nCould you write the CTL2 getOutputPort() function that implements this routing?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    if (!isnull($in.0.website) && isUrl($in.0.website)) {\n        return 0;   // valid URL\n    }\n\n    return 1;       // invalid or missing URL\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-846"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Partition component that should route records to one of 4 output ports based on a hash of the `account_number` string.\n\nInput metadata:\n- account_number: string (NOT NULL)\n- balance: decimal (NOT NULL)\n\nCan you show a CTL2 implementation of `getOutputPort()` that uses a hash of `account_number` mod 4 to choose the partition?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    integer h = hashCode($in.0.account_number);\n\n    // ensure non-negative before modulo to keep port index in 0..3\n    if (h < 0) {\n        h = -h;\n    }\n\n    return h % 4;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-986"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Partition component for routing sensor readings. Input metadata:\n- sensor_id: integer\n- reading_time: date\n- value: number\n\nI want to route to one of 8 output ports based on a hash of sensor_id so the distribution is balanced. Can you show getOutputPort() implementation using a hash on sensor_id?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    integer h = hashCode($in.0.sensor_id);\n    integer port = abs(h) % 8;  // 8 output ports: 0..7\n    return port;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-997"
+  },
+  {
+    "source_file": "CTL_LoRA_with_metadata_set_2.json",
+    "inferred_component": "Partition",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an expert assistant for CloverDX and CTL2 (Clover Transformation Language, also referred to as CTL). You help users write and debug CTL2 code, explain language concepts and functions, and advise on data transformation best practices. Adapt your response to what the question needs -- sometimes working code, sometimes an explanation, sometimes both."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 for a Partition component.\n\nRequirements:\n- Route EU rows to port 0.\n- Route US rows to port 1.\n- Route all others to port 2.\n- Use the correct Partition contract.\n\nInput metadata (port 0):\n<Metadata id=\"In\"><Record name=\"Lead\" type=\"delimited\"><Field name=\"lead_id\" type=\"integer\"/><Field name=\"region\" type=\"string\"/></Record></Metadata>"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer getOutputPort() {\n    if ($in.0.region == \"EU\") return 0;\n    if ($in.0.region == \"US\") return 1;\n    return 2;\n}\n```"
+      }
+    ],
+    "id": "struct-gen-003"
+  },
+  {
+    "source_file": "CTL_LoRA_fix_mut_code.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Given Input Metadata on Port 0:\n<Metadata id=\"InDutyPunch\">\n<Record name=\"DutyPunch\" fieldDelimiter=\"\\t\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"badge_time\" type=\"date\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n    <Field name=\"duty_sheet_ref\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"staff_no\" type=\"long\" nullable=\"false\"/>\n    <Field name=\"punch_label\" type=\"string\" nullable=\"false\"/>\n</Record>\n</Metadata>\n\nGroup Accumulator Metadata:\n<Metadata id=\"DutyAccumulator\">\n<Record name=\"DutyAcc\" type=\"delimited\">\n    <Field name=\"first_in_time\" type=\"date\"/>\n    <Field name=\"last_out_time\" type=\"date\"/>\n    <Field name=\"payroll_punch_total\" type=\"integer\"/>\n</Record>\n</Metadata>\n\nOutput Metadata on Port 0:\n<Metadata id=\"OutDutySummary\">\n<Record name=\"DutySummary\" fieldDelimiter=\"\\t\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"duty_sheet_ref\" type=\"string\"/>\n    <Field name=\"staff_no\" type=\"long\"/>\n    <Field name=\"shift_start_at\" type=\"date\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n    <Field name=\"shift_end_at\" type=\"date\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n    <Field name=\"payable_minutes\" type=\"integer\"/>\n    <Field name=\"payroll_punch_total\" type=\"integer\"/>\n</Record>\n</Metadata>\n\nWrite a Rollup for an automotive HR and payroll process in Kenya that builds one summary per duty_sheet_ref using the group accumulator. Input is sorted by duty_sheet_ref.\n\nFor each group:\n- set shift_start_at from the earliest badge_time where punch_label is \"CLOCK_IN\" or \"BAY_ENTRY\"\n- set shift_end_at from the latest badge_time where punch_label is \"CLOCK_OUT\" or \"YARD_EXIT\"\n- increment payroll_punch_total only when badge_time is not null and punch_label does not start with \"TEST_\"\n- set payable_minutes to 0 if shift_start_at is null, shift_end_at is null, or shift_end_at is earlier than shift_start_at; otherwise calculate the difference between shift_end_at and shift_start_at in whole minutes"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nstring groupDutySheetRef;\nlong groupStaffNo;\n\nfunction void initGroup(DutyAcc acc) {\n    acc.first_in_time = null;\n    acc.last_out_time = null;\n    acc.payroll_punch_total = 0;\n    groupDutySheetRef = \"\";\n    groupStaffNo = 0L;\n}\n\nfunction boolean updateGroup(DutyAcc acc) {\n    if (acc.payroll_punch_total == 0) {\n        groupDutySheetRef = $in.0.duty_sheet_ref;\n        groupStaffNo = $in.0.staff_no;\n    }\n\n    if (!isnull($in.0.badge_time)) {\n        if ($in.0.punch_label == \"CLOCK_IN\" || $in.0.punch_label == \"BAY_ENTRY\") {\n            if (isnull(acc.first_in_time) || $in.0.badge_time < acc.first_in_time) {\n                acc.first_in_time = $in.0.badge_time;\n            }\n        } else if ($in.0.punch_label == \"CLOCK_OUT\" || $in.0.punch_label == \"YARD_EXIT\") {\n            if (isnull(acc.last_out_time) || $in.0.badge_time > acc.last_out_time) {\n                acc.last_out_time = $in.0.badge_time;\n            }\n        }\n\n        if (!startsWith($in.0.punch_label, \"TEST_\")) {\n            acc.payroll_punch_total++;\n        }\n    }\n\n    return false;\n}\n\nfunction boolean finishGroup(DutyAcc acc) {\n    return true;\n}\n\nfunction integer updateTransform(integer counter, DutyAcc acc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, DutyAcc acc) {\n    if (counter > 0) return SKIP;\n\n    $out.0.duty_sheet_ref = groupDutySheetRef;\n    $out.0.staff_no = groupStaffNo;\n    $out.0.shift_start_at = acc.first_in_time;\n    $out.0.shift_end_at = acc.last_out_time;\n    $out.0.payroll_punch_total = acc.payroll_punch_total;\n\n    if (isnull(acc.first_in_time) || isnull(acc.last_out_time) || acc.last_out_time <= acc.first_in_time) {\n        $out.0.payable_minutes = 0;\n    } else {\n        long diffMillis = dateDiff(acc.last_out_time, acc.first_in_time, millisec);\n        $out.0.payable_minutes = long2integer(diffMillis / 60000L);\n    }\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_fix_mut_code-115"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a CTL2 Rollup component for an HR report I keep an accumulator of numeric flags for employees.\n\nGroup key: department_code (string, not null)\nAccumulator record (EmployeeAcc):\n- dept: string\n- any_overtime_flag: integer\n\nInput metadata:\n- department_code: string\n- overtime_hours: integer\n\nI set any_overtime_flag to 1 if any record in the group has overtime_hours > 0, otherwise it stays 0. In the final transform, I need to output a boolean `has_overtime` derived from this flag.\n\nOutput metadata:\n- department_code: string\n- has_overtime: boolean\n\nCan you show the Rollup CTL2 code for initGroup, updateGroup, finishGroup, and transform functions, including the numeric-to-boolean conversion?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction void initGroup(EmployeeAcc groupAccumulator) {\n    groupAccumulator.dept = \"\";\n    groupAccumulator.any_overtime_flag = 0;\n    return;\n}\n\nfunction boolean updateGroup(EmployeeAcc groupAccumulator) {\n    groupAccumulator.dept = $in.0.department_code;\n\n    if ($in.0.overtime_hours > 0) {\n        groupAccumulator.any_overtime_flag = 1;\n    }\n\n    return true;\n}\n\nfunction boolean finishGroup(EmployeeAcc groupAccumulator) {\n    // no extra aggregation logic needed here\n    return true;\n}\n\nfunction integer updateTransform(integer counter, EmployeeAcc groupAccumulator) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, EmployeeAcc groupAccumulator) {\n    if (counter > 0) return SKIP;\n\n    $out.0.department_code = groupAccumulator.dept;\n    // 0 -> false, non-zero -> true\n    $out.0.has_overtime = num2bool(groupAccumulator.any_overtime_flag);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1171"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am configuring a **Rollup** component in CloverDX to calculate per-store daily metrics from point-of-sale transactions.\n\nPlease write CTL2 code for the Rollup's group accumulator and transform logic with these requirements:\n\n- Group key in the Rollup component: `store_id;business_date`\n- Accumulator record metadata used by the Rollup (name: `StoreDailyAcc`):\n\n```xml\n<Record name=\"StoreDailyAcc\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n  <Field name=\"store_id\" type=\"integer\"/>\n  <Field name=\"business_date\" type=\"date\"/>\n  <Field name=\"txn_count\" type=\"integer\"/>\n  <Field name=\"gross_amount\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n  <Field name=\"net_amount\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n  <Field name=\"refund_count\" type=\"integer\"/>\n</Record>\n```\n\n- Input metadata on Rollup's input port 0 (name: `PosTxnIn`):\n\n```xml\n<Record name=\"PosTxnIn\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n  <Field name=\"store_id\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"business_date\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"txn_type\" type=\"string\"/>              <!-- values like \"SALE\", \"REFUND\", \"CANCELLED\" -->\n  <Field name=\"line_total\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n  <Field name=\"discount_value\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/>\n</Record>\n```\n\n- Output metadata on Rollup's output port 0 (name: `StoreDailyOut`):\n\n```xml\n<Record name=\"StoreDailyOut\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n  <Field name=\"store_id\" type=\"integer\"/>\n  <Field name=\"business_date\" type=\"date\"/>\n  <Field name=\"total_transactions\" type=\"integer\"/>\n  <Field name=\"total_gross\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n  <Field name=\"total_net\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n  <Field name=\"avg_ticket\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/>\n  <Field name=\"refund_ratio\" type=\"decimal\" length=\"8\" scale=\"4\" nullable=\"true\"/>\n</Record>\n```\n\nBusiness logic:\n\n1. The accumulator must initialize counts and amounts to zero for each new group.\n2. For each input record:\n   - Always increment `txn_count`.\n   - If `txn_type` is `\"SALE\"`, add `line_total` to `gross_amount` and add `line_total - nvl(discount_value, 0D)` to `net_amount`.\n   - If `txn_type` is `\"REFUND\"`, increment `refund_count` and subtract `line_total` from both `gross_amount` and `net_amount`.\n   - Ignore other `txn_type` values for amounts (still count the transaction).\n3. At group finish:\n   - `total_transactions` = `txn_count`.\n   - `total_gross` = `gross_amount`.\n   - `total_net` = `net_amount`.\n   - `avg_ticket` = `net_amount / txn_count` (if `txn_count > 0`, otherwise null).\n   - `refund_ratio` = `refund_count / txn_count` as a decimal (if `txn_count > 0`, otherwise null).\n\nPlease provide full CTL2 code for the Rollup component, including `initGroup`, `updateGroup`, `finishGroup`, and `transform` functions using the `StoreDailyAcc` accumulator. Ensure nullable fields are handled correctly (only `discount_value`, `avg_ticket`, and `refund_ratio` are nullable)."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\n// Accumulator record structure is StoreDailyAcc\n// Group key: store_id, business_date\n\nfunction void initGroup(StoreDailyAcc acc) {\n    acc.txn_count = 0;\n    acc.gross_amount = 0D;\n    acc.net_amount = 0D;\n    acc.refund_count = 0;\n    return;\n}\n\nfunction boolean updateGroup(StoreDailyAcc acc) {\n    acc.txn_count = acc.txn_count + 1;\n\n    switch ($in.0.txn_type) {\n        case \"SALE\":\n            acc.gross_amount = acc.gross_amount + nvl($in.0.line_total, 0D);\n            acc.net_amount = acc.net_amount + (nvl($in.0.line_total, 0D) - nvl($in.0.discount_value, 0D));\n            break;\n        case \"REFUND\":\n            acc.refund_count = acc.refund_count + 1;\n            acc.gross_amount = acc.gross_amount - nvl($in.0.line_total, 0D);\n            acc.net_amount = acc.net_amount - nvl($in.0.line_total, 0D);\n            break;\n        default:\n            // other txn_type values only affect counts\n            break;\n    }\n\n    return true;\n}\n\nfunction boolean finishGroup(StoreDailyAcc acc) {\n    // nothing extra to compute here; final values are in acc\n    return true;\n}\n\n// counter is row index within group (0-based)\nfunction integer updateTransform(integer counter, StoreDailyAcc acc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, StoreDailyAcc acc) {\n    if (counter > 0) {\n        return SKIP;\n    }\n\n    $out.0.store_id = acc.store_id;\n    $out.0.business_date = acc.business_date;\n\n    $out.0.total_transactions = acc.txn_count;\n    $out.0.total_gross = acc.gross_amount;\n    $out.0.total_net = acc.net_amount;\n\n    if (acc.txn_count > 0) {\n        // avg_ticket and refund_ratio are nullable in output, so can remain null when count is 0\n        $out.0.avg_ticket = acc.net_amount / acc.txn_count;\n        $out.0.refund_ratio = (acc.refund_count / acc.txn_count) * 1D;\n    } else {\n        $out.0.avg_ticket = null;\n        $out.0.refund_ratio = null;\n    }\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-130"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am configuring a **Rollup** component in CloverDX to calculate regional sales statistics. Please help me write the CTL2 code for the group accumulator and the transform logic.\n\nThe input metadata to the Rollup component (single input port) is:\n\n```xml\n<Metadata id=\"SalesTxnMeta\">\n  <Record name=\"SalesTxn\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n    <Field name=\"region_code\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"order_id\" type=\"string\"/>\n    <Field name=\"order_date\" type=\"date\" format=\"yyyy-MM-dd\"/>\n    <Field name=\"gross_amount\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n    <Field name=\"tax_amount\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/>\n    <Field name=\"currency\" type=\"string\"/>\n    <Field name=\"sales_rep\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n```\n\nThe Rollup component is configured with group key set to `region_code`.\n\nDefine an accumulator record structure called `RegionStatsAcc` that will be used as the group accumulator in the Rollup. Its fields should be:\n\n- `region_code` (string, NOT NULL)\n- `order_count` (integer, NOT NULL)\n- `total_gross` (decimal(18,2), NOT NULL)\n- `total_tax` (decimal(18,2), NOT NULL)\n- `first_order_date` (date, nullable)\n- `last_order_date` (date, nullable)\n\nThe output metadata of the Rollup is:\n\n```xml\n<Metadata id=\"RegionStatsMeta\">\n  <Record name=\"RegionStats\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n    <Field name=\"region_code\" type=\"string\"/>\n    <Field name=\"order_count\" type=\"integer\"/>\n    <Field name=\"total_gross\" type=\"decimal\" length=\"18\" scale=\"2\"/>\n    <Field name=\"total_tax\" type=\"decimal\" length=\"18\" scale=\"2\"/>\n    <Field name=\"avg_gross\" type=\"decimal\" length=\"18\" scale=\"2\"/>\n    <Field name=\"first_order_date\" type=\"date\" format=\"yyyy-MM-dd\" nullable=\"true\"/>\n    <Field name=\"last_order_date\" type=\"date\" format=\"yyyy-MM-dd\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n```\n\nRequirements:\n\n1. In `initGroup`, initialize the accumulator fields so that:\n   - `order_count` starts at 0.\n   - `total_gross` and `total_tax` start at 0.00D.\n   - `region_code` is set on the first update.\n   - `first_order_date` and `last_order_date` start as null.\n\n2. In `updateGroup`, for each input record:\n   - Increment `order_count`.\n   - Add `gross_amount` to `total_gross`.\n   - Add `tax_amount` to `total_tax`, but treat null `tax_amount` as 0 (use `nvl`).\n   - If `first_order_date` is null or the current `order_date` is earlier, set `first_order_date`.\n   - If `last_order_date` is null or the current `order_date` is later, set `last_order_date`.\n   - Ensure `region_code` in the accumulator is set from the input row if it is still empty.\n\n3. In `finishGroup`, compute nothing extra (everything is already in accumulator), just return `true`.\n\n4. In the `transform` function:\n   - Only output one record per group (when `counter == 0`).\n   - Map `region_code`, `order_count`, `total_gross`, `total_tax`, `first_order_date`, `last_order_date` from the accumulator to the output.\n   - Compute `avg_gross` as `total_gross / order_count`. Since `order_count` will be > 0 for emitted groups, you do not need an extra check for division by zero.\n\nPlease provide CTL2 code for the Rollup component implementing `initGroup`, `updateGroup`, `finishGroup`, and `transform` using the accumulator record `RegionStatsAcc` and the group key `region_code`. Do not use any imports. Assume `RegionStatsAcc` is already registered as the group accumulator metadata for this Rollup."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction void initGroup(RegionStatsAcc acc) {\n    acc.order_count = 0;\n    acc.total_gross = 0D;\n    acc.total_tax = 0D;\n    acc.region_code = null;\n    acc.first_order_date = null;\n    acc.last_order_date = null;\n    return;\n}\n\nfunction boolean updateGroup(RegionStatsAcc acc) {\n    acc.order_count = acc.order_count + 1;\n    acc.total_gross = acc.total_gross + nvl($in.0.gross_amount, 0D);\n    acc.total_tax = acc.total_tax + nvl($in.0.tax_amount, 0D);\n\n    if (isnull(acc.region_code)) {\n        acc.region_code = $in.0.region_code;\n    }\n\n    if (!isnull($in.0.order_date) && (isnull(acc.first_order_date) || $in.0.order_date < acc.first_order_date)) {\n        acc.first_order_date = $in.0.order_date;\n    }\n\n    if (!isnull($in.0.order_date) && (isnull(acc.last_order_date) || $in.0.order_date > acc.last_order_date)) {\n        acc.last_order_date = $in.0.order_date;\n    }\n\n    return true;\n}\n\nfunction boolean finishGroup(RegionStatsAcc acc) {\n    return true;\n}\n\nfunction integer updateTransform(integer counter, RegionStatsAcc acc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, RegionStatsAcc acc) {\n    if (counter > 0) return SKIP;\n\n    $out.0.region_code = acc.region_code;\n    $out.0.order_count = acc.order_count;\n    $out.0.total_gross = acc.total_gross;\n    $out.0.total_tax = acc.total_tax;\n    $out.0.first_order_date = acc.first_order_date;\n    $out.0.last_order_date = acc.last_order_date;\n    $out.0.avg_gross = acc.total_gross / acc.order_count;\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-178"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am configuring a **Rollup** component in CloverDX to calculate sales metrics per `store_id` and need help with the CTL2 accumulator and transform functions.\n\nThe input metadata to the Rollup (single input port 0) is:\n\n```xml\n<Metadata id=\"InSales\">\n  <Record name=\"DailySales\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n    <Field name=\"store_id\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"business_date\" type=\"date\" format=\"yyyy-MM-dd\"/>\n    <Field name=\"receipt_id\" type=\"string\"/>\n    <Field name=\"gross_amount\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n    <Field name=\"tax_amount\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/>\n    <Field name=\"discount_amount\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/>\n    <Field name=\"channel\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n```\n\nThe Rollup group key will be set (as a component property) to: `store_id`.\n\nI want the accumulator record to hold:\n- `store_id` (integer)\n- `trx_count` (integer) - number of receipts in the group\n- `net_sales_sum` (decimal(18,2)) - sum of `gross_amount - nvl(discount_amount, 0D)`\n- `tax_sum` (decimal(18,2)) - sum of `tax_amount` (treat null as 0D)\n- `max_gross` (decimal(18,2)) - maximum `gross_amount` in the group\n- `last_business_date` (date) - the latest `business_date` in the group\n\nAssume the accumulator metadata (registered on the Rollup as group accumulator) is:\n\n```xml\n<Metadata id=\"AccMeta\">\n  <Record name=\"StoreSalesAgg\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n    <Field name=\"store_id\" type=\"integer\"/>\n    <Field name=\"trx_count\" type=\"integer\"/>\n    <Field name=\"net_sales_sum\" type=\"decimal\" length=\"18\" scale=\"2\"/>\n    <Field name=\"tax_sum\" type=\"decimal\" length=\"18\" scale=\"2\"/>\n    <Field name=\"max_gross\" type=\"decimal\" length=\"18\" scale=\"2\"/>\n    <Field name=\"last_business_date\" type=\"date\" format=\"yyyy-MM-dd\"/>\n  </Record>\n</Metadata>\n```\n\nThe Rollup output metadata (port 0) is:\n\n```xml\n<Metadata id=\"OutAgg\">\n  <Record name=\"StoreSalesSummary\" type=\"delimited\" fieldDelimiter=\",\" recordDelimiter=\"\\n\">\n    <Field name=\"store_id\" type=\"integer\"/>\n    <Field name=\"trx_count\" type=\"integer\"/>\n    <Field name=\"avg_net_sales\" type=\"decimal\" length=\"18\" scale=\"2\"/>\n    <Field name=\"total_tax\" type=\"decimal\" length=\"18\" scale=\"2\"/>\n    <Field name=\"max_gross\" type=\"decimal\" length=\"18\" scale=\"2\"/>\n    <Field name=\"last_business_date\" type=\"date\" format=\"yyyy-MM-dd\"/>\n  </Record>\n</Metadata>\n```\n\nRequirements:\n- Configure the Rollup group key to `store_id` (component property, not CTL).\n- Implement `initGroup`, `updateGroup`, and `finishGroup` using the `StoreSalesAgg` accumulator record.\n- Implement the Rollup `transform` function so that:\n  - It outputs exactly one summary record per group (use the `counter` parameter).\n  - `avg_net_sales = net_sales_sum / trx_count` (trx_count is > 0 in any non-empty group).\n  - Handle nullable `tax_amount` and `discount_amount` safely using `nvl()`.\n  - No unnecessary null checks for non-nullable fields.\n\nPlease provide the complete CTL2 code for these Rollup functions, assuming the accumulator type name is `StoreSalesAgg` and input port is `$in.0`, output port is `$out.0`."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction void initGroup(StoreSalesAgg acc) {\n    acc.store_id = 0;\n    acc.trx_count = 0;\n    acc.net_sales_sum = 0D;\n    acc.tax_sum = 0D;\n    acc.max_gross = 0D;\n    acc.last_business_date = zeroDate();\n    return;\n}\n\nfunction boolean updateGroup(StoreSalesAgg acc) {\n    decimal gross = nvl($in.0.gross_amount, 0D);\n\n    if (acc.trx_count == 0) {\n        acc.store_id = $in.0.store_id;\n        acc.max_gross = gross;\n\n        if (!isnull($in.0.business_date)) {\n            acc.last_business_date = $in.0.business_date;\n        }\n    }\n\n    acc.trx_count = acc.trx_count + 1;\n\n    acc.net_sales_sum = acc.net_sales_sum\n                        + (gross - nvl($in.0.discount_amount, 0D));\n\n    acc.tax_sum = acc.tax_sum + nvl($in.0.tax_amount, 0D);\n\n    if (gross > acc.max_gross) {\n        acc.max_gross = gross;\n    }\n\n    if (!isnull($in.0.business_date) && $in.0.business_date > acc.last_business_date) {\n        acc.last_business_date = $in.0.business_date;\n    }\n\n    return true;\n}\n\nfunction boolean finishGroup(StoreSalesAgg acc) {\n    return true;\n}\n\nfunction integer updateTransform(integer counter, StoreSalesAgg acc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, StoreSalesAgg acc) {\n    if (counter > 0) {\n        return SKIP;\n    }\n\n    $out.0.store_id = acc.store_id;\n    $out.0.trx_count = acc.trx_count;\n\n    $out.0.avg_net_sales = acc.net_sales_sum / acc.trx_count;\n\n    $out.0.total_tax = acc.tax_sum;\n    $out.0.max_gross = acc.max_gross;\n    $out.0.last_business_date = acc.last_business_date;\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-184"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am configuring a **Rollup** component in CloverDX to summarize invoice line items by invoice header. I want help writing the CTL2 for the group accumulator and transform logic.\n\nPlease assume the following metadata:\n\nInput metadata `InvoiceLineIn` (coming into Rollup, already sorted by `invoice_id`):\n- `invoice_id`: string (NOT NULL)\n- `line_no`: integer (NOT NULL)\n- `item_code`: string (NOT NULL)\n- `quantity`: integer (NOT NULL)\n- `unit_price`: decimal (NOT NULL)\n- `discount_rate`: number (nullable=\"true\")  // fraction, e.g. 0.1 for 10%, may be null\n- `tax_rate`: number (NOT NULL)             // fraction, e.g. 0.21 for 21%\n- `currency`: string (NOT NULL)\n\nAccumulator metadata `InvoiceAggAcc` (Rollup group accumulator record):\n- `invoice_id`: string (NOT NULL)\n- `total_lines`: integer (NOT NULL)\n- `gross_amount`: decimal (NOT NULL)\n- `discounted_amount`: decimal (NOT NULL)\n- `tax_amount`: decimal (NOT NULL)\n- `currency`: string (NOT NULL)\n\nOutput metadata `InvoiceSummaryOut`:\n- `invoice_id`: string (NOT NULL)\n- `line_count`: integer (NOT NULL)\n- `gross_total`: decimal (NOT NULL)\n- `net_total`: decimal (NOT NULL)       // discounted_amount\n- `tax_total`: decimal (NOT NULL)\n- `currency`: string (NOT NULL)\n\nRollup configuration:\n- Group key: `invoice_id`\n- Accumulator metadata: `InvoiceAggAcc`\n\nBusiness rules:\n1. `gross_amount` should be the sum over the group of `quantity * unit_price`.\n2. Effective discount for a line is `nvl(discount_rate, 0.0)`; discount cannot be negative or exceed 0.8 (80%). If it is < 0.0, treat as 0.0; if > 0.8, clamp to 0.8.\n3. For each line, the discounted line amount is `quantity * unit_price * (1 - effective_discount)`.\n4. `discounted_amount` is the sum of all discounted line amounts in the group.\n5. `tax_amount` is the sum of `discounted_line_amount * tax_rate` for all lines.\n6. `currency` is taken from the first line of the group; assume all lines in a group have the same currency.\n7. The `transform` function of Rollup should emit exactly one record per group (i.e. only on the first call per group based on the counter argument).\n\nPlease provide the full CTL2 code for the `initGroup`, `updateGroup`, and `transform` functions for this Rollup, including any minimal helper logic you consider necessary. Do not use any imports; just rely on the provided metadata names and fields. Use null-safe handling only for the nullable field `discount_rate`. Clearly state in your answer that this code is intended for a **Rollup** component and that the group key is `invoice_id`."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction void initGroup(InvoiceAggAcc acc) {\n    acc.invoice_id = \"\";\n    acc.total_lines = 0;\n    acc.gross_amount = 0D;\n    acc.discounted_amount = 0D;\n    acc.tax_amount = 0D;\n    acc.currency = \"\";\n    return;\n}\n\nfunction boolean updateGroup(InvoiceAggAcc acc) {\n    decimal line_gross = 0D;\n    decimal line_discounted = 0D;\n    decimal line_tax = 0D;\n    number eff_disc;\n\n    if (acc.total_lines == 0) {\n        acc.invoice_id = $in.0.invoice_id;\n        acc.currency = $in.0.currency;\n    }\n\n    acc.total_lines++;\n\n    line_gross = $in.0.quantity * $in.0.unit_price;\n\n    eff_disc = nvl($in.0.discount_rate, 0.0);\n    if (eff_disc < 0.0) {\n        eff_disc = 0.0;\n    } else if (eff_disc > 0.8) {\n        eff_disc = 0.8;\n    }\n\n    line_discounted = line_gross * (1D - eff_disc);\n    line_tax = line_discounted * $in.0.tax_rate;\n\n    acc.gross_amount += line_gross;\n    acc.discounted_amount += line_discounted;\n    acc.tax_amount += line_tax;\n\n    return false;\n}\n\nfunction boolean finishGroup(InvoiceAggAcc acc) {\n    return true;\n}\n\nfunction integer updateTransform(integer counter, InvoiceAggAcc acc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, InvoiceAggAcc acc) {\n    if (counter > 0) {\n        return SKIP;\n    }\n\n    $out.0.invoice_id = acc.invoice_id;\n    $out.0.line_count = acc.total_lines;\n    $out.0.gross_total = acc.gross_amount;\n    $out.0.net_total = acc.discounted_amount;\n    $out.0.tax_total = acc.tax_amount;\n    $out.0.currency = acc.currency;\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-44"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am configuring a **Rollup** component in CloverDX to compute daily sales statistics per shop. The rollup is grouped by `store_id` and `sales_date` (both non-nullable in the input). Please help me write the CTL2 code for the Rollup component.\n\nHere are the relevant metadata definitions:\n\nInput metadata `TxnRecord`:\n\n- `store_id`: integer (NOT NULL)\n- `sales_date`: date (NOT NULL)\n- `receipt_id`: string (NOT NULL)\n- `gross_amount`: decimal (NOT NULL)\n- `discount_amount`: decimal (nullable)\n- `currency_code`: string (NOT NULL)\n- `cashier_note`: string (nullable)\n\nGroup accumulator metadata `StoreDailyAgg`:\n\n- `store_id`: integer (NOT NULL)\n- `sales_date`: date (NOT NULL)\n- `txn_count`: integer (NOT NULL)\n- `total_gross`: decimal (NOT NULL)\n- `total_discount`: decimal (NOT NULL)\n- `net_revenue`: decimal (NOT NULL)\n- `min_receipt_id`: string (NOT NULL)\n- `max_receipt_id`: string (NOT NULL)\n- `has_any_note`: boolean (NOT NULL)\n\nOutput metadata `StoreDailySummary`:\n\n- `store_id`: integer (NOT NULL)\n- `sales_date`: date (NOT NULL)\n- `txn_count`: integer (NOT NULL)\n- `total_gross`: decimal (NOT NULL)\n- `total_discount`: decimal (NOT NULL)\n- `net_revenue`: decimal (NOT NULL)\n- `avg_ticket`: decimal (NOT NULL)\n- `first_receipt_id`: string (NOT NULL)\n- `last_receipt_id`: string (NOT NULL)\n- `any_note_present`: boolean (NOT NULL)\n\nConfiguration details:\n\n- Rollup group key: `store_id;sales_date`\n- Input records are not sorted by `receipt_id`.\n- `discount_amount` and `cashier_note` are the only nullable fields:\n  - If `discount_amount` is null, treat it as 0 in the aggregation.\n  - `has_any_note` / `any_note_present` should be true if at least one record in the group has a non-null and non-empty `cashier_note`.\n\nPlease provide complete CTL2 code for the Rollup component (`initGroup`, `updateGroup`, `finishGroup`, and `transform` functions). The `transform` function should output a single summary record per group (only for the first record of the group) and send it to port 0. Include the expected structure name of the accumulator record in the code and respect the nullable rules above (no unnecessary null checks for non-nullable fields). Do not use any imports."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction void initGroup(StoreDailyAgg acc) {\n    acc.txn_count = 0;\n    acc.total_gross = 0D;\n    acc.total_discount = 0D;\n    acc.net_revenue = 0D;\n    acc.min_receipt_id = \"\";   // will be replaced by first record\n    acc.max_receipt_id = \"\";   // will be replaced by first record\n    acc.has_any_note = false;\n    return;\n}\n\nfunction boolean updateGroup(StoreDailyAgg acc) {\n    decimal disc = nvl($in.0.discount_amount, 0D);\n\n    if (acc.txn_count == 0) {\n        acc.store_id = $in.0.store_id;\n        acc.sales_date = $in.0.sales_date;\n        acc.min_receipt_id = $in.0.receipt_id;\n        acc.max_receipt_id = $in.0.receipt_id;\n    } else {\n        if ($in.0.receipt_id < acc.min_receipt_id) {\n            acc.min_receipt_id = $in.0.receipt_id;\n        }\n        if ($in.0.receipt_id > acc.max_receipt_id) {\n            acc.max_receipt_id = $in.0.receipt_id;\n        }\n    }\n\n    acc.txn_count++;\n    acc.total_gross += $in.0.gross_amount;\n    acc.total_discount += disc;\n    acc.net_revenue += ($in.0.gross_amount - disc);\n\n    if (!isnull($in.0.cashier_note) && !isBlank($in.0.cashier_note)) {\n        acc.has_any_note = true;\n    }\n\n    return true;\n}\n\nfunction boolean finishGroup(StoreDailyAgg acc) {\n    // nothing extra to compute here; kept for completeness\n    return true;\n}\n\nfunction integer updateTransform(integer counter, StoreDailyAgg acc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, StoreDailyAgg acc) {\n    if (counter > 0) return SKIP;\n\n    $out.0.store_id = acc.store_id;\n    $out.0.sales_date = acc.sales_date;\n    $out.0.txn_count = acc.txn_count;\n    $out.0.total_gross = acc.total_gross;\n    $out.0.total_discount = acc.total_discount;\n    $out.0.net_revenue = acc.net_revenue;\n    $out.0.avg_ticket = acc.net_revenue / acc.txn_count;\n    $out.0.first_receipt_id = acc.min_receipt_id;\n    $out.0.last_receipt_id = acc.max_receipt_id;\n    $out.0.any_note_present = acc.has_any_note;\n\n    return 0;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-67"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a CloverDX **Rollup** component to aggregate daily sales per shop and product. Please help me write the CTL2 code for the Rollup, including the accumulator logic and the final transform.\n\nThe Rollup has a single input port with metadata:\n\n```xml\n<Record name=\"DailySales\">\n  <Field name=\"shop_id\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"product_code\" type=\"string\"/>\n  <Field name=\"sale_date\" type=\"date\"/>\n  <Field name=\"quantity\" type=\"integer\"/>\n  <Field name=\"gross_amount\" type=\"decimal\" length=\"12\" scale=\"2\"/>\n  <Field name=\"discount_amount\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/>\n  <Field name=\"currency\" type=\"string\" nullable=\"false\"/>\n</Record>\n```\n\nGroup key for the Rollup is: `shop_id;product_code;currency`.\n\nThe accumulator record (set as group accumulator in the Rollup config) has metadata:\n\n```xml\n<Record name=\"SalesAggAcc\">\n  <Field name=\"shop_id\" type=\"integer\"/>\n  <Field name=\"product_code\" type=\"string\"/>\n  <Field name=\"currency\" type=\"string\"/>\n  <Field name=\"total_qty\" type=\"integer\"/>\n  <Field name=\"total_gross\" type=\"decimal\" length=\"14\" scale=\"2\"/>\n  <Field name=\"total_discount\" type=\"decimal\" length=\"14\" scale=\"2\"/>\n  <Field name=\"order_count\" type=\"integer\"/>\n  <Field name=\"avg_unit_price\" type=\"decimal\" length=\"14\" scale=\"4\" nullable=\"true\"/>\n  <Field name=\"avg_discount_rate\" type=\"decimal\" length=\"10\" scale=\"6\" nullable=\"true\"/>\n</Record>\n```\n\nThe Rollup output metadata is:\n\n```xml\n<Record name=\"SalesSummary\">\n  <Field name=\"shop_id\" type=\"integer\"/>\n  <Field name=\"product_code\" type=\"string\"/>\n  <Field name=\"currency\" type=\"string\"/>\n  <Field name=\"total_qty\" type=\"integer\"/>\n  <Field name=\"total_gross\" type=\"decimal\" length=\"14\" scale=\"2\"/>\n  <Field name=\"total_discount\" type=\"decimal\" length=\"14\" scale=\"2\"/>\n  <Field name=\"order_count\" type=\"integer\"/>\n  <Field name=\"avg_unit_price\" type=\"decimal\" length=\"14\" scale=\"4\" nullable=\"true\"/>\n  <Field name=\"avg_discount_rate\" type=\"decimal\" length=\"10\" scale=\"6\" nullable=\"true\"/>\n</Record>\n```\n\nRequired logic:\n\n- Group by `shop_id`, `product_code`, and `currency` (configured on the component, not in CTL).\n- `total_qty`: sum of `quantity`.\n- `total_gross`: sum of `gross_amount`.\n- `total_discount`: sum of `discount_amount`, treating null discounts as 0.\n- `order_count`: number of input records in the group.\n- `avg_unit_price`: `total_gross / total_qty`, nullable=true (for groups where `total_qty` is 0, set `avg_unit_price` to null).\n- `avg_discount_rate`: total_discount / total_gross, nullable=true (if `total_gross` is 0, set `avg_discount_rate` to null).\n\nPlease provide complete CTL2 code for the Rollup, including `initGroup`, `updateGroup`, `finishGroup`, and `transform` functions, using the `SalesAggAcc` accumulator record. Make sure to handle nullable `discount_amount` correctly and respect the nullability of the output fields."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction void initGroup(SalesAggAcc groupAcc) {\n    groupAcc.total_qty = 0;\n    groupAcc.total_gross = 0D;\n    groupAcc.total_discount = 0D;\n    groupAcc.order_count = 0;\n\n    groupAcc.shop_id = 0;\n    groupAcc.product_code = \"\";\n    groupAcc.currency = \"\";\n\n    groupAcc.avg_unit_price = null;\n    groupAcc.avg_discount_rate = null;\n\n    return;\n}\n\nfunction boolean updateGroup(SalesAggAcc groupAcc) {\n    if (groupAcc.order_count == 0) {\n        groupAcc.shop_id = $in.0.shop_id;\n        groupAcc.product_code = $in.0.product_code;\n        groupAcc.currency = $in.0.currency;\n    }\n\n    groupAcc.total_qty = groupAcc.total_qty + nvl($in.0.quantity, 0);\n    groupAcc.total_gross = groupAcc.total_gross + nvl($in.0.gross_amount, 0D);\n    groupAcc.total_discount = groupAcc.total_discount + nvl($in.0.discount_amount, 0D);\n    groupAcc.order_count = groupAcc.order_count + 1;\n\n    return true;\n}\n\nfunction boolean finishGroup(SalesAggAcc groupAcc) {\n    if (groupAcc.total_qty != 0) {\n        groupAcc.avg_unit_price = groupAcc.total_gross / groupAcc.total_qty;\n    } else {\n        groupAcc.avg_unit_price = null;\n    }\n\n    if (groupAcc.total_gross != 0D) {\n        groupAcc.avg_discount_rate = groupAcc.total_discount / groupAcc.total_gross;\n    } else {\n        groupAcc.avg_discount_rate = null;\n    }\n\n    return true;\n}\n\nfunction integer updateTransform(integer counter, SalesAggAcc groupAcc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, SalesAggAcc groupAcc) {\n    if (counter > 0) {\n        return SKIP;\n    }\n\n    $out.0.shop_id = groupAcc.shop_id;\n    $out.0.product_code = groupAcc.product_code;\n    $out.0.currency = groupAcc.currency;\n\n    $out.0.total_qty = groupAcc.total_qty;\n    $out.0.total_gross = groupAcc.total_gross;\n    $out.0.total_discount = groupAcc.total_discount;\n    $out.0.order_count = groupAcc.order_count;\n\n    $out.0.avg_unit_price = groupAcc.avg_unit_price;\n    $out.0.avg_discount_rate = groupAcc.avg_discount_rate;\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-72"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_short.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am configuring a **Rollup** component in CloverDX to aggregate invoice line items into invoice headers.\n\nPlease design CTL2 code for the Rollup component that:\n\n- Groups input records by `invoice_id`.\n- Uses a custom accumulator record `InvoiceAgg` with this structure (registered in the graph, NOT imported in CTL):\n  - `invoice_id: string` (NOT NULL)\n  - `customer_code: string` (NOT NULL)\n  - `invoice_date: date` (NOT NULL)\n  - `currency: string` (NOT NULL)\n  - `line_count: integer` (NOT NULL)\n  - `gross_total: decimal` (NOT NULL)\n  - `discount_total: decimal` (NOT NULL)\n  - `net_total: decimal` (NOT NULL)\n- Input metadata (single input port 0) has these fields:\n  - `invoice_id: string` nullable=\"false\"\n  - `customer_code: string`\n  - `invoice_date: date`\n  - `currency: string`\n  - `line_number: integer`\n  - `line_amount: decimal`\n  - `line_discount: decimal` (nullable=\"true\")\n  - `tax_amount: decimal` (nullable=\"true\")\n  - `comment: string` (nullable=\"true\")\n- Output metadata (single output port 0) has these fields:\n  - `invoice_id: string`\n  - `customer_code: string`\n  - `invoice_date: date`\n  - `currency: string`\n  - `line_count: integer`\n  - `gross_total: decimal`   // sum of line_amount over the group\n  - `discount_total: decimal` // sum of line_discount (use 0 when null)\n  - `net_total: decimal`     // gross_total - discount_total\n  - `tax_total: decimal`     // sum of tax_amount (treat null as 0)\n  - `has_comments: boolean`  // true if at least one line in the group has non-blank comment\n\nAdditional requirements:\n\n- Group key for the Rollup is `invoice_id` (set on the component, not in CTL).\n- In `initGroup`, initialize the accumulator safely so no accumulator field remains null.\n- In `updateGroup`, for each input row:\n  - Increment `line_count`.\n  - Add `line_amount` to `gross_total`.\n  - Add `line_discount` if not null, otherwise add 0, to `discount_total`.\n  - Add `tax_amount` if not null, otherwise 0, to `net_total`? (No, tax goes to `tax_total`.)\n  - Maintain `has_comments` in the accumulator based on non-blank `comment`.\n- In `finishGroup`, compute `net_total = gross_total - discount_total`.\n- In `transform`, only emit a single header record per group (i.e., when `counter == 0`), populating all output fields from the accumulator and the first record in the group.\n\nPlease provide complete CTL2 code for the Rollup component, including the required `initGroup`, `updateGroup`, `finishGroup`, and `transform` functions. Make sure null-safe handling is used only for the nullable input fields mentioned (`line_discount`, `tax_amount`, `comment`)."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\n// GroupAcc record structure is \"InvoiceAgg\" registered on the Rollup component\nfunction void initGroup(InvoiceAgg groupAccumulator) {\n    groupAccumulator.invoice_id     = \"\";\n    groupAccumulator.customer_code  = \"\";\n    groupAccumulator.invoice_date   = today();    // overwritten in first updateGroup\n    groupAccumulator.currency       = \"\";\n    groupAccumulator.line_count     = 0;\n    groupAccumulator.gross_total    = 0D;\n    groupAccumulator.discount_total = 0D;\n    groupAccumulator.net_total      = 0D;\n    groupAccumulator.tax_total      = 0D;\n    groupAccumulator.has_comments   = false;\n    return;\n}\n\nfunction boolean updateGroup(InvoiceAgg groupAccumulator) {\n    groupAccumulator.invoice_id    = $in.0.invoice_id;\n    groupAccumulator.customer_code = nvl($in.0.customer_code, \"\");\n    groupAccumulator.invoice_date  = nvl($in.0.invoice_date, groupAccumulator.invoice_date);\n    groupAccumulator.currency      = nvl($in.0.currency, \"\");\n\n    groupAccumulator.line_count   = groupAccumulator.line_count + 1;\n    groupAccumulator.gross_total  = groupAccumulator.gross_total + nvl($in.0.line_amount, 0D);\n\n    groupAccumulator.discount_total =\n        groupAccumulator.discount_total + nvl($in.0.line_discount, 0D);\n\n    groupAccumulator.tax_total =\n        groupAccumulator.tax_total + nvl($in.0.tax_amount, 0D);\n\n    if (!isBlank($in.0.comment)) {\n        groupAccumulator.has_comments = true;\n    }\n\n    return true;\n}\n\nfunction boolean finishGroup(InvoiceAgg groupAccumulator) {\n    groupAccumulator.net_total =\n        groupAccumulator.gross_total - groupAccumulator.discount_total;\n    return true;\n}\n\nfunction integer updateTransform(integer counter, InvoiceAgg groupAccumulator) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, InvoiceAgg groupAccumulator) {\n    if (counter > 0) {\n        return SKIP;\n    }\n\n    $out.0.invoice_id     = groupAccumulator.invoice_id;\n    $out.0.customer_code  = groupAccumulator.customer_code;\n    $out.0.invoice_date   = groupAccumulator.invoice_date;\n    $out.0.currency       = groupAccumulator.currency;\n    $out.0.line_count     = groupAccumulator.line_count;\n    $out.0.gross_total    = groupAccumulator.gross_total;\n    $out.0.discount_total = groupAccumulator.discount_total;\n    $out.0.net_total      = groupAccumulator.net_total;\n    $out.0.tax_total      = groupAccumulator.tax_total;\n    $out.0.has_comments   = groupAccumulator.has_comments;\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_short-88"
+  },
+  {
+    "source_file": "CTL_LoRA_fix_mut_code.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Given Input Metadata on Port 0:\n<Metadata id=\"InSensorReadings\">\n<Record name=\"ReadingRecord\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"reading_id\" type=\"long\"/>\n    <Field name=\"sensor_id\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"location_id\" type=\"integer\"/>\n    <Field name=\"temperature\" type=\"decimal\" length=\"6\" scale=\"1\"/>\n    <Field name=\"humidity\" type=\"integer\"/>\n    <Field name=\"reading_timestamp\" type=\"date\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n</Record>\n</Metadata>\n\nOutput Metadata on Port 0:\n<Metadata id=\"OutSensorStats\">\n<Record name=\"SensorStats\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"sensor_id\" type=\"string\"/>\n    <Field name=\"avg_temperature\" type=\"decimal\" length=\"8\" scale=\"2\"/>\n    <Field name=\"max_humidity\" type=\"integer\"/>\n    <Field name=\"reading_count\" type=\"long\"/>\n</Record>\n</Metadata>\n\nWrite a Rollup component that groups sensor readings by sensor_id and computes aggregated statistics. Input is sorted by sensor_id. No group accumulator metadata is defined."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\n// Group accumulator record must be defined in component configuration\n// Accumulator fields: sensor_id (string), reading_count (long),\n//                     temperature_sum (decimal), max_humidity (integer)\n\nfunction void initGroup(SensorAcc groupAccumulator) {\n    groupAccumulator.sensor_id = \"\";\n    groupAccumulator.reading_count = 0L;\n    groupAccumulator.temperature_sum = 0D;\n    groupAccumulator.max_humidity = null;\n    return;\n}\n\nfunction boolean updateGroup(SensorAcc groupAccumulator) {\n    if (groupAccumulator.reading_count == 0L) {\n        groupAccumulator.sensor_id = $in.0.sensor_id;\n    }\n\n    groupAccumulator.reading_count++;\n    groupAccumulator.temperature_sum += nvl($in.0.temperature, 0D);\n\n    if (!isnull($in.0.humidity)) {\n        if (isnull(groupAccumulator.max_humidity) ||\n            $in.0.humidity > groupAccumulator.max_humidity) {\n            groupAccumulator.max_humidity = $in.0.humidity;\n        }\n    }\n\n    return false;\n}\n\nfunction boolean finishGroup(SensorAcc groupAccumulator) {\n    return true;\n}\n\nfunction integer updateTransform(integer counter, SensorAcc groupAccumulator) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, SensorAcc groupAccumulator) {\n    if (counter > 0) return SKIP;\n\n    $out.0.sensor_id = groupAccumulator.sensor_id;\n    $out.0.avg_temperature =\n        groupAccumulator.reading_count == 0L\n            ? 0D\n            : roundHalfToEven(\n                  groupAccumulator.temperature_sum / groupAccumulator.reading_count,\n                  2);\n    $out.0.max_humidity = groupAccumulator.max_humidity;\n    $out.0.reading_count = groupAccumulator.reading_count;\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "rnftg-52"
+  },
+  {
+    "source_file": "CTL_LoRA_fix_mut_code.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Given Input Metadata on Port 0:\n<Metadata id=\"InSensorReading\">\n<Record name=\"SensorReading\" fieldDelimiter=\",\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"reading_time\" type=\"date\" format=\"yyyy-MM-dd'T'HH:mm:ss\"/>\n    <Field name=\"device_id\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"sensor_type\" type=\"string\"/>\n    <Field name=\"value\" type=\"decimal\" nullable=\"false\"/>\n</Record>\n</Metadata>\n\nGroup Accumulator Metadata:\n<Metadata id=\"DeviceAccumulator\">\n<Record name=\"DeviceStats\" type=\"delimited\">\n    <Field name=\"min_value\" type=\"decimal\"/>\n    <Field name=\"max_value\" type=\"decimal\"/>\n    <Field name=\"reading_count\" type=\"integer\"/>\n    <Field name=\"total_sum\" type=\"number\"/>\n</Record>\n</Metadata>\n\nOutput Metadata on Port 0:\n<Metadata id=\"OutDeviceSummary\">\n<Record name=\"DeviceSummary\" fieldDelimiter=\",\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"device_id\" type=\"string\"/>\n    <Field name=\"sensor_type\" type=\"string\"/>\n    <Field name=\"reading_start\" type=\"date\" format=\"yyyy-MM-dd'T'HH:mm:ss\"/>\n    <Field name=\"reading_end\" type=\"date\" format=\"yyyy-MM-dd'T'HH:mm:ss\"/>\n    <Field name=\"avg_value\" type=\"decimal\"/>\n    <Field name=\"reading_count\" type=\"integer\"/>\n    <Field name=\"is_stable\" type=\"boolean\"/>\n</Record>\n</Metadata>\n\nWrite a Rollup that calculates device-level sensor summaries using the group accumulator. Input is sorted by device_id and sensor_type. A device is considered \"stable\" if the difference between max and min values is ≤ 5.0."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction void initGroup(DeviceStats acc) {\n    acc.min_value = null;\n    acc.max_value = null;\n    acc.reading_count = 0;\n    acc.total_sum = 0.0;\n    acc.first_reading_time = null;\n    acc.last_reading_time = null;\n    acc.device_id = \"\";\n    acc.sensor_type = \"\";\n    return;\n}\n\nfunction boolean updateGroup(DeviceStats acc) {\n    decimal val = $in.0.value;\n\n    if (isnull(acc.min_value) || val < acc.min_value) {\n        acc.min_value = val;\n    }\n\n    if (isnull(acc.max_value) || val > acc.max_value) {\n        acc.max_value = val;\n    }\n\n    acc.reading_count = acc.reading_count + 1;\n    acc.total_sum += val;\n\n    if (isnull(acc.first_reading_time) || (!isnull($in.0.reading_time) && $in.0.reading_time < acc.first_reading_time)) {\n        acc.first_reading_time = $in.0.reading_time;\n    }\n    if (isnull(acc.last_reading_time) || (!isnull($in.0.reading_time) && $in.0.reading_time > acc.last_reading_time)) {\n        acc.last_reading_time = $in.0.reading_time;\n    }\n\n    if (acc.reading_count == 1) {\n        acc.device_id = $in.0.device_id;\n        acc.sensor_type = $in.0.sensor_type;\n    }\n\n    return false; // no per-record output\n}\n\nfunction boolean finishGroup(DeviceStats acc) {\n    return true;\n}\n\nfunction integer updateTransform(integer counter, DeviceStats acc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, DeviceStats acc) {\n    if (counter > 0) return SKIP;\n\n    $out.0.device_id = acc.device_id;\n    $out.0.sensor_type = acc.sensor_type;\n    $out.0.reading_start = acc.first_reading_time;\n    $out.0.reading_end = acc.last_reading_time;\n    $out.0.avg_value = acc.total_sum / acc.reading_count;\n    $out.0.reading_count = acc.reading_count;\n    $out.0.is_stable = !isnull(acc.min_value) && !isnull(acc.max_value) && (acc.max_value - acc.min_value <= 5.0D);\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "rnftg-53"
+  },
+  {
+    "source_file": "CTL_LoRA_fix_mut_code.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Given Input Metadata on Port 0:\n<Metadata id=\"InSensorReadings\">\n<Record name=\"SensorEvent\" fieldDelimiter=\";\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"device_id\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"temperature\" type=\"decimal\" length=\"6\" scale=\"1\"/>\n    <Field name=\"humidity\" type=\"integer\"/>\n    <Field name=\"reading_timestamp\" type=\"string\"/>\n</Record>\n</Metadata>\n\nAnd Output Metadata on Port 0:\n<Metadata id=\"OutDeviceStats\">\n<Record name=\"DeviceStats\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"device_id\" type=\"string\"/>\n    <Field name=\"avg_temperature\" type=\"decimal\" length=\"8\" scale=\"2\"/>\n    <Field name=\"min_humidity\" type=\"integer\"/>\n    <Field name=\"max_humidity\" type=\"integer\"/>\n    <Field name=\"reading_count\" type=\"long\"/>\n</Record>\n</Metadata>\n\nWrite a Rollup that groups sensor events by device_id and outputs the average temperature (rounded to two decimal places), minimum humidity, maximum humidity, and total number of readings."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\n// Define accumulator structure for Rollup\nfunction void initGroup(DeviceStatsAcc groupAccumulator) {\n    groupAccumulator.deviceId = \"\";\n    groupAccumulator.totalTemp = 0D;\n    groupAccumulator.minHum = null;\n    groupAccumulator.maxHum = null;\n    groupAccumulator.readingCnt = 0L;\n    return;\n}\n\nfunction boolean updateGroup(DeviceStatsAcc groupAccumulator) {\n    if (groupAccumulator.readingCnt == 0L) {\n        groupAccumulator.deviceId = $in.0.device_id;\n    }\n\n    groupAccumulator.totalTemp += nvl($in.0.temperature, 0D);\n\n    if (isnull(groupAccumulator.minHum) || (!isnull($in.0.humidity) && $in.0.humidity < groupAccumulator.minHum)) {\n        groupAccumulator.minHum = $in.0.humidity;\n    }\n\n    if (isnull(groupAccumulator.maxHum) || (!isnull($in.0.humidity) && $in.0.humidity > groupAccumulator.maxHum)) {\n        groupAccumulator.maxHum = $in.0.humidity;\n    }\n\n    groupAccumulator.readingCnt++;\n    return false;\n}\n\nfunction boolean finishGroup(DeviceStatsAcc groupAccumulator) {\n    return true;\n}\n\nfunction integer updateTransform(integer counter, DeviceStatsAcc groupAccumulator) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, DeviceStatsAcc groupAccumulator) {\n    if (counter > 0) return SKIP;\n\n    $out.0.device_id = groupAccumulator.deviceId;\n    $out.0.avg_temperature = groupAccumulator.readingCnt > 0L\n        ? roundHalfToEven(groupAccumulator.totalTemp / groupAccumulator.readingCnt, 2)\n        : 0D;\n    $out.0.min_humidity = groupAccumulator.minHum;\n    $out.0.max_humidity = groupAccumulator.maxHum;\n    $out.0.reading_count = groupAccumulator.readingCnt;\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "rnftg-56"
+  },
+  {
+    "source_file": "CTL_LoRA_fix_mut_code.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Given Input Metadata on Port 0:\n<Metadata id=\"InSensorReadings\">\n<Record name=\"SensorReading\" fieldDelimiter=\",\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"device_id\" type=\"string\"/>\n    <Field name=\"reading_timestamp\" type=\"long\"/>\n    <Field name=\"temperature_value\" type=\"decimal\" length=\"8\" scale=\"1\" nullable=\"false\"/>\n    <Field name=\"reading_quality\" type=\"string\"/>\n    <Field name=\"sensor_zone\" type=\"string\"/>\n</Record>\n</Metadata>\n\nAnd Group Accumulator Metadata:\n<Metadata id=\"GroupAccReadings\">\n<Record name=\"ReadingAccumulator\" fieldDelimiter=\",\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"reading_count\" type=\"long\"/>\n    <Field name=\"sum_temperature\" type=\"decimal\" length=\"12\" scale=\"1\"/>\n    <Field name=\"valid_sum_temperature\" type=\"decimal\" length=\"12\" scale=\"1\"/>\n    <Field name=\"invalid_count\" type=\"integer\"/>\n    <Field name=\"earliest_timestamp\" type=\"long\"/>\n</Record>\n</Metadata>\n\nAnd Output Metadata on Port 0:\n<Metadata id=\"OutDeviceStats\">\n<Record name=\"DeviceStats\" fieldDelimiter=\",\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"device_id\" type=\"string\"/>\n    <Field name=\"reading_count\" type=\"long\"/>\n    <Field name=\"avg_temperature\" type=\"decimal\" length=\"8\" scale=\"1\"/>\n    <Field name=\"valid_sum_temperature\" type=\"decimal\" length=\"12\" scale=\"1\"/>\n    <Field name=\"invalid_count\" type=\"integer\"/>\n    <Field name=\"earliest_timestamp\" type=\"long\"/>\n</Record>\n</Metadata>\n\nWrite a Rollup to aggregate sensor readings grouped by device_id. Only include readings with reading_quality == 'VALID' in the valid_sum_temperature and avg_temperature calculations. Track total readings (including invalid ones) and count invalid ones separately. Retain the earliest timestamp (smallest reading_timestamp) per device."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction void initGroup(ReadingAccumulator acc) {\n    acc.device_id = \"\";\n    acc.reading_count = 0L;\n    acc.valid_reading_count = 0L;\n    acc.sum_temperature = 0D;\n    acc.valid_sum_temperature = 0D;\n    acc.invalid_count = 0;\n    acc.earliest_timestamp = 0L; // long default value used as sentinel\n    return;\n}\n\nfunction boolean updateGroup(ReadingAccumulator acc) {\n    if (acc.reading_count == 0L) {\n        acc.device_id = $in.0.device_id;\n        acc.earliest_timestamp = $in.0.reading_timestamp;\n    }\n\n    acc.reading_count++;\n\n    acc.sum_temperature += $in.0.temperature_value;\n\n    if ($in.0.reading_quality == \"VALID\") {\n        acc.valid_reading_count++;\n        acc.valid_sum_temperature += $in.0.temperature_value;\n    } else {\n        acc.invalid_count++;\n    }\n\n    if ($in.0.reading_timestamp < acc.earliest_timestamp) {\n        acc.earliest_timestamp = $in.0.reading_timestamp;\n    }\n\n    return true;\n}\n\nfunction boolean finishGroup(ReadingAccumulator acc) {\n    return true;\n}\n\nfunction integer updateTransform(integer counter, ReadingAccumulator acc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, ReadingAccumulator acc) {\n    if (counter > 0) return SKIP;\n\n    $out.0.device_id = acc.device_id;\n    $out.0.reading_count = acc.reading_count;\n    $out.0.valid_sum_temperature = acc.valid_sum_temperature;\n    $out.0.invalid_count = acc.invalid_count;\n    $out.0.earliest_timestamp = acc.earliest_timestamp;\n\n    if (acc.valid_reading_count > 0L) {\n        $out.0.avg_temperature = acc.valid_sum_temperature / acc.valid_reading_count;\n    } else {\n        $out.0.avg_temperature = 0D;\n    }\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "rnftg-57"
+  },
+  {
+    "source_file": "CTL_LoRA_fix_mut_code.json",
+    "inferred_component": "Rollup",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "We need to roll up hourly sensor readings into a per-hour summary for environmental monitoring. Metadata and sample rows are below (sorted by hour_start):\n\n<Metadata id=\"SensorLog\">\n  <Record name=\"Reading\" fieldDelimiter=\"|\">\n    <Field name=\"hour_start\" type=\"date\" dateFormat=\"yyyy-MM-dd HH:mm:ss\" nullable=\"false\"/>\n    <Field name=\"temp_c\" type=\"decimal\" scale=\"1\"/>\n    <Field name=\"humidity_pct\" type=\"integer\"/>\n    <Field name=\"pressure_hpa\" type=\"long\"/>\n  </Record>\n</Metadata>\n\n<Metadata id=\"HourlySummary\">\n  <Record name=\"HourReport\" fieldDelimiter=\"|\">\n    <Field name=\"hour_start\" type=\"date\"/>\n    <Field name=\"avg_temp\" type=\"decimal\" scale=\"1\"/>\n    <Field name=\"max_humidity\" type=\"integer\"/>\n    <Field name=\"min_pressure\" type=\"long\"/>\n    <Field name=\"reading_count\" type=\"integer\"/>\n  </Record>\n</Metadata>\n\nSample data:\nhour_start|temp_c|humidity_pct|pressure_hpa\n2025-06-15 08:00:00|21.3|65|1013\n2025-06-15 08:00:00|22.7|68|1012\n2025-06-15 09:00:00|23.1|70|1011\n\nUse a Rollup component grouping by hour_start. Compute:\n- average temperature (rounded to 1 decimal using banker's rounding),\n- maximum humidity (as integer),\n- minimum pressure (as long),\n- total number of readings.\n\nUse an accumulator metadata class named HourAcc with these fields:\n- integer cnt\n- decimal sumTemp\n- integer maxHum\n- long minPress\n\nPlease provide CTL2 code for the Rollup: initGroup, updateGroup, finishGroup, and transform functions. Also state which field is the group key and show the expected accumulator structure (as above) in the response."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\n// Group key: hour_start\n// Accumulator HourAcc structure:\n// - integer cnt\n// - decimal sumTemp\n// - integer maxHum\n// - long minPress\n// - date hourStart\n\nfunction void initGroup(HourAcc acc) {\n    acc.cnt = 0;\n    acc.sumTemp = 0D;\n    acc.maxHum = 0;\n    acc.minPress = 0L;\n    acc.hourStart = zeroDate();\n    return;\n}\n\nfunction boolean updateGroup(HourAcc acc) {\n    if (acc.cnt == 0) {\n        acc.hourStart = $in.0.hour_start;\n        acc.maxHum = 0;\n        acc.minPress = 0L;\n    }\n\n    acc.cnt++;\n    acc.sumTemp += nvl($in.0.temp_c, 0D);\n    if (acc.cnt == 1 || nvl($in.0.humidity_pct, 0) > acc.maxHum) {\n        acc.maxHum = nvl($in.0.humidity_pct, 0);\n    }\n    if (acc.cnt == 1 || nvl($in.0.pressure_hpa, 0L) < acc.minPress) {\n        acc.minPress = nvl($in.0.pressure_hpa, 0L);\n    }\n    return false;\n}\n\nfunction boolean finishGroup(HourAcc acc) {\n    return true;\n}\n\nfunction integer updateTransform(integer counter, HourAcc acc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, HourAcc acc) {\n    if (counter > 0) return SKIP;\n\n    $out.0.hour_start = acc.hourStart;\n    $out.0.avg_temp = roundHalfToEven(acc.sumTemp / acc.cnt, 1);\n    $out.0.max_humidity = acc.maxHum;\n    $out.0.min_pressure = acc.minPress;\n    $out.0.reading_count = acc.cnt;\n\n    return ALL;\n}\n```"
+      }
+    ],
+    "id": "rnftg-59"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Denormalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Denormalizer (grouping by patient_id) that should output one row per patient and add a random decimal risk_score between 0 and 1 for downstream testing.\n\nInput metadata (port 0):\n- patient_id: integer\n- visit_id: integer\n- diagnosis_code: string\n\nOutput metadata (port 0):\n- patient_id: integer\n- total_visits: integer\n- risk_score: decimal\n\nCan you show the CTL2 code for the Denormalizer that counts visits per patient and assigns such a random risk_score on the output row?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ninteger visitCount;\n\n// Called for each record in the group\ninteger groupPatientId;\n\nfunction integer append() {\n    groupPatientId = $in.0.patient_id;\n    visitCount++;\n    return OK;\n}\n\nfunction integer appendOnError(string errorMessage, string stackTrace) {\n    return OK;\n}\n\n// Called once per group\nfunction integer transform() {\n    $out.0.patient_id = groupPatientId;  // value captured in append()\n    $out.0.total_visits = visitCount;\n    $out.0.risk_score = randomDecimal();   // uniform in [0.0, 1.0]\n\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace) {\n    return SKIP;\n}\n\nfunction void clean() {\n    visitCount = 0;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-11"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Denormalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Denormalizer (group aggregation) for orders, I want to create a semicolon-separated list of product codes per customer.\n\nInput metadata (port 0):\n- customer_id: string\n- product_code: string\n\nOutput metadata (port 0):\n- customer_id: string\n- product_codes: string\n\nAssume group by customer_id. During append() I am adding each product_code into a global string[] productList. Can you show transform() that joins them into one field using a helper, instead of manually looping and concatenating?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring[] productList;\n\nstring groupCustomerId;\n\nfunction integer append() {\n    groupCustomerId = $in.0.customer_id;\n    append(productList, $in.0.product_code);\n    return OK;\n}\n\nfunction void clean() {\n    clear(productList);\n}\n\nfunction integer transform() {\n    $out.0.customer_id = groupCustomerId;\n\n    if (length(productList) == 0) {\n        $out.0.product_codes = \"\";\n    } else {\n        $out.0.product_codes = join(\";\", productList);\n    }\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1367"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Denormalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Denormalizer I accumulate grouped payment rows into a single summary. My input record (port 0) has:\n- customer_id: integer\n- payment_date: date\n- currency: string\n- amount: decimal\n\nOutput metadata:\n- customer_id: integer\n- currency: string\n- total_amount: decimal\n\nIn the transform() of Denormalizer, I want to copy customer_id and currency by position from the first record in the group, and then fill total_amount from my accumulator. I tried manually assigning fields but it is error-prone if metadata changes. How would you implement transform() using positional copying?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\ndecimal total_amount;\ninteger groupCustomerId;\nstring groupCurrency;\nboolean firstSeen;\n\nfunction integer append() {\n    if (!firstSeen) {\n        groupCustomerId = $in.0.customer_id;\n        groupCurrency = $in.0.currency;\n        firstSeen = true;\n    }\n\n    total_amount += $in.0.amount;\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.customer_id = groupCustomerId;\n    $out.0.currency = groupCurrency;\n    $out.0.total_amount = total_amount;\n    return OK;\n}\n\nfunction void clean() {\n    total_amount = 0D;\n    groupCustomerId = 0;\n    groupCurrency = null;\n    firstSeen = false;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1498"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Denormalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Denormalizer that sums transaction amounts per account and I also want to bucket each account into fee tiers based on the total amount.\n\nInput metadata (port 0):\n- account_id: integer\n- amount: decimal\n\nOutput metadata (port 0):\n- account_id: integer\n- total_amount: decimal\n- tier_bucket: integer (0, 1, 2, ...), where tier_bucket = floor(total_amount / 1000).\n\nCan you show the CTL2 code for append/transform/clean using floor in the Denormalizer?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\ninteger gCount;\ndecimal gTotal;\n\ninteger groupAccountId;\n\nfunction integer append() {\n    groupAccountId = $in.0.account_id;\n    gCount++;\n    gTotal += $in.0.amount;\n    return OK;\n}\n\nfunction integer appendOnError(string errorMessage, string stackTrace) {\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.account_id = groupAccountId;\n    $out.0.total_amount = gTotal;\n\n    // tier_bucket = floor(total_amount / 1000)\n    number ratio = gTotal / 1000D;\n    $out.0.tier_bucket = double2integer(floor(ratio));\n\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace) {\n    return SKIP;\n}\n\nfunction void clean() {\n    gCount = 0;\n    gTotal = 0D;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-235"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Denormalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Denormalizer (Aggregate) I want to add a new output field `doc_url` (string, nullable) that will always point to a PDF template inside the project under `reports/summary.pdf`. The input group fields are:\n- customer_id: integer\n- amount: decimal\n\nThe output metadata is:\n- customer_id: integer\n- total_amount: decimal\n- doc_url: string (nullable)\n\nCould you show me the CTL2 append/transform/clean functions that sum the amounts and set doc_url to the corresponding project URL?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\ndecimal totalAmount;\ninteger customerId;\n\nfunction integer append() {\n    // remember the customer_id for the group (all records share the same key)\n    customerId = $in.0.customer_id;\n    totalAmount += $in.0.amount;\n    return OK;\n}\n\nfunction integer appendOnError(string errorMessage, string stackTrace) {\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.customer_id = customerId;\n    $out.0.total_amount = totalAmount;\n    $out.0.doc_url = toProjectUrl(\"reports/summary.pdf\");\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace) {\n    return SKIP;\n}\n\nfunction void clean() {\n    totalAmount = 0D;\n    customerId = 0;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2918"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Denormalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Denormalizer I am aggregating shipment line items to a shipment header. I have multiple package_weight values per shipment and I need the heaviest package in a field max_package_weight.\n\nInput metadata (port 0):\n- shipment_id: string\n- package_id: string\n- package_weight: number\n\nOutput metadata (port 0):\n- shipment_id: string\n- max_package_weight: number\n\nCan you provide the CTL2 code for append(), transform(), and clean() to compute the maximum weight per shipment?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nnumber maxWeight;\n\nstring groupShipmentId;\n\nfunction integer append() {\n    groupShipmentId = $in.0.shipment_id;\n    if (isnull(maxWeight)) {\n        // initialize on first record in the group\n        maxWeight = $in.0.package_weight;\n    } else {\n        maxWeight = max(maxWeight, $in.0.package_weight);\n    }\n    return OK;\n}\n\nfunction integer appendOnError(string errorMessage, string stackTrace) {\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.shipment_id = groupShipmentId;\n    $out.0.max_package_weight = maxWeight;\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace) {\n    return SKIP;\n}\n\nfunction void clean() {\n    maxWeight = null;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-3144"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Denormalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Denormalizer (grouping by account), I need a summary that stores the truncated average of a decimal `invoice_total` field (i.e. remove cents without rounding). Input metadata on port 0:\n- account_id: string\n- invoice_total: decimal\n\nOutput metadata on port 0:\n- account_id: string\n- avg_invoice_trunc: decimal\n\nThe Denormalizer uses CTL2 aggregation with an `append()` and `transform()` function. Can you show me CTL2 code that computes the average and then applies truncation when writing it out?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\ndecimal total_sum = 0D;\ninteger total_count = 0;\n\nstring groupAccountId;\n\nfunction integer append() {\n    groupAccountId = $in.0.account_id;\n    total_sum += $in.0.invoice_total;\n    total_count++;\n    return OK;\n}\n\nfunction integer appendOnError(string errorMessage, string stackTrace) {\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.account_id = groupAccountId;\n    // average of invoice_total, truncated to drop cents\n    decimal avg_val = total_sum / total_count;\n    $out.0.avg_invoice_trunc = avg_val - (avg_val % 1D);\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace) {\n    return SKIP;\n}\n\nfunction void clean() {\n    total_sum = 0D;\n    total_count = 0;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-637"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Denormalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Denormalizer (group aggregate) where each group is one customer and I want to compute the log10 of the total spend for that customer.\n\nInput metadata (port 0):\n- cust_id: string\n- order_id: string\n- amount: decimal\n\nOutput metadata (port 0):\n- cust_id: string\n- total_amount: decimal\n- log_total_amount: number\n\nGroup key is cust_id. Can you provide the CTL2 code for append(), transform(), and clean() that sums the amounts per customer and also outputs log10(total_amount)?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\ndecimal total_amount;\n\nstring groupCustId;\n\nfunction integer append() {\n    groupCustId = $in.0.cust_id;\n    // Accumulate group total\n    total_amount += $in.0.amount;\n    return OK;\n}\n\nfunction integer appendOnError(string errorMessage, string stackTrace) {\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.cust_id = groupCustId;\n    $out.0.total_amount = total_amount;\n    // Base-10 logarithm of the total amount\n    $out.0.log_total_amount = log10(total_amount);\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace) {\n    return SKIP;\n}\n\nfunction void clean() {\n    // Reset accumulator between groups\n    total_amount = 0D;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-887"
+  },
+  {
+    "source_file": "CTL_LoRA_with_metadata_set_2.json",
+    "inferred_component": "Denormalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an expert assistant for CloverDX and CTL2 (Clover Transformation Language, also referred to as CTL). You help users write and debug CTL2 code, explain language concepts and functions, and advise on data transformation best practices. Adapt your response to what the question needs -- sometimes working code, sometimes an explanation, sometimes both."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 for a Denormalizer component.\n\nRequirements:\n- Count input rows.\n- Sum amount.\n- Emit count and average.\n- Reset state in clean().\n- Use only declared fields and locals.\n\nInput metadata (port 0):\n<Metadata id=\"In\"><Record name=\"Sale\" type=\"delimited\"><Field name=\"amount\" type=\"decimal\"/></Record></Metadata>\n\nOutput metadata (port 0):\n<Metadata id=\"Out\"><Record name=\"SaleAgg\" type=\"delimited\"><Field name=\"count\" type=\"integer\"/><Field name=\"average\" type=\"decimal\"/></Record></Metadata>"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ninteger count;\ndecimal total;\n\nfunction integer append() {\n    count = count + 1;\n    total = total + $in.0.amount;\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.count = count;\n    $out.0.average = total / count;\n    return OK;\n}\n\nfunction void clean() {\n    count = 0;\n    total = 0D;\n}\n```"
+      }
+    ],
+    "id": "struct-gen-005"
+  },
+  {
+    "source_file": "CTL_LoRA_conversations.json",
+    "inferred_component": "Denormalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an expert assistant for CloverDX and CTL2 (Clover Transformation Language, also referred to as CTL). You help users write and debug CTL2 code, explain language concepts and functions, and advise on data transformation best practices. Adapt your response to what the question needs - sometimes working code, sometimes an explanation, sometimes both."
+      },
+      {
+        "role": "user",
+        "content": "I'm configuring a Denormalizer and set a custom accumulator metadata called GroupAcc in the component dialog. Do I need to import that metadata to use GroupAcc as a parameter type in initGroup()?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\ninteger g_count = 0;\ndecimal g_total = 0D;\n\nfunction integer append() {\n    g_count = g_count + 1;\n    g_total = g_total + $in.0.amount;\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.count = g_count;\n    $out.0.total = g_total;\n    return OK;\n}\n\nfunction void clean() {\n    g_count = 0;\n    g_total = 0D;\n}\n```"
+      }
+    ],
+    "id": "xqgmb-616"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Normalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am writing CTL2 code inside a Normalizer. I keep a list of remaining installment numbers on a loan and I want to emit the installments from the end of the list first.\n\nInput metadata (port 0):\n- loan_id: string\n- installments: integer[]\n\nOutput metadata (port 0):\n- loan_id: string\n- installment_no: integer\n\nCan you show how to structure the Normalizer functions so that each output record uses and removes one installment from the end of the list?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ninteger[] remainingInstallments;\n\n// Return number of installments to output\nfunction integer count() {\n    remainingInstallments = $in.0.installments;\n    return length(remainingInstallments);\n}\n\nfunction integer countOnError(string errorMessage, string stackTrace) {\n    return 0;\n}\n\nfunction integer transform(integer idx) {\n    $out.0.loan_id = $in.0.loan_id;\n\n    // pop returns and removes the last installment from the list\n    integer installmentNo = pop(remainingInstallments);\n    $out.0.installment_no = installmentNo;\n\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace, integer idx) {\n    return SKIP;\n}\n\nfunction void clean() {\n    clear(remainingInstallments);\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1411"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Normalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Normalizer that expands shipment lines, and for each output row I want to assign a random decimal quality_score between 0 and 10.\n\nInput metadata (port 0):\n- shipment_id: string\n- items_csv: string (nullable)  // comma-separated item ids\n\nOutput metadata (port 0):\n- shipment_id: string\n- item_id: string\n- line_index: integer\n- quality_score: decimal\n\nCan you show the CTL2 for the Normalizer that splits items_csv and assigns a random quality_score in that 0..10 range?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring[] items;\n\nfunction integer count() {\n    // Handle nullable items_csv: treat null or empty as zero items\n    if (isnull($in.0.items_csv) || length(trim($in.0.items_csv)) == 0) {\n        items = [];\n        return 0;\n    }\n\n    items = split($in.0.items_csv, \",\");\n    return length(items);\n}\n\nfunction integer countOnError(string errorMessage, string stackTrace) {\n    return 0;\n}\n\nfunction integer transform(integer idx) {\n    $out.0.shipment_id = $in.0.shipment_id;\n    $out.0.item_id = trim(items[idx]);\n    $out.0.line_index = idx;\n    $out.0.quality_score = randomDecimal(0D, 10D);\n\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace, integer idx) {\n    return SKIP;\n}\n\nfunction void clean() {\n    clear(items);\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-15"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Normalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a Normalizer I need to expand one input row with precomputed trigonometry into multiple outputs. The input metadata (port 0) is:\n- measurement_id: long\n- cos_alpha: number (nullable=\"true\")\n\nOutput metadata (port 0):\n- measurement_id: long\n- alpha_rad: number\n\nI want to generate exactly one output record if cos_alpha is not null and its value is between -1 and 1, computing the angle in radians. If cos_alpha is null or out of range, I want zero output records. Can you show the CTL2 implementation for count() and transform(idx)?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nnumber cosAlpha;\n\n// Return number of output records to generate\nfunction integer count() {\n    cosAlpha = $in.0.cos_alpha;\n    // Only one output when cosine is present and in [-1, 1]\n    if (isnull(cosAlpha)) return 0;\n    if (cosAlpha < -1.0 || cosAlpha > 1.0) return 0;\n    return 1;\n}\n\nfunction integer countOnError(string errorMessage, string stackTrace) {\n    return 0;\n}\n\n// Called for each output record (idx: 0 to count-1)\nfunction integer transform(integer idx) {\n    $out.0.measurement_id = $in.0.measurement_id;\n    $out.0.alpha_rad = acos(cosAlpha);\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace, integer idx) {\n    return SKIP;\n}\n\nfunction void clean() {\n    cosAlpha = 0.0;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1679"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Normalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a Normalizer in CloverDX for an e-commerce orders feed.\n\nInput metadata (port 0):\n- order_id: string\n- item_skus: string  (comma-separated list, e.g. \"SKU1,SKU2,SKU3\")\n\nOutput metadata (port 0):\n- order_id: string\n- item_sku: string\n- item_sku_reversed: string\n- index: integer\n\nI want each output row to have one item_sku from the list, and another field that contains that SKU reversed (e.g. \"ABC9\" -> \"9CBA\"). Can you provide the CTL2 code for the Normalizer (count/transform/clean)?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring[] skus;\n\n// Return number of output records to generate per input record\nfunction integer count() {\n    skus = split($in.0.item_skus, \",\");\n    return length(skus);\n}\n\nfunction integer countOnError(string errorMessage, string stackTrace) {\n    return 0;\n}\n\nfunction integer transform(integer idx) {\n    string sku = trim(skus[idx]);\n\n    $out.0.order_id = $in.0.order_id;\n    $out.0.item_sku = sku;\n    $out.0.item_sku_reversed = reverse(sku);\n    $out.0.index = idx;\n\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace, integer idx) {\n    return SKIP;\n}\n\nfunction void clean() {\n    clear(skus);\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-170"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Normalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I have a Normalizer that explodes a list of URLs in a single field into multiple rows. Metadata:\n\nInput (port 0):\n- user_id: integer\n- urls_concat: string\n\nOutput (port 0):\n- user_id: integer\n- url: string\n- url_fragment: string\n\n`urls_concat` contains URLs separated by semicolons. Could you show how to implement the `count` and `transform` functions so that we output `url` and also extract the fragment into `url_fragment` using the right CTL2 function?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nstring[] urls;\n\n// Return the number of output records per input row\nfunction integer count() {\n    urls = split($in.0.urls_concat, \";\");\n    return length(urls);\n}\n\nfunction integer countOnError(string errorMessage, string stackTrace) {\n    return 0;\n}\n\nfunction integer transform(integer idx) {\n    $out.0.user_id = $in.0.user_id;\n    string u = trim(urls[idx]);\n\n    $out.0.url = u;\n    $out.0.url_fragment = nvl(getUrlRef(u), \"\");\n\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace, integer idx) {\n    return SKIP;\n}\n\nfunction void clean() {\n    clear(urls);\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-1929"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "Normalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a small logistics flow in CloverDX. A Normalizer expands multiple route candidates and I want to standardize the depot_path field.\n\nInput metadata (Port 0, name: DepotRoutesIn):\n- route_id: integer\n- depot_path: string\n- option_list: string (comma-separated options)\n\nOutput metadata (Port 0, name: DepotRoutesOut):\n- route_id: integer\n- normalized_depot_path: string\n- option: string\n- idx: integer\n\nCan you show the Normalizer CTL2 code with count() and transform(idx) where the depot_path is normalized once and reused for each option?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring[] opts;\nstring norm_depot;\n\n// Return number of options to emit\nfunction integer count() {\n    opts = split($in.0.option_list, \",\");\n    norm_depot = normalizePath($in.0.depot_path);\n    return length(opts);\n}\n\nfunction integer countOnError(string errorMessage, string stackTrace) {\n    return 0;\n}\n\nfunction integer transform(integer idx) {\n    $out.0.route_id = $in.0.route_id;\n    $out.0.normalized_depot_path = norm_depot;\n    $out.0.option = trim(opts[idx]);\n    $out.0.idx = idx;\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace, integer idx) {\n    return SKIP;\n}\n\nfunction void clean() {\n    clear(opts);\n    norm_depot = \"\";\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2891"
+  },
+  {
+    "source_file": "CTL_LoRA_with_metadata_set_2.json",
+    "inferred_component": "Normalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CTL2 expert. Write CloverDX transformation code. Use only functions and constructs that exist in CTL2 -- if a function is not in the CTL2 standard library, do not use it."
+      },
+      {
+        "role": "user",
+        "content": "Catalog file (CSV):\n\nitem_sku,label_values\nA120,home decor ; furniture; interior\nB451,gadgets; electronics\nC300,apparel\n\nUse a Normalizer component to expand semicolon-separated label_values into individual rows. Create an output field named label (trimmed) and an integer label_pos which is 1-based (first label = 1). Provide the CTL2 code (no metadata imports)."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring[] labelList;\n\nfunction integer count() {\n    string s = nvl($in.0.label_values, \"\");\n    if (isBlank(s)) {\n        labelList = [];\n        return 0;\n    }\n    labelList = split(s, \";\");\n    return length(labelList);\n}\n\nfunction integer transform(integer idx) {\n    $out.0.item_sku = $in.0.item_sku;\n    $out.0.label = trim(nvl(labelList[idx], \"\"));\n    $out.0.label_pos = idx + 1;\n    return OK;\n}\n\nfunction void clean() {\n    clear(labelList);\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_with_metadata_set_2-74"
+  },
+  {
+    "source_file": "CTL_LoRA_components_contracts.json",
+    "inferred_component": "Normalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Input metadata (port 0):\n<Metadata id=\"NG5In\"><Record name=\"ItemIn\" type=\"delimited\"><Field name=\"item_id\" type=\"integer\" nullable=\"false\"/><Field name=\"tags\" type=\"string\" nullable=\"true\"/></Record></Metadata>\n\nOutput metadata (port 0):\n<Metadata id=\"NG5Out\"><Record name=\"ItemTagOut\" type=\"delimited\"><Field name=\"item_id\" type=\"integer\" nullable=\"false\"/><Field name=\"tag\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nI need Normalizer CTL2 that turns a pipe-delimited `tags` field into one output row per tag. If `tags` is null or blank, emit no rows."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring[] parts;\n\nfunction integer count() {\n    if (isnull($in.0.tags) || isBlank($in.0.tags)) {\n        clear(parts);\n        return 0;\n    }\n    parts = split($in.0.tags, \"\\|\");\n    return length(parts);\n}\n\nfunction integer transform(integer idx) {\n    $out.0.item_id = $in.0.item_id;\n    $out.0.tag = trim(parts[idx]);\n    return OK;\n}\n\nfunction void clean() {\n    clear(parts);\n}\n```"
+      }
+    ],
+    "id": "ebuoq-291"
+  },
+  {
+    "source_file": "CTL_LoRA_components_contracts.json",
+    "inferred_component": "Normalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Generate Normalizer component CTL2 for this scenario.\n\nInput metadata (port 0):\n<Metadata id=\"NG6In\"><Record name=\"AccountIn\" type=\"delimited\"><Field name=\"account_id\" type=\"integer\" nullable=\"false\"/><Field name=\"emails_csv\" type=\"string\" nullable=\"true\"/><Field name=\"country\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nOutput metadata (port 0):\n<Metadata id=\"NG6Out\"><Record name=\"EmailOut\" type=\"delimited\"><Field name=\"account_id\" type=\"integer\" nullable=\"false\"/><Field name=\"country\" type=\"string\" nullable=\"false\"/><Field name=\"email\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nSplit `emails_csv` on semicolons, trim each email, and emit zero rows when the source field is null or blank."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring[] emails;\n\nfunction integer count() {\n    if (isBlank($in.0.emails_csv)) {\n        clear(emails);\n        return 0;\n    }\n    emails = split($in.0.emails_csv, \";\");\n    return length(emails);\n}\n\nfunction integer transform(integer idx) {\n    $out.0.account_id = $in.0.account_id;\n    $out.0.country = $in.0.country;\n    $out.0.email = trim(emails[idx]);\n    return OK;\n}\n\nfunction void clean() {\n    clear(emails);\n}\n```"
+      }
+    ],
+    "id": "ebuoq-292"
+  },
+  {
+    "source_file": "CTL_LoRA_with_metadata_set_2.json",
+    "inferred_component": "Normalizer",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an expert assistant for CloverDX and CTL2 (Clover Transformation Language, also referred to as CTL). You help users write and debug CTL2 code, explain language concepts and functions, and advise on data transformation best practices. Adapt your response to what the question needs -- sometimes working code, sometimes an explanation, sometimes both."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 for a Normalizer component.\n\nRequirements:\n- Input field tags contains a comma-separated string.\n- Emit one output row per tag.\n- Output item_id and tag.\n- Use declared shared state only.\n\nInput metadata (port 0):\n<Metadata id=\"In\"><Record name=\"Item\" type=\"delimited\"><Field name=\"item_id\" type=\"string\"/><Field name=\"tags\" type=\"string\"/></Record></Metadata>\n\nOutput metadata (port 0):\n<Metadata id=\"Out\"><Record name=\"TagOut\" type=\"delimited\"><Field name=\"item_id\" type=\"string\"/><Field name=\"tag\" type=\"string\"/></Record></Metadata>"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring[] parts;\n\nfunction integer count() {\n    parts = split($in.0.tags, \",\");\n    return length(parts);\n}\n\nfunction integer transform(integer idx) {\n    $out.0.item_id = $in.0.item_id;\n    $out.0.tag = trim(parts[idx]);\n    return OK;\n}\n\nfunction void clean() {\n    clear(parts);\n}\n```"
+      }
+    ],
+    "id": "struct-gen-004"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "DataGenerator",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am using a DataGenerator component to simulate payment transactions.\n\nOutput metadata (port 0):\n- txn_id: integer\n- account_no: string\n- checksum: string\n\nI want txn_id just to be an incrementing sequence starting from 1, account_no something simple like \"ACC\" + txn_id, and checksum should be the SHA-1 hash of account_no. Could you write the CTL2 code for generate()?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\ninteger counter = 0;\n\nfunction integer generate() {\n    counter++;\n\n    $out.0.txn_id     = counter;\n    $out.0.account_no = \"ACC\" + num2str(counter);\n    $out.0.checksum   = sha1($out.0.account_no);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2232"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "DataGenerator",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a DataGenerator that emits fake API keys for testing. Metadata for the output port:\n- key_id: integer\n- api_key: string\n- api_key_sha1: string\n\nCan you show a CTL2 `generate` function that increments `key_id`, builds a simple `api_key` like \"KEY_<id>\", and stores the SHA-1 hash of that string into `api_key_sha1`?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ninteger keyCounter = 0;\n\nfunction integer generate() {\n    keyCounter++;\n\n    $out.0.key_id = keyCounter;\n    $out.0.api_key = \"KEY_\" + num2str(keyCounter);\n    $out.0.api_key_sha1 = sha1($out.0.api_key);\n\n    // Stop after some number if needed, otherwise keep generating\n    // Here we generate indefinitely\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-2240"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "DataGenerator",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "In a DataGenerator I want to emit records with a synthetic long ID derived from a random number. Metadata for the output port:\n- synthetic_id: long\n- value_raw: number\n\nI plan to generate a random number between 0 and 100000 and then convert it to a long for `synthetic_id`. Could you write the generate() function?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer generate() {\n    number raw = random(0.0, 100000.0);\n    $out.0.value_raw = raw;\n    $out.0.synthetic_id = double2long(raw);\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-694"
+  },
+  {
+    "source_file": "CTL_LoRA_llm_augmented_functions_examples.json",
+    "inferred_component": "DataGenerator",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2 (Clover Transformation Language). CTL and CTL2 refer to the same language."
+      },
+      {
+        "role": "user",
+        "content": "I am building a DataGenerator in CloverDX for some test order data.\n\nOutput metadata (port 0):\n- order_id: integer\n- raw_amount: number\n- amount_int: integer\n\nI want `raw_amount` to be a random number between 0.0 and 1000.0, and `amount_int` to be that value truncated to an integer. Could you show a CTL2 generate() function that does this?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\ninteger counter = 0;\n\nfunction integer generate() {\n    counter++;\n\n    $out.0.order_id = counter;\n\n    // random double between 0.0 and 1000.0\n    number raw = random(0.0, 1000.0);\n    $out.0.raw_amount = raw;\n\n    // Truncate the fractional part for the integer field\n    $out.0.amount_int = double2integer(raw);\n\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "CTL_LoRA_llm_augmented_functions_examples-974"
+  },
+  {
+    "source_file": "CTL_LoRA_with_metadata_set_2.json",
+    "inferred_component": "DataGenerator",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an expert assistant for CloverDX and CTL2 (Clover Transformation Language, also referred to as CTL). You help users write and debug CTL2 code, explain language concepts and functions, and advise on data transformation best practices. Adapt your response to what the question needs -- sometimes working code, sometimes an explanation, sometimes both."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 for a Data Generator.\n\nRequirements:\n- No input ports.\n- Generate customer_id sequentially from 1.\n- Generate customer_code as CUST-<id>.\n- Set active to true.\n- Use only declared outputs.\n\nOutput metadata (port 0):\n<Metadata id=\"Out\"><Record name=\"CustomerMock\" type=\"delimited\"><Field name=\"customer_id\" type=\"integer\"/><Field name=\"customer_code\" type=\"string\"/><Field name=\"active\" type=\"boolean\"/></Record></Metadata>"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ninteger nextId = 1;\n\nfunction integer generate() {\n    $out.0.customer_id = nextId;\n    $out.0.customer_code = \"CUST-\" + num2str(nextId);\n    $out.0.active = true;\n    nextId++;\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "struct-gen-006"
+  },
+  {
+    "source_file": "CTL_LoRA_with_metadata_set_2.json",
+    "inferred_component": "DataGenerator",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are an expert assistant for CloverDX and CTL2 (Clover Transformation Language, also referred to as CTL). You help users write and debug CTL2 code, explain language concepts and functions, and advise on data transformation best practices. Adapt your response to what the question needs -- sometimes working code, sometimes an explanation, sometimes both."
+      },
+      {
+        "role": "user",
+        "content": "Fix this Data Generator CTL2 code. Return corrected CTL2 code and briefly list what you fixed.\n\n```ctl\n//#CTL2\nfunction integer generate() {\n    $out.0.product_id = $in.0.product_id;\n    $out.0.amount = 10.00D;\n    return OK;\n}\n```\n\nOutput metadata (port 0):\n<Metadata id=\"Out\"><Record name=\"MockOut\" type=\"delimited\"><Field name=\"product_id\" type=\"string\"/><Field name=\"amount\" type=\"decimal\"/></Record></Metadata>"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ninteger nextId = 1;\n\nfunction integer generate() {\n    $out.0.product_id = \"P-\" + num2str(nextId);\n    $out.0.amount = 10.00D;\n    nextId++;\n    return OK;\n}\n```"
+      }
+    ],
+    "id": "struct-gen-017"
+  }
+]
