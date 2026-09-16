@@ -691,6 +691,110 @@ Runs on GPU 1 by default (`CUDA_VISIBLE_DEVICES=1`) so it doesn't collide
 with a local judge server typically running on GPU 0; override by exporting
 `CUDA_VISIBLE_DEVICES` yourself before invoking.
 
+### The judge's `ctl_function_info` tool
+
+The judge gets a deterministic CTL2 built-in function catalog as a callable
+tool, so a claim about a built-in can be **checked** instead of recalled —
+that is where most hallucinated ISSUEs came from. It is backed by
+`resources/ctl-function-library.json` (302 built-ins, generated from the
+CloverDX CTL2 `.adoc` documentation plus runtime probes; schema documented in
+`resources/ctl-function-library-json-spec.md`) and carries, per **overload**:
+canonical signature, parameter types and positions, arity bounds, return type
+and nullability, documented runtime errors, and parameter-specific null
+behavior (`returns_null` vs `runtime_error` vs undocumented).
+
+Lookups are plain dict accesses inside the process — no network, no compiler,
+no cost beyond the extra model turn when the judge actually asks. The tool
+loop lives in `ReviewJudgeClient` (both the OpenAI and Anthropic paths) and
+the catalog itself in `dpo_forge/function_catalog.py`; a provider that does
+not support function calling is detected on the first rejected request and
+the run continues without the tool.
+
+Configured under `judge.function_lookup`:
+
+| Key | Default | Meaning |
+|-----|---------|---------|
+| `enabled` | `true` | Offer the tool at all |
+| `library` | `resources/ctl-function-library.json` | Catalog path (repo-relative or absolute) |
+| `max_queries_per_call` | `20` | Functions the judge may batch into one lookup |
+| `max_rounds_per_call` | `3` | Tool-call turns per judge call; the tool is then withdrawn so the next turn must answer |
+| `purposes` | `[review, fix]` | Which judge calls carry it (`tweak` and the numeric-claim check never do) |
+
+`not_found` from the catalog is authoritative — the judge is told to report
+such a call as a nonexistent function. `ambiguous_overload` and undocumented
+behavior stay uncertain by design: the judge must not report an ERROR that
+depends on behavior the catalog does not document.
+
+**Which OpenAI endpoint.** Reasoning-tier models reject function tools on
+`/v1/chat/completions` — gpt-5.6-terra answers with *"Function tools with
+reasoning_effort are not supported ... To use function tools, use
+/v1/responses"* — so `judge.api` (and `tweak_llm.api`) selects the endpoint:
+
+| Value | Behavior |
+|-------|----------|
+| `auto` (default) | `/v1/responses` when this client actually offers the tool and no custom `base_url` is set; `chat.completions` otherwise. If chat.completions later refuses tools and names `/v1/responses`, the run switches to it and keeps the tool |
+| `chat_completions` | Always `chat.completions`. A tools rejection there disables the catalog tool for the run (loud warning) rather than switching |
+| `responses` | Always `/v1/responses` |
+
+A custom `base_url` stays on chat.completions under `auto`, since local
+OpenAI-compatible servers (vLLM and friends) commonly implement only that
+endpoint. Both paths behave identically otherwise — one tool loop, the same
+reasoning-exhaustion retries, the same usage accounting and prompt-cache
+hints — and the endpoint-specific vocabulary (`instructions` vs `system`,
+`max_output_tokens` vs `max_completion_tokens`, `reasoning={"effort": ...}` vs
+`reasoning_effort`, flat vs nested tool declarations, `function_call_output`
+vs `role: tool`) is handled inside `ReviewJudgeClient`. The Responses path
+sends `store=False` and returns every output item — reasoning items
+included — in the next request, which is what keeps reasoning continuity
+without server-side retention.
+
+Note that a parameter the model rejects is dropped and cached per client, but
+**never at the cost of a configured value when an endpoint change would do**:
+the tools+`reasoning_effort` conflict switches endpoint and keeps the effort,
+rather than silently reviewing at a lower reasoning setting.
+
+**Console signals.** Every lookup prints one line naming the functions asked
+about, with any `not_found` / `no_matching_overload` / `ambiguous_overload`
+called out:
+
+```
+[review-judge] ctl_function_info -> 3 lookup(s): roundHalfToEven, strLen, round  [strLen=not_found]
+```
+
+The run report ends with the totals (`ctl_function_info lookups: N call(s) /
+M function(s)`). If the provider or model **rejects function calling**, the
+run continues without the tool — but that is announced with a boxed `!!`
+warning at the moment it happens *and* repeated in the run report, because a
+judge working from the inline reference alone is exactly the setup that
+produced hallucinated function claims in the first place.
+
+### Numeric-claim fact-checking
+
+Every reported ISSUE that mentions a numeric type is fact-checked against the
+widening chain before it is allowed to stand
+(`ReviewJudgeClient.check_numeric_claim`, wired in as `numeric_verifier`).
+Two stages, cheapest first:
+
+1. **The catalog, in-process and free.** When the claim names a built-in whose
+   documented return type is unambiguous, the claim stands or falls on a fact
+   the catalog holds. `` `roundHalfToEven` returns number, so the decimal field
+   is a type mismatch `` is dropped without any model call — the catalog says
+   that overload returns `decimal`. So is a demand for an explicit conversion
+   in the *widening* direction (`length()` → `integer` into a `decimal` field).
+2. **The model, for what the catalog cannot answer.** Claims about bare
+   operators, assignments and ternaries with no built-in involved, and claims
+   whose function has several possible return types (`round`, whose four
+   arity-2 overloads return four different types). Those fall through to the
+   LLM check — now with a `<CATALOG_EVIDENCE>` block of the documented
+   signatures, so the fallback reasons from facts rather than recollection.
+
+A catalog-settled claim prints `numeric claim settled by the function catalog
+(no model call)`. Anything ambiguous fails open and keeps the issue: dropping
+real signal is worse than one redundant check. The deterministic stage needs
+only the library, not the tool, so it also runs when the judge model has no
+function calling — which is why `tweak_llm.function_lookup` is enabled with
+an empty `purposes` list (catalog loaded, tool never offered).
+
 ---
 
 ## debug.py
@@ -707,7 +811,7 @@ file directly — there's no CLI.
 
 | Path | Contents |
 |------|----------|
-| `resources/` | `ctl2_test_suite*.json` (versioned test suites used by `test.py`), plus CTL2 reference docs (`ctl2-basics.md`, `componet_contracts.md`) and the test-suite spec |
+| `resources/` | `ctl2_test_suite*.json` (versioned test suites used by `test.py`), CTL2 reference docs (`ctl2-basics.md`, `componet_contracts.md`), the built-in function catalog (`ctl-function-library.json` + its schema spec) and the test-suite spec |
 | `spec/` | Design docs for the `dpo_forge` pipeline (skeleton externalization, CloverDX execution, setup/judge orchestration) |
 | `data/sft_input/` | Curated SFT examples consumed by `dpo_forge.py` and `mut_validate.py` |
 | `data/dpo/` | `dpo_forge.py` output: forged DPO pairs (`forged.jsonl`), provenance (`forged.provenance.jsonl`), and its resumability state DB (`forge_state.db`) |

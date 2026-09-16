@@ -228,8 +228,11 @@ const string[] TAGS = ["a", "b", "c"];
 | `/` | integer division truncates; ÷0 → exception for integer/long/decimal, Infinity for double |
 | `++` `--` | pre/post; **allowed on**: local/module variables, output fields (`$out.N.field++`, `--$out.N.field`); **cannot use on**: literals, input fields (`$in.N.field`), list/map elements (`list[i]`, `map[k]`) |
 
-**Numeric type promotion** (automatic, per expression): `integer < long < number(double) < decimal`. int+long→long; int/long+number→number (⚠ long→number may lose precision); int/long+decimal→decimal. No implicit downcast on assignment — use explicit conversion (`decimal2double()`, `decimal2long()`, `double2long()`, …).
-⚠ **`number` is contagious**: if any operand is `number` (or an unsuffixed float literal like `0.15`, which is `number`), the whole expression becomes floating-point and decimal precision is lost. Use `D`-suffixed literals throughout to stay in decimal math. Integer/long overflow silently (no error); a null operand throws at runtime.
+**Numeric type promotion** (automatic, per *operator* — see **2.1.2**): `integer < long < number(double) < decimal`. For any ONE binary operator the operands are promoted to the widest participating type, regardless of their order: `integer + long` and `long + integer` both evaluate to `long`, and the same order-independent rule holds for `-`, `*`, `/`. `int/long + number` → `number` (⚠ long→number may lose precision); `int/long + decimal` → `decimal`; and **`decimal` combined with `number` also evaluates to `decimal`** — a runtime probe confirms `getType(decimalValue * numberValue)` returns `"decimal"`. Assignment from `number` into a `decimal` variable/field is that same widening conversion and is valid. No implicit downcast on assignment — use explicit conversion (`decimal2double()`, `decimal2long()`, `double2long()`, …).
+
+⚠ **Promotion is per-operator and NOT retroactive.** Operators evaluate by parentheses and precedence, same-precedence left to right, so `integerA * integerB / longC` computes `integerA * integerB` in `integer` FIRST — where it can overflow silently — and only then promotes that already-computed result for `/ longC`. When that matters, promote before the first lossy step, e.g. `1L * integerA * integerB / longC`. Do NOT add `1L *` to a plain `integer + long` / `integer - long` / `integer * long` / `integer / long`: each of those single operations already evaluates in `long`. Likewise use `1D * numerator / denominator` when an otherwise integer/long division must keep a decimal fraction.
+
+⚠ **`number` does NOT contaminate a `decimal` expression** — a mixed `decimal`/`number` operator produces `decimal`. What an unsuffixed float literal like `0.15` costs you is its own inexactness as a `number` before it is converted, not the decimal type of the result. Use `D`-suffixed literals (`0.15D`) throughout to stay in exact decimal math. Integer/long overflow silently (no error); a null operand throws at runtime.
 
 ### 3.2 Relational
 
@@ -685,8 +688,8 @@ Metadata defines the structure of records flowing between components. Fields in 
 | `byte2str` | `string byte2str(byte, string charset)` | Byte array → string. |
 | `cast` | `<type> cast(variant, <type>)` | Cast variant to strong type. **Only for variant → strong type. NEVER between strong types.** Three forms: (1) scalar: `cast(v, string)` → `string`; (2) list: `cast(v, list, elemType)` → e.g. `cast(v, list, string)` → `list[string]`; (3) map: `cast(v, map, keyType, valueType)` → e.g. `cast(v, map, string, long)` → `map[string,long]`. Map requires BOTH key and value types. |
 | `date2long` | `long date2long(date)` | Date → ms since epoch. |
-| `date2num` | `integer date2num(date, unit)` | Extract component. Units: `year`, `month`, `week`, `day`, `hour`, `minute`, `second`, `millisec`. |
-| | `integer date2num(date, unit, string locale)` | |
+| `date2num` | `integer date2num(date, unit)` | Extract component. Units: `year`, `month`, `week`, `day`, `hour`, `minute`, `second`, `millisec` — an unquoted constant, never a string or variable. **A null input date returns `null`; it does NOT throw.** |
+| | `integer date2num(date, unit, string locale)` | **A null input date returns `null`; it does NOT throw.** |
 | `date2str` | `string date2str(date, string pattern)` | Date → string. Java SimpleDateFormat. |
 | | `string date2str(date, string pattern, string locale)` | |
 | | `string date2str(date, string pattern, string locale, string timeZone)` | |
@@ -1070,7 +1073,7 @@ Record metadata helpers return `map[string,string]`, not `variant`.
 
 **Fundamentals:**
 - Every type can be null. `null` ≠ `""` — `isnull("")` = false.
-- Local var defaults: primitives NOT null (see **2.1**). `byte`/`cbyte`/`variant` default null.
+- Local var defaults vs. nullability — two different things (see **2.1**): an UNINITIALIZED local of a primitive/scalar type starts at its type-specific NON-NULL default (`byte`/`cbyte`/`variant` start null), but EVERY CTL type — `integer`, `long`, `number`/`double`, `decimal`, `boolean`, `string`, `date` included — can hold a null that was explicitly assigned or propagated in from a field, list element, or function result. After `integer i = null;`, both `isnull(i)` and `i == null` are true. Never claim a scalar local "cannot be null" or that null-testing one is invalid.
 - Unset record fields are null (not type default) unless metadata defines a Default.
 - `isnull(expr)` and `expr == null` / `expr != null` are **interchangeable** for all types (scalars, records, lookup results, etc.).
 - In joins, do NOT test missing slave as `isnull($in.1)`; test a slave field, e.g. `isnull($in.1.region_name)`.
@@ -1108,9 +1111,11 @@ isNull($in.0, "field2")  // field "field2" null?
 | `integer`/`long`/`decimal` | false (default `0`) |
 | `number`/`double` | false (default `0.0`) |
 | `boolean` | false (default `false`) |
-| `date` | `1970-01-01 00:00:00 GMT` | `2025-01-01`, `2023-06-15 08:45:00` | Holds both date AND time. **CTL2 supports date and date-time literals**, which can be directly assigned to `date` variables or used as function parameters. No need for `str2date()` when using literal values. |
+| `date` | false (default epoch `1970-01-01 00:00:00 GMT`) |
 | `byte`/`cbyte`/`variant` | true |
 | record field (unset) | true |
+
+These rows describe UNSET locals only. They do not make any type non-nullable: after `integer i = null;`, `decimal d = null;`, `boolean b = null;`, `string s = null;`, `date dt = null;` — or when null arrives from a field, list element, or function result — `isnull(...)` and `... == null` both evaluate to true for that variable.
 
 **Null functions:**
 
@@ -1287,7 +1292,7 @@ In `replace(str, regex, repl)` and `split(str, regex)`: pattern is always regex.
 15. **`foreach` colon not `in`**: `foreach (string s : myList)`. No tuple unpacking.
 16. **Exception**: `catch(CTLException e)` only. `e.message` property, not `e.getMessage()`.
 17. **Port syntax**: `$in.0.field` — NOT `$in0.field`, NOT `$field`.
-18. **`date2num()` needs unit**: `date2num(date, day)` — not bare `date2num(date)`.
+18. **`date2num()` needs unit and PROPAGATES a null date**: `date2num(date, day)` — not bare `date2num(date)`; the unit is an unquoted constant. A null input date yields a `null` result — `date2num()` does NOT throw because the date is null. Guard or default that null result before an ordered comparison, since `<`/`>`/`<=`/`>=` on null DO throw.
 19. **`double` is valid alias** for `number`. `double x = 1.5;` is valid.
 20. **`cast()` strong-type conversion**: For a plain decimal->integer conversion use `decimal2integer()`.
 21. **Null function confusion**: `isnull(expr)` (1 arg, lowercase) and `expr == null` are interchangeable. `isNull(record, idx/name)` (2 args, camelCase) is a different function for dynamic field access. `isnull("")` = false. Local primitive vars NOT null. See **11.8**.
