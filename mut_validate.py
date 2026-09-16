@@ -96,6 +96,22 @@ DEFAULT_CONFIG: dict = {
     },
     "judge": {
         "provider": "anthropic",
+        # Which OpenAI endpoint to use (provider "openai" only):
+        #   "auto"             — chat.completions, but /v1/responses when this
+        #                        client actually offers the ctl_function_info
+        #                        tool and no custom base_url is set. Reasoning-
+        #                        tier models reject function tools on
+        #                        chat.completions ("Function tools with
+        #                        reasoning_effort are not supported for
+        #                        gpt-5.6-terra in /v1/chat/completions"), so
+        #                        auto sends tool-carrying calls where they work.
+        #   "chat_completions" — always /v1/chat/completions. A tools rejection
+        #                        here disables the catalog tool for the run
+        #                        (with a loud warning) instead of switching.
+        #   "responses"        — always /v1/responses.
+        # Local/self-hosted OpenAI-compatible servers (base_url set) usually
+        # implement chat.completions only, which is why auto keeps them there.
+        "api": "auto",
         "model": "claude-opus-4-20250514",
         "api_key": None,
         "base_url": None,
@@ -113,15 +129,31 @@ DEFAULT_CONFIG: dict = {
         # tokens) and near-fully stable, but calls are spaced out by local
         # MUT generation time in between, which was expiring the default
         # short-lived cache before the next call arrived.
-        # Versioned ("v7") so bumping it deliberately busts the cache
+        # Versioned ("v9") so bumping it deliberately busts the cache
         # namespace whenever review_judge.py's shared system-prompt content
         # (rules/reference/notes) changes materially — bump this alongside
         # such edits. Each call suffixes its own purpose (review/fix).
-        "prompt_cache_key": "ctl-reviewer:v7",
+        "prompt_cache_key": "ctl-reviewer:v9",
         # SDK only accepts exactly "in_memory" (short default) or "24h"
         # (extended) — there is no shorter non-default option to pick.
         "prompt_cache_retention": "24h",      # "24h" | "in_memory" | null to omit the field entirely
         "request_timeout_s": 180,       # hard cap on a single judge HTTP call
+        # Deterministic CTL2 built-in function catalog (302 built-ins with
+        # per-overload signatures, return types, documented runtime errors and
+        # PARAMETER-SPECIFIC null behavior), offered to the judge as the
+        # `ctl_function_info` tool — see dpo_forge/function_catalog.py and
+        # review_judge._FUNCTION_LOOKUP_NOTE. Every lookup is an in-process
+        # dict access: no network, no compiler, no cost beyond the extra model
+        # turn. It exists so a claim about a function's existence, overload,
+        # return type or null behavior can be CHECKED instead of recalled,
+        # which is where most hallucinated ISSUEs come from.
+        "function_lookup": {
+            "enabled": True,
+            "library": "resources/ctl-function-library.json",
+            "max_queries_per_call": 20,   # the model is told to batch; this caps one batch
+            "max_rounds_per_call": 3,     # tool-call turns per judge call, then the tool is withdrawn
+            "purposes": ["review", "fix"],  # tweak()/numeric-check calls never get the tool
+        },
     },
     # Used only with --tweak. A separate, usually cheaper/local, LLM that rewrites
     # each prompt (new domain/fields/logic) before it's shown to the MUT. Kept
@@ -131,6 +163,8 @@ DEFAULT_CONFIG: dict = {
     # some reasoning-tier OpenAI models.
     "tweak_llm": {
         "provider": "openai",
+        # See the "api" comment in the judge section above.
+        "api": "auto",
         "model": "Qwen3-Coder-Next",
         "api_key": "not-needed",
         "base_url": "http://virt-ai:3000/v1",
@@ -143,6 +177,18 @@ DEFAULT_CONFIG: dict = {
         # here is harmless even against a local server. Own version counter
         # since this covers a different prompt family (tweak/numeric-check)
         # — bump independently of "ctl-reviewer" above.
+        # The catalog is loaded for this client too, but with NO purposes: the
+        # tweak/numeric-check calls never get the `ctl_function_info` tool
+        # itself. It is here because check_numeric_claim() runs on this client
+        # and settles most claims deterministically from the catalog's
+        # documented return types, without any model call at all. Set
+        # enabled:false to turn that off as well and go back to a model call
+        # per numeric claim.
+        "function_lookup": {
+            "enabled": True,
+            "library": "resources/ctl-function-library.json",
+            "purposes": [],
+        },
         "prompt_cache_key": "ctl-tweak:v1",
         "prompt_cache_retention": "24h",
         "request_timeout_s": 180,
@@ -405,6 +451,27 @@ def _usage_snapshot(judge) -> tuple[int, int, int]:
     return (u.input_tokens, u.cached_tokens, u.output_tokens)
 
 
+def _log_function_lookup_report(judge, numeric_verifier, log_fh=None) -> None:
+    """How much the ctl_function_info catalog was actually used this run — and,
+    loudly, whether the provider refused the tool so the judge spent the run
+    without it (see ReviewJudgeClient's `tools` auto-detect)."""
+    catalog = judge.catalog or getattr(numeric_verifier, "catalog", None)
+    if catalog is None:
+        return
+    stats = catalog.stats
+    flagged = ", ".join(
+        f"{key}={stats[key]}"
+        for key in ("not_found", "no_matching_overload", "ambiguous_overload", "invalid_query")
+        if stats[key]
+    )
+    _log(f"  ctl_function_info lookups: {stats['calls']} call(s) / {stats['queries']} function(s)"
+         + (f"  [{flagged}]" if flagged else ""), log_fh)
+    if judge.catalog is not None and not judge._openai_supports_tools:
+        _log("  !! ctl_function_info was DISABLED mid-run: the provider rejected function", log_fh)
+        _log(f"  !! calling (model={judge._cfg.get('model')!r}). The judge reviewed without the", log_fh)
+        _log("  !! catalog, so function/overload/null claims in this run are unverified.", log_fh)
+
+
 def _log_usage_delta(label: str, judge, before: tuple[int, int, int], log_fh=None) -> None:
     """Print this call's token usage (input / cached / generated) — cached is
     the portion of input served from the provider's prompt cache, a subset of
@@ -469,7 +536,9 @@ def cmd_run(args: argparse.Namespace) -> None:
         f"config: {config_path}\n"
         f"index: {args.index}  limit: {args.limit}  attempts: {args.attempts}  "
         f"tweak: {args.tweak}  tweak_random: {args.tweak_random}\n"
-        f"judge: {cfg['judge'].get('provider')} / {cfg['judge'].get('model')}\n"
+        f"judge: {cfg['judge'].get('provider')} / {cfg['judge'].get('model')}"
+        + (f" (api={cfg['judge'].get('api', 'auto')})" if cfg['judge'].get('provider') == 'openai' else "")
+        + "\n"
         + (f"tweak_llm: {cfg['tweak_llm'].get('provider')} / {cfg['tweak_llm'].get('model')}\n" if args.tweak else "")
         + f"MUT checkpoint: {cfg['model'].get('checkpoint_dir')}\n\n"
     )
@@ -563,6 +632,10 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     if ctl_validate_active:
         _log(f"[mut-validate] ctl_validate MCP pre-filter enabled: {ctl_validate_cfg.get('url')} "
              f"(ERROR-severity results skip the LLM judge for that attempt)", log_fh)
+
+    if judge.catalog is not None:
+        _log(f"[mut-validate] ctl_function_info tool enabled for the judge: "
+             f"{judge.catalog.describe()}", log_fh)
 
     gen_cfg = model_cfg.get("generation") or {}
     temperature = gen_cfg.get("temperature", 0.3)
@@ -873,6 +946,7 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     # _log_usage_breakdown / ReviewJudgeClient.usage_by_purpose.
     _log_usage_breakdown("Judge", judge, log_fh)
     _log_usage_breakdown("Tweak/numeric-check LLM", tweak_llm_client, log_fh)
+    _log_function_lookup_report(judge, tweak_llm_client, log_fh)
     _log(f"  Wall clock:                {wall_clock:.1f}s", log_fh)
     _log("=" * 60, log_fh)
 

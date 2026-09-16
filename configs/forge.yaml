@@ -43,6 +43,10 @@ judge:
   model: gpt-5.4
   api_key: ${OPENAI_API_KEY}
   base_url: null                # for openai-compatible endpoints
+  # Leave temperature unset for models that only accept the default.
+  # temperature: 1.0
+  # OpenAI reasoning control (alias: effort).
+  # reasoning_effort: medium
   confidence_threshold: 0.6    # min confidence to accept a verdict
   max_json_retries: 2
 

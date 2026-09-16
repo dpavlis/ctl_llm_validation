@@ -22,16 +22,20 @@ pipeline.
 
 from __future__ import annotations
 
+import json
 import os
 import random
 import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, TextIO
+from typing import Any, Optional, TextIO
 
 from .generator import normalize_ctl
 from .judge import _CTL2_REFERENCE, infer_component_type
+from .function_catalog import (
+    FUNCTION_INFO_TOOL_NAME, CatalogQueryError, FunctionCatalog, get_function_catalog,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -560,6 +564,92 @@ in disguised as "advice".
                                            default value when a field is missing."
 """
 
+_MISSING_CONTEXT_NOTE = """\
+
+## Missing task context is NEVER an issue
+The task supplies whatever context it supplies. A gap in the TASK is not a defect
+in the CANDIDATE CODE, and reporting one turns the review into a complaint about
+the question instead of feedback on the answer. Never report an issue of any
+severity — ERROR, WARNING, or INFO — whose actual subject is one of these:
+- Input or output port metadata the task did not include.
+- An accumulator / group-accumulator record type the task never declared.
+- A lookup, sequence, or dictionary the code references but the task does not define.
+- A field the code uses that the task's metadata does not declare (when metadata for
+  that port was not supplied at all).
+- Which output ports are connected, when the code routes to more than one.
+- A `Record`/`Field` attribute (a missing `type`, `nullable`, `format`, ...) absent
+  from the metadata XML the task itself provided.
+- A component configuration value that lives in the graph, not in CTL (record counts,
+  group keys, port connections, charset, ...).
+
+Judge the code against the context the task DOES carry. When a claim would need
+context the task never supplied, the claim is unsupported — drop it silently.
+
+## Built-in placeholder types are not undeclared types
+CTL2 has built-in metadata types that need no declaration anywhere and legitimately
+stand in where a real record type would otherwise go — `VoidMetadata` as a Rollup
+group accumulator when no accumulator metadata is supplied is the canonical case
+(see the component contract). A built-in placeholder is never "undefined", "not
+supplied", "not among the provided metadata", or "must be declared". Before writing
+any issue that says a type name is undeclared, confirm it is not one of these
+built-ins.
+
+## An invented issue is worse than a missed one
+This review drives training data. A missed real defect costs one example; an issue
+claiming that valid CTL2 is invalid teaches the model a false rule, and it will
+reproduce that rule. When you are weighing whether a borderline concern is real,
+resolve the doubt by dropping it, not by reporting it at a lower severity.
+"""
+
+_FUNCTION_LOOKUP_NOTE = """\
+
+## `ctl_function_info` — the authoritative built-in function catalog
+You have a tool, `ctl_function_info`, backed by a deterministic local catalog of
+every CTL2 built-in (generated from the CloverDX CTL2 documentation plus runtime
+probes). It does not compile anything and costs nothing to call. It returns, per
+OVERLOAD: the canonical signature, each parameter's type and position, arity
+bounds, the return type and its nullability, documented runtime errors, and
+PARAMETER-SPECIFIC null behavior (`returns_null`, `runtime_error`, ...).
+
+CALL IT — do not answer from memory — whenever an issue you are about to write
+depends on any of:
+- whether a built-in with that exact, case-sensitive name exists at all;
+- which overloads/arities exist, or which one a specific call resolves to;
+- a parameter's documented type, whether it is optional, or its default;
+- the return type of a specific overload (this settles most numeric-type claims);
+- what a specific PARAMETER position does when it receives null.
+
+How to use it:
+- Batch every function you need into ONE call: `{"queries": [{"name": "..."}, ...]}`.
+  Only `name` is required. Add `arity`, `argument_types`, or `overload_id` to pin
+  down one overload; omit any selector you cannot establish, and pass `"unknown"`
+  as an argument type when the static type of that argument is not clear.
+- Use `"detail": "full"` only when the compact result is genuinely not enough.
+- Do not look the same function/overload up twice, and do not look up functions
+  that are not relevant to a finding you are actually considering.
+
+How to read the result:
+- `not_found` is AUTHORITATIVE: no built-in has that exact name. Report the call
+  as a nonexistent function (an ERROR), and remember CTL2 names are
+  case-sensitive.
+- `exact_overload` / `function_found` give you the documented behavior — use it
+  verbatim; do not generalize from the return type, from another overload, or
+  from a different parameter of the same overload.
+- `no_matching_overload` means the name exists but nothing matches your filters —
+  check `available_overload_ids` before concluding the CALL is wrong; your filter
+  may simply have been too narrow.
+- `ambiguous_overload` means several overloads match; decide from the returned
+  candidates rather than guessing.
+- If the catalog marks something `undocumented` or its `data_quality` shows
+  issues, that is UNKNOWN — not "safe" and not "fails". Do not report an ERROR
+  or WARNING that depends on behavior the catalog does not document.
+
+The catalog outranks your own recollection of CTL2. Where a catalog result and
+your intuition disagree, the catalog wins; where the catalog and the inline CTL2
+reference disagree about a specific overload, prefer the catalog and do not
+report the discrepancy as a defect in the candidate code.
+"""
+
 # Recognized "this works, but here's the idiomatic built-in for it" patterns —
 # pure style/efficiency polish on code that is already CORRECT. Unlike ordinary
 # SUGGESTIONS (see "Do not write the fix" above), naming the exact simpler form
@@ -619,7 +709,8 @@ _OPTIMIZATION_HINTS_NOTE = _build_optimization_hints_note()
 # so it stays byte-identical across every review() call regardless of
 # component type, maximizing the shared cache prefix.
 _REVIEW_RULES_FULL = (
-    _REVIEW_RULES + _EVIDENCE_DISCIPLINE_NOTE + _NULL_HANDLING_NOTE
+    _REVIEW_RULES + _EVIDENCE_DISCIPLINE_NOTE + _MISSING_CONTEXT_NOTE
+    + _NULL_HANDLING_NOTE
     + _NUMERIC_WIDENING_NOTE + _LITERAL_PREFERENCE_NOTE + _ONERROR_HANDLING_NOTE
     + _OPTIMIZATION_HINTS_NOTE
 )
@@ -707,6 +798,14 @@ Before applying a listed issue, sanity-check it against the metadata and the
 documented behavior of any function it mentions (see the CTL2 reference).
 If a listed issue does not actually hold up, leave that part of the code
 as-is rather than "fixing" something that was not broken.
+
+In particular, never "resolve" an issue by inventing context the task never
+supplied — do not declare metadata records, accumulator record types, lookups,
+or sequences that the task does not define, and do not replace a built-in
+placeholder type (e.g. a Rollup's `VoidMetadata` group accumulator, correct
+whenever no accumulator metadata is supplied) with a made-up record name or a
+different type. An issue whose real subject is missing task context is not a
+code defect: leave the code alone.
 
 Analyze carefully before answering. Return only the corrected CTL2 code in a
 single fenced code block — no explanation, no restated issues, no scratch
@@ -1011,13 +1110,14 @@ def _component_note(component_type: str) -> str:
     )
 
 
-def _build_review_system(component_type: str) -> str:
+def _build_review_system(component_type: str, function_lookup: bool = False) -> str:
     """Assemble the review system prompt with the stable content first (rules,
     then the large CTL2 reference) and the variable, per-example component
     contract last — maximizes the byte-identical shared prefix across calls
     for prompt-cache reuse. No section here manages hidden reasoning; the
     hardening note only asks the model to verify its own final output."""
-    parts = [_REVIEW_SYSTEM_INTRO, f"\n<REVIEW_RULES>\n{_REVIEW_RULES_FULL}</REVIEW_RULES>\n"]
+    rules = _REVIEW_RULES_FULL + (_FUNCTION_LOOKUP_NOTE if function_lookup else "")
+    parts = [_REVIEW_SYSTEM_INTRO, f"\n<REVIEW_RULES>\n{rules}</REVIEW_RULES>\n"]
     if _CTL2_REFERENCE:
         parts.append(f"\n<CTL2_REFERENCE>\n{_CTL2_REFERENCE}\n</CTL2_REFERENCE>\n")
     note = _component_note(component_type)
@@ -1027,11 +1127,13 @@ def _build_review_system(component_type: str) -> str:
     return "".join(parts)
 
 
-def _build_fix_system(component_type: str) -> str:
+def _build_fix_system(component_type: str, function_lookup: bool = False) -> str:
     parts = [
         _FIX_SYSTEM_BASE, _NULL_HANDLING_NOTE, _NUMERIC_WIDENING_NOTE, _LITERAL_PREFERENCE_NOTE,
         _ONERROR_HANDLING_NOTE, _TRY_CATCH_FIX_NOTE,
     ]
+    if function_lookup:
+        parts.append(_FUNCTION_LOOKUP_NOTE)
     if _CTL2_REFERENCE:
         parts.append(f"\n<CTL2_REFERENCE>\n{_CTL2_REFERENCE}\n</CTL2_REFERENCE>\n")
     note = _component_note(component_type)
@@ -1250,6 +1352,27 @@ _MODERATION_BACKOFF_S = [7.0, 15.0, 30.0, 60.0, 90.0]
 _LENGTH_EXHAUSTION_RETRIES = 2
 
 
+class _SwitchToResponsesAPI(RuntimeError):
+    """Raised when /v1/chat/completions refuses the request in a way that the
+    Responses API is documented to handle — currently OpenAI's "Function tools
+    with reasoning_effort are not supported ... in /v1/chat/completions. To use
+    function tools, use /v1/responses" (seen on gpt-5.6-terra). Caught by
+    _call_openai, which re-issues the same call through the Responses API and
+    keeps the ctl_function_info tool instead of silently dropping it."""
+
+
+def _is_response_exhausted(resp) -> bool:
+    """Responses-API counterpart of _is_length_exhausted: a reasoning-tier
+    model that spent max_output_tokens on hidden reasoning and returned no
+    visible text."""
+    if (getattr(resp, "output_text", "") or "").strip():
+        return False
+    if getattr(resp, "status", None) != "incomplete":
+        return False
+    details = getattr(resp, "incomplete_details", None)
+    return getattr(details, "reason", None) == "max_output_tokens"
+
+
 def _is_length_exhausted(resp) -> bool:
     """True if `resp` is the empty-content/finish_reason='length' signature
     of a reasoning-tier model exhausting its token budget on hidden
@@ -1260,6 +1383,186 @@ def _is_length_exhausted(resp) -> bool:
     content = resp.choices[0].message.content or ""
     finish_reason = getattr(resp.choices[0], "finish_reason", None)
     return not content.strip() and finish_reason == "length"
+
+
+# ---------------------------------------------------------------------------
+# Deterministic numeric-claim adjudication (catalog-first)
+#
+# check_numeric_claim() used to spend an LLM call on every reported ISSUE that
+# mentioned a numeric type. For any claim that names a BUILT-IN, the function
+# catalog already holds the fact the claim stands or falls on — that built-in's
+# documented return type per overload — so the claim can be settled in-process
+# for free. The LLM call is kept for what the catalog genuinely cannot answer:
+# claims about bare operators, assignments, and ternaries where no built-in is
+# involved, and claims whose function resolves to several possible return types.
+# In that second case the catalog evidence is still handed to the model, so the
+# fallback reasons from documented signatures instead of recollection.
+# ---------------------------------------------------------------------------
+
+# integer -> long -> number -> decimal (see _NUMERIC_WIDENING_NOTE). `double`
+# is an alias of `number` and shares its rank.
+_NUMERIC_RANKS = {"integer": 1, "long": 2, "number": 3, "double": 3, "decimal": 4}
+
+
+def _numeric_rank(type_name: str) -> Optional[int]:
+    return _NUMERIC_RANKS.get(type_name.strip().lower())
+
+
+# A name written as a call (`round(`) or quoted as a bare identifier
+# (`` `round` ``) in an issue description.
+_DESCRIPTION_NAME_RE = re.compile(r"`?\b([A-Za-z_][A-Za-z0-9_]*)\b`?\s*\(|`([A-Za-z_][A-Za-z0-9_]*)`")
+
+# "returns decimal", "returns a decimal", "returning decimal", "result is decimal",
+# "evaluates to decimal" — the claim's assertion about what a call produces.
+_ASSERTED_RETURN_RE = re.compile(
+    r"\b(?:returns?|returning|returned|result\s+(?:is|type\s+is)|evaluates?\s+to|produces?|yields?)"
+    r"\s+(?:a|an|the)?\s*`?(integer|long|number|double|decimal)`?",
+    re.IGNORECASE,
+)
+
+# The claim demands a conversion / calls the code invalid on numeric grounds.
+_DEMANDS_CONVERSION_RE = re.compile(
+    r"\b(?:explicit(?:ly)?\s+conversion|explicit(?:ly)?\s+cast|must\s+be\s+converted|"
+    r"needs?\s+(?:an?\s+)?(?:explicit\s+)?conversion|requires?\s+(?:an?\s+)?(?:explicit\s+)?conversion|"
+    r"no\s+implicit\s+conversion|not\s+implicitly\s+convert|cannot\s+be\s+assigned|"
+    r"type\s+mismatch|narrow(?:s|ing|ed)?\s+(?:into|to)|loses?\s+precision\s+implicitly|"
+    r"decimal2\w+|double2\w+|long2\w+|num2\w+)\b",
+    re.IGNORECASE,
+)
+
+
+def _call_arities(code: str, name: str) -> set[int]:
+    """Every distinct argument count `name` is called with in `code`.
+
+    Counts top-level commas inside the call's own parentheses, so nested calls
+    and parenthesised expressions do not inflate the count. A definition
+    (`function integer name(...)`) is skipped — a Denormalizer's own
+    `append()` must not be read as the catalog's list `append`."""
+    arities: set[int] = set()
+    for match in re.finditer(rf"\b{re.escape(name)}\s*\(", code):
+        before = code[max(0, match.start() - 40):match.start()]
+        if re.search(r"\bfunction\s+[A-Za-z_][A-Za-z0-9_\[\]]*\s*$", before):
+            continue
+        depth, args, seen_token, index = 0, 0, False, match.end() - 1
+        while index < len(code):
+            char = code[index]
+            if char in "([{":
+                depth += 1
+            elif char in ")]}":
+                depth -= 1
+                if depth == 0:
+                    arities.add(args + 1 if seen_token else 0)
+                    break
+            elif depth == 1:
+                if char == ",":
+                    args += 1
+                elif not char.isspace():
+                    seen_token = True
+            index += 1
+    return arities
+
+
+def _catalog_evidence(
+    description: str, code: str, catalog: "FunctionCatalog"
+) -> tuple[dict[str, set[str]], list[str]]:
+    """Resolve every built-in the description names against the catalog.
+
+    Returns ({function name: documented return types}, [signature lines]).
+    A name is only considered when it is also called in the code with an arity
+    the catalog recognizes, which is what keeps a component entry point that
+    happens to share a built-in's name (`append`, `count`) out of the result."""
+    names: list[str] = []
+    for match in _DESCRIPTION_NAME_RE.finditer(description):
+        name = match.group(1) or match.group(2)
+        if name and name not in names and catalog.has(name):
+            names.append(name)
+    returns: dict[str, set[str]] = {}
+    lines: list[str] = []
+    for name in names:
+        arities = _call_arities(code, name)
+        arity = next(iter(arities)) if len(arities) == 1 else None
+        types = catalog.return_types(name, arity)
+        if not types:
+            continue
+        returns[name] = types
+        function = catalog.functions[name]
+        signatures = [
+            overload["canonical_signature"]
+            for overload in function["overloads"]
+            if arity is None or overload["arity"]["minimum"] <= arity
+            and (overload["arity"]["maximum"] == "unbounded" or arity <= overload["arity"]["maximum"])
+        ]
+        lines.append(f"{name}: " + " | ".join(signatures))
+    return returns, lines
+
+
+def _catalog_numeric_verdict(
+    returns: dict[str, set[str]], description: str
+) -> Optional[bool]:
+    """Settle a numeric claim from catalog facts alone, or None when the
+    catalog cannot settle it (in which case the caller asks the LLM).
+
+    True = the claim survives; False = it contradicts the documented signature.
+    Only fires where the documented return type is unambiguous, so a genuinely
+    generic function (`round`, whose four overloads return four different
+    types) always falls through rather than being decided on a coin flip."""
+    if not returns:
+        return None
+    settled = {name: next(iter(types)) for name, types in returns.items() if len(types) == 1}
+    if not settled:
+        return None
+
+    # Where each resolved built-in is named, so a "returns decimal" phrase is
+    # attributed to the function it actually follows and not to some other
+    # built-in mentioned elsewhere in the same sentence.
+    mentions: list[tuple[int, str]] = []
+    for match in _DESCRIPTION_NAME_RE.finditer(description):
+        name = match.group(1) or match.group(2)
+        if name in returns:
+            mentions.append((match.start(), name))
+
+    # (a) The claim states what a specific call returns, and the catalog
+    #     disagrees for that same function.
+    for match in _ASSERTED_RETURN_RE.finditer(description):
+        owners = [name for pos, name in mentions if pos < match.start()]
+        if not owners:
+            continue
+        documented = settled.get(owners[-1])
+        if documented is None:
+            continue
+        claimed = match.group(1).lower()
+        claimed = "number" if claimed == "double" else claimed
+        if _numeric_rank(claimed) is not None and claimed != documented:
+            return False
+
+    # (b) The claim demands a conversion, exactly one built-in with a known
+    #     return type is in play, and the only other numeric type mentioned is
+    #     WIDER than it — the automatic widening direction, where there is no
+    #     missing conversion to report. With two such built-ins the claim's
+    #     subject is ambiguous, so it goes to the model instead.
+    if len(settled) == 1 and _DEMANDS_CONVERSION_RE.search(description):
+        documented = next(iter(settled.values()))
+        mentioned = {
+            "number" if m.lower() == "double" else m.lower()
+            for m in _NUMERIC_TYPE_MENTION_RE.findall(description)
+        }
+        if documented in mentioned and len(mentioned) == 2:
+            other = next(t for t in mentioned if t != documented)
+            source, target = _numeric_rank(documented), _numeric_rank(other)
+            if source is not None and target is not None and source <= target:
+                return False
+    return None
+
+
+_CATALOG_EVIDENCE_BLOCK = """
+
+<CATALOG_EVIDENCE>
+Documented signatures for the built-ins this issue names, from the
+authoritative CTL2 function catalog. These are FACTS — prefer them over your
+own recollection, and resolve a generic return type from the argument actually
+passed at the call site in the code above:
+{evidence}
+</CATALOG_EVIDENCE>"""
 
 
 class ReviewJudgeClient:
@@ -1309,10 +1612,58 @@ class ReviewJudgeClient:
         # drop treatment as the flags above.
         self._openai_supports_prompt_cache_key: bool = True
         self._openai_supports_prompt_cache_retention: bool = True
+        # Same treatment for `tools`/`tool_choice`: a local OpenAI-compatible
+        # server may not implement function calling at all, in which case the
+        # `ctl_function_info` tool is dropped and the judge falls back to the
+        # inline CTL2 reference for that run.
+        self._openai_supports_tools: bool = True
+        # Which OpenAI endpoint to use: "chat_completions", "responses", or
+        # "auto" (resolved on first use — see _resolve_openai_api). Newer
+        # reasoning models reject function tools on /v1/chat/completions when
+        # reasoning_effort is set and require /v1/responses instead, which is
+        # what "auto" exists to get right without per-model config.
+        self._openai_api_cfg: str = (cfg.get("api") or "auto").strip().lower()
+        if self._openai_api_cfg not in ("auto", "chat_completions", "responses"):
+            raise ValueError(
+                f"judge api must be 'auto', 'chat_completions' or 'responses', "
+                f"got {cfg.get('api')!r}"
+            )
+        self._openai_api: Optional[str] = (
+            None if self._openai_api_cfg == "auto" else self._openai_api_cfg
+        )
+        # Responses-API counterparts of the auto-detected chat flags above.
+        self._responses_supports_reasoning: bool = True
+        self._responses_supports_temperature: bool = True
+        self._responses_supports_prompt_cache_key: bool = True
+        self._responses_supports_prompt_cache_retention: bool = True
+        self._responses_supports_tools: bool = True
         # Optional run-log file — receives full, untruncated diagnostics
         # (unparseable raw responses, flagged prompts) that console output
         # only shows a short preview of.
         self._log_file = log_file
+        # Deterministic CTL2 built-in function catalog, exposed to the model as
+        # the `ctl_function_info` tool (see function_catalog.py and
+        # _FUNCTION_LOOKUP_NOTE). Loaded eagerly so a bad path/library fails at
+        # startup rather than mid-run, and shared process-wide across clients.
+        self.catalog: Optional[FunctionCatalog] = None
+        lookup_cfg = cfg.get("function_lookup") or {}
+        if lookup_cfg.get("enabled"):
+            self.catalog = get_function_catalog(
+                lookup_cfg.get("library"),
+                max_queries_per_call=int(lookup_cfg.get("max_queries_per_call", 20)),
+            )
+        # Tool-call rounds allowed per judge call. Each round is one model turn
+        # that may batch up to max_queries_per_call lookups, so the default is
+        # deliberately small: the model is told to batch, and an unbatched
+        # one-function-per-round crawl is exactly what this cap should stop.
+        self._max_lookup_rounds = int(lookup_cfg.get("max_rounds_per_call", 3))
+        # Purposes that get the tool. review/fix are the calls that reason about
+        # built-in behavior; tweak() only rewrites a task prompt, and
+        # check_numeric_claim() is itself a verification step with a tiny
+        # prompt, so neither needs (or should pay for) the tool.
+        self._lookup_purposes = frozenset(
+            lookup_cfg.get("purposes") or ("review", "fix")
+        )
 
     @property
     def total_tokens(self) -> int:
@@ -1353,6 +1704,62 @@ class ReviewJudgeClient:
         else:
             raise ValueError(f"Unknown judge provider: {provider!r}")
 
+    def lookup_enabled_for(self, purpose: str) -> bool:
+        """Whether `ctl_function_info` is offered on calls with this purpose —
+        also what the prompt builders key their tool-policy section off, so the
+        system prompt never advertises a tool the request will not carry."""
+        return self.catalog is not None and purpose in self._lookup_purposes
+
+    def _run_lookup(self, raw_arguments: Any, call_label: str) -> str:
+        """Execute one `ctl_function_info` tool call and return the JSON string
+        to hand back to the model.
+
+        A malformed query is answered with a structured error the model can act
+        on (upstream's `retry_allowed` / `next_action` convention) rather than
+        an exception — a bad tool argument is a recoverable turn, not a reason
+        to lose a whole review."""
+        try:
+            arguments = (
+                json.loads(raw_arguments) if isinstance(raw_arguments, str) else raw_arguments
+            )
+        except json.JSONDecodeError as exc:
+            arguments = None
+            error: Optional[str] = f"invalid argument JSON: {exc.msg}"
+        else:
+            error = None
+        if error is None:
+            try:
+                payload = self.catalog.call(arguments)
+            except CatalogQueryError as exc:
+                error = str(exc)
+        if error is not None:
+            self._log_full(f"[function-lookup] {call_label} rejected: {error}")
+            return json.dumps({
+                "status": "error",
+                "retry_allowed": True,
+                "error": error,
+                "next_action": (
+                    "Correct the query against the tool schema and retry once. Only "
+                    "`name` is required; omit selectors you cannot establish. Do not "
+                    "invent documentation the catalog did not return."
+                ),
+            })
+        statuses = ", ".join(
+            f"{r['query']['name']}={r['status']}" for r in payload["results"]
+        )
+        # Console gets a one-line indication that the judge actually reached for
+        # the catalog (and what came back); the run log keeps the full detail.
+        names = ", ".join(r["query"]["name"] for r in payload["results"])
+        flagged = [
+            f"{r['query']['name']}={r['status']}"
+            for r in payload["results"]
+            if r["status"] in ("not_found", "no_matching_overload", "ambiguous_overload")
+        ]
+        print(f"[review-judge] ctl_function_info -> {len(payload['results'])} lookup(s): {names}"
+              + (f"  [{', '.join(flagged)}]" if flagged else ""))
+        self._log_full(f"[function-lookup] {call_label}: {statuses}")
+        return json.dumps(payload)
+
     def _record_usage(self, purpose: str, input_tokens: int, cached_tokens: int, output_tokens: int) -> None:
         self.usage.add(input_tokens=input_tokens, cached_tokens=cached_tokens, output_tokens=output_tokens)
         self.usage_by_purpose.setdefault(purpose or "unknown", UsageStats()).add(
@@ -1363,23 +1770,104 @@ class ReviewJudgeClient:
         llm = self._get_llm()
         model = self._cfg.get("model", "claude-opus-4-20250514")
         max_tokens = self._cfg.get("max_tokens", 2048)
-        resp = llm.messages.create(
-            model=model,
-            max_tokens=max_tokens,
-            temperature=0.0,
-            system=system,
-            messages=[{"role": "user", "content": user_message}],
+        use_tool = self.lookup_enabled_for(purpose)
+        messages: list[dict] = [{"role": "user", "content": user_message}]
+        kwargs: dict = {
+            "model": model,
+            "max_tokens": max_tokens,
+            "temperature": 0.0,
+            "system": system,
+        }
+        if use_tool:
+            kwargs["tools"] = [self.catalog.anthropic_tool()]
+
+        # One turn per iteration; a turn that ends in tool_use gets its results
+        # appended and the model is called again. The +1 is the final,
+        # tool-free turn that produces the answer.
+        for round_index in range(self._max_lookup_rounds + 1 if use_tool else 1):
+            resp = llm.messages.create(messages=messages, **kwargs)
+            u = resp.usage
+            # cache_read_input_tokens is the portion of input_tokens served from
+            # Anthropic's prompt cache — a subset of input_tokens, not additional.
+            self._record_usage(
+                purpose,
+                input_tokens=u.input_tokens,
+                cached_tokens=getattr(u, "cache_read_input_tokens", 0) or 0,
+                output_tokens=u.output_tokens,
+            )
+            tool_uses = [b for b in resp.content if getattr(b, "type", None) == "tool_use"]
+            if not tool_uses or getattr(resp, "stop_reason", None) != "tool_use":
+                return "".join(b.text for b in resp.content if hasattr(b, "text"))
+            messages.append({"role": "assistant", "content": resp.content})
+            results = []
+            for block in tool_uses:
+                if block.name != FUNCTION_INFO_TOOL_NAME:
+                    content = json.dumps({
+                        "status": "error", "retry_allowed": False,
+                        "error": f"unknown tool {block.name!r}",
+                    })
+                else:
+                    content = self._run_lookup(
+                        block.input, f"{purpose} round {round_index + 1}"
+                    )
+                results.append({
+                    "type": "tool_result", "tool_use_id": block.id, "content": content,
+                })
+            messages.append({"role": "user", "content": results})
+            # Last allowed round: drop the tool so the next turn must answer.
+            if round_index + 1 >= self._max_lookup_rounds:
+                kwargs.pop("tools", None)
+                self._log_full(
+                    f"[function-lookup] {purpose}: lookup round cap "
+                    f"({self._max_lookup_rounds}) reached — answering without the tool"
+                )
+        raise RuntimeError("unreachable")  # loop always returns or raises
+
+    def _disable_tools_after_rejection(self, kwargs: dict, msg: str, endpoint: str) -> None:
+        """Drop the ctl_function_info tool from an in-flight request after the
+        provider refused it, and say so loudly.
+
+        The run still completes, but the judge is now working from the inline
+        reference alone — exactly the setup that produced hallucinated function
+        claims — so this must not slip by unnoticed in the scrollback."""
+        kwargs.pop("tools", None)
+        kwargs.pop("tool_choice", None)
+        self._log_full(
+            f"[function-lookup] {endpoint} rejected `tools` ({msg[:500]}) "
+            f"— continuing without ctl_function_info"
         )
-        u = resp.usage
-        # cache_read_input_tokens is the portion of input_tokens served from
-        # Anthropic's prompt cache — a subset of input_tokens, not additional.
-        self._record_usage(
-            purpose,
-            input_tokens=u.input_tokens,
-            cached_tokens=getattr(u, "cache_read_input_tokens", 0) or 0,
-            output_tokens=u.output_tokens,
+        banner = "!" * 78
+        if endpoint == "/v1/responses":
+            # Nothing left to switch to — this is already the endpoint that
+            # supports tools for reasoning-tier models.
+            fix_line = (
+                "!! Fix: point `judge` at a model that supports function calling, or set\n"
+                "!! judge.function_lookup.enabled: false to make this deliberate.\n"
+            )
+        elif self._openai_api_cfg == "chat_completions" and "/v1/responses" in msg:
+            fix_line = (
+                "!! Fix: remove judge.api: chat_completions so the run can switch to\n"
+                "!! /v1/responses (this model supports tools only there), point `judge` at\n"
+                "!! a model that supports tools, or set judge.function_lookup.enabled: false.\n"
+            )
+        else:
+            fix_line = (
+                "!! Fix: set judge.api: responses (this model may support tools only on\n"
+                "!! /v1/responses), point `judge` at a model that supports tools, or set\n"
+                "!! judge.function_lookup.enabled: false to make this deliberate.\n"
+            )
+        print(
+            f"\n{banner}\n"
+            f"!! WARNING: this provider/model REJECTED function calling on {endpoint}.\n"
+            f"!! model={self._cfg.get('model')!r} base_url={self._cfg.get('base_url') or 'default (OpenAI)'}\n"
+            f"!! The ctl_function_info catalog tool is DISABLED for the rest of this run;\n"
+            f"!! the judge falls back to the inline CTL2 reference for function facts,\n"
+            f"!! so hallucinated function/overload/null-behavior claims become more likely.\n"
+            f"!! Provider said: {msg[:200]}\n"
+            + fix_line +
+            f"{banner}\n",
+            flush=True,
         )
-        return "".join(b.text for b in resp.content if hasattr(b, "text"))
 
     def _create_openai_chat_completion(self, llm, kwargs: dict, max_flag_retries: Optional[int] = None):
         """Call chat.completions.create(), transparently working around two
@@ -1402,6 +1890,29 @@ class ReviewJudgeClient:
                 return llm.chat.completions.create(**kwargs)
             except BadRequestError as e:
                 msg = str(e)
+                # FIRST: is this the endpoint's own limitation rather than a
+                # bad parameter? gpt-5.6-terra answers a tools request with
+                # "Function tools with reasoning_effort are not supported for
+                # <model> in /v1/chat/completions. To use function tools, use
+                # /v1/responses or set reasoning_effort to none". That message
+                # also mentions reasoning_effort, so it MUST be matched before
+                # the generic parameter handlers below — otherwise the run
+                # silently loses the configured reasoning_effort (a deliberate
+                # quality setting) when the actual fix is to change endpoint
+                # and keep it.
+                if (
+                    "tools" in kwargs
+                    and ("tool" in msg or "function" in msg)
+                    and "/v1/responses" in msg
+                ):
+                    if self._openai_api_cfg != "chat_completions":
+                        raise _SwitchToResponsesAPI(msg[:400])
+                    # Endpoint pinned by config: honour that, and give up the
+                    # optional capability rather than the configured
+                    # reasoning_effort the generic handler below would strip.
+                    self._openai_supports_tools = False
+                    self._disable_tools_after_rejection(kwargs, msg, "/v1/chat/completions")
+                    continue
                 if "max_completion_tokens" in msg and self._openai_token_param != "max_completion_tokens":
                     self._openai_token_param = "max_completion_tokens"
                     kwargs.pop("max_tokens", None)
@@ -1423,6 +1934,12 @@ class ReviewJudgeClient:
                     self._openai_supports_prompt_cache_retention = False
                     kwargs.pop("prompt_cache_retention")
                     continue
+                if ("tool" in msg or "function" in msg) and "tools" in kwargs:
+                    # Reached when the endpoint switch above did not apply:
+                    # the provider named no alternative endpoint.
+                    self._openai_supports_tools = False
+                    self._disable_tools_after_rejection(kwargs, msg, "/v1/chat/completions")
+                    continue
                 if "invalid_prompt" in msg or "flagged as potentially violating" in msg:
                     flagged_msgs = "--- START flagged messages ---\n" + "\n\n".join(
                         f"{m['role']}: {m['content']}"
@@ -1442,7 +1959,55 @@ class ReviewJudgeClient:
                 raise
         raise RuntimeError("unreachable")  # loop always returns or raises
 
+    def _resolve_openai_api(self, use_tool: bool) -> str:
+        """Pick the endpoint for this call when `api: auto` is configured.
+
+        Tools are the whole reason this matters: a reasoning-tier OpenAI model
+        rejects function tools on /v1/chat/completions, so a call that wants
+        the ctl_function_info tool goes to /v1/responses. Anything else stays
+        on chat.completions, which is what every prompt-cache and quirk
+        workaround in this file was tuned against. A custom base_url (a local
+        vLLM/self-hosted server) also stays on chat.completions: those servers
+        commonly implement /v1/chat/completions only, and the tools-rejection
+        path below still degrades cleanly there.
+        """
+        if self._openai_api is not None:
+            return self._openai_api
+        if use_tool and not self._cfg.get("base_url"):
+            resolved = "responses"
+        else:
+            resolved = "chat_completions"
+        self._log_full(
+            f"[review-judge] OpenAI api=auto resolved to {resolved!r} "
+            f"(tools={'on' if use_tool else 'off'}, "
+            f"base_url={self._cfg.get('base_url') or 'default (OpenAI)'})"
+        )
+        # Cached per client: the resolution depends only on config + whether
+        # this client ever offers the tool, so it cannot flip mid-run except
+        # via the explicit fallbacks below.
+        self._openai_api = resolved
+        return resolved
+
     def _call_openai(self, system: str, user_message: str, purpose: str = "") -> str:
+        use_tool = self.lookup_enabled_for(purpose)
+        api = self._resolve_openai_api(use_tool)
+        if api == "responses":
+            return self._call_openai_responses(system, user_message, purpose)
+        try:
+            return self._call_openai_chat(system, user_message, purpose)
+        except _SwitchToResponsesAPI as exc:
+            # chat.completions cannot serve this model WITH tools; the provider
+            # itself pointed at /v1/responses. Switch for the rest of the run
+            # rather than losing the catalog tool.
+            print(f"[review-judge] Switching to the OpenAI Responses API "
+                  f"(/v1/responses) — chat.completions refused function tools for "
+                  f"model={self._cfg.get('model')!r}. Set judge.api explicitly to "
+                  f"pin this.", flush=True)
+            self._log_full(f"[review-judge] auto-switch to responses API: {exc}")
+            self._openai_api = "responses"
+            return self._call_openai_responses(system, user_message, purpose)
+
+    def _call_openai_chat(self, system: str, user_message: str, purpose: str = "") -> str:
         llm = self._get_llm()
         model = self._cfg.get("model", "claude-opus-4-20250514")
         # "max_completion_tokens" is the config key going forward (matches the
@@ -1485,33 +2050,81 @@ class ReviewJudgeClient:
             if retention:
                 kwargs["prompt_cache_retention"] = retention
 
-        resp = self._create_openai_chat_completion(llm, kwargs)
+        # `ctl_function_info` (see _FUNCTION_LOOKUP_NOTE and function_catalog.py)
+        # is offered only on the purposes configured for it, so a call whose
+        # system prompt does not document the tool never carries it either.
+        use_tool = self.lookup_enabled_for(purpose) and self._openai_supports_tools
+        if use_tool:
+            kwargs["tools"] = [self.catalog.openai_tool()]
+            kwargs["tool_choice"] = "auto"
 
-        retry = 0
-        while _is_length_exhausted(resp) and retry < _LENGTH_EXHAUSTION_RETRIES:
-            retry += 1
-            self._log_full(
-                f"[review-judge] purpose={purpose!r} model={model!r} exhausted its token budget "
-                f"on hidden reasoning with no visible answer (retry {retry}/{_LENGTH_EXHAUSTION_RETRIES}) "
-                f"-- retrying identical request"
-            )
-            print(f"[review-judge] Reasoning-token exhaustion (purpose={purpose!r}) "
-                  f"-- retry {retry}/{_LENGTH_EXHAUSTION_RETRIES} …")
+        def one_turn():
+            """One model turn, with the existing reasoning-exhaustion retries,
+            and its usage recorded."""
             resp = self._create_openai_chat_completion(llm, kwargs)
+            retry = 0
+            while _is_length_exhausted(resp) and retry < _LENGTH_EXHAUSTION_RETRIES:
+                retry += 1
+                self._log_full(
+                    f"[review-judge] purpose={purpose!r} model={model!r} exhausted its token budget "
+                    f"on hidden reasoning with no visible answer (retry {retry}/{_LENGTH_EXHAUSTION_RETRIES}) "
+                    f"-- retrying identical request"
+                )
+                print(f"[review-judge] Reasoning-token exhaustion (purpose={purpose!r}) "
+                      f"-- retry {retry}/{_LENGTH_EXHAUSTION_RETRIES} …")
+                resp = self._create_openai_chat_completion(llm, kwargs)
+            if resp.usage:
+                u = resp.usage
+                # prompt_tokens_details.cached_tokens is the portion of prompt_tokens
+                # served from OpenAI's prompt cache — a subset, not additional. Local
+                # / self-hosted servers (e.g. vLLM) often leave this null.
+                details = getattr(u, "prompt_tokens_details", None)
+                cached = getattr(details, "cached_tokens", 0) if details else 0
+                self._record_usage(
+                    purpose,
+                    input_tokens=u.prompt_tokens,
+                    cached_tokens=cached or 0,
+                    output_tokens=u.completion_tokens,
+                )
+            return resp
 
-        if resp.usage:
-            u = resp.usage
-            # prompt_tokens_details.cached_tokens is the portion of prompt_tokens
-            # served from OpenAI's prompt cache — a subset, not additional. Local
-            # / self-hosted servers (e.g. vLLM) often leave this null.
-            details = getattr(u, "prompt_tokens_details", None)
-            cached = getattr(details, "cached_tokens", 0) if details else 0
-            self._record_usage(
-                purpose,
-                input_tokens=u.prompt_tokens,
-                cached_tokens=cached or 0,
-                output_tokens=u.completion_tokens,
-            )
+        resp = one_turn()
+
+        # Tool-call rounds: each round is one model turn that may batch up to
+        # max_queries_per_call lookups. On the last allowed round the tool is
+        # withdrawn so the following turn has to produce the answer instead of
+        # asking for more lookups.
+        for round_index in range(self._max_lookup_rounds if use_tool else 0):
+            if not self._openai_supports_tools:
+                break
+            tool_calls = getattr(resp.choices[0].message, "tool_calls", None)
+            if not tool_calls:
+                break
+            kwargs["messages"].append(resp.choices[0].message.model_dump(exclude_none=True))
+            for call in tool_calls:
+                fn = getattr(call, "function", None)
+                name = getattr(fn, "name", None)
+                if name != FUNCTION_INFO_TOOL_NAME:
+                    content = json.dumps({
+                        "status": "error", "retry_allowed": False,
+                        "error": f"unknown tool {name!r}",
+                    })
+                else:
+                    content = self._run_lookup(
+                        getattr(fn, "arguments", None), f"{purpose} round {round_index + 1}"
+                    )
+                kwargs["messages"].append({
+                    "role": "tool", "tool_call_id": call.id, "content": content,
+                })
+            if round_index + 1 >= self._max_lookup_rounds:
+                kwargs.pop("tools", None)
+                kwargs.pop("tool_choice", None)
+                self._log_full(
+                    f"[function-lookup] {purpose}: lookup round cap "
+                    f"({self._max_lookup_rounds}) reached — answering without the tool"
+                )
+            resp = one_turn()
+
         content = resp.choices[0].message.content or ""
         # Reasoning-tier models can spend the ENTIRE max_completion_tokens
         # budget on hidden reasoning tokens on a hard task, leaving nothing
@@ -1539,6 +2152,203 @@ class ReviewJudgeClient:
                 f"OpenAI call (purpose={purpose or 'unknown'!r}, model={model!r}) returned empty "
                 f"content with finish_reason='length' — the model exhausted its "
                 f"max_completion_tokens={max_tokens} budget"
+                + (f" ({reasoning_tokens} reasoning tokens)" if reasoning_tokens is not None else "")
+                + " before producing a visible answer. Consider raising max_completion_tokens "
+                "or lowering reasoning_effort in the config."
+            )
+        return content
+
+    # ------------------------------------------------------------------
+    # OpenAI Responses API (/v1/responses)
+    #
+    # Needed for reasoning-tier models that reject function tools on
+    # /v1/chat/completions (gpt-5.6-terra: "Function tools with
+    # reasoning_effort are not supported ... use /v1/responses"). Same
+    # behavior as the chat path — one tool loop, the same reasoning-exhaustion
+    # retries, the same usage accounting and prompt-cache hints — expressed in
+    # the Responses vocabulary:
+    #
+    #   system prompt        -> `instructions` (still the cached prefix)
+    #   messages             -> `input` list of items
+    #   max_completion_tokens-> `max_output_tokens`
+    #   reasoning_effort     -> `reasoning={"effort": ...}`
+    #   tool declaration     -> flat {"type":"function","name",...}, not nested
+    #   assistant tool call  -> an output item with type == "function_call"
+    #   tool result          -> {"type":"function_call_output","call_id",...}
+    #   finish_reason=length -> status == "incomplete" + incomplete_details
+    #
+    # `store=False` keeps OpenAI from retaining the exchange server-side; the
+    # documented consequence is that reasoning state must travel in the request
+    # instead, which is why every output item (reasoning items included) is
+    # appended back into `input` before the next turn.
+    # ------------------------------------------------------------------
+
+    def _create_openai_response(self, llm, kwargs: dict, max_flag_retries: Optional[int] = None):
+        """responses.create() with the same provider-quirk handling as
+        _create_openai_chat_completion: drop a parameter this model/server
+        rejects (once, cached on self), and retry an intermittently
+        moderation-flagged request."""
+        from openai import BadRequestError
+
+        if max_flag_retries is None:
+            max_flag_retries = len(_MODERATION_BACKOFF_S) + 1
+        for attempt in range(max_flag_retries):
+            try:
+                return llm.responses.create(**kwargs)
+            except BadRequestError as e:
+                msg = str(e)
+                if "reasoning" in msg and "reasoning" in kwargs:
+                    self._responses_supports_reasoning = False
+                    kwargs.pop("reasoning")
+                    continue
+                if "temperature" in msg and "temperature" in kwargs:
+                    self._responses_supports_temperature = False
+                    kwargs.pop("temperature")
+                    continue
+                if "prompt_cache_key" in msg and "prompt_cache_key" in kwargs:
+                    self._responses_supports_prompt_cache_key = False
+                    kwargs.pop("prompt_cache_key")
+                    continue
+                if "prompt_cache_retention" in msg and "prompt_cache_retention" in kwargs:
+                    self._responses_supports_prompt_cache_retention = False
+                    kwargs.pop("prompt_cache_retention")
+                    continue
+                if ("tool" in msg or "function" in msg) and "tools" in kwargs:
+                    self._responses_supports_tools = False
+                    self._disable_tools_after_rejection(kwargs, msg, "/v1/responses")
+                    continue
+                if "invalid_prompt" in msg or "flagged as potentially violating" in msg:
+                    flagged = "--- START flagged input ---\n" + json.dumps(
+                        kwargs.get("input"), indent=2, default=str
+                    ) + "\n--- END flagged input ---"
+                    self._log_full(
+                        f"[review-judge] /v1/responses request flagged by moderation "
+                        f"(attempt {attempt + 1}/{max_flag_retries}):\n{msg}\n\n"
+                        f"instructions:\n{kwargs.get('instructions')}\n\n{flagged}\n"
+                    )
+                    if attempt < max_flag_retries - 1:
+                        wait_s = _MODERATION_BACKOFF_S[min(attempt, len(_MODERATION_BACKOFF_S) - 1)]
+                        print(f"[review-judge] Request flagged by moderation "
+                              f"(attempt {attempt + 1}/{max_flag_retries}) — waiting {wait_s:.0f}s "
+                              f"then retrying (see run log for the full flagged prompt) …")
+                        time.sleep(wait_s)
+                        continue
+                raise
+        raise RuntimeError("unreachable")  # loop always returns or raises
+
+    def _call_openai_responses(self, system: str, user_message: str, purpose: str = "") -> str:
+        llm = self._get_llm()
+        model = self._cfg.get("model", "gpt-5.6-terra")
+        max_tokens = self._cfg.get("max_completion_tokens", self._cfg.get("max_tokens", 4096))
+        use_tool = self.lookup_enabled_for(purpose) and self._responses_supports_tools
+
+        input_items: list = [{"role": "user", "content": user_message}]
+        kwargs: dict = {
+            "model": model,
+            "instructions": system,
+            "input": input_items,
+            "max_output_tokens": max_tokens,
+            "store": False,
+        }
+        temperature = self._cfg.get("temperature")
+        if self._responses_supports_temperature and temperature is not None:
+            kwargs["temperature"] = temperature
+        effort = self._cfg.get("reasoning_effort", self._cfg.get("effort"))
+        if self._responses_supports_reasoning and effort:
+            kwargs["reasoning"] = {"effort": effort}
+        # Same caching rationale as the chat path (see the class docstring).
+        if self._responses_supports_prompt_cache_key:
+            base_key = self._cfg.get("prompt_cache_key") or "ctl-reviewer:v1"
+            kwargs["prompt_cache_key"] = f"{base_key}-{purpose}" if purpose else base_key
+        if self._responses_supports_prompt_cache_retention:
+            retention = self._cfg.get("prompt_cache_retention", "24h")
+            if retention:
+                kwargs["prompt_cache_retention"] = retention
+        if use_tool:
+            kwargs["tools"] = [self.catalog.responses_tool()]
+            kwargs["tool_choice"] = "auto"
+
+        def one_turn():
+            resp = self._create_openai_response(llm, kwargs)
+            retry = 0
+            while _is_response_exhausted(resp) and retry < _LENGTH_EXHAUSTION_RETRIES:
+                retry += 1
+                self._log_full(
+                    f"[review-judge] purpose={purpose!r} model={model!r} exhausted its token budget "
+                    f"on hidden reasoning with no visible answer (retry {retry}/{_LENGTH_EXHAUSTION_RETRIES}) "
+                    f"-- retrying identical request"
+                )
+                print(f"[review-judge] Reasoning-token exhaustion (purpose={purpose!r}) "
+                      f"-- retry {retry}/{_LENGTH_EXHAUSTION_RETRIES} …")
+                resp = self._create_openai_response(llm, kwargs)
+            u = getattr(resp, "usage", None)
+            if u:
+                # input_tokens_details.cached_tokens is the portion of
+                # input_tokens served from the prompt cache — a subset.
+                details = getattr(u, "input_tokens_details", None)
+                cached = getattr(details, "cached_tokens", 0) if details else 0
+                self._record_usage(
+                    purpose,
+                    input_tokens=getattr(u, "input_tokens", 0) or 0,
+                    cached_tokens=cached or 0,
+                    output_tokens=getattr(u, "output_tokens", 0) or 0,
+                )
+            return resp
+
+        resp = one_turn()
+
+        for round_index in range(self._max_lookup_rounds if use_tool else 0):
+            if not self._responses_supports_tools:
+                break
+            output = list(getattr(resp, "output", None) or [])
+            tool_calls = [item for item in output if getattr(item, "type", None) == "function_call"]
+            if not tool_calls:
+                break
+            # Every output item goes back, reasoning items included — required
+            # for reasoning continuity with store=False.
+            for item in output:
+                kwargs["input"].append(
+                    item.model_dump(exclude_none=True) if hasattr(item, "model_dump") else item
+                )
+            for call in tool_calls:
+                name = getattr(call, "name", None)
+                if name != FUNCTION_INFO_TOOL_NAME:
+                    content = json.dumps({
+                        "status": "error", "retry_allowed": False,
+                        "error": f"unknown tool {name!r}",
+                    })
+                else:
+                    content = self._run_lookup(
+                        getattr(call, "arguments", None), f"{purpose} round {round_index + 1}"
+                    )
+                kwargs["input"].append({
+                    "type": "function_call_output",
+                    "call_id": getattr(call, "call_id", None) or getattr(call, "id", None),
+                    "output": content,
+                })
+            if round_index + 1 >= self._max_lookup_rounds:
+                kwargs.pop("tools", None)
+                kwargs.pop("tool_choice", None)
+                self._log_full(
+                    f"[function-lookup] {purpose}: lookup round cap "
+                    f"({self._max_lookup_rounds}) reached — answering without the tool"
+                )
+            resp = one_turn()
+
+        content = getattr(resp, "output_text", "") or ""
+        # Same exhaustion-after-retries failure as the chat path: raise rather
+        # than hand an empty review/fix back to the caller (see the long note
+        # in _call_openai_chat).
+        if not content.strip() and _is_response_exhausted(resp):
+            reasoning_tokens = None
+            u = getattr(resp, "usage", None)
+            if u:
+                otd = getattr(u, "output_tokens_details", None)
+                reasoning_tokens = getattr(otd, "reasoning_tokens", None) if otd else None
+            raise RuntimeError(
+                f"OpenAI Responses call (purpose={purpose or 'unknown'!r}, model={model!r}) returned "
+                f"no visible output with status='incomplete' (reason=max_output_tokens) — the model "
+                f"exhausted its max_output_tokens={max_tokens} budget"
                 + (f" ({reasoning_tokens} reasoning tokens)" if reasoning_tokens is not None else "")
                 + " before producing a visible answer. Consider raising max_completion_tokens "
                 "or lowering reasoning_effort in the config."
@@ -1581,7 +2391,9 @@ class ReviewJudgeClient:
         new ways. Routing each candidate issue to a second model for an
         independent judgment is robust to that in a way regex can't be."""
         effective_type = component_type or infer_component_type(code)
-        review_system = _build_review_system(effective_type)
+        review_system = _build_review_system(
+            effective_type, function_lookup=self.lookup_enabled_for("review")
+        )
         prior_issues_block = ""
         if prior_issues:
             prior_issues_text = "\n".join(f"  [{i.severity}] {i.description}" for i in prior_issues)
@@ -1649,15 +2461,53 @@ class ReviewJudgeClient:
         )
 
     def check_numeric_claim(self, description: str, code: str) -> bool:
-        """Fact-check ONE reported issue against CTL2's numeric widening
-        chain (integer -> long -> number -> decimal) using THIS client's
-        model (intended to be a cheap/local model, not the main judge).
-        Returns True (keep) unless the model clearly says HALLUCINATION —
-        an ambiguous or malformed response fails open (keeps the issue)
-        rather than silently discarding real signal."""
+        """Fact-check ONE reported issue against CTL2's numeric widening chain
+        (integer -> long -> number -> decimal). Returns True to keep the issue,
+        False to drop it as a hallucination.
+
+        Two stages, cheapest first:
+
+        1. THE CATALOG. When the claim names a built-in whose documented return
+           type is unambiguous, the claim stands or falls on a fact the catalog
+           holds — no model call needed (see _catalog_numeric_verdict). This is
+           free, deterministic, and identical across runs.
+        2. THE MODEL, for what the catalog cannot answer: claims about bare
+           operators, assignments and ternaries with no built-in involved, and
+           claims whose function has several possible return types. Any catalog
+           evidence gathered in stage 1 rides along, so the fallback reasons
+           from documented signatures rather than recollection.
+
+        Ambiguous or malformed model output fails open (keeps the issue) rather
+        than silently discarding real signal."""
+        evidence_block = ""
+        if self.catalog is not None:
+            try:
+                returns, lines = _catalog_evidence(description, code, self.catalog)
+                verdict = _catalog_numeric_verdict(returns, description)
+            except Exception as e:  # a claim-parsing bug must never lose a review
+                self._log_full(f"[numeric-check] catalog stage raised ({e}) — falling back to the model")
+                returns, lines, verdict = {}, [], None
+            if verdict is not None:
+                summary = ", ".join(f"{n} -> {'/'.join(sorted(t))}" for n, t in returns.items())
+                print(f"[review-judge] numeric claim settled by the function catalog "
+                      f"(no model call): {'HALLUCINATION' if verdict is False else 'VALID'} — {summary}")
+                self._log_full(
+                    f"[numeric-check] catalog verdict={'VALID' if verdict else 'HALLUCINATION'} "
+                    f"({summary}) for issue: {description}"
+                )
+                return verdict
+            if lines:
+                evidence_block = _CATALOG_EVIDENCE_BLOCK.format(
+                    evidence="\n".join(f"- {line}" for line in lines)
+                )
+                self._log_full(
+                    "[numeric-check] catalog could not settle the claim — asking the model "
+                    f"with evidence: {'; '.join(lines)}"
+                )
         raw = self._call(
             _NUMERIC_CLAIM_CHECK_SYSTEM,
-            _NUMERIC_CLAIM_CHECK_USER.format(code=code, description=description),
+            _NUMERIC_CLAIM_CHECK_USER.format(code=code, description=description)
+            + evidence_block,
             purpose="numeric-check",
         )
         return "HALLUCINATION" not in raw.upper()
@@ -1671,7 +2521,9 @@ class ReviewJudgeClient:
     ) -> str:
         """Ask the judge to rewrite the code directly, resolving `review`'s findings."""
         effective_type = component_type or infer_component_type(code)
-        fix_system = _build_fix_system(effective_type)
+        fix_system = _build_fix_system(
+            effective_type, function_lookup=self.lookup_enabled_for("fix")
+        )
         user_msg = _FIX_USER.format(
             component_type=effective_type or "unknown",
             prompt=prompt,

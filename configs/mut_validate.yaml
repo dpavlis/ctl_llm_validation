@@ -24,6 +24,18 @@ judge:
     #api_key: not-needed      # local server doesn't check it; kept non-empty for the OpenAI client
     #base_url: http://virt-ai:3000/v1
   max_retries: 2           # retries on an unparseable review response
+  # OpenAI endpoint (provider: openai only): auto | chat_completions | responses.
+  #   auto             — chat.completions, but /v1/responses for calls that carry
+  #                      the ctl_function_info tool; reasoning-tier models reject
+  #                      function tools on /v1/chat/completions ("Function tools
+  #                      with reasoning_effort are not supported for
+  #                      gpt-5.6-terra in /v1/chat/completions"). A custom
+  #                      base_url stays on chat.completions, since local
+  #                      OpenAI-compatible servers rarely implement /v1/responses.
+  #   chat_completions — always chat.completions; a tools rejection there disables
+  #                      the catalog tool for the run instead of switching.
+  #   responses        — always /v1/responses.
+  api: auto
   # Official OpenAI API — kept here for quick swap-back, see prior comparison run.
   model: gpt-5.4
   api_key: ${OPENAI_API_KEY}
@@ -45,13 +57,27 @@ judge:
   # same warm backend; prompt_cache_retention: 24h keeps the cached prefix
   # alive far longer than the default. See ReviewJudgeClient's class
   # docstring in review_judge.py for the full rationale.
-  # "v7": bump when review_judge.py's shared system-prompt content
+  # "v9": bump when review_judge.py's shared system-prompt content
   # (rules/reference/notes) changes materially, to deliberately start a
   # fresh cache namespace.
-  prompt_cache_key: ctl-reviewer:v7
+  prompt_cache_key: ctl-reviewer:v9
   # SDK only accepts exactly "in_memory" (short default) or "24h" (extended)
   # — no shorter non-default option is available.
   prompt_cache_retention: "24h"   # "24h" | "in_memory" | null to omit the field entirely
+
+  # Deterministic CTL2 built-in function catalog, offered to the judge as the
+  # `ctl_function_info` tool (dpo_forge/function_catalog.py). In-process dict
+  # lookups over resources/ctl-function-library.json — 302 built-ins with
+  # per-overload signatures, return types, documented runtime errors and
+  # parameter-specific null behavior. No network, no compiler; the only cost is
+  # the extra model turn when the judge actually asks. Turn this off to compare
+  # runs with and without it.
+  function_lookup:
+    enabled: true
+    library: resources/ctl-function-library.json
+    max_queries_per_call: 20
+    max_rounds_per_call: 3
+    purposes: [review, fix]
 
 # Used only with --tweak. Kept separate from "judge" — defaults to the local
 # Qwen server since OpenAI's moderation classifier has intermittently flagged
@@ -64,6 +90,8 @@ tweak_llm:
   model: gpt-5.4
   api_key: ${OPENAI_API_KEY}
   base_url: null
+  # See the judge section's `api` comment. auto | chat_completions | responses.
+  api: auto
     #model: Qwen3-Coder-Next
     #api_key: not-needed
     #base_url: http://virt-ai:3000/v1

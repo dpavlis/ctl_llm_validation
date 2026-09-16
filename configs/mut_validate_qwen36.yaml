@@ -11,13 +11,13 @@ model:
   system_prompt: |
     You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
     Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
-    Prefer correct, practical, minimal solutions.
+    Prefer correct, practical, minimal solutions. Always enclose generated CTL in ``ctl fence.
   generation:
-    temperature: 0.3
+    temperature: 0.4
     top_p: 0.9
-    top_k: 40
-    repetition_penalty: 1.05
-    max_new_tokens: 2048
+      #top_k: 40
+      #repetition_penalty: 1.05
+    max_new_tokens: 4096
     seed: 42
 
 judge:
@@ -27,8 +27,13 @@ judge:
     #base_url: http://virt-ai:3000/v1
   max_retries: 2           # retries on an unparseable review response
   # Official OpenAI API — kept here for quick swap-back, see prior comparison run.
-  model: gpt-5.4
+  model: gpt-5.6-terra #gpt-5.4
   api_key: ${OPENAI_API_KEY}
+  # OpenAI endpoint: auto | chat_completions | responses.
+  # auto = chat.completions normally, /v1/responses for calls that carry the
+  # ctl_function_info tool (reasoning-tier models like gpt-5.6-terra reject
+  # function tools on /v1/chat/completions). Pin it explicitly to override.
+  api: auto
     #base_url: null           # null = official OpenAI API
   reasoning_effort: medium
   # Confirmed via real runs: at reasoning_effort=medium, gpt-5.4 can spend
@@ -41,8 +46,22 @@ judge:
   # time in between, which was expiring the default short-lived cache
   # before the next call arrived. See ReviewJudgeClient's class docstring
   # in review_judge.py.
-  prompt_cache_key: ctl-reviewer:v7
+  prompt_cache_key: ctl-reviewer:v9
   prompt_cache_retention: "24h"
+
+  # Deterministic CTL2 built-in function catalog, offered to the judge as the
+  # `ctl_function_info` tool (dpo_forge/function_catalog.py). In-process dict
+  # lookups over resources/ctl-function-library.json — 302 built-ins with
+  # per-overload signatures, return types, documented runtime errors and
+  # parameter-specific null behavior. No network, no compiler; the only cost is
+  # the extra model turn when the judge actually asks. Turn this off to compare
+  # runs with and without it.
+  function_lookup:
+    enabled: true
+    library: resources/ctl-function-library.json
+    max_queries_per_call: 20
+    max_rounds_per_call: 3
+    purposes: [review, fix]
 
 # Used only with --tweak. Kept separate from "judge" — defaults to the local
 # Qwen server since OpenAI's moderation classifier has intermittently flagged
@@ -53,8 +72,13 @@ tweak_llm:
     #model: Qwen3-Coder-Next
     #api_key: not-needed
     #base_url: http://virt-ai:3000/v1
-  model: gpt-5.4
+  model: gpt-5.6-terra #gpt-5.4
   api_key: ${OPENAI_API_KEY}
+  # OpenAI endpoint: auto | chat_completions | responses.
+  # auto = chat.completions normally, /v1/responses for calls that carry the
+  # ctl_function_info tool (reasoning-tier models like gpt-5.6-terra reject
+  # function tools on /v1/chat/completions). Pin it explicitly to override.
+  api: auto
   # tweak_llm's own default base_url (in mut_validate.py's DEFAULT_CONFIG) is
   # the LOCAL vLLM server, unlike "judge" whose default is already null —
   # commenting this out here (like above) would silently keep sending

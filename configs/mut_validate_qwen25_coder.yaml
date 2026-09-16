@@ -41,7 +41,7 @@ judge:
   # time in between, which was expiring the default short-lived cache
   # before the next call arrived. See ReviewJudgeClient's class docstring
   # in review_judge.py.
-  prompt_cache_key: ctl-reviewer:v7
+  prompt_cache_key: ctl-reviewer:v9
   prompt_cache_retention: "24h"
 
 # Used only with --tweak. Kept separate from "judge" — defaults to the local
