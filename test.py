@@ -49,6 +49,10 @@ from typing import Any, Optional
 
 import yaml
 
+# Single shared implementation — mut_validate.py and dpo_forge use the same one,
+# so the rule for what counts as "the answer" cannot drift between them.
+from dpo_forge.generator import split_thinking
+
 # ---------------------------------------------------------------------------
 # Optional rich display
 # ---------------------------------------------------------------------------
@@ -162,6 +166,10 @@ DEFAULT_CONFIG: dict = {
         "chat_template": None,
         # Set false for models trained with a nothink template.
         "enable_thinking": False,
+        # Passed to the chat template as `reasoning_effort` when thinking is on;
+        # None leaves the template's own default. Qwen3.8 accepts
+        # low | medium | xhigh. Templates that do not read it warn at load.
+        "reasoning_effort": None,
 
         # --- api mode ---
         "base_url": "http://localhost:11434/v1",
@@ -482,6 +490,8 @@ class LocalMUTClient:
         self._model = None
         self._tok = None
         self._enable_thinking = bool(cfg.get("enable_thinking", False))
+        effort = cfg.get("reasoning_effort")
+        self._reasoning_effort = str(effort) if effort else None
 
     def _load(self):
         if self._model is not None:
@@ -557,8 +567,45 @@ class LocalMUTClient:
         )
         self._model.eval()
         _print(
-            f"  Model loaded.  [dim](thinking={'enabled' if self._enable_thinking else 'disabled'})[/dim]"
+            f"  Model loaded.  [dim](thinking={'enabled' if self._enable_thinking else 'disabled'}"
+            + (f", reasoning_effort={self._reasoning_effort}" if self._reasoning_effort else "")
+            + ")[/dim]"
         )
+        self._check_reasoning_effort()
+
+    def _check_reasoning_effort(self) -> None:
+        """Validate reasoning_effort once, at load.
+
+        Jinja silently ignores variables a template never reads, so without this
+        an unsupported template or a bad value would fail quietly and the run
+        would score a model that never got the setting.
+        """
+        if not self._reasoning_effort:
+            return
+        if not self._enable_thinking:
+            _print(
+                "  [yellow]Warning:[/yellow] reasoning_effort is set but enable_thinking "
+                "is false; the template applies it only while thinking is enabled."
+            )
+            return
+        template = getattr(self._tok, "chat_template", None) or ""
+        if "reasoning_effort" not in template:
+            _print(
+                f"  [yellow]Warning:[/yellow] chat template does not reference "
+                f"reasoning_effort; {self._reasoning_effort!r} will be ignored."
+            )
+            return
+        try:
+            self._tok.apply_chat_template(
+                [{"role": "user", "content": "hi"}],
+                tokenize=False,
+                add_generation_prompt=True,
+                enable_thinking=self._enable_thinking,
+                reasoning_effort=self._reasoning_effort,
+            )
+        except Exception as exc:  # noqa: BLE001 — the template validates the value
+            _print(f"[red]ERROR:[/red] reasoning_effort={self._reasoning_effort!r} rejected: {exc}")
+            sys.exit(1)
 
     def _tokenize_messages(self, messages: list[dict]):
         kwargs = dict(
@@ -566,6 +613,8 @@ class LocalMUTClient:
             add_generation_prompt=True,
             return_tensors="pt",
         )
+        if self._reasoning_effort and self._enable_thinking:
+            kwargs["reasoning_effort"] = self._reasoning_effort
         try:
             return self._tok.apply_chat_template(
                 messages,
@@ -574,6 +623,7 @@ class LocalMUTClient:
             )
         except TypeError:
             # Older tokenizer implementations may not accept enable_thinking.
+            kwargs.pop("reasoning_effort", None)
             return self._tok.apply_chat_template(messages, **kwargs)
 
     def warm_up(self):
@@ -1200,7 +1250,14 @@ def _build_mut_user_message(test: dict) -> str:
     return user_message
 
 
-def _call_mut_with_retry(mut_client, test: dict, timeout: int, mut_cfg: dict, debug: bool = False) -> tuple[str, float]:
+def _call_mut_with_retry(mut_client, test: dict, timeout: int, mut_cfg: dict,
+                         debug: bool = False) -> tuple[str, float, str]:
+    """Return (answer, elapsed_seconds, thinking).
+
+    Chain-of-thought is split off here — the single point every MUT call passes
+    through — so the judge, the scores and the reports only ever see the answer.
+    In --debug the raw stream is still printed live, reasoning included.
+    """
     test_type = test.get("type", "generate")
     system_prompt, temperature, top_p, top_k, repetition_penalty = _resolve_mut_overrides(mut_cfg, test_type, test)
     user_message = _build_mut_user_message(test)
@@ -1226,7 +1283,10 @@ def _call_mut_with_retry(mut_client, test: dict, timeout: int, mut_cfg: dict, de
                 response = "".join(chunks)
             else:
                 response = mut_client.generate(system_prompt, user_message, temperature, top_p, top_k, repetition_penalty)
-            return response or "", time.monotonic() - t0
+            thinking, answer = split_thinking(
+                response or "", bool(mut_cfg.get("enable_thinking", False))
+            )
+            return answer, time.monotonic() - t0, thinking
         except Exception as exc:  # noqa: BLE001
             elapsed = time.monotonic() - t0
             last_exc = exc
@@ -1291,7 +1351,8 @@ def run_single_test(
     if debug:
         _print("    [bold magenta]→ MUT STREAM:[/bold magenta]")
     try:
-        mut_response, mut_duration = _call_mut_with_retry(mut_client, test, timeout, mut_cfg, debug=debug)
+        mut_response, mut_duration, mut_thinking = _call_mut_with_retry(
+            mut_client, test, timeout, mut_cfg, debug=debug)
     except Exception as exc:  # noqa: BLE001
         import traceback
         exc_repr = repr(exc) if not str(exc) else f"{type(exc).__name__}: {exc}"
@@ -1299,6 +1360,21 @@ def run_single_test(
         _print(f"    [dim]{traceback.format_exc().strip()}[/dim]")
         return _error_result(test, run_index, f"MUT call failed: {exc_repr}", time.monotonic() - t_global)
 
+    if mut_thinking:
+        _print(f"      [dim]({len(mut_thinking)} chars of thinking dropped before judging)[/dim]")
+    if mut_cfg.get("enable_thinking") and not mut_response:
+        # No `</think>` in the completion: the whole max_new_tokens budget went
+        # on reasoning. Judging an empty answer would score it 0 and read as a
+        # model failure rather than a budget one.
+        _print("    [red]MUT ERROR:[/red] ran out of tokens mid-thought (no </think>)")
+        r = _error_result(
+            test, run_index,
+            f"MUT exhausted max_new_tokens={mut_cfg.get('max_new_tokens')} mid-thought "
+            f"(no </think> in the completion) — raise max_new_tokens or lower reasoning_effort",
+            time.monotonic() - t_global,
+        )
+        r["mut_thinking"] = mut_thinking
+        return r
     _print(f"      {len(mut_response)} chars in {mut_duration:.1f}s")
 
     # Step 2: Judge
@@ -1313,6 +1389,7 @@ def run_single_test(
     if judge_raw is None:
         r = _error_result(test, run_index, "Judge JSON parse failure", time.monotonic() - t_global)
         r["mut_response"] = mut_response
+        r["mut_thinking"] = mut_thinking
         return r
 
     # Validate with pydantic if available
@@ -1348,6 +1425,7 @@ def run_single_test(
         "mut_system_prompt": mut_system_prompt,
         "mut_user_message": mut_user_message,
         "mut_response":     mut_response,
+        "mut_thinking":     mut_thinking,
         "judge_result":     judge_result,
         "numeric_score":    numeric,
         "critical_failure": critical,

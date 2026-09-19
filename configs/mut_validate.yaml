@@ -12,6 +12,16 @@ model:
     You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
     Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
     Prefer correct, practical, minimal solutions.
+  # --- Thinking mode (MUT) -------------------------------------------------
+  # false keeps the historical behavior: the chat template is forced to
+  # nothink. When true, the model's chain-of-thought is split off at the
+  # `</think>` tag and ONLY the text after it is judged, appended to the
+  # conversation history, or exported as training data.
+  enable_thinking: false
+  # Handed to the chat template as `reasoning_effort` when thinking is on.
+  # Qwen3.8 accepts low | medium | xhigh; null leaves the template default.
+  # Templates that do not read it warn at load time instead of failing quietly.
+  reasoning_effort: null
   generation:
     temperature: 0.3
     top_p: 1.0

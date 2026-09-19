@@ -18,7 +18,7 @@
 # ---------------------------------------------------------------------------
 # Link to training config (enables export auto-discovery)
 # ---------------------------------------------------------------------------
-training_config: configs/qwen36.yaml
+training_config: configs/qwen38.yaml
 
 # ---------------------------------------------------------------------------
 # Model
@@ -45,6 +45,14 @@ model:
   # Whether to allow the model to produce chain-of-thought <think> tokens.
   # Set false for models trained with a nothink template (qwen3_nothink etc.)
   enable_thinking: true
+
+  # Reasoning effort, handed to the chat template as `reasoning_effort`.
+  # Qwen3.8 accepts: low | medium | xhigh (its default). Only applied while
+  # enable_thinking is true; an unsupported value fails at startup.
+  # Note: the template injects guidance text only for low and xhigh — medium
+  # deliberately adds no reasoning instruction at all.
+  # Omit or set null to leave the template's own default.
+  reasoning_effort: medium #xhigh
 
   # Optional: use a LlamaFactory template by name (same naming as train.py,
   # for example qwen3_6, qwen3_nothink, qwen3_5_nothink).
@@ -78,12 +86,12 @@ model:
 # ---------------------------------------------------------------------------
 # NOTE: these keys must stay at the top level (column 0), NOT indented under
 # `model:` — chat.py reads them from the root of the config.
-temperature: 0.3         # 0.0 selects greedy decoding (sampling off)
-top_p: 0.95
+temperature: 0.4          # 0.0 selects greedy decoding (sampling off)
+top_p: 0.80
 top_k: 20                # 0 or null disables top-k filtering
-repetition_penalty: 1.05 # 1.0 is a no-op; raise slightly (1.05-1.2) to curb loops
-# Not supported by chat.py: `do_sample` is derived from temperature, and
-# `min_p` / `presence_penalty` have no transformers equivalent here.
+repetition_penalty: 1.01  # 1.0 is a no-op; raise slightly (1.05-1.2) to curb loops
+# Not supported: `do_sample` is derived from temperature, and `presence_penalty`
+# has no transformers equivalent — use repetition_penalty instead.
 
 # ---------------------------------------------------------------------------
 # System prompt

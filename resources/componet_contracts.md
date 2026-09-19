@@ -182,6 +182,12 @@ function integer getOutputPort() {
   transformOnError.
 - No other CTL function (e.g. a generic init()/clean() outside the Rollup
   group lifecycle) has access to $in, $out, or the accumulator at all.
+- The accumulator is a WRITABLE record, so ++/-- are legal on its numeric fields:
+  `acc.count++` / `groupAccumulator.order_count++` are correct CTL2, exactly as
+  `$out.N.field++` is. Never report these as invalid syntax, as non-compiling, or
+  as "++ is not allowed on record fields" — that restriction applies only to
+  READ-ONLY input fields ($in.N.field), literals, and list/map elements. The
+  expanded `acc.count = acc.count + 1` is an equivalent style choice, not a fix.
 
 (d) Critical return semantics
 - updateGroup(<accumulator>) return value:

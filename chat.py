@@ -125,6 +125,12 @@ DEFAULT_CONFIG: dict = {
         # Set false for models trained with a nothink template (recommended)
         "enable_thinking": False,
 
+        # Reasoning effort, passed to the chat template as `reasoning_effort`.
+        # None leaves the template's own default. Only meaningful when the
+        # template supports it AND enable_thinking is true. Qwen3.8 accepts
+        # "low", "medium" and "xhigh" (its default).
+        "reasoning_effort": None,
+
         # --- api mode ---
         "base_url": "http://localhost:11434/v1",
         "api_model": None,
@@ -134,6 +140,9 @@ DEFAULT_CONFIG: dict = {
     # Generation settings
     "temperature": 0.7,
     "top_p": 0.95,
+    # None means "leave at the model's own default" (not passed to generate()).
+    "top_k": None,
+    "repetition_penalty": None,
 
     # System message shown to the model at the start of every conversation
     "system_prompt": (
@@ -190,6 +199,26 @@ def _sanitize_top_p(value: float) -> float:
     if value > 1.0:
         return 1.0
     return float(value)
+
+
+def _sanitize_top_k(value) -> Optional[int]:
+    """Return a positive top-k, or None to disable top-k filtering."""
+    if value is None:
+        return None
+    value = int(value)
+    # 0 (and anything below) is the conventional "disabled" spelling.
+    return value if value > 0 else None
+
+
+def _sanitize_repetition_penalty(value) -> Optional[float]:
+    """Return a usable repetition penalty, or None to leave it unset."""
+    if value is None:
+        return None
+    value = float(value)
+    if not math.isfinite(value) or value <= 0.0:
+        raise ValueError(f"repetition_penalty must be finite and > 0, got {value!r}")
+    # 1.0 is a no-op; skip it so we do not pass a redundant argument.
+    return value if value != 1.0 else None
 
 
 def load_config(path: Path) -> dict:
@@ -480,7 +509,56 @@ class LocalModel:
         self._tok = tok
         self._model = model
         self._max_new_tokens = cfg.get("max_new_tokens", 2048)
-        _print(f"  Model loaded.  [dim](thinking={'enabled' if self._enable_thinking else 'disabled'})[/dim]\n")
+
+        effort = cfg.get("reasoning_effort")
+        self._reasoning_effort = str(effort) if effort else None
+        self._check_reasoning_effort()
+
+        effort_note = (
+            f", reasoning_effort={self._reasoning_effort}" if self._reasoning_effort else ""
+        )
+        _print(
+            f"  Model loaded.  [dim](thinking="
+            f"{'enabled' if self._enable_thinking else 'disabled'}{effort_note})[/dim]\n"
+        )
+
+    def _check_reasoning_effort(self) -> None:
+        """Warn early if reasoning_effort will not take effect, and surface an
+        invalid value now rather than on the first message.
+
+        Jinja silently ignores variables a template never reads, so a template
+        without `reasoning_effort` support would otherwise fail quietly."""
+        if not self._reasoning_effort:
+            return
+
+        if not self._enable_thinking:
+            _print(
+                "  [yellow]Warning:[/yellow] reasoning_effort is set but "
+                "enable_thinking is false; the template applies it only while "
+                "thinking is enabled."
+            )
+            return
+
+        template = getattr(self._tok, "chat_template", None) or ""
+        if "reasoning_effort" not in template:
+            _print(
+                f"  [yellow]Warning:[/yellow] chat template does not reference "
+                f"reasoning_effort; the value {self._reasoning_effort!r} will be ignored."
+            )
+            return
+
+        try:
+            self._tok.apply_chat_template(
+                [{"role": "user", "content": "hi"}],
+                tokenize=False,
+                add_generation_prompt=True,
+                enable_thinking=self._enable_thinking,
+                reasoning_effort=self._reasoning_effort,
+            )
+        except Exception as exc:
+            # The template itself validates the allowed values.
+            _print(f"[red]ERROR:[/red] reasoning_effort={self._reasoning_effort!r} rejected: {exc}")
+            sys.exit(1)
 
     def _tokenize_messages(self, messages: list[dict]):
         kwargs = dict(
@@ -488,6 +566,8 @@ class LocalModel:
             add_generation_prompt=True,
             return_tensors="pt",
         )
+        if self._reasoning_effort:
+            kwargs["reasoning_effort"] = self._reasoning_effort
         try:
             return self._tok.apply_chat_template(
                 messages,
@@ -504,6 +584,8 @@ class LocalModel:
         temperature: float,
         top_p: float,
         stop_ids: list[int],
+        top_k: Optional[int] = None,
+        repetition_penalty: Optional[float] = None,
         streamer=None,
     ):
         import torch
@@ -520,6 +602,11 @@ class LocalModel:
             "remove_invalid_values": True,
             "renormalize_logits": True,
         }
+        # top-k only applies while sampling; greedy decoding ignores it.
+        if do_sample and top_k is not None:
+            kwargs["top_k"] = top_k
+        if repetition_penalty is not None:
+            kwargs["repetition_penalty"] = repetition_penalty
         if streamer is not None:
             kwargs["streamer"] = streamer
 
@@ -539,11 +626,15 @@ class LocalModel:
                 **kwargs,
             )
 
-    def generate(self, messages: list[dict], temperature: float, top_p: float) -> str:
+    def generate(self, messages: list[dict], temperature: float, top_p: float,
+                 top_k: Optional[int] = None,
+                 repetition_penalty: Optional[float] = None) -> str:
         import torch
 
         temperature = _sanitize_temperature(temperature)
         top_p = _sanitize_top_p(top_p)
+        top_k = _sanitize_top_k(top_k)
+        repetition_penalty = _sanitize_repetition_penalty(repetition_penalty)
 
         tokenized = self._tokenize_messages(messages)
         if hasattr(tokenized, "input_ids"):
@@ -572,15 +663,21 @@ class LocalModel:
                 temperature=temperature,
                 top_p=top_p,
                 stop_ids=stop_ids,
+                top_k=top_k,
+                repetition_penalty=repetition_penalty,
             )
         return self._tok.decode(output[0][input_ids.shape[1]:], skip_special_tokens=True)
 
-    def generate_stream(self, messages: list[dict], temperature: float, top_p: float) -> Iterator[str]:
+    def generate_stream(self, messages: list[dict], temperature: float, top_p: float,
+                        top_k: Optional[int] = None,
+                        repetition_penalty: Optional[float] = None) -> Iterator[str]:
         import torch
         from transformers import TextIteratorStreamer
 
         temperature = _sanitize_temperature(temperature)
         top_p = _sanitize_top_p(top_p)
+        top_k = _sanitize_top_k(top_k)
+        repetition_penalty = _sanitize_repetition_penalty(repetition_penalty)
 
         tokenized = self._tokenize_messages(messages)
         if hasattr(tokenized, "input_ids"):
@@ -610,6 +707,8 @@ class LocalModel:
                         temperature=temperature,
                         top_p=top_p,
                         stop_ids=stop_ids,
+                        top_k=top_k,
+                        repetition_penalty=repetition_penalty,
                         streamer=streamer,
                     )
             except Exception as err:
@@ -638,21 +737,40 @@ class APIModel:
         self._model_name = cfg.get("api_model") or ""
         _print(f"  API model: [cyan]{self._model_name}[/cyan] at {cfg.get('base_url')}\n")
 
-    def generate(self, messages: list[dict], temperature: float, top_p: float) -> str:
+    @staticmethod
+    def _extra_body(top_k: Optional[int], repetition_penalty: Optional[float]) -> dict:
+        """top_k / repetition_penalty are not in the OpenAI schema; servers such
+        as vLLM and Ollama accept them as extra request-body fields."""
+        extra: dict = {}
+        if top_k is not None:
+            extra["top_k"] = top_k
+        if repetition_penalty is not None:
+            extra["repetition_penalty"] = repetition_penalty
+        return extra
+
+    def generate(self, messages: list[dict], temperature: float, top_p: float,
+                 top_k: Optional[int] = None,
+                 repetition_penalty: Optional[float] = None) -> str:
         resp = self._client.chat.completions.create(
             model=self._model_name,
             messages=messages,
             temperature=temperature,
             top_p=top_p,
+            extra_body=self._extra_body(_sanitize_top_k(top_k),
+                                        _sanitize_repetition_penalty(repetition_penalty)),
         )
         return resp.choices[0].message.content or ""
 
-    def generate_stream(self, messages: list[dict], temperature: float, top_p: float) -> Iterator[str]:
+    def generate_stream(self, messages: list[dict], temperature: float, top_p: float,
+                        top_k: Optional[int] = None,
+                        repetition_penalty: Optional[float] = None) -> Iterator[str]:
         stream = self._client.chat.completions.create(
             model=self._model_name,
             messages=messages,
             temperature=temperature,
             top_p=top_p,
+            extra_body=self._extra_body(_sanitize_top_k(top_k),
+                                        _sanitize_repetition_penalty(repetition_penalty)),
             stream=True,
         )
         for event in stream:
@@ -695,7 +813,9 @@ class SessionLogger:
 # ---------------------------------------------------------------------------
 
 def run_chat(model, system_prompt: str, temperature: float, top_p: float,
-             logger: Optional[SessionLogger], stream_output: bool = True):
+             logger: Optional[SessionLogger], stream_output: bool = True,
+             top_k: Optional[int] = None,
+             repetition_penalty: Optional[float] = None):
 
     history: list[dict] = []
 
@@ -705,6 +825,7 @@ def run_chat(model, system_prompt: str, temperature: float, top_p: float,
     _rule("CTL2 Chat")
     _print(
         f"  [dim]Model temp={temperature}  top_p={top_p}  "
+        f"top_k={top_k}  repetition_penalty={repetition_penalty}  "
         f"system={repr(system_prompt[:60])}{'…' if len(system_prompt) > 60 else ''}[/dim]"
     )
     _print("  [dim]Commands: /reset /clear /history /paste /quit[/dim]")
@@ -801,7 +922,10 @@ def run_chat(model, system_prompt: str, temperature: float, top_p: float,
         try:
             if stream_output and hasattr(model, "generate_stream"):
                 chunks: list[str] = []
-                for chunk in model.generate_stream(_messages_with_system(), temperature, top_p):
+                for chunk in model.generate_stream(
+                    _messages_with_system(), temperature, top_p,
+                    top_k=top_k, repetition_penalty=repetition_penalty,
+                ):
                     chunks.append(chunk)
                     if _HAVE_RICH:
                         _console.print(chunk, end="", markup=False, highlight=False)
@@ -813,7 +937,10 @@ def run_chat(model, system_prompt: str, temperature: float, top_p: float,
                 else:
                     print()
             else:
-                response = model.generate(_messages_with_system(), temperature, top_p)
+                response = model.generate(
+                    _messages_with_system(), temperature, top_p,
+                    top_k=top_k, repetition_penalty=repetition_penalty,
+                )
         except KeyboardInterrupt:
             _print("\n[yellow](interrupted)[/yellow]")
             history.pop()  # discard the unanswered user turn
@@ -868,8 +995,16 @@ def main():
                         help="Sampling temperature (overrides config)")
     parser.add_argument("--top-p", type=float, dest="top_p", metavar="P",
                         help="Top-p nucleus sampling (overrides config)")
+    parser.add_argument("--top-k", type=int, dest="top_k", metavar="K",
+                        help="Top-k sampling, 0 to disable (overrides config)")
+    parser.add_argument("--repetition-penalty", type=float, dest="repetition_penalty",
+                        metavar="R",
+                        help="Repetition penalty, 1.0 to disable (overrides config)")
     parser.add_argument("--logfile", metavar="FILE",
                         help="Log the session to this file (overrides config)")
+    parser.add_argument("--reasoning-effort", dest="reasoning_effort", metavar="E",
+                        help="Reasoning effort passed to the chat template, e.g. "
+                             "low/medium/xhigh for Qwen3.8 (overrides config)")
     parser.add_argument("--system", metavar="TEXT",
                         help="Override the system prompt (overrides config)")
     parser.add_argument("--no-stream", action="store_true",
@@ -893,6 +1028,12 @@ def main():
         cfg["temperature"] = args.temperature
     if args.top_p is not None:
         cfg["top_p"] = args.top_p
+    if args.top_k is not None:
+        cfg["top_k"] = args.top_k
+    if args.repetition_penalty is not None:
+        cfg["repetition_penalty"] = args.repetition_penalty
+    if args.reasoning_effort:
+        cfg["model"]["reasoning_effort"] = args.reasoning_effort
     if args.logfile:
         cfg["logfile"] = args.logfile
     if args.system:
@@ -904,6 +1045,8 @@ def main():
     raw_top_p = float(cfg.get("top_p", 0.95))
     temperature = _sanitize_temperature(raw_temperature)
     top_p = _sanitize_top_p(raw_top_p)
+    top_k = _sanitize_top_k(cfg.get("top_k"))
+    repetition_penalty = _sanitize_repetition_penalty(cfg.get("repetition_penalty"))
     system_prompt = cfg.get("system_prompt", "You are a helpful assistant.")
 
     if temperature != raw_temperature:
@@ -960,7 +1103,9 @@ def main():
     _print(f"[dim]Tip: Model output is {'streaming' if stream_output else 'non-streaming'}. Use --no-stream to disable streaming.[/dim]")
 
     try:
-        run_chat(model, system_prompt, temperature, top_p, logger, stream_output=stream_output)
+        run_chat(model, system_prompt, temperature, top_p, logger,
+                 stream_output=stream_output,
+                 top_k=top_k, repetition_penalty=repetition_penalty)
     finally:
         if logger:
             logger.close()

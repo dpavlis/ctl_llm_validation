@@ -29,6 +29,37 @@ _CHATML_NOTHINK_TEMPLATE = (
 _CTL_FENCE_RE = re.compile(r"```(?:ctl2?|CTL2?)?\s*\n([\s\S]*?)\n?```", re.IGNORECASE)
 _CTL_HEADER = "//#CTL2"
 
+_THINK_OPEN_RE = re.compile(r"<think\s*>", re.IGNORECASE)
+_THINK_CLOSE_RE = re.compile(r"</think\s*>", re.IGNORECASE)
+
+
+def split_thinking(text: str, thinking_enabled: bool = True) -> tuple[str, str]:
+    """Split a raw completion into (thinking, answer).
+
+    Qwen3-style templates open `<think>` in the *generation prompt* itself, so
+    the decoded completion usually starts mid-thought with no opening tag and
+    closes with `</think>`. Splitting on the LAST `</think>` therefore handles
+    both shapes (tag present or not).
+
+    Only the answer half may ever reach the judge, the conversation history or
+    the exported training data — chain-of-thought is scratch work, not output.
+
+    With no `</think>` present:
+      * thinking disabled -> there was no thinking; the whole text is answer.
+      * thinking enabled  -> generation was cut off mid-thought (max_new_tokens
+        exhausted). Returns an EMPTY answer so the caller can detect it rather
+        than silently judging a fragment of reasoning as if it were code.
+    """
+    matches = list(_THINK_CLOSE_RE.finditer(text))
+    if matches:
+        last = matches[-1]
+        thinking = _THINK_OPEN_RE.sub("", text[:last.start()], count=1).strip()
+        return thinking, text[last.end():].strip()
+
+    if thinking_enabled:
+        return text.strip(), ""
+    return "", text.strip()
+
 
 def normalize_ctl(text: str) -> str:
     """Strip markdown fences and trim (§3.3).
@@ -64,6 +95,53 @@ class LocalGenerator:
         self._cfg = cfg
         self._model = None
         self._tok = None
+        self._enable_thinking = bool(cfg.get("enable_thinking", False))
+        effort = cfg.get("reasoning_effort")
+        self._reasoning_effort = str(effort) if effort else None
+        # Older tokenizers reject unknown apply_chat_template kwargs with a
+        # TypeError; probed once in _load().
+        self._accepts_thinking_kwarg = True
+
+    @property
+    def enable_thinking(self) -> bool:
+        return self._enable_thinking
+
+    def _template_kwargs(self) -> dict:
+        if not self._accepts_thinking_kwarg:
+            return {}
+        kwargs = {"enable_thinking": self._enable_thinking}
+        if self._enable_thinking and self._reasoning_effort:
+            kwargs["reasoning_effort"] = self._reasoning_effort
+        return kwargs
+
+    def _check_reasoning_effort(self) -> None:
+        """Validate reasoning_effort at load time.
+
+        Jinja silently ignores variables a template never reads, so without
+        this an unsupported template or a bad value would fail quietly.
+        """
+        if not self._reasoning_effort:
+            return
+        if not self._enable_thinking:
+            print("  [generator] WARNING: reasoning_effort is set but enable_thinking "
+                  "is false — the template applies it only while thinking is enabled.")
+            return
+        template = getattr(self._tok, "chat_template", None) or ""
+        if "reasoning_effort" not in template:
+            print(f"  [generator] WARNING: chat template does not reference reasoning_effort; "
+                  f"{self._reasoning_effort!r} will be ignored.")
+            return
+        try:
+            self._tok.apply_chat_template(
+                [{"role": "user", "content": "hi"}],
+                tokenize=False, add_generation_prompt=True, **self._template_kwargs(),
+            )
+        except Exception as exc:
+            # The template itself validates the allowed values.
+            raise SystemExit(
+                f"[generator] FATAL: reasoning_effort={self._reasoning_effort!r} rejected "
+                f"by the chat template: {exc}"
+            )
 
     def _load(self):
         if self._model is not None:
@@ -83,7 +161,25 @@ class LocalGenerator:
 
         print(f"[generator] Loading model from {ckpt} …")
         self._tok = AutoTokenizer.from_pretrained(ckpt, trust_remote_code=True)
-        self._tok = _patch_nothink(self._tok)
+        try:
+            self._tok.apply_chat_template(
+                [{"role": "user", "content": "hi"}],
+                tokenize=False, add_generation_prompt=True,
+                enable_thinking=self._enable_thinking,
+            )
+        except TypeError:
+            self._accepts_thinking_kwarg = False
+            if self._enable_thinking:
+                raise SystemExit(
+                    "[generator] FATAL: enable_thinking: true was requested, but this "
+                    "tokenizer's apply_chat_template does not accept the flag."
+                )
+        if self._enable_thinking:
+            print(f"  [generator] Chat template: thinking ENABLED"
+                  + (f" (reasoning_effort={self._reasoning_effort})" if self._reasoning_effort else ""))
+        else:
+            self._tok = _patch_nothink(self._tok)
+        self._check_reasoning_effort()
 
         for impl in (attn_impl, "sdpa"):
             try:
@@ -137,6 +233,7 @@ class LocalGenerator:
             tokenize=True,
             add_generation_prompt=True,
             return_tensors="pt",
+            **self._template_kwargs(),
         )
         if hasattr(tokenized, "input_ids"):
             input_ids = tokenized.input_ids.to(self._model.device)
@@ -175,7 +272,13 @@ class LocalGenerator:
                 )
             elapsed = round(time.monotonic() - t0, 2)
             raw = self._tok.decode(output[0][input_ids.shape[1]:], skip_special_tokens=True)
-            normalized = normalize_ctl(raw)
+            # Chain-of-thought never becomes a candidate.
+            thinking, answer = split_thinking(raw, self._enable_thinking)
+            if self._enable_thinking and not answer:
+                print(f"  [generator] WARNING: completion {i} was cut off mid-thought "
+                      f"(max_new_tokens={max_new_tokens}) — no answer after </think>, skipping")
+                continue
+            normalized = normalize_ctl(answer)
 
             if dedup and normalized in seen_texts:
                 continue
@@ -191,6 +294,7 @@ class LocalGenerator:
                     "max_new_tokens": max_new_tokens,
                     "elapsed_s": elapsed,
                     "raw_len": len(raw),
+                    "thinking_len": len(thinking),
                 },
             ))
 
@@ -212,7 +316,9 @@ class LocalGenerator:
         the caller supplies the full conversation history — used to show the
         MUT its own earlier answer plus follow-up feedback.
 
-        Returns the raw decoded text (fences NOT stripped — caller normalizes).
+        Returns the raw decoded text (fences NOT stripped, thinking NOT removed
+        — the caller normalizes, and splits with split_thinking() so it can log
+        the reasoning separately from the answer).
         """
         import torch
 
@@ -223,6 +329,7 @@ class LocalGenerator:
             tokenize=True,
             add_generation_prompt=True,
             return_tensors="pt",
+            **self._template_kwargs(),
         )
         if hasattr(tokenized, "input_ids"):
             input_ids = tokenized.input_ids.to(self._model.device)

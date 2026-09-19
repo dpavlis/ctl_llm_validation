@@ -85,6 +85,16 @@ DEFAULT_CONFIG: dict = {
         "dtype": "bfloat16",
         "attn_impl": "flash_attention_2",
         "system_prompt": None,
+        # Thinking mode for the model under test. False keeps the historical
+        # behavior (template forced to nothink). When true, the MUT's
+        # chain-of-thought is split off at `</think>` and only the answer is
+        # judged, kept in the conversation history, or exported.
+        "enable_thinking": False,
+        # Passed to the chat template as `reasoning_effort` when thinking is
+        # on; None leaves the template's own default. Qwen3.8 accepts
+        # low | medium | xhigh. Ignored by templates that do not read it
+        # (a warning is printed at load time).
+        "reasoning_effort": None,
         "generation": {
             "temperature": 0.3,
             "top_p": 1.0,
@@ -552,7 +562,7 @@ def cmd_run(args: argparse.Namespace) -> None:
 
 
 def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh) -> None:
-    from dpo_forge.generator import LocalGenerator, normalize_ctl
+    from dpo_forge.generator import LocalGenerator, normalize_ctl, split_thinking
     from dpo_forge.review_judge import (
         ReviewJudgeClient, describe_component_resolution, infer_component_type_from_prompt,
         pick_business_domain,
@@ -620,6 +630,12 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
 
     generator = LocalGenerator(model_cfg)
     generator.warm_up()
+    if generator.enable_thinking:
+        _log(f"[mut-validate] MUT thinking mode ENABLED"
+             + (f" (reasoning_effort={model_cfg.get('reasoning_effort')})"
+                if model_cfg.get("reasoning_effort") else "")
+             + " — only the text after </think> is judged, kept in history and exported.",
+             log_fh)
 
     judge = ReviewJudgeClient(cfg["judge"], log_file=log_fh)
     # Reused for two purposes: (1) --tweak prompt rewriting, and (2) fact-
@@ -664,6 +680,7 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
     n_judge_fix_failed = 0
     n_ctl_validate_fail = 0
     n_unparseable = 0
+    n_thinking_truncated = 0
     n_missing_component = 0
     t_start = time.monotonic()
 
@@ -732,10 +749,27 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
 
         for attempt in range(1, args.attempts + 1):
             print(f"  [MUT] generating (attempt {attempt}/{args.attempts}) …")
-            mut_text = generator.generate_reply(
+            raw_mut_text = generator.generate_reply(
                 messages, temperature=temperature, top_p=top_p, top_k=top_k,
                 repetition_penalty=repetition_penalty, max_new_tokens=max_new_tokens, seed=seed,
             )
+            # Chain-of-thought is scratch work: it is logged for debugging but
+            # never judged, never re-fed to the MUT as history, and never
+            # exported as training data. `mut_text` is the answer only.
+            thinking, mut_text = split_thinking(raw_mut_text, generator.enable_thinking)
+            if thinking:
+                _log_full_body(f"MUT thinking (attempt {attempt}, {len(thinking)} chars, discarded)",
+                               thinking, log_fh, console=args.verbose)
+            if generator.enable_thinking and not mut_text:
+                # No `</think>` in the completion — the model spent the whole
+                # budget reasoning. Judging the reasoning fragment as if it
+                # were code would produce a meaningless FAIL.
+                _log(f"  [{example.id}] -> SKIPPED (attempt {attempt} ran out of tokens "
+                     f"mid-thought: no </think> within max_new_tokens={max_new_tokens}). "
+                     f"{_source_identity(example)}", log_fh)
+                n_thinking_truncated += 1
+                outcome = "skip"
+                break
             code = normalize_ctl(mut_text)
             _log_full_body(f"MUT response (attempt {attempt})", mut_text, log_fh, console=args.verbose)
 
@@ -937,6 +971,9 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
             _log(f"  Skipped (judge fix still failed ctl_validate): {n_judge_fix_failed}", log_fh)
         if n_unparseable:
             _log(f"  Skipped (unparseable):     {n_unparseable}", log_fh)
+        if n_thinking_truncated:
+            _log(f"  Skipped (thinking truncated): {n_thinking_truncated}  "
+                 f"(no </think> within max_new_tokens={max_new_tokens} — raise it)", log_fh)
         if n_missing_component:
             _log(f"  Missing component type:    {n_missing_component}  (see [component] WARNING lines above/in log for source identification)", log_fh)
     # Split by purpose rather than one mixed aggregate — review() and fix()

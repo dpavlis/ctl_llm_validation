@@ -226,7 +226,7 @@ const string[] TAGS = ["a", "b", "c"];
 | `+` | numeric / string concat (concat triggers when either operand is a string) / list concat / map merge |
 | `-` `*` `%` | numeric |
 | `/` | integer division truncates; ÷0 → exception for integer/long/decimal, Infinity for double |
-| `++` `--` | pre/post; **allowed on**: local/module variables, output fields (`$out.N.field++`, `--$out.N.field`); **cannot use on**: literals, input fields (`$in.N.field`), list/map elements (`list[i]`, `map[k]`) |
+| `++` `--` | pre/post. The test is whether the l-value is **writable**, not whether it is a record field. **Allowed on**: local/module variables; output fields (`$out.N.field++`, `--$out.N.field`); fields of any internal/writable record, including a Rollup group accumulator (`acc.count++`, `groupAccumulator.order_count++`) and module-level record variables. **Cannot use on**: input fields (`$in.N.field`) — input records are read-only — literals, and list/map elements (`list[i]`, `map[k]`) |
 
 **Numeric type promotion** (automatic, per *operator* — see **2.1.2**): `integer < long < number(double) < decimal`. For any ONE binary operator the operands are promoted to the widest participating type, regardless of their order: `integer + long` and `long + integer` both evaluate to `long`, and the same order-independent rule holds for `-`, `*`, `/`. `int/long + number` → `number` (⚠ long→number may lose precision); `int/long + decimal` → `decimal`; and **`decimal` combined with `number` also evaluates to `decimal`** — a runtime probe confirms `getType(decimalValue * numberValue)` returns `"decimal"`. Assignment from `number` into a `decimal` variable/field is that same widening conversion and is valid. No implicit downcast on assignment — use explicit conversion (`decimal2double()`, `decimal2long()`, `double2long()`, …).
 
@@ -1285,7 +1285,7 @@ In `replace(str, regex, repl)` and `split(str, regex)`: pattern is always regex.
 8. **`null + "text"` = `"nulltext"`**: use `nvl()` first.
 9. **Variant requires cast**: `integer i = myVariant;` INVALID. Use `cast(myVariant, integer)`.
 10. **No date setters**: use `createDate()` to reconstruct.
-11. **`++`/`--` on record fields**: VALID on output fields via new syntax (`$out.0.count++`, `++$out.0.count`). INVALID on input fields (`$in.0.count`).
+11. **`++`/`--` on record fields**: VALID on any WRITABLE field — output fields (`$out.0.count++`, `++$out.0.count`) and internal record fields such as a Rollup accumulator (`acc.count++`). INVALID only on input fields (`$in.0.count`), which are read-only. There is no blanket "no ++ on record fields" rule, and `x = x + 1` is an equivalent style choice, not a fix.
 12. **Map foreach yields values**: use `getKeys(myMap)` for keys.
 13. **`iif()` not `if()`**: `if(cond, a, b)` INVALID — #1 LLM error (37×).
 14. **Conversion naming**: `str2integer()` not `toInteger()`/`parseInt()`.

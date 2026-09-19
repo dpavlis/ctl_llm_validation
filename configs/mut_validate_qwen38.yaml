@@ -1,9 +1,9 @@
-# mut_validate configuration
-# Run: python mut_validate.py data/sft_input/your_file.json --config configs/mut_validate.yaml
+# mut_validate configuration — Qwen3.8 (thinking model)
+# Run: python mut_validate.py data/sft_input/your_file.json --config configs/mut_validate_qwen38.yaml
 
 model:
   # Path to the merged/exported safetensors checkpoint (the MUT)
-  checkpoint_dir: /home/pavlisd/exports/qwen36/
+  checkpoint_dir: /home/pavlisd/exports/qwen38/
   adapter_dir: null      # optional LoRA adapter dir (unmerged checkpoint)
   dtype: bfloat16        # float16 | bfloat16 | float32
   attn_impl: flash_attention_2   # flash_attention_2 | sdpa
@@ -17,17 +17,19 @@ model:
   # nothink. When true, the model's chain-of-thought is split off at the
   # `</think>` tag and ONLY the text after it is judged, appended to the
   # conversation history, or exported as training data.
-  enable_thinking: false
+  enable_thinking: true
   # Handed to the chat template as `reasoning_effort` when thinking is on.
   # Qwen3.8 accepts low | medium | xhigh; null leaves the template default.
   # Templates that do not read it warn at load time instead of failing quietly.
-  reasoning_effort: null
+  reasoning_effort: medium
   generation:
     temperature: 0.4
     top_p: 0.9
       #top_k: 40
       #repetition_penalty: 1.05
-    max_new_tokens: 4096
+    # Shared budget: thinking + answer. Raised from the qwen36 value of
+    # 4096 because reasoning now consumes part of it.
+    max_new_tokens: 16384
     seed: 42
 
 judge:
@@ -110,5 +112,7 @@ ctl_validate_mcp:
   timeout_s: 30
 
 output:
-  self_corrected_file: results/mut_validate/self_corrected.jsonl
-  judge_corrected_file: results/mut_validate/judge_corrected.jsonl
+  # Kept separate from the qwen36 run's files — mut_validate appends by
+  # default, so sharing paths would interleave two models' output.
+  self_corrected_file: results/mut_validate/qwen38/self_corrected.jsonl
+  judge_corrected_file: results/mut_validate/qwen38/judge_corrected.jsonl
