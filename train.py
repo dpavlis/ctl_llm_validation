@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
-LlamaFactory two-phase training pipeline: SFT → DPO → Export
+LlamaFactory training pipeline: SFT → DPO → post-DPO SFT → Export
+
+The optional `post_dpo_sft:` config section holds SFT rounds that must run AFTER
+DPO rather than before it.  Its shape is identical to `sft:` (a mapping, or a
+list of mappings run in order).  Use it when a round's data is incompatible with
+the phase that precedes it — e.g. training thinking (`enable_thinking: true`) on
+a reasoning subset, while the DPO pairs carry no <think> blocks and therefore
+belong to the non-thinking model.  Adapters are chained and merged in order, so
+the export picks up every phase without extra flags.
 
 Usage:
     python train.py <config_file> [options]
@@ -9,6 +17,7 @@ Options:
     --dry-run             Print generated configs and commands without executing
     --skip-sft            Skip the SFT phase
     --skip-dpo            Skip the DPO phase
+    --skip-post-sft       Skip the post-DPO SFT rounds
     --skip-export         Skip model export
     --sft-adapter PATH    Path to a pre-existing SFT adapter; implies --skip-sft
     --timestamp TS        Reuse a previous run timestamp to resume a mid-pipeline run
@@ -52,6 +61,17 @@ Config layout:
       dataset: dpo_data
       ...
 
+    # Optional: SFT rounds that must run AFTER DPO.  Same shape as sft: (mapping
+    # or list).  Output dirs are suffixed _postsft, _postsft2, ...  The first
+    # round merges every adapter produced so far (SFT + DPO) into the base and
+    # starts a fresh LoRA; later rounds continue it in place.  The export step
+    # extends the adapter chain automatically, so no manual paths are needed.
+    #
+    # post_dpo_sft:
+    #   - dataset: sft_data_thinking
+    #     enable_thinking: true
+    #     learning_rate: 1.0e-5
+
     export:       # Export settings
       export_size: 5
       ...
@@ -72,6 +92,14 @@ Run log:
     llama_train/logs/<model_name>.yaml.  Each entry records SFT best losses,
     DPO final losses and quality metrics, and a diff of hyperparameters
     that changed vs. the previous run of the same model.
+
+    A pipeline that dies partway through never reaches the logging step, so the
+    phases that did finish would otherwise leave no trace.  On --resume (or a
+    reused --timestamp), any already-complete phase has its metrics recovered
+    from its trainer_state.json and recorded alongside the phases this
+    invocation actually trained, marked `backfilled: true`.  An invocation that
+    trains nothing writes no entry at all, so re-resuming a finished run does
+    not duplicate the previous one.
 """
 
 import argparse
@@ -179,7 +207,7 @@ def is_export_complete(export_dir: str) -> bool:
 
 
 _SFT_DIR_RE = re.compile(r"^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}_sft\d*$")
-_PHASE_DIR_RE = re.compile(r"^(\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})_(?:sft\d*|dpo|export)$")
+_PHASE_DIR_RE = re.compile(r"^(\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2})_(?:sft\d*|postsft\d*|dpo|export)$")
 
 
 def find_latest_sft_checkpoint(run_dir: Path) -> Optional[str]:
@@ -282,6 +310,28 @@ def extract_dpo_results(state: dict, best_checkpoint: str) -> dict:
     return result
 
 
+def backfill_results(output_dir: str, kind: str) -> Optional[dict]:
+    """Recover a completed phase's metrics from disk.
+
+    A pipeline that dies partway through never reaches append_run_log, so the
+    phases that *did* finish leave no trace in logs/<model>.yaml — and a later
+    --resume only logs the phases it re-ran.  This reads the finished phase's
+    trainer_state.json so the resumed run can record the whole pipeline.
+
+    Returns None when the directory holds no completed run.
+    """
+    if not is_training_complete(output_dir):
+        return None
+    state = read_trainer_state(output_dir)
+    if not state:
+        return None
+    best = find_best_checkpoint(output_dir, state)
+    extract = extract_dpo_results if kind == "dpo" else extract_sft_results
+    result = extract(state, best)
+    result["backfilled"] = True
+    return result
+
+
 # ---------------------------------------------------------------------------
 # Metrics summary (console)
 # ---------------------------------------------------------------------------
@@ -340,6 +390,8 @@ def print_pipeline_summary(
     skipped_dpo: bool,
     skipped_export: bool,
     dry_run: bool,
+    post_sft_results: Optional[list] = None,
+    skipped_post_sft: bool = True,
 ) -> None:
     W = 70
     print(f"\n{'═' * W}")
@@ -362,6 +414,8 @@ def print_pipeline_summary(
         for i, result in enumerate(sft_results):
             if multi:
                 print(f"  Round {i + 1}/{len(sft_results)}:")
+            if result.get("backfilled"):
+                print("  (recovered from an earlier invocation — not retrained)")
             best_train = result.get("best_train_loss")
             best_eval  = result.get("best_eval_loss")
             best_ckpt  = result.get("best_checkpoint", "—")
@@ -386,6 +440,8 @@ def print_pipeline_summary(
     elif skipped_dpo:
         print("  skipped")
     elif dpo_results:
+        if dpo_results.get("backfilled"):
+            print("  (recovered from an earlier invocation — not retrained)")
         final_loss = dpo_results.get("final_train_loss")
         if final_loss is not None:
             print(f"  Final train loss : {final_loss:.5f}")
@@ -410,6 +466,34 @@ def print_pipeline_summary(
             print("  (no DPO quality metrics recorded)")
     else:
         print("  No trainer state found — metrics unavailable")
+
+    # ── post-DPO SFT ──────────────────────────────────────────────────────────
+    if not skipped_post_sft or post_sft_results:
+        print(f"\n  {'─' * (W - 2)}")
+        print(f"  post-DPO SFT")
+        print(f"  {'─' * (W - 2)}")
+        if dry_run:
+            print("  (dry-run — no training performed)")
+        elif skipped_post_sft:
+            print("  skipped")
+        elif post_sft_results:
+            multi = len(post_sft_results) > 1
+            for i, result in enumerate(post_sft_results):
+                if multi:
+                    print(f"  Round {i + 1}/{len(post_sft_results)}:")
+                if result.get("backfilled"):
+                    print("  (recovered from an earlier invocation — not retrained)")
+                best_train = result.get("best_train_loss")
+                best_eval  = result.get("best_eval_loss")
+                if best_train is not None:
+                    print(f"  Best train loss : {best_train:.5f}")
+                if best_eval is not None:
+                    print(f"  Best eval  loss : {best_eval:.5f}")
+                print(f"  Checkpoint used : {result.get('best_checkpoint', '—')}")
+                if multi and i < len(post_sft_results) - 1:
+                    print()
+        else:
+            print("  No trainer state found — metrics unavailable")
 
     # ── Export ────────────────────────────────────────────────────────────────
     print(f"\n  {'─' * (W - 2)}")
@@ -510,6 +594,7 @@ def append_run_log(
     sft_results: Optional[list],
     dpo_results: Optional[dict],
     export_dir: Optional[str] = None,
+    post_sft_results: Optional[list] = None,
 ) -> Path:
     slug = Path(model_name_or_path).name  # e.g. "Qwen3-8B" from "Qwen/Qwen3-8B"
     log_path = log_dir / f"{slug}.yaml"
@@ -534,6 +619,8 @@ def append_run_log(
         entry["sft"] = sft_results
     if dpo_results:
         entry["dpo"] = dpo_results
+    if post_sft_results:
+        entry["post_dpo_sft"] = post_sft_results
     if export_dir:
         entry["export_dir"] = export_dir
     # Full snapshot at the end — used for future diffs, not for human scanning
@@ -610,6 +697,8 @@ def main():
     parser.add_argument("--skip-sft", action="store_true",
                         help="Skip SFT phase (requires --sft-adapter or dpo.adapter_name_or_path in config)")
     parser.add_argument("--skip-dpo", action="store_true", help="Skip DPO phase")
+    parser.add_argument("--skip-post-sft", action="store_true",
+                        help="Skip the post-DPO SFT rounds declared in post_dpo_sft:")
     parser.add_argument("--skip-export", action="store_true", help="Skip model export")
     parser.add_argument("--sft-adapter", metavar="PATH",
                         help="Path to a pre-existing SFT adapter; implies --skip-sft")
@@ -632,6 +721,7 @@ def main():
     output_base    = cfg.pop("output_base", "saves")
     sft_section_raw = cfg.pop("sft", {})
     dpo_section    = cfg.pop("dpo", {})
+    post_sft_raw   = cfg.pop("post_dpo_sft", [])
     export_section = cfg.pop("export", {})
     common         = cfg
 
@@ -639,18 +729,31 @@ def main():
     # rounds run in order, each chaining from the previous round's checkpoint).
     sft_stages_cfg = sft_section_raw if isinstance(sft_section_raw, list) else [sft_section_raw]
 
+    # post_dpo_sft: same shape, but the rounds run after DPO instead of before.
+    # An empty/absent section means the pipeline behaves exactly as it did before.
+    post_sft_cfg = post_sft_raw if isinstance(post_sft_raw, list) else [post_sft_raw]
+    post_sft_cfg = [s for s in post_sft_cfg if s]
+
     def _sft_stage_suffix(i: int) -> str:
         return "_sft" if i == 0 else f"_sft{i + 1}"
+
+    def _post_sft_suffix(i: int) -> str:
+        return "_postsft" if i == 0 else f"_postsft{i + 1}"
 
     timestamp  = args.timestamp or datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     # output_base is relative to LLAMAFACTORY_DIR (LlamaFactory's cwd), so resolve
     # all phase output paths the same way to ensure read_trainer_state etc. find files.
     run_dir    = LLAMAFACTORY_DIR / output_base / run_name
-    sft_stage_outputs = [
-        str(run_dir / f"{timestamp}{_sft_stage_suffix(i)}") for i in range(len(sft_stages_cfg))
-    ]
-    dpo_output    = str(run_dir / f"{timestamp}_dpo")
-    export_output = str(run_dir / f"{timestamp}_export")
+
+    def _phase_paths(ts: str):
+        return (
+            [str(run_dir / f"{ts}{_sft_stage_suffix(i)}") for i in range(len(sft_stages_cfg))],
+            [str(run_dir / f"{ts}{_post_sft_suffix(i)}") for i in range(len(post_sft_cfg))],
+            str(run_dir / f"{ts}_dpo"),
+            str(run_dir / f"{ts}_export"),
+        )
+
+    sft_stage_outputs, post_sft_outputs, dpo_output, export_output = _phase_paths(timestamp)
 
     log_dir = Path(__file__).parent / "logs"
 
@@ -663,6 +766,7 @@ def main():
     # sft_precomplete[i] holds the best checkpoint for stage i if that round's
     # training already finished in a previous invocation; None otherwise.
     sft_precomplete = [None] * len(sft_stages_cfg)
+    post_sft_precomplete = [None] * len(post_sft_cfg)
 
     if args.resume:
         found_ts = find_latest_run_timestamp(run_dir)
@@ -671,11 +775,7 @@ def main():
         else:
             timestamp = found_ts
             # Recompute paths for the found run
-            sft_stage_outputs = [
-                str(run_dir / f"{timestamp}{_sft_stage_suffix(i)}") for i in range(len(sft_stages_cfg))
-            ]
-            dpo_output    = str(run_dir / f"{timestamp}_dpo")
-            export_output = str(run_dir / f"{timestamp}_export")
+            sft_stage_outputs, post_sft_outputs, dpo_output, export_output = _phase_paths(timestamp)
 
             print(f"\n[resume] Found run {timestamp}")
 
@@ -715,6 +815,23 @@ def main():
                 else:
                     print(f"[resume] DPO    : not started — will run after SFT")
 
+            # ── post-DPO SFT status (only meaningful once DPO is complete) ──
+            if args.skip_dpo:   # DPO confirmed complete above
+                n_post = len(post_sft_outputs)
+                for i, stage_out in enumerate(post_sft_outputs):
+                    label = "post-SFT" if n_post == 1 else f"post-SFT[{i + 1}/{n_post}]"
+                    if is_training_complete(stage_out):
+                        stage_state = read_trainer_state(stage_out)
+                        post_sft_precomplete[i] = find_best_checkpoint(stage_out, stage_state)
+                        print(f"[resume] {label}: complete — best checkpoint: {post_sft_precomplete[i]}")
+                    elif last_checkpoint_in(stage_out):
+                        print(f"[resume] {label}: interrupted — resuming from {last_checkpoint_in(stage_out)}")
+                        post_sft_cfg[i].pop("create_new_adapter", None)
+                        break
+                    else:
+                        print(f"[resume] {label}: not started — running fresh")
+                        break
+
             # ── Export status ──
             if is_export_complete(export_output):
                 args.skip_export = True
@@ -730,10 +847,18 @@ def main():
         tag = "SFT out" if len(sft_stage_outputs) == 1 else f"SFT out[{i + 1}]"
         print(f"  {tag:<10}: {stage_out}")
     print(f"  DPO out   : {dpo_output}")
+    for i, stage_out in enumerate(post_sft_outputs):
+        tag = "postSFT" if len(post_sft_outputs) == 1 else f"postSFT[{i + 1}]"
+        print(f"  {tag:<10}: {stage_out}")
     print(f"  Export    : {export_output}")
 
     sft_results: list = []
+    post_sft_results: list = []
+    # Phases actually trained in THIS invocation.  Backfilled metrics alone must
+    # not trigger a log entry, or a no-op --resume would duplicate the last one.
+    executed_phases: list = []
     dpo_results: Optional[dict] = None
+    dpo_reusable = False
 
     # ── SFT ─────────────────────────────────────────────────────────────
     if not args.skip_sft:
@@ -745,6 +870,10 @@ def main():
             if sft_precomplete[i] is not None:
                 print(f"\n[skip] {label} phase (already complete)")
                 prev_ckpt = sft_precomplete[i]
+                recovered = backfill_results(stage_output, "sft")
+                if recovered:
+                    recovered["round"] = i + 1
+                    sft_results.append(recovered)
                 continue
 
             stage_config = {**common, **stage_section}
@@ -778,6 +907,7 @@ def main():
                     result = extract_sft_results(stage_state, stage_best_ckpt)
                     result["round"] = i + 1
                     sft_results.append(result)
+                    executed_phases.append(label)
                     prev_ckpt = stage_best_ckpt
                 else:
                     print(f"\n[warn] trainer_state.json not found in {stage_output}")
@@ -789,6 +919,15 @@ def main():
     else:
         print("\n[skip] SFT phase")
         sft_best_ckpt = sft_stage_outputs[-1]  # placeholder; overwritten below
+        # The whole SFT phase was skipped — recover each round's metrics if the
+        # directories belong to this run (--resume, or a reused --timestamp).
+        for i, stage_output in enumerate(sft_stage_outputs):
+            recovered = backfill_results(stage_output, "sft")
+            if recovered:
+                recovered["round"] = i + 1
+                sft_results.append(recovered)
+        if sft_results:
+            print(f"  Recovered metrics for {len(sft_results)} completed SFT round(s)")
 
     # ── Resolve SFT adapter for DPO ──────────────────────────────────────
     if args.sft_adapter:
@@ -849,24 +988,108 @@ def main():
                 print_phase_summary("DPO", dpo_state, dpo_output)
                 dpo_best_ckpt = find_best_checkpoint(dpo_output, dpo_state)
                 dpo_results = extract_dpo_results(dpo_state, dpo_best_ckpt)
+                executed_phases.append("DPO")
             else:
                 print(f"\n[warn] trainer_state.json not found in {dpo_output}")
                 dpo_best_ckpt = dpo_output
     else:
         print("\n[skip] DPO phase")
-        dpo_best_ckpt = dpo_output
+        # A skipped DPO still contributes its adapter if it actually ran in an
+        # earlier invocation (--resume after a later phase failed).  Dropping it
+        # would silently train the post-DPO SFT round on the unaligned model and
+        # export that too.
+        dpo_state = read_trainer_state(dpo_output)
+        if dpo_state and is_training_complete(dpo_output):
+            dpo_best_ckpt = find_best_checkpoint(dpo_output, dpo_state)
+            dpo_reusable = True
+            dpo_results = backfill_results(dpo_output, "dpo")
+            print(f"  Reusing completed DPO adapter: {dpo_best_ckpt}")
+        else:
+            dpo_best_ckpt = dpo_output
+            dpo_reusable = False
 
-    # ── Resolve adapter chain for export ─────────────────────────────────
+    # ── Resolve adapter chain so far ─────────────────────────────────────
     # Because DPO trained on the SFT-merged base, the DPO adapter is relative
     # to that merged base.  We must merge both adapters sequentially:
     #   base model  →  merge SFT adapter  →  merge DPO adapter  →  final weights
     # LlamaFactory splits adapter_name_or_path on "," and merges each in order.
-    if not args.skip_dpo:
-        dpo_final = dpo_best_ckpt if not args.dry_run else dpo_output
+    if not args.skip_dpo or dpo_reusable:
+        dpo_final = dpo_best_ckpt if (not args.dry_run or dpo_reusable) else dpo_output
         final_adapter = f"{sft_adapter},{dpo_final}"
     else:
-        # DPO was skipped — only the SFT adapter needs merging
+        # DPO never ran — only the SFT adapter needs merging
         final_adapter = sft_adapter
+
+    # ── post-DPO SFT ─────────────────────────────────────────────────────
+    # Same chaining contract as DPO: every adapter produced so far is merged
+    # into the base and a fresh LoRA is initialised for the first post round,
+    # so the round trains on top of the aligned model rather than beside it.
+    if post_sft_cfg and not args.skip_post_sft:
+        n_post = len(post_sft_cfg)
+        prev_post = None
+        base_chain = final_adapter
+        for i, (stage_section, stage_output) in enumerate(zip(post_sft_cfg, post_sft_outputs)):
+            label = "post-SFT" if n_post == 1 else f"post-SFT[{i + 1}/{n_post}]"
+
+            if post_sft_precomplete[i] is not None:
+                print(f"\n[skip] {label} phase (already complete)")
+                prev_post = post_sft_precomplete[i]
+                recovered = backfill_results(stage_output, "sft")
+                if recovered:
+                    recovered["round"] = i + 1
+                    post_sft_results.append(recovered)
+                continue
+
+            stage_config = {**common, **stage_section}
+            stage_config.update({
+                "stage": "sft",
+                "do_train": True,
+                "output_dir": stage_output,
+            })
+            if i == 0:
+                stage_config.setdefault("adapter_name_or_path", base_chain)
+                stage_config.setdefault("create_new_adapter", True)
+            else:
+                stage_config.setdefault("adapter_name_or_path", f"{base_chain},{prev_post}")
+                stage_config.setdefault("create_new_adapter", False)
+
+            run_train_phase(
+                label,
+                stage_config,
+                Path(stage_output) / "training_config.yaml",
+                args.dry_run,
+            )
+
+            if not args.dry_run:
+                stage_state = read_trainer_state(stage_output)
+                if stage_state:
+                    print_phase_summary(label, stage_state, stage_output)
+                    stage_best_ckpt = find_best_checkpoint(stage_output, stage_state)
+                    result = extract_sft_results(stage_state, stage_best_ckpt)
+                    result["round"] = i + 1
+                    post_sft_results.append(result)
+                    executed_phases.append(label)
+                    prev_post = stage_best_ckpt
+                else:
+                    print(f"\n[warn] trainer_state.json not found in {stage_output}")
+                    prev_post = stage_output
+            else:
+                prev_post = stage_output
+
+        # Only the first post round starts a fresh adapter; later rounds continue
+        # it in place, so the last checkpoint IS that adapter and the chain gains
+        # exactly one entry however many rounds ran.
+        if prev_post:
+            final_adapter = f"{base_chain},{prev_post}"
+    elif post_sft_cfg:
+        print("\n[skip] post-DPO SFT phase")
+        for i, stage_output in enumerate(post_sft_outputs):
+            recovered = backfill_results(stage_output, "sft")
+            if recovered:
+                recovered["round"] = i + 1
+                post_sft_results.append(recovered)
+        if post_sft_results:
+            print(f"  Recovered metrics for {len(post_sft_results)} completed post-SFT round(s)")
 
     # ── Export ───────────────────────────────────────────────────────────
     if not args.skip_export:
@@ -897,7 +1120,7 @@ def main():
         print("\n[skip] Export phase")
 
     # ── Append to run log ────────────────────────────────────────────────
-    if not args.dry_run and (sft_results or dpo_results):
+    if not args.dry_run and executed_phases and (sft_results or dpo_results or post_sft_results):
         log_path = append_run_log(
             log_dir=log_dir,
             model_name_or_path=common["model_name_or_path"],
@@ -906,6 +1129,7 @@ def main():
             raw_config=raw_config_orig,
             sft_results=sft_results,
             dpo_results=dpo_results,
+            post_sft_results=post_sft_results,
             export_dir=export_output if not args.skip_export else None,
         )
         print(f"\n  Run log: {log_path}")
@@ -916,9 +1140,11 @@ def main():
         timestamp=timestamp,
         sft_results=sft_results,
         dpo_results=dpo_results,
+        post_sft_results=post_sft_results,
         export_dir=export_output if not args.skip_export else None,
-        skipped_sft=args.skip_sft,
-        skipped_dpo=args.skip_dpo,
+        skipped_sft=args.skip_sft and not sft_results,
+        skipped_dpo=args.skip_dpo and not dpo_results,
+        skipped_post_sft=(args.skip_post_sft or not post_sft_cfg) and not post_sft_results,
         skipped_export=args.skip_export,
         dry_run=args.dry_run,
     )

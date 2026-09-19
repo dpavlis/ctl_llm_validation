@@ -1,0 +1,1277 @@
+[
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Create CTL2 code for a **Map (Transformer/Reformat)** with exactly **1 input port** and **1 output port**.\n\nInput metadata:\n<Metadata id=\"BillIn\">\n  <Record name=\"Bill\" fieldDelimiter=\"|\">\n    <Field name=\"encounter_id\" type=\"string\"/>\n    <Field name=\"bill_amount\" type=\"string\" nullable=\"true\"/>\n    <Field name=\"currency\" type=\"string\"/>\n  </Record>\n</Metadata>\n\nLookup metadata (preloaded into a CloverDX Lookup Table):\n<Metadata id=\"FxMeta\">\n  <Record name=\"FxRate\" fieldDelimiter=\",\">\n    <Field name=\"currency\" type=\"string\"/>\n    <Field name=\"rate_to_usd\" type=\"decimal\" scale=\"6\"/>\n  </Record>\n</Metadata>\nLookup table name: FxRatesLookup (key = currency)\n\nOutput metadata:\n<Metadata id=\"BillOut\">\n  <Record name=\"BillUsd\" fieldDelimiter=\"|\">\n    <Field name=\"encounter_id\" type=\"string\"/>\n    <Field name=\"amount_usd\" type=\"decimal\" scale=\"2\"/>\n    <Field name=\"is_parse_error\" type=\"boolean\"/>\n  </Record>\n</Metadata>\n\nRules (must be implemented exactly):\n1) Parse bill_amount (string) to decimal. If bill_amount is null/blank or parsing fails, treat parsed amount as 0.00 and set is_parse_error=true. Otherwise is_parse_error=false.\n2) Resolve rate_to_usd via lookup table  FxRatesLookup. If currency is missing in lookup, use rate_to_usd=1.0.\n3) Compute amount_usd = parsed_amount * rate_to_usd, rounded to 2 decimals.\n4) Always return OK.\n\nProvide only the CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.encounter_id = $in.0.encounter_id;\n\n    string s = $in.0.bill_amount;\n    decimal amt;\n    boolean parseErr;\n\n    if (isBlank(s)) {\n        amt = 0D;\n        parseErr = true;\n    } else {\n        amt = str2decimal(s) : 0D;\n        parseErr = (amt == 0D) && !isDecimal(s);\n    }\n\n    FxRate fx = lookup(FxRatesLookup).get($in.0.currency);\n    decimal rate = isnull(fx) ? 1D : fx.rate_to_usd;\n\n    $out.0.amount_usd = round(amt * rate, 2);\n    $out.0.is_parse_error = parseErr;\n\n    return OK;\n}\n```",
+        "reasoning_content": "isBlank catches null or whitespace-only bill_amount before parsing. Conditional-fail gives 0D for malformed text, and isDecimal distinguishes that fallback from a genuine numeric zero. lookup(FxRatesLookup).get returns a FxRate or null, so the rate defaults to 1D only on a miss. Decimal multiplication is rounded half-up at scale two."
+      }
+    ],
+    "comments": "This is an unambiguous Map+Lookup test: requires correct lookup() API usage, correct nullability handling (bill_amount nullable), correct parsing via str2decimal() with conditional-fail operator, correct rounding, and no invented functions (e.g., no toDecimal()).",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Create CTL2 code for a **Denormalizer** that groups by team.\n\nInput metadata (all fields are non-nullable because nullable=\"true\" is not present):\n<Metadata id=\"ManTrace\">\n  <Record name=\"Trace\" fieldDelimiter=\"\\t\">\n    <Field name=\"team\" type=\"string\"/>\n    <Field name=\"quantity\" type=\"integer\"/>\n    <Field name=\"proc_time_sec\" type=\"decimal\" scale=\"1\"/>\n  </Record>\n</Metadata>\n\nOutput metadata:\n<Metadata id=\"ManSummaryOut\">\n  <Record name=\"TeamSummary\" fieldDelimiter=\"\\t\">\n    <Field name=\"team\" type=\"string\"/>\n    <Field name=\"total_qty\" type=\"integer\"/>\n    <Field name=\"avg_proc_min\" type=\"decimal\" scale=\"2\"/>\n    <Field name=\"min_proc_min\" type=\"decimal\" scale=\"2\"/>\n    <Field name=\"max_proc_min\" type=\"decimal\" scale=\"2\"/>\n    <Field name=\"slow_tag\" type=\"string\"/>\n  </Record>\n</Metadata>\n\nRules:\n1) total_qty = is sum of quantity\n2) Convert seconds to minutes.\n3) avg_proc_min = average of proc_time_sec across group, converted to minutes, rounded to 2 decimals.\n4) min_proc_min and max_proc_min = min/max of proc_time_sec across group, converted to minutes, rounded to 2 decimals.\n5) slow_tag is computed from the *average seconds* before conversion:\n   - if avg seconds >= 120 => \"SLOW\"\n   - else if avg seconds >= 90 => \"MEDIUM\"\n   - else \"FAST\"\n\nProvide only the CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nstring teamKey = null;\ninteger rowCount = 0;\ninteger qtySum = 0;\ndecimal secsSum = 0D;\ndecimal minSecs = 0D;\ndecimal maxSecs = 0D;\nboolean first = true;\n\nfunction integer append() {\n    if (isnull(teamKey)) {\n        teamKey = $in.0.team;\n    }\n    rowCount++;\n    qtySum += $in.0.quantity;\n\n    decimal secs = $in.0.proc_time_sec;\n    secsSum += secs;\n\n    if (first) {\n        minSecs = secs;\n        maxSecs = secs;\n        first = false;\n    } else {\n        if (secs < minSecs) minSecs = secs;\n        if (secs > maxSecs) maxSecs = secs;\n    }\n\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.team = teamKey;\n\n    $out.0.total_qty = qtySum;\n\n    decimal avgSecs = secsSum / rowCount;\n\n    $out.0.avg_proc_min = round((avgSecs / 60D), 2);\n    $out.0.min_proc_min = round((minSecs / 60D), 2);\n    $out.0.max_proc_min = round((maxSecs / 60D), 2);\n\n    $out.0.slow_tag = (avgSecs >= 120D) ? \"SLOW\"\n                   : (avgSecs >= 90D) ? \"MEDIUM\"\n                   : \"FAST\";\n\n    return OK;\n}\n\nfunction void clean() {\n    teamKey = null;\n    rowCount = 0;\n    qtySum = 0;\n    secsSum = 0D;\n    minSecs = 0D;\n    maxSecs = 0D;\n    first = true;\n}\n```",
+        "reasoning_content": "rowCount advances for every group row, while secsSum and extrema use each non-nullable proc_time_sec. A first-row flag is sound for min/max because zero is a valid duration and cannot serve as an empty sentinel. The slow tag compares average seconds before division by 60. clean resets every module-level group value."
+      }
+    ],
+    "comments": "This Denormalizer test checks non-nullability awareness (no nvl/isnull on input fields), correct first-row min/max initialization, correct decimal arithmetic (use 60D), and correct Denormalizer function signatures and return constants.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Create CTL2 code for a **Partition** component that routes records to output ports based on a normalized segment and a content check.\n\nInput metadata:\n<Metadata id=\"CustIn\">\n  <Record name=\"Cust\" fieldDelimiter=\",\">\n    <Field name=\"segment\" type=\"string\" nullable=\"true\"/>\n    <Field name=\"notes\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nRouting rules:\n- Normalize segment for inspection\n- Port 0 if segment is \"food\"\n- Port 1 if segment is \"gadgets\"\n- Port 2 if segment is \"apparel\"\n- Otherwise:\n  - Port 3 if notes contains the substring \"vip\" case-insensitively\n  - Else Port 4\n\nHints:\n- Use switch/case for the segment routing.\n\nProvide only the CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer getOutputPort() {\n    string seg = lowerCase(trim(nvl($in.0.segment, \"\")));\n\n    switch (seg) {\n        case \"food\":\n            return 0;\n\n        case \"gadgets\":\n            return 1;\n\n        case \"apparel\":\n            return 2;\n\n        default:\n            string n = lowerCase(nvl($in.0.notes, \"\"));\n            return contains(n, \"vip\") ? 3 : 4;\n    }\n}\n```",
+        "reasoning_content": "seg is normalized once; defaulting its null to empty means only food, gadgets, and apparel choose switch cases. The otherwise-only notes path folds case after defaulting its null, so contains sees a string and sends no-note rows to port 4."
+      }
+    ],
+    "comments": "This Partition/router test enforces CTL2 switch constraints, local-variable optimization, correct case-insensitive substring check using lowerCase()+contains(), correct null handling with nvl(), and correct return of port indices (integers).",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Create CTL2 code for a **Filter** component.\n\nInput metadata:\n<Metadata id=\"TxnMeta\">\n  <Record name=\"Txn\" fieldDelimiter=\",\">\n    <Field name=\"txn_id\" type=\"string\"/>\n    <Field name=\"txn_date\" type=\"date\" dateFormat=\"yyyy-MM-dd\"/>\n    <Field name=\"units\" type=\"integer\" nullable=\"true\"/>\n    <Field name=\"status\" type=\"string\"/>\n  </Record>\n</Metadata>\n\nRules (must be implemented exactly):\n1) Keep only records where txn_date is within the last 30 days including today -> daysAgo\n   - Keep only when 0 <= daysAgo <= 30\n2) Keep only when units is at least 3\n3) Keep only when status is not equal to \"CANCELLED\" (case-sensitive)\n\nProvide only the CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n!isnull($in.0.txn_date)\n&& dateDiff(today(), $in.0.txn_date, day) >= 0\n&& dateDiff(today(), $in.0.txn_date, day) <= 30\n&& nvl($in.0.units, 0) >= 3\n&& $in.0.status != \"CANCELLED\"\n```",
+        "reasoning_content": "txn_date has no non-nullability declaration, so its guard must precede dateDiff. The two bounds then reject future rows and rows older than 30 days. nvl gives missing units zero, which fails the minimum; null-safe inequality leaves a missing status outside the CANCELLED value. The conjunction remains a Filter expression."
+      }
+    ],
+    "comments": "Filter EVAL: tests correct use of dateDiff(today(), date, day), nullability-aware nvl() only on units, and plain boolean expression format (no transform()).",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Create CTL2 code for following setup.\n\nJoin configuration:\n- LEFT OUTER JOIN\n- Left stream = Payments (port 0)\n- Right stream = FX rates (port 1)\n- Join key: curr_iso\n\nLeft input metadata (Payments):\n<Metadata id=\"PaymentsMeta\">\n  <Record name=\"Payment\" fieldDelimiter=\",\">\n    <Field name=\"trans_ref\" type=\"string\"/>\n    <Field name=\"usd_value\" type=\"decimal\" scale=\"2\"/>\n    <Field name=\"curr_iso\" type=\"string\"/>\n  </Record>\n</Metadata>\n\nRight input metadata (FX)\n<Metadata id=\"FxMetaJoined\">\n  <Record name=\"FxRate\" fieldDelimiter=\",\">\n    <Field name=\"curr_iso\" type=\"string\"/>\n    <Field name=\"exch_rate\" type=\"decimal\" scale=\"6\"/>\n  </Record>\n</Metadata>\n\nOutput metadata:\n<Metadata id=\"PaymentLocal\">\n  <Record name=\"PaymentLocal\" fieldDelimiter=\",\">\n    <Field name=\"trans_ref\" type=\"string\"/>\n    <Field name=\"curr_iso\" type=\"string\"/>\n    <Field name=\"usd_value\" type=\"decimal\" scale=\"2\"/>\n    <Field name=\"exch_rate_used\" type=\"decimal\" scale=\"6\"/>\n    <Field name=\"local_value\" type=\"decimal\" scale=\"2\"/>\n    <Field name=\"rate_missing\" type=\"boolean\"/>\n  </Record>\n</Metadata>\n\nRules (must be implemented exactly):\n1) Copy trans_ref, curr_iso, usd_value from Payments to output.\n2) Determine exch_rate_used:\n   - If the joined FX record is missing use 1.0.\n   - Otherwise use exch_rate from the FxRate\n3) rate_missing is true if there is no information from FxRate.\n4) local_value = usd_value * exch_rate_used rounded to 2 decimals.\n\nProvide only the CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.trans_ref = $in.0.trans_ref;\n    $out.0.curr_iso  = $in.0.curr_iso;\n    $out.0.usd_value = $in.0.usd_value;\n\n    boolean missing = isnull($in.1.exch_rate);\n    decimal rate = missing ? 1D : $in.1.exch_rate;\n\n    $out.0.exch_rate_used = rate;\n    $out.0.rate_missing = missing;\n\n    $out.0.local_value = round($in.0.usd_value * rate, 2);\n\n    return OK;\n}\n```",
+        "reasoning_content": "Slave port 1 exch_rate has no nullable=true declaration, so isnull($in.1.exch_rate) represents the unmatched LEFT OUTER JOIN row. That predicate drives both rate_missing and the 1D fallback; a matched row uses its decimal rate. The computed rate is reused for the output and the two-decimal local-value calculation."
+      }
+    ],
+    "comments": "Join/Reformat EVAL: tests LEFT-join nullability handling (null only on right side), correct defaulting to 1D, correct boolean missing flag, and correct rounding.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Create CTL2 code for a **Normalizer** that expands a delimited string field into multiple rows.\n\nInput metadata:\n<Metadata id=\"TagsIn\">\n  <Record name=\"TaggedItem\" fieldDelimiter=\"|\">\n    <Field name=\"item_id\" type=\"string\"/>\n    <Field name=\"tags_csv\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nOutput metadata:\n<Metadata id=\"TagsOut\">\n  <Record name=\"ItemTag\" fieldDelimiter=\"|\">\n    <Field name=\"item_id\" type=\"string\"/>\n    <Field name=\"tag\" type=\"string\"/>\n    <Field name=\"tag_index\" type=\"integer\"/>\n  </Record>\n</Metadata>\n\nRules (must be implemented exactly):\n1) If tags_csv is null or blank, produce **0** output records.\n2) Otherwise split tags_csv by comma.\n3) For each split part: trim it; if the trimmed tag is blank, it must be skipped (i.e., not emitted).\n4) tag_index must be **0..N-1** over the emitted (non-blank) tags only.\n\nProvide only the CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nstring[] outTags = [];\n\nfunction integer count() {\n    string raw = nvl($in.0.tags_csv, \"\");\n    if (isBlank(raw)) {\n        return 0;\n    }\n\n    string[] parts = split(raw, \",\");\n    foreach (string part : parts) {\n        string t = trim(part);\n        if (!isBlank(t)) {\n            append(outTags, t);\n        }\n    }\n\n    return length(outTags);\n}\n\nfunction integer transform(integer idx) {\n    $out.0.item_id = $in.0.item_id;\n    $out.0.tag = outTags[idx];\n    $out.0.tag_index = idx;\n    return OK;\n}\n\nfunction void clean() {\n    clear(outTags);\n}\n```",
+        "reasoning_content": "Blank parts must not consume output indices, so filtering belongs in count rather than transform. count builds outTags from trimmed nonblank pieces and returns its exact length; transform can then use idx directly for both array access and contiguous tag_index. Filtering later with SKIP would break that contiguous indexing. clean clears retained state before the next input record."
+      }
+    ],
+    "comments": "Normalizer EVAL: tests correct count()/transform(idx)/clean() signatures, correct handling of nullable tags_csv, correct skipping of blank tokens, and correct re-indexing over emitted tags only.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code for a **Denormalizer** grouping by account_id.\n\nInput metadata:\n<Metadata id=\"AcctTxn\">\n  <Record name=\"Txn\" fieldDelimiter=\",\">\n    <Field name=\"account_id\" type=\"string\"/>\n    <Field name=\"amount\" type=\"decimal\" scale=\"2\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nOutput metadata:\n<Metadata id=\"AcctSum\">\n  <Record name=\"Sum\" fieldDelimiter=\",\">\n    <Field name=\"account_id\" type=\"string\"/>\n    <Field name=\"txn_count\" type=\"integer\"/>\n    <Field name=\"sum_amount\" type=\"decimal\" scale=\"2\"/>\n    <Field name=\"avg_amount\" type=\"decimal\" scale=\"2\"/>\n  </Record>\n</Metadata>\n\nRules:\n- txn_count counts all rows in the group.\n- sum_amount sums amount.\n- avg_amount = sum_amount / txn_count (txn_count is always > 0 for a produced group), rounded to 2 decimals.\n\nProvide only the CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring accountId = null;\ninteger cnt = 0;\ndecimal sum = 0D;\n\nfunction integer append() {\n    if (isnull(accountId)) {\n        accountId = $in.0.account_id;\n    }\n    cnt++;\n    sum += nvl($in.0.amount, 0D);\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.account_id = accountId;\n    $out.0.txn_count = cnt;\n    $out.0.sum_amount = round(sum, 2);\n    $out.0.avg_amount = round(sum / cnt, 2);\n    return OK;\n}\n\nfunction void clean() {\n    accountId = null;\n    cnt = 0;\n    sum = 0D;\n}\n```",
+        "reasoning_content": "txn_count includes every group row, so cnt increments independently of nullable amount. nvl(amount, 0D) makes missing amounts contribute zero without changing the denominator. A produced group has cnt greater than zero by contract, so a divide-by-zero guard would add no behavior. clean resets the captured key and aggregates."
+      }
+    ],
+    "comments": "Denormalizer EVAL: tests group accumulators, nvl on nullable decimal, and rounding.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code for a **Map**.\n\nInput metadata:\n<Metadata id=\"PriceIn\">\n  <Record name=\"Item\" fieldDelimiter=\",\">\n    <Field name=\"sku\" type=\"string\"/>\n    <Field name=\"price_str\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nOutput metadata:\n<Metadata id=\"PriceOut\">\n  <Record name=\"ItemOut\" fieldDelimiter=\",\">\n    <Field name=\"sku\" type=\"string\"/>\n    <Field name=\"price\" type=\"decimal\" scale=\"2\"/>\n    <Field name=\"is_valid\" type=\"boolean\"/>\n  </Record>\n</Metadata>\n\nRules:\n- Parse price_str. If price_str is null/blank or parsing fails, set price=0.00 and is_valid=false.\n- Otherwise set price to parsed value rounded to 2 decimals and is_valid=true.\n\nProvide only the CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.sku = $in.0.sku;\n\n    $out.0.price    = 0D;\n    $out.0.is_valid = false;\n\n    string s = trim(nvl($in.0.price_str, \"\"));\n    if (isBlank(s)) {\n        return OK;\n    }\n\n    try {\n        decimal p = str2decimal(s);\n        $out.0.price = round(p, 2);\n        $out.0.is_valid = true;\n    } catch (CTLException e) {\n    }\n    return OK;\n}\n```",
+        "reasoning_content": "A null or blank price is invalid before parsing. str2decimal is the string-to-decimal function; cast would be wrong because the source is not variant. try/catch matters for valid zero: it marks parsed 0 as valid, whereas a conditional 0D fallback alone could not distinguish zero from a parse failure."
+      }
+    ],
+    "comments": "Map EVAL: tests str2decimal with try/catch error handling, trim/isBlank, rounding, and boolean output.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code for a **Map**.\n\nInput metadata:\n<Metadata id=\"DatesIn\">\n  <Record name=\"Row\" fieldDelimiter=\",\">\n    <Field name=\"id\" type=\"string\"/>\n    <Field name=\"event_date\" type=\"date\" dateFormat=\"yyyy-MM-dd\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nOutput metadata:\n<Metadata id=\"DatesOut\">\n  <Record name=\"RowOut\" fieldDelimiter=\",\">\n    <Field name=\"id\" type=\"string\"/>\n    <Field name=\"days_ago\" type=\"integer\"/>\n    <Field name=\"is_future\" type=\"boolean\"/>\n  </Record>\n</Metadata>\n\nRules:\n- If event_date is null: days_ago = 0, is_future=false.\n- Else days_ago = date difference between today and event_date in days.\n- is_future=true exactly when days_ago < 0.\n- Return OK.\n\nProvide only the CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.id = $in.0.id;\n\n    if (isnull($in.0.event_date)) {\n        $out.0.days_ago = 0;\n        $out.0.is_future = false;\n        return OK;\n    }\n\n    integer d = long2integer(dateDiff(today(), $in.0.event_date, day));\n    $out.0.days_ago = d;\n    $out.0.is_future = (d < 0);\n\n    return OK;\n}\n```",
+        "reasoning_content": "event_date is nullable, so the null branch fixes both outputs without entering date arithmetic. dateDiff(today(), event_date, day) returns long, while days_ago is integer; long2integer performs the required narrowing. The sign of that same stored difference determines whether the date lies in the future, avoiding a second date calculation."
+      }
+    ],
+    "comments": "Date EVAL: tests isnull, dateDiff(today(), date, day), and boolean derived from integer sign.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write a CTL2 **Filter** expression.\n\nInput metadata:\n<Metadata id=\"Pay\">\n  <Record name=\"Payment\" fieldDelimiter=\",\">\n    <Field name=\"amount\" type=\"decimal\" scale=\"2\"/>\n    <Field name=\"notes\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nRules:\n- Keep record if amount > 20000 OR notes contains the word \"scam\" case-insensitively.\n\nProvide only the CTL2 expression without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n(!isnull($in.0.amount) && $in.0.amount > 20000D) || contains(lowerCase(nvl($in.0.notes, \"\")), \"scam\")\n```",
+        "reasoning_content": "amount has no non-nullability declaration, so its guard must precede the ordered comparison. notes is nullable: nvl selects empty text before lowerCase, and contains then tests the case-folded value without a null failure. The top-level OR preserves either qualifying path in the Filter expression."
+      }
+    ],
+    "comments": "Filter EVAL: tests nullable notes handling and case-insensitive contains.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code for a **Map** that normalizes a code.\n\nInput metadata:\n<Metadata id=\"CodeIn\">\n  <Record name=\"Row\" fieldDelimiter=\",\">\n    <Field name=\"raw_code\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nOutput metadata:\n<Metadata id=\"CodeOut\">\n  <Record name=\"RowOut\" fieldDelimiter=\",\">\n    <Field name=\"norm_code\" type=\"string\"/>\n    <Field name=\"code_len\" type=\"integer\"/>\n  </Record>\n</Metadata>\n\nRules:\n- norm_code = is normalized raw_code string, everything upper case\n- code_len = is length of the norm_code\n\nProvide only the CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    string c = upperCase(trim(nvl($in.0.raw_code, \"\")));\n    $out.0.norm_code = c;\n    $out.0.code_len = length(c);\n    return OK;\n}\n```",
+        "reasoning_content": "raw_code is nullable, so nvl chooses empty text before trim and upperCase. Storing the normalized string once prevents code_len from being computed from the untrimmed or differently cased input. length then measures exactly the value assigned to norm_code."
+      }
+    ],
+    "comments": "Map EVAL: tests upperCase/trim/nvl and length.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code for a **Denormalizer** grouping by org_unit.\n\nInput metadata:\n<Metadata id=\"Sess\">\n  <Record name=\"Sess\" fieldDelimiter=\",\">\n    <Field name=\"org_unit\" type=\"string\"/>\n    <Field name=\"person_key\" type=\"string\" nullable=\"true\"/>\n    <Field name=\"duration\" type=\"decimal\" scale=\"1\"/>\n  </Record>\n</Metadata>\n\nOutput metadata:\n<Metadata id=\"OrgOut\">\n  <Record name=\"Org\" fieldDelimiter=\",\">\n    <Field name=\"org_unit\" type=\"string\"/>\n    <Field name=\"distinct_people\" type=\"integer\"/>\n    <Field name=\"total_duration\" type=\"decimal\" scale=\"1\"/>\n  </Record>\n</Metadata>\n\nRules:\n- distinct_people counts distinct person_key values; null person_key counts as empty string \"\".\n- total_duration sums duration.\n\nProvide only CTL2 code without any comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring orgUnit = null;\nmap[string, boolean] seen = {};\ninteger distinct = 0;\ndecimal total = 0D;\n\nfunction integer append() {\n    if (isnull(orgUnit)) {\n        orgUnit = $in.0.org_unit;\n    }\n    string pk = nvl($in.0.person_key, \"\");\n    if (!containsKey(seen, pk)) {\n        seen[pk] = true;\n        distinct++;\n    }\n\n    total += $in.0.duration;\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.org_unit = orgUnit;\n    $out.0.distinct_people = distinct;\n    $out.0.total_duration = total;\n    return OK;\n}\n\nfunction void clean() {\n    orgUnit = null;\n    seen = {};\n    distinct = 0;\n    total = 0D;\n}\n```",
+        "reasoning_content": "Null person_key intentionally represents one distinct empty-string key, so nvl must happen before containsKey. The map records presence separately from the count and avoids counting duplicates. org_unit is captured once, duration accumulates for every row, and clean replaces the map so keys cannot leak into the next group."
+      }
+    ],
+    "comments": "Distinct-count EVAL: tests map usage, containsKey, and null normalization for distinct counting.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code for a **Map**.\n\nInput metadata:\n<Metadata id=\"BoolIn\">\n  <Record name=\"Row\" fieldDelimiter=\",\">\n    <Field name=\"flag_str\" type=\"string\" nullable=\"true\"/>\n  </Record>\n</Metadata>\n\nOutput metadata:\n<Metadata id=\"BoolOut\">\n  <Record name=\"RowOut\" fieldDelimiter=\",\">\n    <Field name=\"flag\" type=\"boolean\"/>\n  </Record>\n</Metadata>\n\nRules:\n- Normalize s = lowercase, remove any any leading or trailing whitespace\n- flag = true only when s equals \"true\" or \"1\" or \"yes\".\n- Otherwise flag = false.\n\nProvide only CTL2 code, add no comments to the code."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    string s = lowerCase(trim(nvl($in.0.flag_str, \"\")));\n    $out.0.flag = (s == \"true\" || s == \"1\" || s == \"yes\");\n    return OK;\n}\n```",
+        "reasoning_content": "flag_str is nullable, so nvl maps it to empty text before trim and lowerCase. Equality is null-safe, but normalizing first also handles surrounding whitespace and case. The three accepted spellings form one boolean expression; every other normalized value naturally produces false."
+      }
+    ],
+    "comments": "Boolean parsing EVAL: tests normalization and multi-value boolean mapping.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code for Join (INNER JOIN).\n\nJoin in ports:\n- Port 0: Order\n- Port 1: Customer\n\nOrder metadata:\n<Metadata id=\"Order\">\n  <Record name=\"Order\" fieldDelimiter=\",\">\n    <Field name=\"order_id\" type=\"string\"/>\n    <Field name=\"cust_id\" type=\"string\"/>\n    <Field name=\"amount\" type=\"decimal\" scale=\"2\"/>\n  </Record>\n</Metadata>\n\nCustomer metadata:\n<Metadata id=\"Cust\">\n  <Record name=\"Cust\" fieldDelimiter=\",\">\n    <Field name=\"cust_id\" type=\"string\"/>\n    <Field name=\"tier\" type=\"string\"/>\n  </Record>\n</Metadata>\n\nOutput metadata:\n<Metadata id=\"Out\">\n  <Record name=\"Out\" fieldDelimiter=\",\">\n    <Field name=\"order_id\" type=\"string\"/>\n    <Field name=\"cust_id\" type=\"string\"/>\n    <Field name=\"tier\" type=\"string\"/>\n    <Field name=\"fee\" type=\"decimal\" scale=\"2\"/>\n  </Record>\n</Metadata>\n\nRules:\n- Copy order_id, cust_id, tier (ideally as wildcard mapping for flexibility if no key fields are added to inputs & output)\n- fee depends on tier:\n  - tier == \"GOLD\" => fee = amount * 0.01\n  - tier == \"SILVER\" => fee = amount * 0.02\n  - else fee = amount * 0.03\n- Round fee to 2 decimals.\n\nProvide only CTL2 code, add no comments to the code."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.* = $in.0.*;\n    $out.0.tier = $in.1.tier;\n    decimal rate = ($in.1.tier == \"GOLD\") ? 0.01D\n                : ($in.1.tier == \"SILVER\") ? 0.02D\n                : 0.03D;\n\n    $out.0.fee = round($in.0.amount * rate, 2);\n    return OK;\n}\n```",
+        "reasoning_content": "The inner join guarantees a customer row, so no slave-miss branch or nullable sentinel is needed. Whole-record copy from master port 0 fills matching order fields, then tier comes explicitly from port 1. D-suffixed rates keep the fee in decimal arithmetic, and rounding occurs after amount multiplication."
+      }
+    ],
+    "comments": "Join EVAL: tests multi-input Map after INNER join (no nullability on right side) and tier-based ternary logic.",
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code (no comments) defining function integer clamp(integer x) that returns 0 if x<0, 100 if x>100, otherwise x. Use nested conditional (?:) operator only. Then set global integers a=clamp(-5), b=clamp(50), c=clamp(120)."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer clamp(integer x) {\n    return (x < 0) ? 0 : (x > 100) ? 100 : x;\n}\n\ninteger a = clamp(-5);\ninteger b = clamp(50);\ninteger c = clamp(120);\n```",
+        "reasoning_content": "x < 0 and x > 100 are mutually exclusive, so the final ternary arm preserves in-range x. Each arm is integer-typed, which keeps the function result and all three global initializers on the integer path."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code (no comments) defining function map[string, integer] freq(string[] arr) that returns frequency map of strings in arr. Use map[string, integer], containsKey(), while loop. Do not use postfix operators. Then set global variable f = freq([\"x\",\"y\",\"x\",\"x\"])."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction map[string, integer] freq(string[] arr) {\n    map[string, integer] m = {};\n    integer i = 0;\n    while (i < length(arr)) {\n        string k = arr[i];\n        if (containsKey(m, k)) {\n            m[k] = m[k] + 1;\n        } else {\n            m[k] = 1;\n        }\n        i = i + 1;\n    }\n    return m;\n}\n\nmap[string, integer] f = freq([\"x\", \"y\", \"x\", \"x\"]);\n```",
+        "reasoning_content": "containsKey distinguishes an absent string key from a stored integer. The while index visits each array element; an existing count rises through assignment and a new key starts at one. That avoids postfix syntax while still returning x=3 and y=1."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code (no comments) defining function decimal pct(decimal part, decimal total) that returns 0 when total==0, else calculates how many % is part of total and rounds that to 2 decimal places before returning the value. Then set global decimal p = pct(1D, 3D)."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction decimal pct(decimal part, decimal total) {\n    return (total == 0D) ? 0D : round((part / total) * 100D, 2);\n}\n\ndecimal p = pct(1D, 3D);\n```",
+        "reasoning_content": "All operands are decimal, so D-suffixed 0, 100, 1, and 3 keep division and multiplication in decimal arithmetic. The zero-total branch must precede the division; guarding afterward would be too late. Rounding is applied to the percentage result, not to the intermediate ratio."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code (no comments) defining function integer daysBetween(string d1, string d2) that parses both strings in format \"yyyy-MM-dd\" using and returns the two dates difference in number of days. If either parse fails then it should return 0. One or both input parameters to the function can be null. Use conditional fail operator to handle any possible errors which can happen (especially during parsing).\nThen set global integer db = daysBetween(\"2026-01-01\",\"2026-01-11\")."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer daysBetween(string d1, string d2) {\n    date a = str2date(d1, \"yyyy-MM-dd\") : null;\n    date b = str2date(d2, \"yyyy-MM-dd\") : null;\n    if (isnull(a) || isnull(b)) return 0;\n    return long2integer(dateDiff(b, a, day));\n}\n\ninteger db = daysBetween(\"2026-01-01\", \"2026-01-11\");\n```",
+        "reasoning_content": "str2date is the string parser for the stated yyyy-MM-dd pattern. Conditional-fail turns a null or malformed input into a null date; the combined guard then returns zero before dateDiff. dateDiff returns long, so long2integer supplies the declared function result type."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code (no comments) defining function integer parseIntOrDefault(string s, integer default) that returns default if s is null/blank or parsing of s to integer value fails; otherwise returns parsed integer. Handle possible errors, especially parsing using conditional fail operator. Then set global integer n1=parseIntOrDefault(\"15\",0), n2=parseIntOrDefault(\"x\",7)."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer parseIntOrDefault(string s, integer def) {\n    if (isBlank(s)) return def;\n    return str2integer(s) : def;\n}\n\ninteger n1 = parseIntOrDefault(\"15\", 0);\ninteger n2 = parseIntOrDefault(\"x\", 7);\n```",
+        "reasoning_content": "isBlank accepts null, empty, and whitespace-only text, so those inputs return def without parsing. Nonblank text goes through str2integer; conditional-fail maps nondigits to the same default."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code (no comments) defining function decimal toDecimalSafe(variant v) that returns 0.00 when v is null or cannot be converted. Conversion rules:\n- if v typeof decimal => return v\n- else if v typeof integer or long or number => return v;\n- else if v typeof string => parse to number with fail-safe, default 0\n- else return 0.\nThen set global decimals d1=toDecimalSafe(\"12.5\"), d2=toDecimalSafe(3), d3=toDecimalSafe(null)."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction decimal toDecimalSafe(variant v) {\n    if (isnull(v)) return 0D;\n\n    if (v typeof decimal) {\n        return cast(v, decimal);\n    } else if (v typeof integer) {\n        return cast(v, decimal);\n    } else if (v typeof long) {\n        return cast(v, decimal);\n    } else if (v typeof number) {\n        return cast(v, decimal);\n    } else if (v typeof string) {\n        string s = cast(v, string);\n        return isDecimal(s) ? str2decimal(s) : 0D;\n    }\n\n    return 0D;\n}\n\ndecimal d1 = toDecimalSafe(\"12.5\");\ndecimal d2 = toDecimalSafe(3);\ndecimal d3 = toDecimalSafe(null);\n```",
+        "reasoning_content": "v is variant, so typeof chooses its contained type and cast is appropriate on each strong-type branch. Numeric variants can widen into decimal; string variants need isDecimal plus str2decimal because cast is not a text parser. A direct numeric text cast would choose the wrong mechanism. Null and unsupported contained types share the explicit 0D fallback."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code (no comments) defining function decimal discounted(decimal amount, decimal pctOff) that returns amount * (1 - pctOff/100). Then define function decimal discountedRounded(decimal amount, decimal pctOff) that returns discounted(amount,pctOff) rounded to 2 decimals. Then set global decimal dr = discountedRounded(100D, 10D)."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction decimal discounted(decimal amount, decimal pctOff) {\n    return amount * (1D - (pctOff / 100D));\n}\n\nfunction decimal discountedRounded(decimal amount, decimal pctOff) {\n    return round(discounted(amount, pctOff), 2);\n}\n\ndecimal dr = discountedRounded(100D, 10D);\n```",
+        "reasoning_content": "D-suffixed constants keep both the percentage division and subtraction on the decimal path. discounted preserves the unrounded business value; discountedRounded calls it and rounds only the final amount to scale two, matching the separation requested."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Define function integer countNonBlankCsv(string csv) that counts items in a comma-separated string, excluding items that are blank. If csv is null or blank, return 0. If loop is needed in the code then use a while loop. Then define global integers c1=countNonBlankCsv(\"a, ,b,,c\"), c2=countNonBlankCsv(null)."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer countNonBlankCsv(string csv) {\n    if (isBlank(csv)) {\n        return 0;\n    }\n\n    string[] parts = split(csv, \",\");\n    integer i = 0;\n    integer cnt = 0;\n\n    while (i < length(parts)) {\n        string item = trim(parts[i]);\n        if (!isBlank(item)) {\n            cnt++;\n        }\n        i++;\n    }\n\n    return cnt;\n}\n\ninteger c1 = countNonBlankCsv(\"a, ,b,,c\");\ninteger c2 = countNonBlankCsv(null);\n```",
+        "reasoning_content": "isBlank(csv) handles null, empty, and whitespace-only input before split. Each part is trimmed before its own blank test, so separators around spaces do not create counts. The while loop advances once per split part and increments cnt only for retained items."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Declare map[string, variant] m and set m[\"a\"] = 1 and m[\"b\"] = \"2\". Then define function integer sumVariantInts(map[string, variant] m, string[] keys) that sums values for the given keys. Missing keys, null values, or non-numeric values contribute 0. Conversion rules: integer => add as is; long => convert to integer; decimal => convert to integer; number => convert to integer; string => parse to integer with fail-safe default 0. Return the sum. Finally define global integer sv = sumVariantInts(m, [\"a\",\"b\",\"c\"])."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nmap[string, variant] m = {};\nm[\"a\"] = 1;\nm[\"b\"] = \"2\";\n\nfunction integer sumVariantInts(map[string, variant] m, string[] keys) {\n    if (isnull(m) || isnull(keys)) {\n        return 0;\n    }\n\n    integer sum = 0;\n\n    foreach (string k : keys) {\n        if (!containsKey(m, k)) {\n            continue;\n        }\n\n        variant v = m[k];\n        if (isnull(v)) {\n            continue;\n        }\n\n        if (v typeof integer) {\n            sum += cast(v, integer);\n        } else if (v typeof long) {\n            sum += long2integer(cast(v, long));\n        } else if (v typeof decimal) {\n            sum += decimal2integer(cast(v, decimal));\n        } else if (v typeof double) {\n            sum += double2integer(cast(v, double));\n        } else if (v typeof string) {\n            sum += str2integer(cast(v, string)) : 0;\n        }\n    }\n\n    return sum;\n}\n\ninteger sv = sumVariantInts(m, [\"a\", \"b\", \"c\"]);\n```",
+        "reasoning_content": "Map lookup first uses containsKey so a missing key never gets confused with a present null variant. typeof selects the conversion path: integer adds directly, long/decimal/number narrow explicitly, and string uses str2integer with a zero fail-safe. Only requested keys are visited, and every unusable value contributes zero."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write CTL2 code (no comments, no specific component for - so no transform() function) that processes the following JSON string input:\n\nstring json = \"{\\\"orderId\\\":\\\"A-1001\\\",\\\"customer\\\":{\\\"id\\\":\\\"  C42 \\\",\\\"tier\\\":2},\\\"lines\\\":[{\\\"sku\\\":\\\"X1\\\",\\\"qty\\\":\\\"2\\\",\\\"unitPrice\\\":\\\"12.50\\\"},{\\\"sku\\\":\\\"X2\\\",\\\"qty\\\":3,\\\"unitPrice\\\":8.0},{\\\"sku\\\":\\\"X3\\\",\\\"qty\\\":null,\\\"unitPrice\\\":\\\"5\\\"},{\\\"sku\\\":\\\"X4\\\",\\\"qty\\\":\\\"1\\\",\\\"unitPrice\\\":null}],\\\"discountPct\\\":\\\"10\\\"}\";\n\nTask:\n1) Parse json into a variant structure.\n2) Compute decimal grossTotal = sum over lines of (qty * unitPrice) for lines where both qty and unitPrice are present and numeric. In this concrete input, parsed JSON numerics become integer/long or number, never decimal. qty may be string or integer/long; unitPrice may be string or number/integer/long. Non-numeric or null values should make that line contribute 0.\n3) Compute integer validLineCount = number of lines that contributed to grossTotal (i.e., both parsed numeric values were present and usable).\n4) Compute decimal netTotal = grossTotal * (1 - discountPct/100). In this concrete input, discountPct is a string; if missing/non-numeric, treat it as 0.\n5) Extract string customerIdNormalized = customer.id lowercased and trimmed (null-safe -> \"\").\n\nThen set global variables:\nstring customerIdNormalized;\ndecimal grossTotal;\ndecimal netTotal;\ninteger validLineCount;\n\nUse variant type checks and casts appropriately. Output must compile and contain no comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring json = \"{\\\"orderId\\\":\\\"A-1001\\\",\\\"customer\\\":{\\\"id\\\":\\\"  C42 \\\",\\\"tier\\\":2},\\\"lines\\\":[{\\\"sku\\\":\\\"X1\\\",\\\"qty\\\":\\\"2\\\",\\\"unitPrice\\\":\\\"12.50\\\"},{\\\"sku\\\":\\\"X2\\\",\\\"qty\\\":3,\\\"unitPrice\\\":8.0},{\\\"sku\\\":\\\"X3\\\",\\\"qty\\\":null,\\\"unitPrice\\\":\\\"5\\\"},{\\\"sku\\\":\\\"X4\\\",\\\"qty\\\":\\\"1\\\",\\\"unitPrice\\\":null}],\\\"discountPct\\\":\\\"10\\\"}\";\n\nvariant root = parseJson(json);\n\nstring customerIdNormalized = \"\";\ndecimal grossTotal = 0D;\ndecimal netTotal = 0D;\ninteger validLineCount = 0;\n\nif (!isnull(root) && (root typeof map)) {\n    if (containsKey(root, \"customer\")) {\n        variant cust = root[\"customer\"];\n        if (!isnull(cust) && (cust typeof map) && containsKey(cust, \"id\")) {\n            variant idv = cust[\"id\"];\n            if (!isnull(idv)) {\n                customerIdNormalized = lowerCase(trim(cast(idv, string)));\n            }\n        }\n    }\n\n    decimal discountPct = 0D;\n    if (containsKey(root, \"discountPct\")) {\n        variant dv = root[\"discountPct\"];\n        if (!isnull(dv) && (dv typeof string)) {\n            string ds = cast(dv, string);\n            if (isDecimal(ds)) {\n                discountPct = str2decimal(ds);\n            }\n        }\n    }\n\n    if (containsKey(root, \"lines\")) {\n        variant lines = root[\"lines\"];\n        if (!isnull(lines) && (lines typeof list)) {\n            foreach (variant line : lines) {\n                if (isnull(line) || !(line typeof map)) {\n                    continue;\n                }\n\n                boolean hasQty = false;\n                boolean hasPrice = false;\n                decimal qtyDec = 0D;\n                decimal priceDec = 0D;\n\n                if (containsKey(line, \"qty\")) {\n                    variant qv = line[\"qty\"];\n                    if (!isnull(qv)) {\n                        if (qv typeof integer) {\n                            qtyDec = cast(qv, integer);\n                            hasQty = true;\n                        } else if (qv typeof long) {\n                            qtyDec = cast(qv, long);\n                            hasQty = true;\n                        } else if (qv typeof string) {\n                            string qs = cast(qv, string);\n                            if (isDecimal(qs)) {\n                                qtyDec = str2decimal(qs);\n                                hasQty = true;\n                            }\n                        }\n                    }\n                }\n\n                if (containsKey(line, \"unitPrice\")) {\n                    variant pv = line[\"unitPrice\"];\n                    if (!isnull(pv)) {\n                        if (pv typeof number) {\n                            priceDec = cast(pv, number);\n                            hasPrice = true;\n                        } else if (pv typeof integer) {\n                            priceDec = cast(pv, integer);\n                            hasPrice = true;\n                        } else if (pv typeof long) {\n                            priceDec = cast(pv, long);\n                            hasPrice = true;\n                        } else if (pv typeof string) {\n                            string ps = cast(pv, string);\n                            if (isDecimal(ps)) {\n                                priceDec = str2decimal(ps);\n                                hasPrice = true;\n                            }\n                        }\n                    }\n                }\n\n                if (hasQty && hasPrice) {\n                    grossTotal += qtyDec * priceDec;\n                    validLineCount = validLineCount + 1;\n                }\n            }\n        }\n    }\n\n    netTotal = grossTotal * (1D - (discountPct / 100D));\n}\n```",
+        "reasoning_content": "parseJson leaves objects, lists, and scalars as variant, so type tests precede key access and cast is only the variant-to-strong-type step. JSON 8.0 is number and can widen into decimal, while string numerics need isDecimal then str2decimal. Separate presence flags matter because a usable zero is still a contributing line. Missing or invalid discount deliberately stays 0D; the concrete customer id is a string before trim and lowerCase."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "In a standalone CTL2 expression (no component function), compute a decimal total_with_tax from:\n- subtotal: decimal (NOT NULL)\n- tax_pct: decimal (NOT NULL)\nTax is a percentage (e.g., 21 means 21%). Return the final decimal amount. No null handling is needed."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nsubtotal * (1D + (tax_pct / 100D))\n```",
+        "reasoning_content": "subtotal and tax_pct are already decimal. Dividing by 100D converts the percentage to a rate, adding 1D forms the multiplier, and decimal multiplication preserves the requested result type."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Bridge from JavaScript: I would do name.trim().replace(/\\\\s+/g, \" \"). In CTL2, give a single expression that takes:\n- full_name: string (NOT NULL)\nand returns a string where leading/trailing whitespace is removed and internal whitespace is collapsed to single spaces. No null handling."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nnormalizeWhitespaces(full_name)\n```",
+        "reasoning_content": "trim alone would leave internal whitespace runs, while normalizeWhitespaces performs both requested operations in one CTL2 call. A regex replacement would duplicate that built-in behavior."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "bridge",
+      "string-ops",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Assume a DataGenerator component is configured externally to generate exactly 5 records.\n\nOutput metadata:\n- warehouse_id: integer (NOT NULL)\n- warehouse_code: string (NOT NULL)\n\nShow only CTL2 code for `generate()` plus any needed global variable declarations.\n\nRules for each call:\n- increment a row counter\n- set `warehouse_id` to that counter value\n- set `warehouse_code` to `\"WH-\"` plus the same id zero-padded to 3 digits"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\ninteger rowNo = 0;\n\nfunction integer generate() {\n    rowNo++;\n    $out.0.warehouse_id = rowNo;\n    $out.0.warehouse_code = \"WH-\" + num2str(rowNo, \"000\");\n    return OK;\n}\n```",
+        "reasoning_content": "The configured call count, not CTL, limits generation, so no STOP branch belongs here. rowNo must survive between calls; incrementing before assignment makes the first identifier 1. num2str with the 000 format derives the suffix from that same identifier, preventing the two output fields from drifting apart."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "data-generator",
+      "transform-function",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Bridge from Python. In Python I would do:\nqty = int(qty_text) if qty_text and qty_text.strip() else 0\nIn CTL2, provide a single expression that converts:\n- qty_text: string (nullable)\ninto an integer where null/blank becomes 0, otherwise parse base-10 integer. Do not throw on null/blank."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nisBlank(qty_text) ? 0 : str2integer(qty_text)\n```",
+        "reasoning_content": "isBlank accepts a nullable string and covers both null and whitespace-only input, selecting zero before parsing. Nonblank text goes to str2integer, the CTL2 string-to-integer conversion; cast would be a variant conversion rather than a parser."
+      }
+    ],
+    "difficulty": "medium",
+    "tags": [
+      "bridge",
+      "nullable",
+      "type-conversion",
+      "conditional-logic"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Join component (inner join already done on customer_id). Input 0 (Orders) metadata:\n- order_id: integer (NOT NULL)\n- customer_id: integer (NOT NULL)\n- ship_country: string (NOT NULL)\n- coupon: string (nullable)\nInput 1 (Customers) metadata:\n- customer_id: integer (NOT NULL)\n- tier: string (NOT NULL)\n- marketing_opt_in: boolean (NOT NULL)\nOutput metadata:\n- order_id: integer (NOT NULL)\n- segment: string (NOT NULL)\n- coupon_used: boolean (NOT NULL)\nRules:\n1) segment = \"NO-MKT\" if marketing_opt_in is false.\n2) Else segment = \"VIP\" if tier is exactly \"GOLD\" or \"PLATINUM\"; otherwise \"STD\".\n3) coupon_used = true only when coupon is not null AND not blank.\nWrite CTL2 transform()."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.order_id = $in.0.order_id;\n\n    if (!$in.1.marketing_opt_in) {\n        $out.0.segment = \"NO-MKT\";\n    } else {\n        $out.0.segment = ($in.1.tier == \"GOLD\" || $in.1.tier == \"PLATINUM\") ? \"VIP\" : \"STD\";\n    }\n\n    $out.0.coupon_used = !isBlank($in.0.coupon);\n    return ALL;\n}\n```",
+        "reasoning_content": "marketing_opt_in and tier come from joined customer port 1, while coupon comes from order port 0. The no-marketing branch has precedence over tier, then exact GOLD or PLATINUM equality selects VIP. isBlank already treats a nullable coupon as absent, so its negation is the required used flag."
+      }
+    ],
+    "difficulty": "medium",
+    "tags": [
+      "join",
+      "transform-function",
+      "nullable",
+      "non-nullable",
+      "conditional-logic",
+      "string-ops"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "This Filter component is not working. Input metadata:\n- lead_id: long (NOT NULL)\n- score: integer (NOT NULL)\n- country: string (NOT NULL)\n- blocked: boolean (NOT NULL)\nGoal: keep only leads with score >= 80, country == \"DE\", and blocked == false.\nMy code (placed into Filter):\n```ctl\n//#CTL2\nfunction boolean filter() {\n    return $in.0.score >= 80 && $in.0.country == \"DE\" && !$in.0.blocked;\n}\n```\nWhy is it wrong, and what is the correct Filter code?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n$in.0.score >= 80 && $in.0.country == \"DE\" && !$in.0.blocked\n```",
+        "reasoning_content": "Filter CTL is the predicate itself at module level; it does not declare filter() or transform(). Removing the wrapper leaves the score, country, and blocked tests unchanged, including their AND precedence."
+      }
+    ],
+    "difficulty": "medium",
+    "tags": [
+      "error-correction",
+      "filter-expression",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Join component (inner join already done on invoice_no). Input 0 (Invoices) metadata:\n- invoice_no: string (NOT NULL)\n- due_date: date (NOT NULL)\n- currency: string (NOT NULL)\n- amount: decimal (NOT NULL)\n- discount_deadline: date (nullable)\nInput 1 (Payments) metadata:\n- invoice_no: string (NOT NULL)\n- paid_on: date (NOT NULL)\n- paid_amount: decimal (NOT NULL)\nOutput metadata:\n- invoice_no: string (NOT NULL)\n- status: string (NOT NULL)\n- effective_paid: decimal (NOT NULL)\n- days_overdue: integer (NOT NULL)\nRules:\n1) base status is \"PAID\" if paid_amount >= amount, else \"PARTIAL\".\n2) Append \"-LATE\" to status iff paid_on > due_date AND (discount_deadline is null OR paid_on > discount_deadline).\n3) effective_paid = min(paid_amount, amount).\n4) days_overdue = 0 if paid_on <= due_date, else dateDiff(paid_on, due_date, day).\nWrite CTL2 transform()."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\nfunction integer transform() {\n    $out.0.invoice_no = $in.0.invoice_no;\n\n    string baseStatus = ($in.1.paid_amount >= $in.0.amount) ? \"PAID\" : \"PARTIAL\";\n    boolean isLate = ($in.1.paid_on > $in.0.due_date)\n        && (isnull($in.0.discount_deadline) || ($in.1.paid_on > $in.0.discount_deadline));\n\n    $out.0.status = isLate ? (baseStatus + \"-LATE\") : baseStatus;\n    $out.0.effective_paid = min($in.1.paid_amount, $in.0.amount);\n    $out.0.days_overdue = ($in.1.paid_on <= $in.0.due_date)\n        ? 0\n        : long2integer(dateDiff($in.1.paid_on, $in.0.due_date, day));\n\n    return ALL;\n}\n```",
+        "reasoning_content": "Port 0 supplies invoice terms and port 1 supplies payment facts. Late status requires both paid_on after due_date and either no discount deadline or payment after it; the null check short-circuits the ordered comparison. min caps effective payment, while dateDiff returns long and must narrow to integer only on the overdue branch."
+      }
+    ],
+    "difficulty": "hard",
+    "tags": [
+      "join",
+      "transform-function",
+      "nullable",
+      "non-nullable",
+      "date-handling",
+      "conditional-logic",
+      "type-conversion"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Standalone CTL2 expression only. Fields:\n- qty: integer (NOT NULL)\n- unit_price: decimal (NOT NULL)\nReturn decimal line_total = qty * unit_price. No null handling."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nqty * unit_price\n```",
+        "reasoning_content": "A single multiplication sees the decimal operand and therefore produces decimal directly. An explicit cast or a 1D multiplier would add no precision or type information."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Bridge from Kotlin. In Kotlin I would do code.uppercase().\nGive a single CTL2 expression that takes:\n- cost_center: string (NOT NULL)\nand returns it uppercased. No null handling."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nupperCase(cost_center)\n```",
+        "reasoning_content": "upperCase is the direct CTL2 case conversion. A null fallback would change the stated non-null input policy without improving the requested result."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "bridge",
+      "string-ops",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Standalone CTL2 expression. Given:\n- minutes: integer (NOT NULL)\nReturn integer hours_rounded_up where any positive remainder rounds up (e.g., 61 -> 2, 120 -> 2). Assume minutes is >= 0."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n(minutes + 59) / 60\n```",
+        "reasoning_content": "For nonnegative integer minutes, adding 59 before integer division makes every positive remainder cross into the next hour. Exact multiples remain in their existing quotient, including zero."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Assume a DataGenerator component is configured externally to generate exactly 3 records.\n\nOutput metadata:\n- dept_id: integer (NOT NULL)\n- dept_name: string (NOT NULL)\n\nShow only CTL2 code for `generate()` plus any needed global variable declarations.\n\nRules for each call:\n- increment a row counter\n- on call 1 emit `(10, \"SALES\")`\n- on call 2 emit `(20, \"IT\")`\n- on call 3 emit `(30, \"FIN\")`"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n\ninteger rowNo = 0;\n\nfunction integer generate() {\n    rowNo++;\n\n    if (rowNo == 1) {\n        $out.0.dept_id = 10;\n        $out.0.dept_name = \"SALES\";\n    } else if (rowNo == 2) {\n        $out.0.dept_id = 20;\n        $out.0.dept_name = \"IT\";\n    } else {\n        $out.0.dept_id = 30;\n        $out.0.dept_name = \"FIN\";\n    }\n\n    return OK;\n}\n```",
+        "reasoning_content": "The DataGenerator configuration supplies exactly three calls, so CTL does not need a stop counter or STOP return. Persistent rowNo distinguishes calls; incrementing first aligns 1, 2, and 3 with the three requested records. The final else is safe because no fourth call is configured."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "data-generator",
+      "transform-function",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "This Filter expression throws an error. Input metadata:\n- shipment_no: string (NOT NULL)\n- pieces: integer (NOT NULL)\n- carrier: string (NOT NULL)\nGoal: keep shipments where carrier is \"DHL\" OR \"UPS\" AND pieces > 0.\nMy Filter code:\n```ctl\n//#CTL2\nfunction boolean transform() {\n  return ($in.0.carrier == \"DHL\" || $in.0.carrier == \"UPS\") && $in.0.pieces > 0;\n}\n```\nFix it for a Filter component (and keep the logic unchanged)."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\n($in.0.carrier == \"DHL\" || $in.0.carrier == \"UPS\") && $in.0.pieces > 0\n```",
+        "reasoning_content": "A Filter component accepts a bare boolean expression, not a transform function. Removing the wrapper preserves the grouped carrier OR before the pieces constraint, so both DHL and UPS still require a positive piece count."
+      }
+    ],
+    "difficulty": "medium",
+    "tags": [
+      "error-correction",
+      "filter-expression",
+      "non-nullable",
+      "conditional-logic"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "In Python I compute a rounded product as round(unit_price * quantity, 2). In CTL2, both unit_price and quantity are declared as decimal. How do I round their product to 2 decimal places? Just the potential CTL expression, nothing else."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nround(unit_price * quantity, 2)\n```",
+        "reasoning_content": "Both operands are decimal, so their product remains decimal. round(decimal, integer scale) is the matching overload, and scale two applies to the completed product rather than either input."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "bridge",
+      "non-nullable",
+      "overload"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "I have a date variable called invoice_date. How do I convert it to a string formatted as \"2024-03-15\" (year-month-day)? Give me just the minimal code without comments."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ndate2str(invoice_date, \"yyyy-MM-dd\")\n```",
+        "reasoning_content": "date2str converts a date to text. The required year-month-day shape maps directly to the calendar-year pattern yyyy-MM-dd; uppercase YYYY would select week-year semantics instead."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "date-handling",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "How do I check whether a string variable email_address contains the \"@\" character? Just the expression, nothing else."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ncontains(email_address, \"@\")\n```",
+        "reasoning_content": "contains already returns the needed boolean, whereas indexOf would require a separate comparison to -1. The literal @ has no regex role in this call."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "string-ops",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "I am using a **Reformat** component with the following metadata:\n\nInput:\n- contact_id: integer (NOT NULL)\n- first_name: string (NOT NULL)\n- last_name: string (NOT NULL)\n- middle_name: string (nullable)\n- birth_date: date (nullable)\n- subscription_tier: string (NOT NULL)\n- lifetime_value: decimal (nullable)\n\nOutput:\n- contact_id: integer (NOT NULL)\n- display_name: string (NOT NULL)\n- age_years: integer (nullable)\n- tier_rank: integer (NOT NULL)\n- is_high_value: boolean (NOT NULL)\n\nRules: display_name = \"<first> <M>. <last>\" if middle_name not null, else \"<first> <last>\". age_years = null if birth_date null, else full years between birth_date and today (dateDiff returns long; convert to integer). tier_rank: BASIC->1, PRO->2, ENTERPRISE->3, other->0. is_high_value: true if lifetime_value not null and >= 5000, false otherwise.\n\nI need just the code for copy&paste into the component. Do not include any explanatory comments in the code."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.contact_id = $in.0.contact_id;\n    $out.0.display_name = isnull($in.0.middle_name)\n        ? $in.0.first_name + \" \" + $in.0.last_name\n        : $in.0.first_name + \" \" + left($in.0.middle_name, 1) + \". \" + $in.0.last_name;\n    if (isnull($in.0.birth_date)) {\n        $out.0.age_years = null;\n    } else {\n        $out.0.age_years = long2integer(dateDiff(today(), $in.0.birth_date, year));\n    }\n    switch ($in.0.subscription_tier) {\n        case \"BASIC\":\n            $out.0.tier_rank = 1;\n            break;\n        case \"PRO\":\n            $out.0.tier_rank = 2;\n            break;\n        case \"ENTERPRISE\":\n            $out.0.tier_rank = 3;\n            break;\n        default:\n            $out.0.tier_rank = 0;\n    }\n    $out.0.is_high_value = !isnull($in.0.lifetime_value)\n        && $in.0.lifetime_value >= 5000D;\n    return ALL;\n}\n```",
+        "reasoning_content": "dateDiff takes later before earlier and returns long, so today() first keeps present ages positive and long2integer matches the output type. A null middle name removes the optional fragment; a blank but present one intentionally follows the stated not-null rule. The lifetime guard prevents an ordered-null comparison, while the switch default makes every other tier rank zero."
+      }
+    ],
+    "difficulty": "hard",
+    "tags": [
+      "transform-function",
+      "nullable",
+      "non-nullable",
+      "null-propagation",
+      "switch-case",
+      "date-handling",
+      "conditional-logic"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "In Java I write Long.parseLong(s) to convert a string to a 64-bit integer. What is the CTL2 equivalent?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstr2long(s)\n```",
+        "reasoning_content": "str2long parses text directly into a long; cast accepts a variant instead and cannot replace parsing. No intermediate integer conversion is needed, so the 64-bit range is retained."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "bridge",
+      "type-conversion",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "In Python I extend a date with timedelta(days=30). In CTL2, I have a non-nullable date variable called renewal_date. How do I produce a new date that is 30 days later? Need just the code snippet."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ndateAdd(renewal_date, 30, day)\n```",
+        "reasoning_content": "dateAdd is the CTL2 date-arithmetic function. A positive amount of 30 with the unquoted day unit returns a new date; raw date-plus-integer arithmetic is not the CTL2 form."
+      }
+    ],
+    "difficulty": "easy",
+    "tags": [
+      "bridge",
+      "date-handling",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "In Kotlin I write `val tier = mapOf(\"bronze\" to 1, \"silver\" to 2, \"gold\" to 3)` and retrieve all keys as a list with `tier.keys.toList()`. How do I declare the same string-to-integer map and get all its keys as a string list in CTL2?"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nmap[string, integer] tier = {\"bronze\" -> 1, \"silver\" -> 2, \"gold\" -> 3};\nstring[] keys = getKeys(tier);\n```",
+        "reasoning_content": "CTL2 map literals separate keys and values with ->, and the declared key/value types are string and integer. getKeys returns the keys as a list matching string[], replacing Kotlin's property and toList chain."
+      }
+    ],
+    "difficulty": "medium",
+    "tags": [
+      "bridge",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Using a **Normalizer** component with the following metadata:\n\nInput:\n- patient_id: integer (NOT NULL)\n- diagnosis_codes: string (NOT NULL, comma-separated ICD codes, e.g. \"J45.0,J30.1,Z87.39\", always at least one code)\n\nOutput:\n- patient_id: integer (NOT NULL)\n- diagnosis_code: string (NOT NULL)\n- code_index: integer (NOT NULL)\n\nExpand each comma-separated code into its own output record. Set diagnosis_code to the trimmed code and code_index to the 0-based position.\nInterested in just the code, nothing else."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstring[] codes;\n\nfunction integer count() {\n    codes = split($in.0.diagnosis_codes, \",\");\n    return length(codes);\n}\n\nfunction integer transform(integer idx) {\n    $out.0.patient_id = $in.0.patient_id;\n    $out.0.diagnosis_code = trim(codes[idx]);\n    $out.0.code_index = idx;\n    return OK;\n}\n\nfunction void clean() {\n    clear(codes);\n}\n```",
+        "reasoning_content": "diagnosis_codes is non-null and guaranteed to contain at least one code, so count can split directly and return the exact array length. The prompt treats every split position as an output, so no blank-filtering pass is warranted. transform receives each zero-based idx, uses it for both element selection and code_index, and trims only the emitted code. clean clears retained per-record state."
+      }
+    ],
+    "difficulty": "medium",
+    "tags": [
+      "transform-function",
+      "string-ops",
+      "non-nullable"
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval_lookup_001",
+    "type": "EVAL",
+    "topic_area": "lookup table in Map/Reformat - code only",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Show only CTL2 code for a Map/Reformat `transform()` that reads `customer_id` from input, looks up `CustomerLookup`, and copies `name` to `$out.0.customer_name`. If no record exists, set `$out.0.customer_name` to null. Return all records. No explanation."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    CustomerLookupRec cust = lookup(CustomerLookup).get($in.0.customer_id);\n\n    if (!isnull(cust)) {\n        $out.0.customer_name = cust.name;\n    } else {\n        $out.0.customer_name = null;\n    }\n\n    return ALL;\n}\n```",
+        "reasoning_content": "lookup(CustomerLookup).get(customer_id) is the declared lookup access path and returns a CustomerLookupRec or null. The record must be tested before reading name; a miss maps to the nullable output value. return ALL preserves every input row."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval_lookup_002",
+    "type": "EVAL",
+    "topic_area": "lookup invalid code repair - invented API",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Fix this invalid CTL2 code for Map/Reformat:\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.customer_name = lookup(CustomerLookup).getCustomer($in.0.customer_id)[\"name\"];\n    return ALL;\n}\n```\n\nReturn corrected code and one short sentence only."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    CustomerLookupRec cust = lookup(CustomerLookup).get($in.0.customer_id);\n\n    if (!isnull(cust)) {\n        $out.0.customer_name = cust.name;\n    } else {\n        $out.0.customer_name = null;\n    }\n\n    return ALL;\n}\n```\nFixed by replacing the invented `getCustomer(...)` call with the documented `get(...)` lookup-table function.",
+        "reasoning_content": "Lookup tables expose get, not the invented getCustomer method, and get returns a typed record rather than a map indexed by string. Saving the CustomerLookupRec permits a null miss check before field access; the two branches preserve the requested nullable output."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval_seq_001",
+    "type": "EVAL",
+    "topic_area": "sequence in Map/Reformat - code only",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Show only CTL2 code for a Map/Reformat `transform()` that assigns the next value of sequence `OrderSeq` to `$out.0.order_id` and returns all records. No explanation."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.order_id = sequence(OrderSeq).next();\n    return ALL;\n}\n```",
+        "reasoning_content": "sequence(OrderSeq).next() is the CTL2 sequence access pattern for the next configured value. It runs inside transform, where sequence calls are allowed, and the result assigns directly to order_id before ALL routes the row."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval_filter_001",
+    "type": "EVAL",
+    "topic_area": "Filter condition only with contains",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Show only the CTL2 Filter condition that keeps records whose `$in.0.line` contains `Dividenda` or `Daň z dividednd`. Use the simplest boolean string test."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ncontains($in.0.line, \"Dividenda\") || contains($in.0.line, \"Daň z dividednd\")\n```",
+        "reasoning_content": "contains returns false when its input string is null, so an explicit null guard adds no behavior. The two literal substring checks are the direct boolean condition; regex would be broader than needed."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval_parsejson_001",
+    "type": "EVAL",
+    "topic_area": "parseJson numeric variant repair",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Fix this CTL2 code so it correctly handles numeric values parsed from JSON into a variant before assigning to decimal output field `$out.0.amount`.\n\nAssume `payload_json` may contain any of these:\n- `{\"amount\": 12}`\n- `{\"amount\": 12.34}`\n- `{\"amount\": \"12.34\"}`\n\nSo after `parseJson(...)`, `root[\"amount\"]` may be `integer`, `long`, `number`, or `string`.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    variant root = parseJson($in.0.payload_json);\n    variant raw = root[\"amount\"];\n\n    if (raw typeof decimal) {\n        $out.0.amount = cast(raw, decimal);\n    } else {\n        $out.0.amount = str2decimal(cast(raw, string));\n    }\n\n    return ALL;\n}\n```\n"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    variant root = parseJson($in.0.payload_json);\n    variant raw = root[\"amount\"];\n\n    if (isnull(raw)) {\n        $out.0.amount = null;\n    } else if (raw typeof string) {\n        $out.0.amount = str2decimal(cast(raw, string));\n    } else if (raw typeof integer) {\n        $out.0.amount = cast(raw, integer);\n    } else if (raw typeof long) {\n        $out.0.amount = cast(raw, long);\n    } else {\n        $out.0.amount = cast(raw, number);\n    }\n\n    return ALL;\n}\n```\n",
+        "reasoning_content": "parseJson stores JSON integers as integer or long and fractional numerics as number, not decimal. raw therefore needs typeof dispatch before assignment: strings parse with str2decimal, while numeric variants cast to their actual strong type and widen into decimal. The null branch preserves null rather than inventing a numeric fallback."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval_join_null_001",
+    "type": "EVAL",
+    "topic_area": "left outer join slave-missing field check",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Show only CTL2 code for a `transform()` function of JOIN component in a LEFT OUTER JOIN setup.\n\nInput port 0 fields:\n- customer_id: string\n- customer_name: string\n\nInput port 1 fields:\n- customer_id: string (nullable when no slave row matched)\n- city: string (nullable)\n\nOutput fields:\n- customer_id: string\n- customer_name: string\n- city: string (nullable)\n- address_missing: boolean\n\nRules:\n- Copy customer_id and customer_name from port 0.\n- Detect unmatched slave row using `isnull($in.1.customer_id)`, not a whole-record null check.\n- If no slave row matched, set city to null and address_missing=true.\n- Otherwise copy city and set address_missing=false."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.customer_id = $in.0.customer_id;\n    $out.0.customer_name = $in.0.customer_name;\n\n    boolean missing = isnull($in.1.customer_id);\n    $out.0.address_missing = missing;\n    $out.0.city = missing ? null : $in.1.city;\n\n    return ALL;\n}\n```",
+        "reasoning_content": "Slave port 1 customer_id is the specified match sentinel: isnull($in.1.customer_id) means no slave row matched. city is nullable even on a matched row, so testing city would collapse matched-null and unmatched cases. The same missing boolean drives address_missing and the null-versus-slave-city assignment."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval_locale_parse_001",
+    "type": "EVAL",
+    "topic_area": "locale format repair",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Rewrite this CTL2 expression so it uses the documented locale format:\n\n```ctl\nstr2decimal(amount_text, \"#.##0,00\", \"de_DE\")\n```"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nstr2decimal(amount_text, \"#.##0,00\", \"de.DE\")\n```",
+        "reasoning_content": "The conversion function and numeric pattern are already correct. CTL2 locale strings use dot-separated language.COUNTRY form, so de_DE becomes de.DE; changing the pattern would alter the requested number format."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval_datagenerator_001",
+    "type": "EVAL",
+    "topic_area": "DataGenerator contract correctness",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Assume a DataGenerator component is configured externally to generate exactly 3 records.\n\nShow only CTL2 code for `generate()` plus any needed global variable declarations.\n\nOutput fields:\n- warehouse_id: integer\n- warehouse_code: string\n\nRules for each call:\n- increment a row counter\n- set `warehouse_id` to that counter value\n- set `warehouse_code` to `\"WH-\"` plus the same id zero-padded to 3 digits\n"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\ninteger rowNo = 0;\n\nfunction integer generate() {\n    rowNo++;\n    $out.0.warehouse_id = rowNo;\n    $out.0.warehouse_code = \"WH-\" + num2str(rowNo, \"000\");\n    return OK;\n}\n```",
+        "reasoning_content": "The configured call count, not CTL, limits generation, so no STOP branch belongs here. rowNo must survive between calls; incrementing first makes the first identifier 1. num2str with 000 derives the suffix from that same identifier, preventing the fields from drifting."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval-thinking-refresh-001",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Output metadata contains non-null fields `experiment_id` (string), `inspection_day` (date), `test_center` (string), `technology` (string), and `funding_eur` (decimal). Write CTL2 for a DataGenerator configured to emit 120 Baltic clean-energy pilot records. Seed the random generator in `init()`. Build IDs as `BE-LAB-` followed by a four-digit sequence starting at 0001. Pick an inspection date from the last 180 days and move weekend dates back to the preceding Friday. Select a center from TLL, RIX, VNO, and GDN. TLL and RIX use technologies BATTERY_AI, GRID_SENSOR, or WIND_CONTROL; the other centers use WIND_CONTROL, HEAT_STORAGE, or HYDROGEN_BLEND. Funding ranges are 25000-60000 for BATTERY_AI, 15000-40000 for GRID_SENSOR, and 8000-30000 otherwise. Increase funding by 12% for inspections in January through March, then round to two decimal places."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nconst string[] CENTERS = [\"TLL\", \"RIX\", \"VNO\", \"GDN\"];\nconst string[] NORTH_TECH = [\"BATTERY_AI\", \"GRID_SENSOR\", \"WIND_CONTROL\"];\nconst string[] SOUTH_TECH = [\"WIND_CONTROL\", \"HEAT_STORAGE\", \"HYDROGEN_BLEND\"];\ninteger sequenceNumber = 0;\n\nfunction boolean init() {\n    setRandomSeed(73L);\n    return true;\n}\n\nfunction date moveWeekendToFriday(date candidate) {\n    integer weekday = getDayOfWeek(candidate);\n    if (weekday == 6) return dateAdd(candidate, -1, day);\n    if (weekday == 7) return dateAdd(candidate, -2, day);\n    return candidate;\n}\n\nfunction string chooseTechnology(string center) {\n    string[] options = center == \"TLL\" || center == \"RIX\"\n        ? NORTH_TECH : SOUTH_TECH;\n    return options[randomInteger(0, length(options) - 1)];\n}\n\nfunction decimal chooseFunding(string technology, date inspectionDay) {\n    decimal minimum;\n    decimal maximum;\n    decimal funding;\n    integer monthNumber;\n    switch (technology) {\n        case \"BATTERY_AI\":\n            minimum = 25000D;\n            maximum = 60000D;\n            break;\n        case \"GRID_SENSOR\":\n            minimum = 15000D;\n            maximum = 40000D;\n            break;\n        default:\n            minimum = 8000D;\n            maximum = 30000D;\n            break;\n    }\n\n    funding = randomDecimal(minimum, maximum);\n    monthNumber = getMonth(inspectionDay);\n    if (monthNumber >= 1 && monthNumber <= 3) {\n        funding = funding * 1.12D;\n    }\n    return round(funding, 2);\n}\n\nfunction integer generate() {\n    date endDate;\n    date startDate;\n\n    sequenceNumber++;\n    $out.0.experiment_id = \"BE-LAB-\" + lpad(num2str(sequenceNumber), 4, \"0\");\n\n    endDate = today();\n    startDate = dateAdd(endDate, -180, day);\n    $out.0.inspection_day = moveWeekendToFriday(randomDate(dateAdd(startDate, 2, day), endDate));\n\n    $out.0.test_center = CENTERS[randomInteger(0, length(CENTERS) - 1)];\n    $out.0.technology = chooseTechnology($out.0.test_center);\n    $out.0.funding_eur = chooseFunding($out.0.technology, $out.0.inspection_day);\n    return OK;\n}\n```",
+        "reasoning_content": "The random date starts two days inside the 180-day boundary because weekend correction can move it back by two; the corrected date still stays in range. Center must choose its technology pool before funding can choose bounds. January through March uses the 1.12D multiplier before round, and the counter increments before formatting so the first ID is 0001."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval-thinking-refresh-003",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "For a Denormalizer, explain `transformOnError(string errorMessage, string stackTrace)` and provide a complete minimal transform. Input records contain non-null string `batch_id`, nullable decimal `package_weight`, and date `scanned_at`. Output contains non-null string `batch_id`, nullable decimal `avg_weight`, nullable decimal `max_weight`, integer `observed_rows`, and nullable string `failure_reason`. Track total rows separately from non-null weights. On success, average only the non-null weights and round to two decimal places; leave the maximum null when no weight contributes. If group transformation fails, emit one fallback row containing the batch ID and observed row count, null averages, and `Batch aggregation failed: ` followed by the error message. Reset all group state in `clean()`."
+      },
+      {
+        "role": "assistant",
+        "content": "`transformOnError(string errorMessage, string stackTrace)` runs when the normal group-level `transform()` fails. Populating `$out.0` and returning `OK` emits one fallback row so the failed batch remains visible downstream.\n\n```ctl\n//#CTL2\nstring currentBatchId = null;\nboolean batchCaptured = false;\ninteger observedRows = 0;\ninteger weightedRows = 0;\ndecimal weightSum = 0D;\ndecimal maximumWeight = null;\n\nfunction integer append() {\n    if (!batchCaptured) {\n        currentBatchId = $in.0.batch_id;\n        batchCaptured = true;\n    }\n\n    observedRows++;\n    if (!isnull($in.0.package_weight)) {\n        decimal weight = $in.0.package_weight;\n        weightSum += weight;\n        weightedRows++;\n        if (isnull(maximumWeight) || weight > maximumWeight) {\n            maximumWeight = weight;\n        }\n    }\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.batch_id = currentBatchId;\n    $out.0.avg_weight = weightedRows == 0\n        ? null\n        : round(weightSum / weightedRows, 2);\n    $out.0.max_weight = maximumWeight;\n    $out.0.observed_rows = observedRows;\n    $out.0.failure_reason = null;\n    return OK;\n}\n\nfunction integer transformOnError(string errorMessage, string stackTrace) {\n    $out.0.batch_id = currentBatchId;\n    $out.0.avg_weight = null;\n    $out.0.max_weight = null;\n    $out.0.observed_rows = observedRows;\n    $out.0.failure_reason = \"Batch aggregation failed: \" + errorMessage;\n    return OK;\n}\n\nfunction void clean() {\n    currentBatchId = null;\n    batchCaptured = false;\n    observedRows = 0;\n    weightedRows = 0;\n    weightSum = 0D;\n    maximumWeight = null;\n}\n```",
+        "reasoning_content": "observedRows counts every grouped input, while weightedRows advances only for non-null package_weight and therefore is the average denominator. maximumWeight starts null so an all-null group stays null. batch_id is captured during append because transform and its error hook need stable group state. transformOnError writes the required fallback fields and OK emits it; clean resets all retained values."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "eval-fix-refresh-002",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Fix this CTL2 code for a Partition component that routes e-commerce orders. Input fields are nullable boolean `fraud_flag`, nullable decimal `order_total`, and nullable string `destination_country`. Fraud-flagged orders go to port 3. Otherwise, orders of at least 5000.00 go to port 2 for manual review. Remaining orders for CZ or SK go to port 0, and all other orders go to port 1. Runtime errors must also route to port 3. Return corrected CTL2 and briefly list the fixes.\n\n```ctl\n//#CTL2\nfunction integer routeOrder() {\n    if ($in.0.fraud_flag == true) {\n        return 3;\n    }\n    if (!isNull($in.0.order_total) && $in.0.order_total >= \"5000.00\") {\n        return 2;\n    }\n    if ($in.0.destination_country.equals(\"CZ\") || $in.0.destination_country.equals(\"SK\")) {\n        return 0;\n    }\n    return 1;\n}\n\nfunction integer routeOrderOnError(string errorMessage, string stackTrace) {\n    return 3;\n}\n```"
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer getOutputPort() {\n    if ($in.0.fraud_flag == true) {\n        return 3;\n    }\n    if (!isnull($in.0.order_total) && $in.0.order_total >= 5000.00D) {\n        return 2;\n    }\n    if ($in.0.destination_country == \"CZ\" || $in.0.destination_country == \"SK\") {\n        return 0;\n    }\n    return 1;\n}\n\nfunction integer getOutputPortOnError(string errorMessage, string stackTrace) {\n    return 3;\n}\n```\n\nFixed the Partition entry points, used the one-argument `isnull()` check, compared the decimal field with a decimal literal, and replaced unsupported Java-style string methods with CTL equality.",
+        "reasoning_content": "Partition requires getOutputPort and getOutputPortOnError; routeOrder names do not bind. order_total is a nullable field value, so one-argument isnull guards the ordered comparison, and 5000.00D matches decimal type. String equality replaces Java equals and remains safe for null destination_country. The error hook returns port 3 as required."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "sft_validation_holdout_10_001",
+    "source_file": "CTL_LoRA_components_contracts.json",
+    "source_id": "componen9c_0",
+    "topic": "rollup-null-aware-site-summary",
+    "component": "ROLLUP",
+    "validation_split": true,
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write complete CTL2 for a Rollup that summarizes sorted meter readings by `site_code`.\n\nInput port 0: `site_code: string` non-null, `reading_at: date` non-null, `kwh: decimal` nullable.\nAccumulator record `MeterAcc`: `site_code: string`, `observed_count: integer`, `total_kwh: decimal`, `latest_reading: date` nullable.\nOutput port 0: `site_code: string`, `average_kwh: decimal` nullable, `latest_reading: date`.\n\nCount and average only non-null kWh values, retain the latest reading time, and emit exactly one row for each site."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction void initGroup(MeterAcc acc) {\n    acc.site_code = $in.0.site_code;\n    acc.observed_count = 0;\n    acc.total_kwh = 0D;\n    acc.latest_reading = null;\n}\n\nfunction boolean updateGroup(MeterAcc acc) {\n    if (!isnull($in.0.kwh)) {\n        acc.total_kwh += $in.0.kwh;\n        acc.observed_count++;\n    }\n    if (isnull(acc.latest_reading) || $in.0.reading_at > acc.latest_reading) {\n        acc.latest_reading = $in.0.reading_at;\n    }\n    return false;\n}\n\nfunction boolean finishGroup(MeterAcc acc) {\n    return true;\n}\n\nfunction integer updateTransform(integer counter, MeterAcc acc) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, MeterAcc acc) {\n    if (counter > 0) return SKIP;\n    $out.0.site_code = acc.site_code;\n    $out.0.average_kwh = acc.observed_count == 0\n        ? null\n        : acc.total_kwh / acc.observed_count;\n    $out.0.latest_reading = acc.latest_reading;\n    return ALL;\n}\n```",
+        "reasoning_content": "site_code must survive into final transform, so the accumulator stores it at group initialization. observed_count and total_kwh change only for non-null kwh, making their ratio an average over contributing readings. latest_reading starts null and is replaced by later timestamps. updateGroup false suppresses per-row output; finishGroup true starts the final loop, whose counter guard stops after one row."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "sft_validation_holdout_10_008",
+    "source_file": "CTL_LoRA_dates_processing.json",
+    "source_id": "datespro57_0",
+    "topic": "reformat-expiry-and-fee-mapping",
+    "component": "REFORMAT",
+    "validation_split": true,
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Write a Reformat transform. Input has `subscription_id: long`, non-null `started_on: date`, nullable `expires_at: date` that may include a time, and nullable `monthly_fee_text: string`. Nonblank fee text is a valid decimal.\n\nOutput has `subscription_id: long`, `tenure_months: integer`, `days_until_expiry: integer` nullable, `is_active: boolean`, and `monthly_fee: decimal` nullable. Tenure is from start until now; an open-ended subscription is active with null expiry days; otherwise active means expiry is on or after the current instant."
+      },
+      {
+        "role": "assistant",
+        "content": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.subscription_id = $in.0.subscription_id;\n    $out.0.tenure_months = long2integer(dateDiff(today(), $in.0.started_on, month));\n    $out.0.days_until_expiry = isnull($in.0.expires_at)\n        ? null\n        : long2integer(dateDiff($in.0.expires_at, today(), day));\n    $out.0.is_active = isnull($in.0.expires_at)\n        || $in.0.expires_at >= today();\n    $out.0.monthly_fee = isBlank($in.0.monthly_fee_text)\n        ? null\n        : str2decimal($in.0.monthly_fee_text);\n    return ALL;\n}\n```",
+        "reasoning_content": "tenure uses dateDiff from started_on to today and narrows its long result to integer months. expires_at is nullable, so the null branch must be evaluated before dateDiff or ordered comparison; it yields active with null days. isBlank chooses null monthly_fee, while guaranteed-valid nonblank text goes through str2decimal."
+      }
+    ],
+    "reviewed_date": "2026-09-18"
+  },
+  {
+    "id": "validation_verdict_holdout_5_001",
+    "source_file": "CTL_LoRA_components_contracts.json",
+    "source_id": "componen9c_0",
+    "topic": "Rollup callback contract and output phase",
+    "component": "Rollup",
+    "validation_split": true,
+    "reviewed_date": "2026-09-18",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Validate this CTL2 Rollup transform. Input port 0 contains shipment_id:string and weight_kg:decimal. Output port 0 contains shipment_id:string and total_weight:decimal. The graph groups rows by shipment_id. Report every definite error and give a final verdict.\n\n```ctl\n//#CTL2\ntype ShipmentAcc {\n    integer count;\n    decimal total_weight;\n}\n\nfunction void initGroup(ShipmentAcc acc) {\n    acc.count = 0;\n    acc.total_weight = 0.0D;\n}\n\nfunction boolean updateGroup(ShipmentAcc acc) {\n    $out.0.total_weight = acc.total_weight;\n    acc.count++;\n    acc.total_weight += $in.0.weight_kg;\n    return true;\n}\n\nfunction boolean finishGroup(ShipmentAcc acc) {\n    return true;\n}\n\nfunction integer transform(ShipmentAcc acc, integer counter) {\n    if (counter > 0) {\n        return SKIP;\n    }\n    $out.0.shipment_id = $in.0.shipment_id;\n    $out.0.total_weight = acc.total_weight;\n    return ALL;\n}\n```"
+      },
+      {
+        "role": "assistant",
+        "content": "ISSUES:\n  [ERROR] `type ShipmentAcc { ... }` - this is not a CTL2 accumulator declaration. The Rollup group accumulator must be configured as a metadata record named `ShipmentAcc`.\n  [ERROR] `function integer updateTransform(integer counter, ShipmentAcc acc)` - required Rollup lifecycle callback is missing.\n  [ERROR] `function integer transform(ShipmentAcc acc, integer counter)` - Rollup parameters are in the wrong order; `counter` must be the first parameter.\n  [ERROR] `$out.0.total_weight` in `updateGroup` - output fields may be written only in Rollup output functions (`updateTransform` and `transform`), not during group accumulation.\n\nSUGGESTIONS:\n\n  - Configure the `ShipmentAcc` metadata record as the component accumulator instead of declaring it in CTL.\n  - Add `updateTransform(integer counter, ShipmentAcc acc)` and return `SKIP` when no per-record output is needed.\n  - Change the transform signature to `function integer transform(integer counter, ShipmentAcc acc)`.\n  - Move the `$out.0.total_weight` assignment from `updateGroup` to an output function.\n\nVERDICT: FAIL",
+        "reasoning_content": "Rollup accumulator state must come from configured ShipmentAcc metadata, so the inline type block is not valid CTL2. The five-function contract is missing updateTransform, and transform requires counter before the accumulator. updateGroup also writes $out before an output phase. Its true return is not a substitute for the missing callback. Four compile/component-contract errors, FAIL."
+      }
+    ]
+  },
+  {
+    "id": "validation_verdict_holdout_5_002",
+    "source_file": "CTL_LoRA_with_metadata_set_2.json",
+    "source_id": "withmeta21_0",
+    "topic": "Denormalizer state reset and transform input contract",
+    "component": "Denormalizer",
+    "validation_split": true,
+    "reviewed_date": "2026-09-18",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Validate this CTL2 Denormalizer transform. Input port 0 is grouped by account_id:string and also contains amount:decimal. Output port 0 contains account_id:string and group_total:decimal. Find all definite errors and provide a verdict.\n\n```ctl\n//#CTL2\ndecimal running_total = 0.0D;\n\nfunction integer append() {\n    running_total += $in.0.amount;\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.account_id = $in.0.account_id;\n    $out.0.group_total = running_total;\n    return OK;\n}\n```"
+      },
+      {
+        "role": "assistant",
+        "content": "ISSUES:\n  [ERROR] `$in.0.account_id` in `transform()` - Denormalizer `transform()` cannot read the input record after the group has been accumulated.\n  [ERROR] `running_total` - module-level group state is never reset, so a later group inherits the prior group total.\n\nSUGGESTIONS:\n\n  - Save `account_id` in module state during `append()` and assign that saved value in `transform()`.\n  - Add a non-empty `clean()` callback that resets `running_total` and the saved account ID.\n\nVERDICT: FAIL",
+        "reasoning_content": "Denormalizer input is available while append accumulates, not when transform emits the completed group, so account_id must be captured earlier. running_total is module-level and no clean resets it, causing the next group to inherit the prior sum. Both violate the component contract rather than merely style. Two ERRORs, FAIL."
+      }
+    ]
+  },
+  {
+    "id": "validation_verdict_holdout_5_005",
+    "source_file": "CTL_LoRA_dates_processing.json",
+    "source_id": "datespro57_0",
+    "topic": "Nullable date comparison severity calibration",
+    "component": "Reformat",
+    "validation_split": true,
+    "reviewed_date": "2026-09-18",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language. Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed. Prefer correct, practical, minimal solutions."
+      },
+      {
+        "role": "user",
+        "content": "Validate this CTL2 Reformat transform. Input port 0 contains scheduled_at:date, which may be null. Output port 0 contains is_overdue:boolean. There is no stated requirement for how null scheduled dates must be treated. Report issues with their severity and give a final verdict.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.is_overdue = $in.0.scheduled_at < today();\n    return ALL;\n}\n```"
+      },
+      {
+        "role": "assistant",
+        "content": "ISSUES:\n  [WARNING] `$in.0.scheduled_at < today()` - this ordered comparison reads a nullable date and can fail at runtime when `scheduled_at` is null.\n\nSUGGESTIONS:\n\n  - Define the business behavior for null scheduled dates, then guard with `isnull($in.0.scheduled_at)` before comparing dates.\n\nVERDICT: PASS",
+        "reasoning_content": "scheduled_at is nullable and < is an ordered comparison, so a null row can raise at runtime. The function still compiles, return ALL is valid, and no null-date business outcome was specified; treating the risk as a definite contract failure would overstate it. One WARNING, verdict remains PASS."
+      }
+    ]
+  }
+]
