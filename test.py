@@ -361,6 +361,26 @@ def resolve_training_enable_thinking(cfg: dict, config_dir: Path) -> Optional[bo
     except Exception:
         return None
 
+    # The model under test comes out of the LAST training phase, so that phase's
+    # setting is the one that matters — not the common-section default.  A config
+    # may legitimately set enable_thinking: false at the top and override it per
+    # phase (e.g. non-thinking SFT, non-thinking DPO, then a thinking
+    # post_dpo_sft round), in which case reading only the top level reports the
+    # opposite of what produced the weights.
+    #
+    # Phase order matches train.py: sft stages -> dpo -> post_dpo_sft.
+    phases: list = []
+    for key in ("sft", "dpo", "post_dpo_sft"):
+        section = tc.get(key)
+        if isinstance(section, list):
+            phases.extend(s for s in section if isinstance(s, dict))
+        elif isinstance(section, dict) and section:
+            phases.append(section)
+
+    for phase in reversed(phases):
+        if "enable_thinking" in phase:
+            return bool(phase["enable_thinking"])
+
     value = tc.get("enable_thinking")
     if value is None:
         return None
@@ -448,8 +468,19 @@ def _patch_tokenizer_nothink(tok):
     return tok
 
 
-def _try_apply_llamafactory_template(tok, template_name: str, enable_thinking: bool) -> bool:
-    """Apply a LlamaFactory template by name to tokenizer.chat_template."""
+def _try_apply_llamafactory_template(
+    tok,
+    template_name: str,
+    enable_thinking: bool,
+    reasoning_effort: Optional[str] = None,
+) -> bool:
+    """Apply a LlamaFactory template by name to tokenizer.chat_template.
+
+    data_args must carry every field get_template_and_fix_tokenizer() reads, or
+    the lookup raises AttributeError and the caller silently falls back to the
+    tokenizer's built-in template.  Qwen38ReasoningTemplate reads
+    reasoning_effort, so omitting it defeats the whole call.
+    """
     llamafactory_dir = Path(os.environ.get("LLAMAFACTORY_DIR", "~/LlamaFactory")).expanduser().resolve()
     src_dir = llamafactory_dir / "src"
 
@@ -470,7 +501,14 @@ def _try_apply_llamafactory_template(tok, template_name: str, enable_thinking: b
             tool_format=None,
             default_system=None,
             enable_thinking=enable_thinking,
-            preserve_thinking=False,
+            # The template's own registered default applies when this is None —
+            # qwen3_8 registers preserve_thinking=True.  Forcing False here
+            # would silently override it.
+            preserve_thinking=None,
+            # Only read for reasoning templates, but harmless to always supply.
+            # Must be one of xhigh | medium | low; anything else raises inside
+            # the template and we fall back with a warning.
+            reasoning_effort=reasoning_effort or "xhigh",
         )
         get_template_and_fix_tokenizer(tok, data_args)
         return True
@@ -524,7 +562,8 @@ class LocalMUTClient:
             applied = True
         elif template_source == "llamafactory":
             if template_name and _try_apply_llamafactory_template(
-                self._tok, str(template_name), enable_thinking=self._enable_thinking
+                self._tok, str(template_name), enable_thinking=self._enable_thinking,
+                reasoning_effort=self._reasoning_effort,
             ):
                 _print(f"  [dim]Chat template: LlamaFactory template '{template_name}'[/dim]")
                 applied = True
@@ -536,7 +575,8 @@ class LocalMUTClient:
         elif template_source == "auto":
             # If a template name is configured, prefer applying it explicitly.
             if template_name and _try_apply_llamafactory_template(
-                self._tok, str(template_name), enable_thinking=self._enable_thinking
+                self._tok, str(template_name), enable_thinking=self._enable_thinking,
+                reasoning_effort=self._reasoning_effort,
             ):
                 _print(f"  [dim]Chat template: LlamaFactory template '{template_name}'[/dim]")
                 applied = True
@@ -1336,7 +1376,20 @@ def run_single_test(
 
     # Resolve prompts once so we can store the exact values sent to MUT
     test_type = test.get("type", "generate")
-    mut_system_prompt, _temperature, _top_p , _top_k, _repetition_penalty= _resolve_mut_overrides(mut_cfg, test_type, test)
+    mut_system_prompt, _temperature, _top_p, _top_k, _repetition_penalty = _resolve_mut_overrides(
+        mut_cfg, test_type, test
+    )
+    # Recorded per test so a results file is self-describing.  Config drift between
+    # eval configs (top_p 0.80 + presence/repetition penalties in some, 0.95 and none
+    # in others) went unnoticed across six measurements because nothing in the output
+    # captured what was actually sampled with.
+    mut_sampling = {
+        "temperature":        _temperature,
+        "top_p":              _top_p,
+        "top_k":              _top_k,
+        "repetition_penalty": _repetition_penalty,
+        "presence_penalty":   (mut_cfg.get(test_type) or {}).get("presence_penalty"),
+    }
     mut_user_message = _build_mut_user_message(test)
 
     # Debug: print full messages to console
@@ -1423,6 +1476,7 @@ def run_single_test(
         "test_component":   test.get("component") or "",
         "run":              run_index,
         "mut_system_prompt": mut_system_prompt,
+        "mut_sampling":     mut_sampling,
         "mut_user_message": mut_user_message,
         "mut_response":     mut_response,
         "mut_thinking":     mut_thinking,
@@ -1567,11 +1621,26 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug
 
     all_tids = {r["test_id"] for r in all_results}
 
+    # Run-level MUT description, so two results files can be compared without
+    # having to know which eval config produced each.
+    _samp = {}
+    for r in all_results:
+        sm = r.get("mut_sampling")
+        if sm and r.get("test_type"):
+            _samp[r["test_type"]] = sm
+
     return {
         "model":          model_name,
         "base_model":     base_model,
         "run_name":       run_name,
         "timestamp":      timestamp,
+        "mut_config": {
+            "model_path":       mut_cfg.get("model_path"),
+            "enable_thinking":  mut_cfg.get("enable_thinking"),
+            "reasoning_effort": mut_cfg.get("reasoning_effort"),
+            "dtype":            mut_cfg.get("dtype") or mut_cfg.get("torch_dtype"),
+            "sampling":         _samp,
+        },
         "suite_score":    round(_mean(all_tids), 4),
         "generate_score": round(_mean(generate_ids), 4),
         "validate_score": round(_mean(validate_ids), 4),

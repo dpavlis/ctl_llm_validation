@@ -1,5 +1,11 @@
 # =============================================================================
-# CTL2 model evaluation config
+# CTL2 model evaluation config -- post-SFT dose test, checkpoint-25
+#
+# Phase 1 (2026-09-19-21-31-07 sft/checkpoint-900) and DPO
+# (2026-09-20-10-31-13 dpo/checkpoint-425) held FIXED; only the post-SFT
+# duration varies. checkpoint-25 = 0.66 of 3 epochs at 12 samples/step.
+# Endpoint checkpoint-100 (2.6 epochs) already measured: suite 0.8374.
+#   ~/venv/bin/python test.py configs/eval_qwen38_p3_25.yaml --runs 3
 #
 # Usage:
 #   cd ~/llama_train
@@ -34,7 +40,7 @@ mut:
   # Leave null (or omit) to auto-discover from training_config paths.
   # Set explicitly to test a specific export, e.g. after --skip-export:
   #   model_path: saves/qwen3-clover/2026-05-10-12-00-00_export
-  model_path: null
+  model_path: /home/pavlisd/exports/qwen38_p3_25
 
   # Data type for inference: float16 | bfloat16 | float32
   # Use bfloat16 for Ampere+ (A100, RTX 30xx+), float16 for older GPUs
@@ -73,10 +79,10 @@ mut:
     # NOT the cause: 19 byte-identical MUT responses scored identically, 19/19.
     # Re-enable only for a production-realism run, never for an A/B comparison.
     #temperature: 0.7
-    top_p: 0.95
+    top_p: 0.80
     top_k: 20
-    #presence_penalty: 1.5
-    #repetition_penalty: 1.05
+    presence_penalty: 1.5
+    repetition_penalty: 1.05
     # top_p: 1.0
     system_prompt: |
       You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
@@ -84,13 +90,13 @@ mut:
       Prefer correct, practical, minimal solutions.
 
   validate:
-    # Suite default temperature: 0.05 -- per-test values now apply (was 0.4).
+    # Suite default temperature: 0.05 -- per-test values now apply (was 0.7).
     #official instruct (or non-thinking) mode: temperature=0.7, top_p=0.80, top_k=20, min_p=0.0, presence_penalty=1.5, repetition_penalty=1.0
-    #temperature: 0.4
-    top_p: 0.90
+    #temperature: 0.7
+    top_p: 0.80
     top_k: 20
-    #presence_penalty: 1.5
-    #repetition_penalty: 1.05
+    presence_penalty: 1.5
+    repetition_penalty: 1.05
     #top_p: 0.75
     system_prompt: |
       You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.

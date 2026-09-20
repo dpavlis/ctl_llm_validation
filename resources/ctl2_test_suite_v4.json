@@ -2457,8 +2457,8 @@
           },
           {
             "id": "T37.F2",
-            "check": "Must not omit the counter-based SKIP guard from EITHER updateTransform() or transform().",
-            "rationale": "Both are output loops terminated only by SKIP. An unguarded loop never ends — this hangs the graph rather than producing wrong data, which is why it outranks every other defect here.",
+            "check": "updateTransform() and transform() must each have a reachable terminating path — a counter-based SKIP guard, or an unconditional SKIP.",
+            "rationale": "Both are output loops terminated only by SKIP. A loop with no reachable SKIP never ends and hangs the graph, which is why it outranks every other defect here. Note a bare `return SKIP;` has no counter guard but DOES terminate — it may be wrong for other reasons (it emits nothing), but it is not this violation.",
             "critical": true
           },
           {

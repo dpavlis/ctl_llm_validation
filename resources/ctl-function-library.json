@@ -21120,6 +21120,243 @@
         "issues": []
       }
     },
+        "formatMessageWithLocale": {
+      "name": "formatMessageWithLocale",
+      "category": "string",
+      "summary": "The formatMessageWithLocale(string locale, string template, variant param1, variant ..., variant paramN) function returns a formatted message using the specified locale. Parameters referenced in the input template are replaced with their corresponding values. The locale uses CloverDX dot-separated notation, for example en.US, and controls locale-sensitive MessageFormat rendering.",
+      "description": "The formatMessageWithLocale(string locale, string template, variant param1, variant ..., variant paramN) function returns a formatted message using the specified locale. Parameters referenced in the input template are replaced with their corresponding values. The locale uses CloverDX dot-separated notation, for example en.US, and controls locale-sensitive MessageFormat rendering.",
+      "availability": {
+        "status": "supported",
+        "since": null,
+        "deprecated_since": null,
+        "replacement": null
+      },
+      "overloads": [
+        {
+          "id": "formatMessageWithLocale(string,string,variant,variant...)",
+          "canonical_signature": "string formatMessageWithLocale(string locale, string template, variant param1, variant argN...)",
+          "type_parameters": [],
+          "parameters": [
+            {
+              "position": 0,
+              "name": "locale",
+              "type": {
+                "kind": "named",
+                "name": "string",
+                "display": "string"
+              },
+              "optional": false,
+              "variadic": false,
+              "default": {
+                "kind": "none",
+                "description": "No default; the parameter is required."
+              },
+              "description": "Locale in CloverDX dot-separated notation, for example en.US.",
+              "constraints": [],
+              "null_behavior": {
+                "kind": "undocumented",
+                "description": "The available documentation does not establish NULL behavior for this parameter.",
+                "evidence": []
+              },
+              "evidence": []
+            },
+            {
+              "position": 1,
+              "name": "template",
+              "type": {
+                "kind": "named",
+                "name": "string",
+                "display": "string"
+              },
+              "optional": false,
+              "variadic": false,
+              "default": {
+                "kind": "none",
+                "description": "No default; the parameter is required."
+              },
+              "description": "Message template whose placeholders are replaced with the supplied values.",
+              "constraints": [],
+              "null_behavior": {
+                "kind": "returns_null",
+                "description": "formatMessage template NULL -> NULL.",
+                "evidence": [
+                  {
+                    "source_id": "ctl2-null-behavior",
+                    "section": "NULL behavior",
+                    "basis": "normalized_summary"
+                  }
+                ]
+              },
+              "evidence": []
+            },
+            {
+              "position": 2,
+              "name": "param1",
+              "type": {
+                "kind": "named",
+                "name": "variant",
+                "display": "variant"
+              },
+              "optional": false,
+              "variadic": false,
+              "default": {
+                "kind": "none",
+                "description": "No default; the parameter is required."
+              },
+              "description": "First value referenced by the message template.",
+              "constraints": [],
+              "null_behavior": {
+                "kind": "undocumented",
+                "description": "The available documentation does not establish NULL behavior for this parameter.",
+                "evidence": []
+              },
+              "evidence": []
+            },
+            {
+              "position": 3,
+              "name": "argN",
+              "type": {
+                "kind": "named",
+                "name": "variant",
+                "display": "variant"
+              },
+              "optional": false,
+              "variadic": true,
+              "default": {
+                "kind": "none",
+                "description": "No default; the parameter is required."
+              },
+              "description": "Additional value referenced by the message template.",
+              "constraints": [],
+              "null_behavior": {
+                "kind": "undocumented",
+                "description": "The available documentation does not establish NULL behavior for this parameter.",
+                "evidence": []
+              },
+              "evidence": []
+            }
+          ],
+          "arity": {
+            "minimum": 3,
+            "maximum": "unbounded"
+          },
+          "returns": {
+            "type": {
+              "kind": "named",
+              "name": "string",
+              "display": "string"
+            },
+            "description": "Formatted message using the specified locale.",
+            "nullable": {
+              "kind": "conditional",
+              "description": "The normalized NULL-behavior source documents NULL results for specific arguments.",
+              "cases": [
+                {
+                  "condition": "template == NULL",
+                  "behavior": {
+                    "kind": "returns_null",
+                    "description": "formatMessage template NULL -> NULL."
+                  },
+                  "evidence": [
+                    {
+                      "source_id": "ctl2-null-behavior",
+                      "section": "NULL behavior",
+                      "basis": "normalized_summary"
+                    }
+                  ]
+                }
+              ]
+            },
+            "evidence": [
+              {
+                "source_id": "ctl2-string-functions",
+                "section": "formatMessage",
+                "basis": "documentation"
+              }
+            ]
+          },
+          "description": "The formatMessageWithLocale(string locale, string template, variant param1, variant ..., variant paramN) function returns a formatted message using the specified locale. Parameters referenced in the input template are replaced with their corresponding values. The locale uses CloverDX dot-separated notation, for example en.US, and controls locale-sensitive MessageFormat rendering.",
+          "evidence": [
+            {
+              "source_id": "ctl2-string-functions",
+              "section": "formatMessage",
+              "basis": "documentation"
+            }
+          ],
+          "null_interactions": [],
+          "errors": [],
+          "side_effects": [],
+          "examples": [],
+          "compatibility": [],
+          "data_quality": {
+            "status": "partial",
+            "issues": [
+              "NULL behavior for parameter locale is undocumented.",
+              "NULL behavior for parameter param1 is undocumented.",
+              "NULL behavior for parameter argN is undocumented."
+            ]
+          }
+        }
+      ],
+      "compatibility": [
+        {
+          "applies_to": "documented version",
+          "description": "The formatMessage(string,variant) and formatMessageWithLocale(string,string,variant) functions",
+          "evidence": [
+            {
+              "source_id": "ctl2-string-functions",
+              "section": "formatMessage",
+              "basis": "documentation"
+            }
+          ]
+        },
+        {
+          "applies_to": "documented version",
+          "description": "are available since CloverDX 6.4.0.",
+          "evidence": [
+            {
+              "source_id": "ctl2-string-functions",
+              "section": "formatMessage",
+              "basis": "documentation"
+            }
+          ]
+        },
+        {
+          "applies_to": "documented version",
+          "description": "ifdef::false[]",
+          "evidence": [
+            {
+              "source_id": "ctl2-string-functions",
+              "section": "formatMessage",
+              "basis": "documentation"
+            }
+          ]
+        },
+        {
+          "applies_to": "documented version",
+          "description": ".Example 1",
+          "evidence": [
+            {
+              "source_id": "ctl2-string-functions",
+              "section": "formatMessage",
+              "basis": "documentation"
+            }
+          ]
+        }
+      ],
+      "see_also": [],
+      "evidence": [
+        {
+          "source_id": "ctl2-string-functions",
+          "section": "formatMessage",
+          "basis": "documentation"
+        }
+      ],
+      "data_quality": {
+        "status": "partial",
+        "issues": []
+      }
+    },
     "get": {
       "name": "get",
       "category": "lookup_table",

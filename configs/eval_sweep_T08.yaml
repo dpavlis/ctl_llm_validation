@@ -1,5 +1,17 @@
 # =============================================================================
-# CTL2 model evaluation config
+# CTL2 model evaluation config -- SAMPLING SWEEP, T=0.8
+#
+# qwen38_p1fix probed at Qwen3.8 thinking-mode parameters:
+#   T=0.8, top_p=0.95, top_k=20, NO presence/repetition penalty.
+# Vendor range for thinking mode is T=[0.4,0.6,0.8,1.0], top_p=[0.90,0.95].
+# Penalties removed: code legitimately repeats tokens ($out.0. on every line),
+# so repetition/presence penalties bias against valid CTL2.
+#
+# The run where phase 1 first trained on the full 11468-record corpus (both
+# clover_ctl_trainign_data and clover_ctl_think_data). Scored suite 0.8961 at
+# --runs 3 (20260920T064012Z); T37 recovered 0.50 -> 0.87.
+# Trained at 2x effective batch (2 GPUs). Preserved so it stays re-testable:
+#   ~/venv/bin/python test.py configs/eval_qwen38_p1fix.yaml --runs 3
 #
 # Usage:
 #   cd ~/llama_train
@@ -34,7 +46,7 @@ mut:
   # Leave null (or omit) to auto-discover from training_config paths.
   # Set explicitly to test a specific export, e.g. after --skip-export:
   #   model_path: saves/qwen3-clover/2026-05-10-12-00-00_export
-  model_path: null
+  model_path: /home/pavlisd/exports/qwen38_p1fix
 
   # Data type for inference: float16 | bfloat16 | float32
   # Use bfloat16 for Ampere+ (A100, RTX 30xx+), float16 for older GPUs
@@ -72,26 +84,20 @@ mut:
     # worthless and swamped the training effects being measured. The judge was
     # NOT the cause: 19 byte-identical MUT responses scored identically, 19/19.
     # Re-enable only for a production-realism run, never for an A/B comparison.
-    #temperature: 0.7
+    temperature: 0.8
     top_p: 0.95
     top_k: 20
-    #presence_penalty: 1.5
-    #repetition_penalty: 1.05
-    # top_p: 1.0
     system_prompt: |
       You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
       Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
       Prefer correct, practical, minimal solutions.
 
   validate:
-    # Suite default temperature: 0.05 -- per-test values now apply (was 0.4).
+    # Suite default temperature: 0.05 -- per-test values now apply (was 0.7).
     #official instruct (or non-thinking) mode: temperature=0.7, top_p=0.80, top_k=20, min_p=0.0, presence_penalty=1.5, repetition_penalty=1.0
-    #temperature: 0.4
-    top_p: 0.90
+    temperature: 0.8
+    top_p: 0.95
     top_k: 20
-    #presence_penalty: 1.5
-    #repetition_penalty: 1.05
-    #top_p: 0.75
     system_prompt: |
       You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
       Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
