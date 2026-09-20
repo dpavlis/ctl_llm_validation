@@ -102,7 +102,18 @@ dataset_dir: data
 # which is what the fixed convert_think.py now emits.
 # =============================================================================
 sft:
-  - dataset: clover_ctl_trainign_data
+  # BOTH datasets: the reasoning-bearing records must train here too, not only in
+  # phase 3.  Splitting them into their own file removed 437 records from this
+  # phase -- including all 22 CTL_LoRAT_rollup_update_transform examples, 19% of
+  # the corpus's Rollup updateTransform coverage -- demoting them from this round
+  # (2 epochs, lr 5e-5, rank 64) to phase 3's much gentler one. T37 regressed
+  # accordingly. Comma-separated names concatenate (mix_strategy defaults to
+  # concat), giving the full 11468 records.
+  #
+  # Their <think> blocks cost nothing here: enable_thinking: false makes
+  # Template.remove_thought() strip each block into the PROMPT, where it carries
+  # no loss, so the answer trains exactly as it would without reasoning.
+  - dataset: clover_ctl_trainign_data,clover_ctl_think_data
     enable_thinking: false        # <think> blocks stripped into the prompt, no loss
     eval_dataset: clover_ctl_eval_data
     cutoff_len:  3200
