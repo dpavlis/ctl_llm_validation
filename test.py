@@ -714,6 +714,15 @@ class LocalMUTClient:
                 eos_token_id=stop_ids if stop_ids else None,
                 pad_token_id=self._tok.eos_token_id,
             )
+        # Why generation stopped, so an empty answer can be diagnosed correctly.
+        # An unclosed <think> block has two very different causes: the token
+        # budget ran out mid-thought (a config problem), or the model emitted
+        # EOS without ever writing </think> (a model problem -- it answered
+        # inside the thinking channel and ended its turn).  Telling the user to
+        # raise max_new_tokens when the model stopped after 30 tokens sends the
+        # investigation in exactly the wrong direction.
+        self.last_new_tokens = int(output.shape[1] - input_ids.shape[1])
+        self.last_hit_cap = self.last_new_tokens >= int(self._cfg.get("max_new_tokens", 2048))
         return self._tok.decode(output[0][input_ids.shape[1]:], skip_special_tokens=True)
 
     def generate_stream(self, system_prompt: str, user_message: str, temperature: float, top_p: float = 1.0, top_k: int = 50, repetition_penalty: float = 1.0):
@@ -769,10 +778,17 @@ class LocalMUTClient:
         t = Thread(target=_worker, daemon=True)
         t.start()
 
+        n_tok = 0
         for text in streamer:
+            n_tok += 1
             yield text
 
         t.join()
+        # Approximate: TextIteratorStreamer yields decoded chunks, normally one
+        # per generated token.  Good enough to tell "stopped at the cap" from
+        # "stopped early", which is all the diagnostic needs.
+        self.last_new_tokens = n_tok
+        self.last_hit_cap = n_tok >= int(self._cfg.get("max_new_tokens", 2048))
         if exc:
             raise exc[0]
 
@@ -1416,17 +1432,38 @@ def run_single_test(
     if mut_thinking:
         _print(f"      [dim]({len(mut_thinking)} chars of thinking dropped before judging)[/dim]")
     if mut_cfg.get("enable_thinking") and not mut_response:
-        # No `</think>` in the completion: the whole max_new_tokens budget went
-        # on reasoning. Judging an empty answer would score it 0 and read as a
-        # model failure rather than a budget one.
-        _print("    [red]MUT ERROR:[/red] ran out of tokens mid-thought (no </think>)")
-        r = _error_result(
-            test, run_index,
-            f"MUT exhausted max_new_tokens={mut_cfg.get('max_new_tokens')} mid-thought "
-            f"(no </think> in the completion) — raise max_new_tokens or lower reasoning_effort",
-            time.monotonic() - t_global,
-        )
+        # No `</think>` in the completion, so there is no answer to judge. Two
+        # very different causes, and they must not share one message:
+        #
+        #   hit the cap  — reasoning ate the whole budget. A config problem;
+        #                  raise max_new_tokens or lower reasoning_effort.
+        #   stopped early — the model emitted EOS without ever closing <think>.
+        #                  A model problem: it wrote its answer inside the
+        #                  thinking channel and ended the turn. Typically means
+        #                  the thinking format was never trained (no thinking
+        #                  SFT phase) or was trained away by a long non-thinking
+        #                  phase. Raising max_new_tokens cannot help.
+        n_tok = getattr(mut_client, "last_new_tokens", None)
+        hit_cap = getattr(mut_client, "last_hit_cap", None)
+        if hit_cap is False:
+            _print(f"    [red]MUT ERROR:[/red] ended turn inside <think> after "
+                   f"{n_tok} tokens (no </think>, answer left in the thinking channel)")
+            reason = (
+                f"MUT emitted EOS after {n_tok} tokens without closing <think> — the answer "
+                f"was written inside the thinking channel, so there is no response to judge. "
+                f"This is a thinking-format failure, not a token-budget one; "
+                f"max_new_tokens={mut_cfg.get('max_new_tokens')} was not reached."
+            )
+        else:
+            _print("    [red]MUT ERROR:[/red] ran out of tokens mid-thought (no </think>)")
+            reason = (
+                f"MUT exhausted max_new_tokens={mut_cfg.get('max_new_tokens')} mid-thought "
+                f"(no </think> in the completion) — raise max_new_tokens or lower reasoning_effort"
+            )
+        r = _error_result(test, run_index, reason, time.monotonic() - t_global)
         r["mut_thinking"] = mut_thinking
+        r["mut_new_tokens"] = n_tok
+        r["mut_hit_token_cap"] = hit_cap
         return r
     _print(f"      {len(mut_response)} chars in {mut_duration:.1f}s")
 
