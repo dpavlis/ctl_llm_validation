@@ -1,0 +1,149 @@
+# =============================================================================
+# CTL2 model evaluation config -- qwen38_fix1 at phase-3 checkpoint-50
+#
+# Phase-3 DOSE test. qwen38_fix1 shipped checkpoint-175 of 189, nearly the full
+# 3 epochs, and answers in a median 58 words against qwen38_0917's 132. T5 seeds
+# six bugs; fix1 reported one and stopped, scoring 0.17 in all three runs.
+#
+# Response length falls as the phase-3 dose rises:
+#   sftdpo  no phase 3      138 words   suite 0.8963
+#   p3_50   1.3 epochs       84 words   suite 0.8980
+#   fix1    2.8 epochs       58 words   suite 0.9089
+# So a lower dose should restore length. load_best_model_at_end chose 175 on
+# eval_loss, which does not track suite score (findings doc 2.1).
+#
+# Same phase-1 (checkpoint-1750) and DPO (checkpoint-450) adapters as
+# qwen38_fix1. ONLY the phase-3 checkpoint differs.
+#
+# Read the result on WRONG findings and triggered false-positive traps, not the
+# suite score: a missed finding is preferred over a misclassified one.
+#
+# Usage:
+#   ~/venv/bin/python test.py configs/eval_T04_fix1_ck50.yaml --runs 3
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Link to the training config (enables auto-discovery + shared run log)
+# ---------------------------------------------------------------------------
+# Point this at the same YAML you pass to train.py.
+training_config: configs/qwen38.yaml
+
+# ---------------------------------------------------------------------------
+# Model under test (MUT)
+# ---------------------------------------------------------------------------
+mut:
+  # "local"  — load exported safetensors directly via transformers (GPU required)
+  # "api"    — call an OpenAI-compatible endpoint (Ollama, OpenAI, vLLM, etc.)
+  mode: local
+
+  # Path to the exported model directory produced by train.py.
+  # Leave null (or omit) to auto-discover from training_config paths.
+  # Set explicitly to test a specific export, e.g. after --skip-export:
+  #   model_path: saves/qwen3-clover/2026-05-10-12-00-00_export
+  model_path: /home/pavlisd/exports/qwen38_fix1_p3ck50
+
+  # Data type for inference: float16 | bfloat16 | float32
+  # Use bfloat16 for Ampere+ (A100, RTX 30xx+), float16 for older GPUs
+  dtype: bfloat16
+
+  # HuggingFace device map: "auto" distributes across all available GPUs/CPU
+  device_map: auto
+
+  # Whether to allow the model to produce chain-of-thought <think> tokens.
+  # Set to false for models trained with a nothink template (qwen3_nothink etc.)
+  # — the tokenizer's built-in thinking scaffold is disabled so the model sees
+  # exactly the same prompt format it was trained on.
+  enable_thinking: true
+
+  # Handed to the chat template as `reasoning_effort` (thinking mode only).
+  # Qwen3.8 accepts low | medium | xhigh; null leaves the template's default
+  # (xhigh). A value the template does not accept fails at startup; a template
+  # that never reads it warns instead of failing quietly.
+  reasoning_effort: medium
+
+  # Maximum new tokens per response. Shared budget: thinking + answer. Raised
+  # from 8192 because reasoning now consumes part of it — a response with no
+  # </think> inside this budget is reported as an ERROR result, not scored 0.
+  max_new_tokens: 16384
+
+  # ---------------------------------------------------------------------------
+  # Per-type inference overrides (generate / validate).
+  # Each key is optional — omit or comment out to use the test suite defaults.
+  # ---------------------------------------------------------------------------
+  generate:
+     #nstruct (or non-thinking) mode: temperature=0.7, top_p=0.80, top_k=20, min_p=0.0, presence_penalty=1.5, repetition_penalty=1.0
+    # Suite default temperature: 0.1 -- per-test values now apply.
+    # Was 0.7. Sampling at 7x the suite temperature was the dominant source of
+    # run-to-run variance (individual tests sd 0.2-0.4), which made n=1 evaluation
+    # worthless and swamped the training effects being measured. The judge was
+    # NOT the cause: 19 byte-identical MUT responses scored identically, 19/19.
+    # Re-enable only for a production-realism run, never for an A/B comparison.
+    temperature: 0.4
+    top_p: 0.95
+    top_k: 20
+    system_prompt: |
+      You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+      Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+      Prefer correct, practical, minimal solutions.
+
+  validate:
+    # Suite default temperature: 0.05 -- per-test values now apply (was 0.7).
+    #official instruct (or non-thinking) mode: temperature=0.7, top_p=0.80, top_k=20, min_p=0.0, presence_penalty=1.5, repetition_penalty=1.0
+    temperature: 0.4
+    top_p: 0.95
+    top_k: 20
+    system_prompt: |
+      You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+      Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+      Prefer correct, practical, minimal solutions.      
+  # --- api mode (switch mode: api and configure below) ---
+  # base_url: "http://localhost:11434/v1"   # Ollama default
+  # model: "qwen3-clover-merged"            # model name as registered in Ollama
+  # api_key: "ollama"                       # any non-empty string for Ollama
+
+# ---------------------------------------------------------------------------
+# Judge LLM
+# ---------------------------------------------------------------------------
+judge:
+  # "anthropic" — Anthropic SDK, recommended: claude-opus-4 or claude-sonnet-4
+  # "openai"    — OpenAI SDK (also works for any OpenAI-compatible self-hosted judge)
+  #provider: anthropic
+  #model: claude-opus-4-20250514
+
+  # API key — supports ${ENV_VAR} expansion
+  #api_key: ${ANTHROPIC_API_KEY}
+
+  # Uncomment to use OpenAI as judge:
+  provider: openai
+  model: gpt-5.6-terra #gpt-5.4 #Qwen3-Coder-Next
+  reasoning_effort: medium
+  api_key: ${OPENAI_API_KEY}
+  # Leave temperature unset for terra-tier models that only support default.
+  # temperature: 1.0
+  # OpenAI reasoning control (alias: effort).
+  # reasoning_effort: medium
+ 
+    #base_url: "http://localhost:3000/v1"
+
+  # Optional base_url override for self-hosted OpenAI-compatible judge endpoint:
+  # base_url: "http://localhost:11434/v1"
+
+# ---------------------------------------------------------------------------
+# Execution settings
+# ---------------------------------------------------------------------------
+
+# Repeat each test N times.  Use 1 for fast evaluation, 3 for statistics.
+runs_per_test: 1
+
+# Seconds to wait per MUT response before timeout (retried once).
+timeout_seconds: 240
+
+# Where to write results_*.json and summary_*.md.
+output_dir: ./results
+
+# Test subset filter.  null = run all 8 tests.
+# Can also be specified on the command line: --tests T4,T5,T7
+test_ids: null
+
+# Explicit path to the test suite JSON — auto-discovered from resources/ if omitted.
+suite_file: /home/pavlisd/llama_train/resources/ctl2_test_suite_v4.json
