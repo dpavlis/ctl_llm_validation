@@ -102,19 +102,25 @@ dataset_dir: data
 # which is what the fixed convert_think.py now emits.
 # =============================================================================
 sft:
-  # BOTH datasets: the reasoning-bearing records must train here too, not only in
-  # phase 3.  Splitting them into their own file removed 437 records from this
-  # phase -- including all 22 CTL_LoRAT_rollup_update_transform examples, 19% of
-  # the corpus's Rollup updateTransform coverage -- demoting them from this round
-  # (2 epochs, lr 5e-5, rank 64) to phase 3's much gentler one. T37 regressed
-  # accordingly. Comma-separated names concatenate (mix_strategy defaults to
-  # concat), giving the full 11468 records.
+  # ONE dataset, not the old `clover_ctl_trainign_data,clover_ctl_think_data`
+  # pair.  As of the 2026-09-21 rebuild, clover_ctl_trainign_data (11543 records)
+  # is self-contained: it holds every prompt in the corpus, reasoning records
+  # included, with their <think> blocks stripped out.  clover_ctl_think_data
+  # (752) is the same reasoning records WITH their traces, for phase 3 only.
   #
-  # Their <think> blocks cost nothing here: enable_thinking: false makes
-  # Template.remove_thought() strip each block into the PROMPT, where it carries
-  # no loss, so the answer trains exactly as it would without reasoning.
-  - dataset: clover_ctl_trainign_data,clover_ctl_think_data
-    enable_thinking: false        # <think> blocks stripped into the prompt, no loss
+  # Naming both here would train those 752 answers twice in this phase.  Naming
+  # only the think file -- or omitting it, as an earlier revision did -- drops
+  # 437 records from this phase, including all 22 rollup_update_transform
+  # examples (19% of the corpus's Rollup updateTransform coverage), demoting
+  # them from 2 epochs at lr 5e-5 / rank 64 to phase 3's much gentler round.
+  # T37 regressed accordingly.  Verify with:
+  #   every prompt in clover_ctl_think_data must also appear in this dataset.
+  #
+  # enable_thinking: false is kept even though this file now has no <think>
+  # blocks at all: it is what puts the empty block in the PROMPT rather than the
+  # response, so the answer trains with no reasoning in the loss region.
+  - dataset: clover_ctl_trainign_data
+    enable_thinking: false        # empty <think> block goes in the prompt, no loss
     eval_dataset: clover_ctl_eval_data
     cutoff_len:  3200
     lr_scheduler_type: cosine_with_restarts #cosine_with_min_lr  #linear # #constant_with_warmupa
