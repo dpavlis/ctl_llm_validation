@@ -17,6 +17,7 @@ failure mode (§3.4).
 | model | phase-1 corpus | phase-1 batch | phase 3 | suite | sd | generate | validate | empty answers |
 |---|---|---|---|---|---|---|---|---|
 | **0917 — old corpus** | 11453 | 12 | none | **0.9234** | 0.017 | **0.9858** | **0.8034** | 0/114 |
+| **fix1 — fixed corpus** | 11543 | 12 | 2.8 ep @ 12/step | **0.9089** | 0.024 | 0.9715 | 0.7885 | 0/114 |
 | p3_50 | 11468 | 24 | 1.3 ep @ 12/step | 0.8980 | 0.004 | 0.9850 | 0.7308 | 0/114 |
 | p1fix | 11468 | 24 | 3 ep @ 24/step | 0.8964 | 0.017 | 0.9738 | 0.7474 | 1/114 |
 | sftdpo | 11468 | 24 | none | 0.8963 | 0.013 | 0.9779 | 0.7393 | 2/114 |
@@ -42,7 +43,12 @@ test.py was 0.7860; 0.8847 is its quality net of the format failure. See §3.4.
 
 ---
 
-## 2. The corpus change made the model worse
+## 2. The corpus change made the model worse — since fixed
+
+> **Resolved 2026-09-21 (§3.5).** The cause was 115 prompts carrying two
+> different answers, and `qwen38_fix1` closed the gap to statistical noise
+> (t = −0.86 against 0917). This section is kept because the diagnosis path
+> matters: three wrong explanations were ruled out before the right one.
 
 At equal sampling, old corpus → new corpus (both SFT+DPO, no phase 3):
 
@@ -182,6 +188,59 @@ the result as `mut_new_tokens` / `mut_hit_token_cap`.
 
 ---
 
+---
+
+### 3.5 The corpus fixes worked; phase-3 dose is now the binding constraint
+
+`qwen38_fix1` (2026-09-21) applied everything at once: the deduplicated
+11543-record phase-1 corpus, the 752-record reasoning set, all three phases, and
+0917's effective batch of 12 so the corpus was the only variable left.
+
+| | suite | sem | generate | validate | empty |
+|---|---|---|---|---|---|
+| 0917 (old corpus) | 0.9234 | 0.0097 | 0.9858 | 0.8034 | 0 |
+| **fix1** | **0.9089** | 0.0137 | 0.9715 | 0.7885 | **0** |
+| sftdpo (broken corpus) | 0.8963 | 0.0072 | 0.9779 | 0.7393 | 2 |
+
+**fix1 is no longer distinguishable from 0917**: difference −0.0145 against a
+standard error of 0.0168, t = −0.86. The −0.027 corpus gap in §2 is gone, and
+the model built on the new corpus now matches the one built before this project
+started. Two things did it, and the per-test evidence separates them cleanly:
+
+- **The duplicate-answer conflict was real.** 115 prompts had been training a
+  wrong answer in phase 1 and the corrected one in phase 3. **T22 went 0.11 →
+  0.75** and T18 0.17 → 0.67, the two tests §2 named as the worst regressions.
+  Validate overall 0.7393 → 0.7885.
+- **Phase 3 eliminated the format failure.** 0 empty answers, against 2 for
+  sftdpo and 14 for b12 (§3.4).
+
+**What is now costing the remaining 0.015 is output length, not correctness.**
+fix1 answers with a median of **58 words** against 0917's 132 — the tersest of
+every model measured. On enumeration tests that is fatal: T5 (six seeded bugs)
+scored 0.17 in all three runs, finding exactly one bug and stopping, where 0917
+found five in a 333-word answer. T24 is the other loss and a different defect —
+the model identifies all three date-pattern issues correctly but marks them
+ERROR where the rubric requires WARNING, a severity-calibration problem worth
+watching given how many round-3 fixes escalated severity.
+
+The corpus is not the cause: its reasoning-derived answers are the same length
+as the rest for validate (41 vs 38 words median) and *longer* for generate (91
+vs 53). Phase 3 is, and the dose is the lever (§3.3):
+
+| | phase-3 dose | response words | suite |
+|---|---|---|---|
+| sftdpo | none | 138 | 0.8963 |
+| p3_50 | 1.3 ep | 84 | 0.8980 |
+| fix1 | 2.8 ep (ckpt-175/189) | 58 | 0.9089 |
+
+fix1 took checkpoint-175 of 189 — nearly the full 3 epochs, which the dose
+experiments found worst at 452 records. `load_best_model_at_end` chose it on
+eval_loss, which §2.1 already showed does not track suite score. Checkpoints
+25–189 are all preserved under `2026-09-21-13-55-11_postsft`, so testing an
+earlier one is an export plus an eval, no retraining.
+
+---
+
 ## 4. Measurement — read this before trusting any older number
 
 ### 4.1 The eval configs were never equivalent
@@ -281,7 +340,18 @@ GPU either double `gradient_accumulation_steps` or cut epochs to ~1.
 
 ## 6. Open questions, in priority order
 
-1. **What in the new corpus costs 0.03?** Still the most valuable question, now narrowed:
+1. **Phase-3 dose — the one lever left.** fix1 matches 0917 statistically but
+   answers in 58 words against 132, and loses T5 (six seeded bugs, found one)
+   to terseness alone. Checkpoints 25–189 are preserved under
+   `2026-09-21-13-55-11_postsft`. Export checkpoint-50 and -100 and evaluate;
+   `load_best_model_at_end` picked 175 on eval_loss, which does not track suite
+   score (§2.1). Cheapest remaining experiment with the most upside.
+2. **Severity calibration.** T24 marks valid-but-suspicious date patterns ERROR
+   where the rubric wants WARNING — the model identifies every issue correctly
+   and still fails on severity. Several round-3 fixes escalated severity, so
+   check whether the corpus now over-teaches ERROR.
+3. ~~**What in the new corpus costs 0.03?**~~ **Answered (§3.5):** 115 prompts
+   training two conflicting answers. Kept here for the trail:
    §2.1 ruled out batch size and DPO convergence, so it is the ~15 changed records
    themselves. `spec/data_fix_spec_round3.md` lists 14 defective records (all in
    `CTL_LoRA_components_contracts.json`, 12 of them the same Denormalizer `$in.0`-in-
