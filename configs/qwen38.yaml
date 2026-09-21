@@ -222,6 +222,12 @@ post_dpo_sft:
 
     logging_steps: 5
     save_steps: 25
+    # 752 reasoning records x 3 epochs / 12 per step = ~188 steps, so the default
+    # save_total_limit of 8 would just barely evict checkpoint-25/50.  Those are
+    # the ones worth keeping: the dose experiments found ~600 samples seen (50
+    # steps at the old 452-record set) better than the full 3 epochs, which
+    # scored worst of the four.  Keep them all and pick with test.py.
+    save_total_limit: 12
     eval_strategy: steps
     eval_steps: 25
     # eval_loss here is ~76% answer tokens / ~24% thinking tokens, so it is still
