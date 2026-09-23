@@ -7,8 +7,8 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-09-21 with the batch-size experiment (§2.1) and the thinking-boundary
-failure mode (§3.4).
+Last updated 2026-09-23 with the phase-3 dose test (§3.6), the targeted-examples retrain
+(§3.7), and the words-per-finding result that explains WRONG findings (§3.8).
 
 ---
 
@@ -17,7 +17,10 @@ failure mode (§3.4).
 | model | phase-1 corpus | phase-1 batch | phase 3 | suite | sd | generate | validate | empty answers |
 |---|---|---|---|---|---|---|---|---|
 | **0917 — old corpus** | 11453 | 12 | none | **0.9234** | 0.017 | **0.9858** | **0.8034** | 0/114 |
+| **fix2 — targeted examples** | 11634 | 12 | 2.1 ep @ 12/step | **0.9189** | 0.022 | 0.9568 | **0.8462** | 0/114 |
 | **fix1 — fixed corpus** | 11543 | 12 | 2.8 ep @ 12/step | **0.9089** | 0.024 | 0.9715 | 0.7885 | 0/114 |
+| fix1 @ p3 ckpt-100 | 11543 | 12 | 1.6 ep @ 12/step | 0.9081 | 0.021 | 0.9661 | 0.7966 | 0/114 |
+| fix1 @ p3 ckpt-50 | 11543 | 12 | 0.8 ep @ 12/step | 0.8803 | 0.044 | 0.9492 | 0.7479 | 3/114 |
 | p3_50 | 11468 | 24 | 1.3 ep @ 12/step | 0.8980 | 0.004 | 0.9850 | 0.7308 | 0/114 |
 | p1fix | 11468 | 24 | 3 ep @ 24/step | 0.8964 | 0.017 | 0.9738 | 0.7474 | 1/114 |
 | sftdpo | 11468 | 24 | none | 0.8963 | 0.013 | 0.9779 | 0.7393 | 2/114 |
@@ -38,8 +41,12 @@ test.py was 0.7860; 0.8847 is its quality net of the format failure. See §3.4.
 > The sftdpo row moved 0.8787 → 0.8963 for the same reason: its 2 empty answers were both
 > complete, correct T30 responses. The earlier 0.8787 under-reported it.
 
-> **The best model is the one trained on the OLD corpus, before any of this work.**
-> 0917 leads by +0.025 over the next model and wins on generate *and* validate.
+> **0917, trained on the OLD corpus before any of this work, led the table for most of
+> this project.** As of `fix2` (§3.7) that is finally over on validate — fix2 scores
+> **0.8462 against 0917's 0.8034**, the first model to beat it there — though 0917 still
+> leads on generate (0.9858 vs 0.9568) and the suite gap is inside the noise floor.
+> Read §3.8 before treating fix2's higher WRONG count as a regression: it is a
+> side effect of answering more completely, not of knowing less.
 
 ---
 
@@ -239,6 +246,133 @@ eval_loss, which §2.1 already showed does not track suite score. Checkpoints
 25–189 are all preserved under `2026-09-21-13-55-11_postsft`, so testing an
 earlier one is an export plus an eval, no retraining.
 
+### 3.6 Backing off the phase-3 dose buys length but not quality — question closed
+
+§3.5 named the phase-3 dose as the one lever left, on the theory that fix1's
+58-word answers were an artifact of taking checkpoint-175 of 189. Checkpoints 50
+and 100 were exported from the same run — identical phase-1 (ckpt-1750) and DPO
+(ckpt-450) adapters, only the phase-3 checkpoint differs — and evaluated at
+`--runs 3`:
+
+| | phase-3 dose | median words | suite | generate | validate | empty |
+|---|---|---|---|---|---|---|
+| ckpt-50 | 0.8 ep | **94** | 0.8803 | 0.9492 | 0.7479 | 3 |
+| ckpt-100 | 1.6 ep | 62 | 0.9081 | 0.9661 | 0.7966 | 0 |
+| fix1 (ckpt-175) | 2.8 ep | 58 | 0.9089 | 0.9715 | 0.7885 | 0 |
+
+**The dose does control length, and length alone does not buy quality.** ckpt-50
+answers in 94 words — most of the way back to 0917's 132 — and is the *worst*
+model of the three on suite, generate and validate at once, and the only one to
+reintroduce the `</think>` format failure (3 empty answers, the §3.4 mode
+returning as the dose drops). ckpt-100 is indistinguishable from fix1 (0.9081 vs
+0.9089) while answering four words longer.
+
+So terseness was a symptom, not the cause. The remaining gap is what the model
+knows how to say, not how long it is permitted to say it — which is what §3.7
+tests directly.
+
+### 3.7 Targeted examples: recall up sharply, generate down slightly
+
+`qwen38_fix2` (2026-09-22) is a full three-phase retrain on the corpus after
+adding ~91 records from `spec/targeted_examples_spec.md` — severity ERROR/WARNING
+calibration, the Rollup vs Denormalizer `$in.0` contrast pairs, and outer-join
+key guards. Both corpora grew: phase 1 11543 → 11634, reasoning 752 → 843. Best
+checkpoints ckpt-1800 / ckpt-450 / ckpt-150.
+
+**Validate is up 0.058 and is the best measured on this suite, 0917 included.**
+Counting validate tests only:
+
+| validate only | fix1 | fix2 |
+|---|---|---|
+| CAUGHT | 74.2% | **81.7%** |
+| MISSED + MISSING | 19.4% | **7.5%** |
+| WRONG | **6.5%** | 10.8% |
+| false-positive traps triggered | 8/63 (13%) | **4/61 (7%)** |
+| median thinking words | 57 | **123** |
+
+Group by group against what the spec targeted:
+
+- **Group B (Rollup/Denormalizer) worked.** T22 trap triggers 3 → 1. The
+  contrast-pair construction — same code shape, two components, opposite
+  verdicts — is the format to reuse.
+- **Group A worked in one direction only.** T24, the flagship over-escalation
+  case, went from 3 WRONG findings to **0**: the factual inversions (`DD` as day
+  of week, lowercase `yyyy` as week-based year) and the ERROR escalation are both
+  gone. But *under*-escalation is untouched — T16 (unreachable code) and T18
+  (null dereference after a lookup miss) still mark a compile/runtime failure
+  WARNING where the rubric requires ERROR, 3 occurrences before and 4 after.
+  The ~25 WARNING-side records landed; the ~25 ERROR-side records did not.
+- **Group C (outer-join key guard) did nothing.** T34 sits at 3 WRONG findings
+  before and after.
+
+Generate slipped 0.9715 → 0.9568, driven by T33 and T37; that is inside the noise
+floor per-test but worth re-checking on the next run.
+
+### 3.8 WRONG findings are a length budget, not a knowledge gap
+
+fix2's WRONG count rose (6.5% → 10.8% of validate findings) at the same time as
+its recall, and T5 accounts for most of the increase: **0 WRONG findings under
+fix1, 5 under fix2**. That looks like a regression and is not one.
+
+fix1 scored zero WRONG on T5 because it **found one of the six seeded bugs and
+stopped** — 33 words, all three runs. fix2 finds four or five. Every one of its
+WRONG findings is attached to a bug it correctly identified, with the correct fix,
+and a mangled rationale:
+
+> `[ERROR] isNull($in.0.amount) is not a CTL2 function; use isnull($in.0.amount).`
+
+The fix is right. The reason is false — `isNull` exists, with a two-argument
+`(record, field)` signature; the one-argument call is an arity error.
+
+**The corpus is not the source.** Grepping both corpora for the false claims
+fix2 produced returns **zero** matches for "isNull is not a declared function",
+"conditional-fail is undocumented" and "date literal invalid", while the correct
+statements appear 22 and 45 times. The error is already present in the `<think>`
+block, which goes telegraphic on multi-bug reviews — one clause per bug.
+
+What predicts a WRONG finding is how many words the answer spends **per finding
+it reports**. Pooled across fix1 and fix2, validate runs:
+
+| words per reported finding | runs containing a WRONG |
+|---|---|
+| < 20 | **45%** |
+| 20–25 | 17% |
+| 25–35 | 21% |
+| ≥ 35 | **3%** |
+
+A 15× swing, and it holds within each model separately: runs with a WRONG average
+20–22 words per finding, runs without average 33–36.
+
+The mechanism is that **the correct statement does not fit**. The corpus explains
+the `isNull` arity rule in 27–39 words. At six findings the model allots about 20,
+truncates, and a qualified true statement collapses into an unqualified false one.
+The corpus teaches exactly this habit:
+
+| findings in the record | corpus mean words per issue line |
+|---|---|
+| 1 | 22.9 |
+| 2 | 19.1 |
+| 3 | 18.7 |
+| 4 | 18.4 |
+| 5 | 17.4 |
+
+Median 19 words per `[SEVERITY]` line overall, **shrinking as bug count rises** —
+the opposite of what the failure mode needs. And there is almost nothing to learn
+multi-bug reviews from: 16 of 1094 validate-format records have ≥5 findings, and
+in the reasoning corpus **1 of 300**, with none above five. T5 has six.
+
+> **Consequence for the whole project: improving recall manufactures WRONG
+> findings out of knowledge the model already has.** Any change that makes the
+> model report more bugs pushes it from the safe ≥35 words-per-finding bucket into
+> the <25 danger zone. The lever is a per-finding explanation floor and multi-bug
+> examples — see `spec/explanation_budget_spec.md` — not more severity examples.
+
+One genuine false positive did occur, in the most compressed run of all (~14 words
+per finding): T5 run 1 flags the valid date literal `1990-01-01` as needing quotes,
+a change that would introduce a type error. That is the one failure that matches the
+harm model behind the precision-over-recall rule — sending a developer to fix
+something that is not broken — and it appeared where compression was worst.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number
@@ -284,7 +418,24 @@ defaults (0.1/0.05) predate thinking mode and are stale.
 No repetition or presence penalty: code legitimately repeats tokens (`$out.0.` on every
 line), so both bias against valid CTL2.
 
-### 4.3 Noise floor
+### 4.3 Count WRONG findings on validate tests only
+
+`judge_result.findings[].status` uses the same vocabulary (`CAUGHT` / `MISSED` /
+`MISSING` / `WRONG`) for both test types, but on a **generate** test a WRONG finding
+describes a defect in the CTL the model wrote — a code-quality signal, not a
+review-precision one. Pooling the two inflates the rate and changes conclusions:
+
+| | validate only | generate + validate pooled |
+|---|---|---|
+| fix1 WRONG rate | **6.5%** | 12.8% |
+| fix2 WRONG rate | **10.8%** | 20.2% |
+
+The validate-only figure is the one that reproduces the 6% historically quoted for
+fix1. A first pass at the fix2 comparison used the pooled number and concluded fix2
+had roughly doubled its wrong findings; on the correct metric the increase is 4.3
+points and is explained by §3.8.
+
+### 4.4 Noise floor
 
 Suite sd is 0.004–0.017 at T=0.4 — much tighter than the 0.054 seen under the old configs,
 but that improvement came from removing the penalties, not from temperature. Differences
@@ -340,16 +491,24 @@ GPU either double `gradient_accumulation_steps` or cut epochs to ~1.
 
 ## 6. Open questions, in priority order
 
-1. **Phase-3 dose — the one lever left.** fix1 matches 0917 statistically but
-   answers in 58 words against 132, and loses T5 (six seeded bugs, found one)
-   to terseness alone. Checkpoints 25–189 are preserved under
-   `2026-09-21-13-55-11_postsft`. Export checkpoint-50 and -100 and evaluate;
-   `load_best_model_at_end` picked 175 on eval_loss, which does not track suite
-   score (§2.1). Cheapest remaining experiment with the most upside.
-2. **Severity calibration.** T24 marks valid-but-suspicious date patterns ERROR
-   where the rubric wants WARNING — the model identifies every issue correctly
-   and still fails on severity. Several round-3 fixes escalated severity, so
-   check whether the corpus now over-teaches ERROR.
+1. **Per-finding explanation budget — the lever that replaced phase-3 dose.**
+   The corpus teaches 19 words per issue line and shrinks to 17.4 on 5-bug
+   records, below the ~25 threshold where factual errors start (§3.8). It has
+   1 reasoning record with ≥5 findings. Every future recall improvement will
+   keep converting into WRONG findings until this is fixed.
+   `spec/explanation_budget_spec.md` drafts the amendment.
+2. **Severity under-escalation — half of Group A did not land.** fix2 fixed
+   over-escalation (T24: 3 WRONG → 0) but not the other direction: T16
+   (unreachable code) and T18 (null dereference) still mark certain
+   compile/runtime failures WARNING (§3.7). The ~25 ERROR-side records were
+   written but had no measurable effect — diagnose why before writing more of
+   them. Candidate explanation: those records are single-finding and short,
+   so they teach the label without the reasoning that justifies it.
+3. ~~**Phase-3 dose.**~~ **Closed (§3.6).** ckpt-50 and ckpt-100 were exported
+   and evaluated. The dose controls length but not quality; ckpt-50 is the worst
+   model on all three scores and reintroduces the `</think>` format failure.
+4. ~~**Severity calibration (over-escalation).**~~ **Closed (§3.7).** T24 went
+   3 WRONG → 0 after the Group A WARNING-side records.
 3. ~~**What in the new corpus costs 0.03?**~~ **Answered (§3.5):** 115 prompts
    training two conflicting answers. Kept here for the trail:
    §2.1 ruled out batch size and DPO convergence, so it is the ~15 changed records

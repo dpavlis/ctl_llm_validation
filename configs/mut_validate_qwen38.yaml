@@ -3,7 +3,7 @@
 
 model:
   # Path to the merged/exported safetensors checkpoint (the MUT)
-  checkpoint_dir: /home/pavlisd/exports/qwen38/
+  checkpoint_dir: /home/pavlisd/exports/qwen38_fix1/
   adapter_dir: null      # optional LoRA adapter dir (unmerged checkpoint)
   dtype: bfloat16        # float16 | bfloat16 | float32
   attn_impl: flash_attention_2   # flash_attention_2 | sdpa
