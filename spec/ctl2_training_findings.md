@@ -460,17 +460,31 @@ source ~/venv/bin/activate        # llamafactory-cli must be on PATH
 python train.py configs/qwen38.yaml
 ```
 
-**Phase 1 — SFT, no thinking.** `dataset: clover_ctl_trainign_data,clover_ctl_think_data`
-(BOTH — §3.1), `enable_thinking: false`, cutoff_len 3200, lr 5e-5, 2 epochs, bs 2 × accum 6,
+**Phase 1 — SFT, no thinking.** `dataset: clover_ctl_trainign_data` — **one dataset, not
+both.** `enable_thinking: false`, cutoff_len 3200, lr 5e-5, 2 epochs, bs 2 × accum 6,
 rank 64 / alpha 64 / loraplus 2.
+
+> Naming `clover_ctl_think_data` here as well — as this section said until 2026-09-24 —
+> trains every reasoning answer twice in phase 1. That dataset is a strict subset: since the
+> 2026-09-21 rebuild `clover_ctl_trainign_data` already holds every reasoning prompt with its
+> `<think>` block stripped, verified each run by the pre-flight (§5.1). §3.1's finding still
+> holds — those records must be in phase 1 — but they get there through the one dataset now.
 
 **Phase 2 — DPO, no thinking.** `enable_thinking: false` (pairs carry no `<think>`), lr 5e-6,
 1 epoch, bs 1 × accum 4, pref_beta 0.1 / pref_ftx 0.1. Runs **between** the SFT phases: its
 pairs contain no reasoning, so it belongs while the model is still a non-thinking model.
 
 **Phase 3 — SFT on reasoning, thinking on.** `dataset: clover_ctl_think_data`,
-`enable_thinking: true`, lr 1e-5, rank 32. Keep the effective batch ≥24 samples/step; on one
-GPU either double `gradient_accumulation_steps` or cut epochs to ~1.
+`enable_thinking: true`, lr 1e-5, rank 32, 3 epochs, bs 2 × accum 6 — **effective batch 12
+on one GPU**, the same as phases 1 and 2.
+
+> An earlier revision of this line said to keep phase 3 at ≥24 samples/step and to double
+> `gradient_accumulation_steps` on a single GPU. **Do not.** That came from the p1fix /
+> sftdpo / ckpt100 experiments, which ran at 24/step; every model since — 0917, fix1, fix2,
+> the best three measured — ran at 12/step on one GPU. Doubling accum also halves the step
+> count, which changes the phase-3 dose, a variable §3.6 closed. With `world_size=1` the
+> effective batch is just `per_device × accum`, so `configs/qwen38.yaml` needs no edit to
+> run on one GPU.
 
 > **Do not skip phase 3 and then evaluate in thinking mode.** It is the only phase that
 > trains the model to emit `</think>`; without it 12% of runs answer inside the thinking
@@ -479,13 +493,64 @@ GPU either double `gradient_accumulation_steps` or cut epochs to ~1.
 
 **Evaluate** with `configs/eval_T04_*.yaml` at `--runs 3` minimum.
 
+### 5.1 Corpus pre-flight — run before every training run
+
+Two hours of GPU time is worth two minutes of checking. This caught 35 conflicting-answer
+prompts on 2026-09-24, the same class of defect that cost 0.027 suite in §2 at 115 prompts.
+
+```python
+import json, collections, re, os
+D = os.path.expanduser('~/LlamaFactory/data')
+THINK = re.compile(r'^<think>\n.*?\n</think>\n\n', re.S)
+user = lambda e: next(m['content'] for m in e['messages'] if m['role']=='user').strip()
+raw  = lambda e: ''.join(m.get('content','') for m in e['messages'] if m['role']=='assistant')
+bare = lambda e: THINK.sub('', raw(e)).strip()
+
+T  = json.load(open(f'{D}/CTL_LoRA_training_data.json'))
+TH = json.load(open(f'{D}/CTL_LoRA_training_data_think.json'))
+E  = json.load(open(f'{D}/CTL_LoRA_eval_data.json'))
+EH = json.load(open(f'{D}/CTL_LoRA_eval_data_think.json'))
+print('phase-1', len(T), ' think', len(TH))
+
+tu = collections.defaultdict(list)
+for e in T: tu[user(e)].append(bare(e))
+thg = collections.defaultdict(list)
+for e in TH: thg[user(e)].append(bare(e))
+
+print('phase-1 prompts with conflicting answers (want 0):',
+      sum(1 for a in tu.values() if len(set(a)) > 1))
+print('duplicate prompts  phase-1/think (want 0/0):',
+      sum(1 for a in tu.values() if len(a) > 1), '/', sum(1 for a in thg.values() if len(a) > 1))
+print('think prompts absent from phase 1 (want 0):', sum(1 for p in thg if p not in tu))
+print('think answers not matching phase 1 (want 0):',
+      sum(1 for e in TH if user(e) in tu and bare(e) not in tu[user(e)]))
+for nm, ev, tr in [('phase-1', E, T), ('think', EH, TH)]:
+    trp = {user(e) for e in tr}
+    print(f'eval contamination {nm} (want 0):', sum(1 for e in ev if user(e) in trp))
+print('bad thought-word spelling (want 0):',
+      sum(1 for e in TH if not ('<think>\n' in raw(e) and '\n</think>\n\n' in raw(e))))
+print('unmerged reasoning_content (want 0):',
+      sum(1 for e in TH for m in e['messages'] if 'reasoning_content' in m))
+print('phase-1 records carrying <think> (want 0):', sum(1 for e in T if '<think>' in raw(e)))
+```
+
+**Compare answers with the `<think>` block stripped.** `CTL_LoRA_training_data_think.json` is
+the post-`convert_think.py` file, so its `content` still carries the tags; comparing raw
+against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
+
 ### Operational notes
 
 - **Preserve exports before retraining.** `export_dir` is fixed and each run overwrites the
   last. Two models were lost this way, one of them the then-best. Rename first.
+- **One GPU needs no config change.** With `world_size=1` the effective batch is
+  `per_device × accum`, which `configs/qwen38.yaml` already sets to 12/12/4 for the three
+  phases — what 0917, fix1 and fix2 all used. Do not "correct" it upward.
 - `reasoning_effort: medium` must match between the training and eval configs.
 - `test.py` needs `OPENAI_API_KEY` from `~/.bash_profile` — login-shell only. Source it
   explicitly in non-interactive shells or every judge call 401s.
+- `llamafactory-cli` lives in `~/venv/bin` and is **not** on the default PATH; `train.py`
+  invokes it by bare name, so export the path first or the SFT phase dies instantly with
+  `FileNotFoundError`.
 
 ---
 
