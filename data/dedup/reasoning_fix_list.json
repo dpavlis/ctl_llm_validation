@@ -1,0 +1,1090 @@
+{
+  "generated": "2026-09-24",
+  "files": {
+    "CTL_LoRAT_multibug_validate_thinking.json": {
+      "records": 30,
+      "distinct_defect_kinds": 23,
+      "total_defect_slots": 145,
+      "overused": [
+        [
+          "FIELD / FIELD",
+          9
+        ],
+        [
+          "replace(FIELD, STR, STR)",
+          8
+        ],
+        [
+          "STR + FIELD",
+          8
+        ],
+        [
+          "FIELD = FIELD",
+          8
+        ],
+        [
+          "size(FIELD)",
+          7
+        ],
+        [
+          "BIGNUM",
+          7
+        ],
+        [
+          "FIELD / 2",
+          7
+        ],
+        [
+          "FIELD",
+          7
+        ],
+        [
+          "substring(FIELD, 0, 3)",
+          7
+        ],
+        [
+          "sha1(FIELD)",
+          7
+        ],
+        [
+          "isNull(FIELD)",
+          6
+        ],
+        [
+          "FIELD > 100D",
+          6
+        ],
+        [
+          "FIELD ~= STR",
+          6
+        ],
+        [
+          "if(FIELD > 0, true, false)",
+          6
+        ],
+        [
+          "FIELD++",
+          6
+        ],
+        [
+          "date2num(str2date(FIELD, STR))",
+          6
+        ],
+        [
+          "nvl(FIELD, STR)",
+          5
+        ],
+        [
+          "trim(trim(FIELD))",
+          5
+        ],
+        [
+          "upperCase(upperCase(FIELD))",
+          5
+        ],
+        [
+          "isnull(FIELD) || FIELD == null",
+          5
+        ],
+        [
+          "str2date(STR, STR)",
+          5
+        ],
+        [
+          "nvl(FIELD, 0D)",
+          5
+        ],
+        [
+          "contains(FIELD, FIELD)",
+          4
+        ]
+      ],
+      "sentence_repeat_pct": 91,
+      "distinct_sentences": 118,
+      "total_sentences": 453,
+      "issue_line_repeat_pct": 48,
+      "distinct_issue_lines": 94,
+      "total_issue_lines": 145,
+      "severities": {
+        "ERROR": 115,
+        "WARNING": 30
+      },
+      "error_warning_ratio": 3.83,
+      "records_list": [
+        {
+          "source_id": "multibug_001",
+          "source_index": 0,
+          "findings": 4,
+          "merged_id": "vjmyx-43",
+          "defect_kinds": [
+            "isNull(FIELD)",
+            "FIELD > 100D",
+            "FIELD ~= STR",
+            "nvl(FIELD, STR)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 204
+        },
+        {
+          "source_id": "multibug_002",
+          "source_index": 1,
+          "findings": 4,
+          "merged_id": "vjmyx-44",
+          "defect_kinds": [
+            "size(FIELD)",
+            "FIELD / FIELD",
+            "replace(FIELD, STR, STR)",
+            "trim(trim(FIELD))"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 241
+        },
+        {
+          "source_id": "multibug_003",
+          "source_index": 2,
+          "findings": 4,
+          "merged_id": "vjmyx-45",
+          "defect_kinds": [
+            "BIGNUM",
+            "STR + FIELD",
+            "FIELD / 2",
+            "upperCase(upperCase(FIELD))"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 204
+        },
+        {
+          "source_id": "multibug_004",
+          "source_index": 3,
+          "findings": 4,
+          "merged_id": "vjmyx-46",
+          "defect_kinds": [
+            "FIELD",
+            "substring(FIELD, 0, 3)",
+            "if(FIELD > 0, true, false)",
+            "isnull(FIELD) || FIELD == null"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 208
+        },
+        {
+          "source_id": "multibug_005",
+          "source_index": 4,
+          "findings": 4,
+          "merged_id": "vjmyx-47",
+          "defect_kinds": [
+            "FIELD++",
+            "date2num(str2date(FIELD, STR))",
+            "sha1(FIELD)",
+            "str2date(STR, STR)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 238
+        },
+        {
+          "source_id": "multibug_006",
+          "source_index": 5,
+          "findings": 4,
+          "merged_id": "vjmyx-48",
+          "defect_kinds": [
+            "FIELD = FIELD",
+            "FIELD / FIELD",
+            "FIELD ~= STR",
+            "nvl(FIELD, 0D)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 206
+        },
+        {
+          "source_id": "multibug_007",
+          "source_index": 6,
+          "findings": 4,
+          "merged_id": "vjmyx-49",
+          "defect_kinds": [
+            "isNull(FIELD)",
+            "replace(FIELD, STR, STR)",
+            "substring(FIELD, 0, 3)",
+            "trim(trim(FIELD))"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 201
+        },
+        {
+          "source_id": "multibug_008",
+          "source_index": 7,
+          "findings": 4,
+          "merged_id": "vjmyx-50",
+          "defect_kinds": [
+            "size(FIELD)",
+            "FIELD > 100D",
+            "STR + FIELD",
+            "nvl(FIELD, STR)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 209
+        },
+        {
+          "source_id": "multibug_009",
+          "source_index": 8,
+          "findings": 4,
+          "merged_id": "vjmyx-51",
+          "defect_kinds": [
+            "BIGNUM",
+            "FIELD / 2",
+            "date2num(str2date(FIELD, STR))",
+            "upperCase(upperCase(FIELD))"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 234
+        },
+        {
+          "source_id": "multibug_010",
+          "source_index": 9,
+          "findings": 4,
+          "merged_id": "vjmyx-52",
+          "defect_kinds": [
+            "FIELD",
+            "if(FIELD > 0, true, false)",
+            "sha1(FIELD)",
+            "isnull(FIELD) || FIELD == null"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 212
+        },
+        {
+          "source_id": "multibug_011",
+          "source_index": 10,
+          "findings": 4,
+          "merged_id": "vjmyx-53",
+          "defect_kinds": [
+            "FIELD++",
+            "FIELD ~= STR",
+            "FIELD / FIELD",
+            "str2date(STR, STR)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 209
+        },
+        {
+          "source_id": "multibug_012",
+          "source_index": 11,
+          "findings": 4,
+          "merged_id": "vjmyx-54",
+          "defect_kinds": [
+            "FIELD = FIELD",
+            "replace(FIELD, STR, STR)",
+            "STR + FIELD",
+            "nvl(FIELD, 0D)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 232
+        },
+        {
+          "source_id": "multibug_013",
+          "source_index": 12,
+          "findings": 4,
+          "merged_id": "vjmyx-55",
+          "defect_kinds": [
+            "isNull(FIELD)",
+            "substring(FIELD, 0, 3)",
+            "nvl(FIELD, STR)",
+            "FIELD = FIELD"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "WARNING",
+            "ERROR"
+          ],
+          "reasoning_tokens": 198
+        },
+        {
+          "source_id": "multibug_014",
+          "source_index": 13,
+          "findings": 5,
+          "merged_id": "vjmyx-56",
+          "defect_kinds": [
+            "size(FIELD)",
+            "BIGNUM",
+            "FIELD > 100D",
+            "contains(FIELD, FIELD)",
+            "trim(trim(FIELD))"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 268
+        },
+        {
+          "source_id": "multibug_015",
+          "source_index": 14,
+          "findings": 5,
+          "merged_id": "vjmyx-57",
+          "defect_kinds": [
+            "FIELD",
+            "FIELD / FIELD",
+            "STR + FIELD",
+            "replace(FIELD, STR, STR)",
+            "upperCase(upperCase(FIELD))"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 258
+        },
+        {
+          "source_id": "multibug_016",
+          "source_index": 15,
+          "findings": 5,
+          "merged_id": "vjmyx-58",
+          "defect_kinds": [
+            "if(FIELD > 0, true, false)",
+            "FIELD / 2",
+            "date2num(str2date(FIELD, STR))",
+            "sha1(FIELD)",
+            "isnull(FIELD) || FIELD == null"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 285
+        },
+        {
+          "source_id": "multibug_017",
+          "source_index": 16,
+          "findings": 5,
+          "merged_id": "vjmyx-59",
+          "defect_kinds": [
+            "FIELD++",
+            "FIELD = FIELD",
+            "substring(FIELD, 0, 3)",
+            "FIELD ~= STR",
+            "str2date(STR, STR)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 256
+        },
+        {
+          "source_id": "multibug_018",
+          "source_index": 17,
+          "findings": 5,
+          "merged_id": "vjmyx-60",
+          "defect_kinds": [
+            "isNull(FIELD)",
+            "BIGNUM",
+            "replace(FIELD, STR, STR)",
+            "FIELD / FIELD",
+            "nvl(FIELD, 0D)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 254
+        },
+        {
+          "source_id": "multibug_019",
+          "source_index": 18,
+          "findings": 5,
+          "merged_id": "vjmyx-61",
+          "defect_kinds": [
+            "size(FIELD)",
+            "FIELD",
+            "FIELD > 100D",
+            "FIELD / 2",
+            "nvl(FIELD, STR)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 257
+        },
+        {
+          "source_id": "multibug_020",
+          "source_index": 19,
+          "findings": 5,
+          "merged_id": "vjmyx-62",
+          "defect_kinds": [
+            "sha1(FIELD)",
+            "STR + FIELD",
+            "date2num(str2date(FIELD, STR))",
+            "contains(FIELD, FIELD)",
+            "trim(trim(FIELD))"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 260
+        },
+        {
+          "source_id": "multibug_021",
+          "source_index": 20,
+          "findings": 5,
+          "merged_id": "vjmyx-63",
+          "defect_kinds": [
+            "FIELD++",
+            "if(FIELD > 0, true, false)",
+            "FIELD ~= STR",
+            "FIELD > 100D",
+            "upperCase(upperCase(FIELD))"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 290
+        },
+        {
+          "source_id": "multibug_022",
+          "source_index": 21,
+          "findings": 5,
+          "merged_id": "vjmyx-64",
+          "defect_kinds": [
+            "BIGNUM",
+            "FIELD = FIELD",
+            "FIELD / FIELD",
+            "replace(FIELD, STR, STR)",
+            "isnull(FIELD) || FIELD == null"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 265
+        },
+        {
+          "source_id": "multibug_023",
+          "source_index": 22,
+          "findings": 5,
+          "merged_id": "vjmyx-65",
+          "defect_kinds": [
+            "size(FIELD)",
+            "STR + FIELD",
+            "date2num(str2date(FIELD, STR))",
+            "str2date(STR, STR)",
+            "FIELD = FIELD"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING",
+            "ERROR"
+          ],
+          "reasoning_tokens": 254
+        },
+        {
+          "source_id": "multibug_024",
+          "source_index": 23,
+          "findings": 6,
+          "merged_id": "vjmyx-66",
+          "defect_kinds": [
+            "isNull(FIELD)",
+            "FIELD",
+            "FIELD / 2",
+            "sha1(FIELD)",
+            "substring(FIELD, 0, 3)",
+            "nvl(FIELD, 0D)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 292
+        },
+        {
+          "source_id": "multibug_025",
+          "source_index": 24,
+          "findings": 6,
+          "merged_id": "vjmyx-67",
+          "defect_kinds": [
+            "BIGNUM",
+            "FIELD > 100D",
+            "FIELD / FIELD",
+            "contains(FIELD, FIELD)",
+            "replace(FIELD, STR, STR)",
+            "nvl(FIELD, STR)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 350
+        },
+        {
+          "source_id": "multibug_026",
+          "source_index": 25,
+          "findings": 6,
+          "merged_id": "vjmyx-68",
+          "defect_kinds": [
+            "size(FIELD)",
+            "if(FIELD > 0, true, false)",
+            "STR + FIELD",
+            "date2num(str2date(FIELD, STR))",
+            "FIELD = FIELD",
+            "trim(trim(FIELD))"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 309
+        },
+        {
+          "source_id": "multibug_027",
+          "source_index": 26,
+          "findings": 6,
+          "merged_id": "vjmyx-69",
+          "defect_kinds": [
+            "FIELD++",
+            "FIELD",
+            "substring(FIELD, 0, 3)",
+            "FIELD / 2",
+            "sha1(FIELD)",
+            "upperCase(upperCase(FIELD))"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 300
+        },
+        {
+          "source_id": "multibug_028",
+          "source_index": 27,
+          "findings": 6,
+          "merged_id": "vjmyx-70",
+          "defect_kinds": [
+            "isNull(FIELD)",
+            "BIGNUM",
+            "FIELD / FIELD",
+            "STR + FIELD",
+            "FIELD ~= STR",
+            "isnull(FIELD) || FIELD == null"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 325
+        },
+        {
+          "source_id": "multibug_029",
+          "source_index": 28,
+          "findings": 7,
+          "merged_id": "vjmyx-71",
+          "defect_kinds": [
+            "size(FIELD)",
+            "FIELD",
+            "contains(FIELD, FIELD)",
+            "replace(FIELD, STR, STR)",
+            "FIELD / 2",
+            "sha1(FIELD)",
+            "str2date(STR, STR)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 358
+        },
+        {
+          "source_id": "multibug_030",
+          "source_index": 29,
+          "findings": 6,
+          "merged_id": "vjmyx-72",
+          "defect_kinds": [
+            "FIELD++",
+            "FIELD = FIELD",
+            "substring(FIELD, 0, 3)",
+            "if(FIELD > 0, true, false)",
+            "FIELD / FIELD",
+            "nvl(FIELD, 0D)"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 342
+        }
+      ],
+      "repeated_sentences": [
+        [
+          "3 ERRORs and 1 WARNING; FAIL.",
+          13
+        ],
+        [
+          "4 ERRORs and 1 WARNING; FAIL.",
+          10
+        ],
+        [
+          "replace interprets the pattern as regex.",
+          8
+        ],
+        [
+          "A single dot matches A, B, the period, and every remaining character in AB.CD-17, so almost the whole identifier is replaced.",
+          8
+        ],
+        [
+          "The intended escaped dot would match the one punctuation character only.",
+          8
+        ],
+        [
+          "Follow that row through the + operator: CTL2 concatenates null as the four letters null, giving Ref:null.",
+          8
+        ],
+        [
+          "The requested null-row display is Ref: alone, so the emitted string is demonstrably wrong despite compiling.",
+          8
+        ],
+        [
+          "Searching the built-ins finds no size function, while the identifier is declared string, so this is a name-resolution failure rather than a nullable-value problem.",
+          7
+        ],
+        [
+          "The output integer type is otherwise compatible.",
+          7
+        ],
+        [
+          "The destination is long, but the literal is classified before assignment.",
+          7
+        ],
+        [
+          "3000000000 exceeds the integer maximum 2147483647; widening can only happen after a valid integer literal exists.",
+          7
+        ],
+        [
+          "The L suffix selects a long literal and removes the compile failure.",
+          7
+        ],
+        [
+          "The first division sees integer and integer, yielding an integer.",
+          7
+        ],
+        [
+          "Widening the completed value for the decimal field cannot recover the lost fraction.",
+          7
+        ],
+        [
+          "Output port zero lists normalized_key only.",
+          7
+        ],
+        [
+          "Comparing the left side with that metadata exposes the extra s; trim accepts the non-null string and is not the failing operation.",
+          7
+        ],
+        [
+          "The named-field lookup fails at compilation, leaving no usable assignment.",
+          7
+        ],
+        [
+          "The substring overload takes start and length.",
+          7
+        ],
+        [
+          "Starting at zero, a length of three covers A, B, and the period in AB.CD-17.",
+          7
+        ],
+        [
+          "The fourth requested character C is excluded, giving an observable wrong prefix.",
+          7
+        ],
+        [
+          "The input side of sha1 is acceptable because the identifier is string.",
+          7
+        ],
+        [
+          "Its result type is byte, while output checksum is string.",
+          7
+        ],
+        [
+          "No automatic byte-to-string assignment exists; the hex-string companion has the result type the metadata requires.",
+          7
+        ],
+        [
+          "isNull has record-and-field overloads, whereas isnull accepts one expression.",
+          6
+        ],
+        [
+          "The supplied argument is a decimal field value, not a record/field pair.",
+          6
+        ]
+      ],
+      "repeated_issue_lines": [
+        [
+          "[ERROR] `\"Ref:\" + $in.0.text` \u2014 CTL2 string concatenation renders a null operand as the literal text `null`; it does not use an empty string. Because text is nullable, a permitted null row emits `Ref:null`, whereas the stated display value for that row is exactly `Ref:`.",
+          8
+        ],
+        [
+          "[ERROR] `3000000000` \u2014 An unsuffixed whole-number literal is parsed as a 32-bit integer before assignment is considered. This value exceeds 2147483647, so assigning it to a long output does not rescue the literal; the parser reports an out-of-range integer and compilation fails.",
+          7
+        ],
+        [
+          "[ERROR] `$out.0.normalized_keys` \u2014 The output metadata declares `normalized_key` in the singular and has no `normalized_keys` field. CTL2 checks named output fields against port 0 metadata when compiling, so this assignment has no target and fails before any trimmed identifier can be emitted.",
+          7
+        ],
+        [
+          "[WARNING] `isnull($in.0.text) || $in.0.text == null` \u2014 Both the lowercase `isnull()` predicate and equality with null are valid, null-safe tests for this nullable string. They always agree, so the OR returns the requested missing_text value. Repeating the test is suspicious but creates no incorrect row or exception.",
+          5
+        ],
+        [
+          "[WARNING] `str2date(\"2025-01-01\", \"yyyy-MM-dd\")` \u2014 This exact constant matches its stated format, so parsing it yields the required fixed date on every row. CTL2 also supports a native date literal for constants. The conversion is valid, but it needlessly invokes a parser and obscures that the value never varies.",
+          5
+        ],
+        [
+          "[WARNING] `nvl($in.0.settlement_amount, 0D)` \u2014 The settlement_amount input is declared non-null, and both the source and fallback are decimal-compatible. Every permitted row therefore takes the original settlement_amount and emits the requested copy. The zero fallback is valid CTL2 but suggests a null policy that this metadata never needs.",
+          5
+        ],
+        [
+          "[ERROR] `isNull($in.0.optional_cap)` \u2014 The camelCase `isNull()` overload checks a field in a record and requires two arguments: the record plus its field name or index. This single decimal argument matches neither overload, so CTL2 cannot compile the transform. The one-value predicate is lowercase `isnull(...)`.",
+          3
+        ],
+        [
+          "[ERROR] `$in.0.optional_cap > 100D` \u2014 The input metadata explicitly permits a null optional_cap. CTL2 ordered comparisons throw when either operand is null; they do not return false. A permitted row with optional_cap null therefore raises a runtime exception instead of emitting the required false flag.",
+          3
+        ],
+        [
+          "[ERROR] `$in.0.item_count / 2` \u2014 Both operands are integers, so division truncates before the result is widened for the decimal output field. For a permitted row with item_count 3, the expression computes 1 and emits 1 rather than the required 1.5.",
+          3
+        ],
+        [
+          "[ERROR] `if($in.0.seat_count > 0, true, false)` \u2014 `if` is CTL2 control-flow syntax, not a three-argument expression function. The compiler parses this position as an invalid if statement and stops. The positive-seat_count condition itself is valid; its surrounding function-call form is the defect.",
+          3
+        ],
+        [
+          "[ERROR] `$in.0.sample_count++` \u2014 CTL2 allows increment on writable output fields or local variables, but an input record field is read-only. Attempting to mutate sample_count through `$in.0` is rejected at compilation. The later assignment cannot implement the required plus-one value from valid code.",
+          3
+        ],
+        [
+          "[ERROR] `$out.0.amount_as_int = $in.0.settlement_amount` \u2014 The source field has decimal type while amount_as_int is integer metadata. CTL2 permits numeric widening but does not silently narrow decimal to integer on assignment. The statement therefore has a compile-time type mismatch, even for rows whose settlement_amount happens to be whole.",
+          3
+        ],
+        [
+          "[ERROR] `$in.0.settlement_amount / $in.0.cycle_count` \u2014 Amount is decimal and cycle_count is a non-null integer that may still be zero. Decimal division by zero throws rather than yielding the requested null sentinel. For a permitted row with cycle_count 0, the transform raises an exception before average_amount is emitted.",
+          3
+        ],
+        [
+          "[ERROR] `date2num(str2date($in.0.observed_date_text, \"yyyy-MM-dd\"))` \u2014 Parsing the ISO text can produce a date, but `date2num()` requires a second, unquoted unit such as `day`. With only the date argument, no overload applies and the transform fails to compile before date_day can be assigned.",
+          2
+        ],
+        [
+          "[ERROR] `$in.0.reserve_value > 100D` \u2014 The input metadata explicitly permits a null reserve_value. CTL2 ordered comparisons throw when either operand is null; they do not return false. A permitted row with reserve_value null therefore raises a runtime exception instead of emitting the required false flag.",
+          2
+        ]
+      ]
+    },
+    "CTL_LoRAT_sft_misc_new_think.json": {
+      "records": 1,
+      "distinct_defect_kinds": 4,
+      "total_defect_slots": 4,
+      "overused": [],
+      "sentence_repeat_pct": 0,
+      "distinct_sentences": 12,
+      "total_sentences": 12,
+      "issue_line_repeat_pct": 0,
+      "distinct_issue_lines": 4,
+      "total_issue_lines": 4,
+      "severities": {
+        "ERROR": 3,
+        "WARNING": 1
+      },
+      "error_warning_ratio": 3.0,
+      "records_list": [
+        {
+          "source_id": "lkapi_sft_02",
+          "source_index": 17,
+          "findings": 4,
+          "merged_id": "vjmyx-593",
+          "defect_kinds": [
+            "//#CTL2",
+            "lookup(FxLookup, FIELD)",
+            "dateDiff(...)",
+            "fx"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "WARNING"
+          ],
+          "reasoning_tokens": 258
+        }
+      ],
+      "repeated_sentences": [],
+      "repeated_issue_lines": []
+    },
+    "CTL_LoRAT_validate_thinking.json": {
+      "records": 4,
+      "distinct_defect_kinds": 16,
+      "total_defect_slots": 17,
+      "overused": [],
+      "sentence_repeat_pct": 55,
+      "distinct_sentences": 32,
+      "total_sentences": 44,
+      "issue_line_repeat_pct": 0,
+      "distinct_issue_lines": 17,
+      "total_issue_lines": 17,
+      "severities": {
+        "ERROR": 8,
+        "WARNING": 8,
+        "INFO": 1
+      },
+      "error_warning_ratio": 1.0,
+      "records_list": [
+        {
+          "source_id": "tvalidat22_30",
+          "source_index": 30,
+          "findings": 4,
+          "merged_id": "vjmyx-941",
+          "defect_kinds": [
+            "getWeekNumber()",
+            "generate()",
+            "getDayOfWeek()",
+            ""
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "WARNING",
+            "WARNING"
+          ],
+          "reasoning_tokens": 250
+        },
+        {
+          "source_id": "tvalidat22_31",
+          "source_index": 31,
+          "findings": 4,
+          "merged_id": "vjmyx-942",
+          "defect_kinds": [
+            "recordCounter / 100",
+            "STOP",
+            "BIGNUM-06-30",
+            "PAID"
+          ],
+          "severities": [
+            "WARNING",
+            "ERROR",
+            "WARNING",
+            "WARNING"
+          ],
+          "reasoning_tokens": 257
+        },
+        {
+          "source_id": "tvalidat22_35",
+          "source_index": 34,
+          "findings": 4,
+          "merged_id": "vjmyx-945",
+          "defect_kinds": [
+            "if (recordCounter >= 500) return STOP;",
+            "SKIP",
+            "<= BIGNUM-06-30",
+            ""
+          ],
+          "severities": [
+            "ERROR",
+            "WARNING",
+            "WARNING",
+            "WARNING"
+          ],
+          "reasoning_tokens": 257
+        },
+        {
+          "source_id": "nullcmp_partition_tv_02",
+          "source_index": 90,
+          "findings": 5,
+          "merged_id": "vjmyx-1001",
+          "defect_kinds": [
+            "transform()",
+            "event_id",
+            "FIELD > BIGNUM",
+            "return 2;",
+            "FIELD == STR"
+          ],
+          "severities": [
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "ERROR",
+            "INFO"
+          ],
+          "reasoning_tokens": 214
+        }
+      ],
+      "repeated_sentences": [
+        [
+          "recordCounter spans 0 through 499, and integer division by 100 yields only indexes 0 through 4.",
+          2
+        ],
+        [
+          "Those select AU_STORE_001 through AU_STORE_005; NZ indexes 5 through 9 are unreachable.",
+          2
+        ],
+        [
+          "In each reachable hundred-row block, invoice numbers 61 through 100 increment the counter and return SKIP.",
+          2
+        ],
+        [
+          "Five blocks therefore produce 300 Australian rows, not five groups of 60 plus five groups of 40 across both countries.",
+          2
+        ],
+        [
+          "No random choice can repair an ordinal mapping that never selects New Zealand.",
+          2
+        ],
+        [
+          "The STOP cap and each overflow SKIP also conflict with this DataGenerator contract: configuration supplies 500 calls and every call must emit one output row.",
+          2
+        ],
+        [
+          "Dates carry time, so `<= 2025-06-30` means midnight; a June 30 timestamp after midnight misses DRAFT.",
+          2
+        ],
+        [
+          "Finally, daysSinceMin increases as an invoice becomes newer, while exp(-ageFactor) decreases.",
+          2
+        ],
+        [
+          "The branch then chooses PAID when random exceeds that decreasing issued probability, making PAID more common for newer invoices, the reverse of the requested age relationship.",
+          2
+        ],
+        [
+          "GST's roughly eight-percent null branch and the three payment windows are otherwise plausible but do not mask these paths.",
+          2
+        ],
+        [
+          "The one-row-per-call violation is contract-breaking; allocation and stage rules execute but are wrong.",
+          2
+        ],
+        [
+          "One ERROR and three WARNINGs, FAIL.",
+          2
+        ]
+      ],
+      "repeated_issue_lines": []
+    }
+  }
+}
