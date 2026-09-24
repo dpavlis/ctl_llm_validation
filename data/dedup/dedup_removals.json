@@ -1,0 +1,1097 @@
+{
+  "generated": "2026-09-24",
+  "phase1_file": "CTL_LoRA_training_data.json",
+  "think_file": "CTL_LoRA_training_data_think.json",
+  "phase1_records": 11827,
+  "think_records": 1036,
+  "removals": [
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-609",
+      "index": 608,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-11"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-610",
+      "index": 609,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-12"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-611",
+      "index": 610,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-13"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-612",
+      "index": 611,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-14"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-613",
+      "index": 612,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-15"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-614",
+      "index": 613,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-16"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-615",
+      "index": 614,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-17"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-616",
+      "index": 615,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-18"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-617",
+      "index": 616,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-19"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-618",
+      "index": 617,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-20"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-619",
+      "index": 618,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-21"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-620",
+      "index": 619,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-22"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-621",
+      "index": 620,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-23"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-622",
+      "index": 621,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-24"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-623",
+      "index": 622,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-25"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-624",
+      "index": 623,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-26"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-625",
+      "index": 624,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-27"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-626",
+      "index": 625,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-28"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-627",
+      "index": 626,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-29"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-628",
+      "index": 627,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-30"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-629",
+      "index": 628,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-31"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-630",
+      "index": 629,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-32"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-631",
+      "index": 630,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-33"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-632",
+      "index": 631,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-34"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-633",
+      "index": 632,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-35"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-634",
+      "index": 633,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-36"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-635",
+      "index": 634,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-37"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-636",
+      "index": 635,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-38"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-637",
+      "index": 636,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-39"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-638",
+      "index": 637,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-40"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-639",
+      "index": 638,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-41"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-640",
+      "index": 639,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "akmrx-42"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-658",
+      "index": 657,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-649"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-657",
+      "index": 656,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-656"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11619",
+      "index": 11618,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-798"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11535",
+      "index": 11534,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-799"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11541",
+      "index": 11540,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-802"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11591",
+      "index": 11590,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-803"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11814",
+      "index": 11813,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-888"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11811",
+      "index": 11810,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-889"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11818",
+      "index": 11817,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-890"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11813",
+      "index": 11812,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-891"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11816",
+      "index": 11815,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-892"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11819",
+      "index": 11818,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-893"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-11820",
+      "index": 11819,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-894"
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "id": "akmrx-979",
+      "index": 978,
+      "category": "AUTO-2",
+      "reason": "competes with the reasoning-corpus answer for the same prompt",
+      "keep_id": "akmrx-975"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-609",
+      "index": 608,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-11"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-610",
+      "index": 609,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-12"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-611",
+      "index": 610,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-13"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-612",
+      "index": 611,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-14"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-613",
+      "index": 612,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-15"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-614",
+      "index": 613,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-16"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-615",
+      "index": 614,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-17"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-616",
+      "index": 615,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-18"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-617",
+      "index": 616,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-19"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-618",
+      "index": 617,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-20"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-619",
+      "index": 618,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-21"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-620",
+      "index": 619,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-22"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-621",
+      "index": 620,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-23"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-622",
+      "index": 621,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-24"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-623",
+      "index": 622,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-25"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-624",
+      "index": 623,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-26"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-625",
+      "index": 624,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-27"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-626",
+      "index": 625,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-28"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-627",
+      "index": 626,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-29"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-628",
+      "index": 627,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-30"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-629",
+      "index": 628,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-31"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-630",
+      "index": 629,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-32"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-631",
+      "index": 630,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-33"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-632",
+      "index": 631,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-34"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-633",
+      "index": 632,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-35"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-634",
+      "index": 633,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-36"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-635",
+      "index": 634,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-37"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-636",
+      "index": 635,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-38"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-637",
+      "index": 636,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-39"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-638",
+      "index": 637,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-40"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-639",
+      "index": 638,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-41"
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "id": "jdixp-640",
+      "index": 639,
+      "category": "AUTO-1",
+      "reason": "identical answer to an earlier record with the same prompt",
+      "keep_id": "jdixp-42"
+    }
+  ],
+  "needs_review": [
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "I know SQL. I need a timestamp type. Does CTL have separate Date and DateTime types?\nIn SQL I might do:\n`DATE vs TIMESTAMP`\nHow do I do this in CTL2?",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-1047",
+          "index": 1046,
+          "words": 99,
+          "answer": "CTL2 has a single `date` data type which always contains both date and time components (it stores a full timestamp internally).\n\n```ctl\ndate now = today(); // Returns current date AND time\n```\n\nThere is no separate \"date-only\" vs \"datetime/timestamp\" type like in many SQL dialects. You handle both concepts with the same `date` type and control what you care about via:\n\n- Formatting/parsing patterns with `str2date()` and `date2str()`  \n- Functions like `extractDate()` (keep only date part) and `extractTime()` (keep only time part)  \n- Component metadata `format` attribute (e.g. `yyyy-MM-dd` vs `yyyy-MM-dd HH:mm:ss`) to control how dates are read/written."
+        },
+        {
+          "id": "akmrx-1053",
+          "index": 1052,
+          "words": 220,
+          "answer": "CTL2 has a single `date` data type which always contains both date and time components (it stores a full timestamp; you can ignore the time part or set it to midnight if you only care about the date).\n\nKey points:\n\n- There is no separate `DATE` vs `TIMESTAMP`/`DATETIME` distinction like in many SQL dialects.\n- `date` in CTL2 corresponds most closely to a SQL `TIMESTAMP` (date + time).\n- If you only need a \"date-only\" value, you typically:\n  - parse a string with a pattern that doesn't include time, or\n  - zero-out the time portion using helper functions like `extractDate()`.\n\nExamples:\n\n```ctl\n// Current date and time (like SQL CURRENT_TIMESTAMP)\ndate now = today();\n\n// Parse a date-only string (time part becomes 00:00:00 in the default time zone)\ndate somedate = str2date(\"2020-12-31\", \"yyyy-MM-dd\");\n\n// Parse a full timestamp string\ndate somedatetime = str2date(\"2020-12-31 12:30:30\", \"yyyy-MM-dd HH:mm:ss\");\n\n// If you want to drop the time part from an existing date:\ndate dateOnly = extractDate(now);   // sets time to 00:00:00\n\n// Or just format without the time when outputting:\nstring outDate = date2str(now, \"yyyy-MM-dd\");\nstring outTimestamp = date2str(now, \"yyyy-MM-dd HH:mm:ss\");\n```\n\nSo, conceptually:\n\n- SQL `DATE` -> CTL2 `date`, but you only use/format the date part (`extractDate()` / `date2str(..., \"yyyy-MM-dd\")`).\n- SQL `TIMESTAMP` -> CTL2 `date` with both date and time populated."
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "I know Python. I need a dictionary mapping IDs (string) to counts (integer).\nIn Python I might do:\n`my_dict = {'A': 1}`\nHow do I do this in CTL2?",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-1049",
+          "index": 1048,
+          "words": 33,
+          "answer": "CTL2 uses strong typing for maps. You must declare Key and Value types.\n\n```ctl\nmap[string, integer] my_dict;\nmy_dict['A'] = 1;\n//or use static initialization\nmap[string, integer] my_dict2 = { \"A\" -> 1};\n```"
+        },
+        {
+          "id": "akmrx-1055",
+          "index": 1054,
+          "words": 37,
+          "answer": "CTL2 uses strong typing for maps. You must declare Key and Value types (unless using variant type). Static maps are declared as {<key> -> <value>}\n\n```ctl\nmap[string, integer] my_dict = {\"A\" -> 1};\nmy_dict['B'] = 2;\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "Component: MAP (Reformat)\n\nIs this CTL2 valid? If not, correct it.\n\nInput metadata:\n<Metadata id=\"In\"><Record name=\"InRec\"><Field name=\"s\" type=\"string\"/></Record></Metadata>\n\nOutput metadata:\n<Metadata id=\"Out\"><Record name=\"OutRec\"><Field name=\"out\" type=\"string\"/></Record></Metadata>\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.out = replace($in.0.s, quote(\".\"), \"_\");\n    return ALL;\n}\n```",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-1419",
+          "index": 1418,
+          "words": 80,
+          "answer": "Not valid: `quote()` is not available. Implement a local escaping helper.\n\n```ctl\n//#CTL2\nfunction string regexQuote(string s) {\n    string meta = \".^$*+?()[]{}|\\\\\";\n    string out = \"\";\n    integer i;\n    for (i = 0; i < length(s); i++) {\n        string ch = substring(s, i, i + 1);\n        if (indexOf(meta, ch) >= 0) out = out + \"\\\\\" + ch;\n        else out = out + ch;\n    }\n    return out;\n}\n\nfunction integer transform() {\n    $out.0.out = replace($in.0.s, regexQuote(\".\"), \"_\");\n    return ALL;\n}\n```"
+        },
+        {
+          "id": "akmrx-11679",
+          "index": 11678,
+          "words": 32,
+          "answer": "`quote()` is not a CTL2 built-in. `replace()` takes a regex, so escape a literal dot as `\"\\\\.\"`.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.out = replace($in.0.s, \"\\\\.\", \"_\");\n    return ALL;\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "Component: MAP (Reformat)\n\nPick the first non-blank of (a,b,c); if all are blank or null, output \"0\". Use a ternary chain.\n\nInput metadata:\n<Metadata id=\"In\"><Record name=\"InRec\"><Field name=\"a\" type=\"string\" nullable=\"true\"/><Field name=\"b\" type=\"string\" nullable=\"true\"/><Field name=\"c\" type=\"string\" nullable=\"true\"/></Record></Metadata>\n\nOutput metadata:\n<Metadata id=\"Out\"><Record name=\"OutRec\"><Field name=\"val\" type=\"string\"/></Record></Metadata>",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-1448",
+          "index": 1447,
+          "words": 53,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n    // When $out.0.val is NOT NULLABLE, assigning null to it fails.\n    // That makes the fail-expression ':' useful as a fallback chain.\n    $out.0.val =\n        (!isBlank($in.0.a)) ? $in.0.a : null\n      : (!isBlank($in.0.b)) ? $in.0.b : null\n      : (!isBlank($in.0.c)) ? $in.0.c : null\n      : \"0\";\n\n    return ALL;\n}\n```"
+        },
+        {
+          "id": "akmrx-11683",
+          "index": 11682,
+          "words": 25,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.val = !isBlank($in.0.a) ? $in.0.a\n              : !isBlank($in.0.b) ? $in.0.b\n              : !isBlank($in.0.c) ? $in.0.c\n              : \"0\";\n    return ALL;\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "What does `normalizeDecimal()` do in CTL2?",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-3523",
+          "index": 3522,
+          "words": 67,
+          "answer": "`normalizeDecimal()` preprocesses a numeric string and returns a normalized `string`. It is used before parsing text as decimal, especially when the source text may contain currency symbols, spaces, or locale-style separators.\n\n```ctl\n//#CTL2\nstring a = normalizeDecimal(\"\u20ac1 234,50\");\nstring b = normalizeDecimal(\"USD 1,234.50\");\ndecimal x = str2decimal(a);\ndecimal y = str2decimal(b);\n```\n\nIt is not a decimal-to-string formatting function and it does not take a `decimal` argument."
+        },
+        {
+          "id": "akmrx-3532",
+          "index": 3531,
+          "words": 70,
+          "answer": "`normalizeDecimal(string)` takes a string and returns a normalized string representation of the numeric content. It removes formatting characters such as currency symbols and thousands separators and normalizes the decimal separator to `.`. It does not return `decimal` and it does not format a decimal value into a string.\n\n```ctl\n//#CTL2\nstring a = normalizeDecimal(\"1,035.24\");    // \"1035.24\"\nstring b = normalizeDecimal(\"\u20ac127\");        // \"127\"\nstring c = normalizeDecimal(\"123 456,789\"); // \"123456.789\"\n```"
+        },
+        {
+          "id": "akmrx-9930",
+          "index": 9929,
+          "words": 57,
+          "answer": "`normalizeDecimal(string)` preprocesses decimal number strings by removing non-numeric characters, standardizing the decimal separator, and removing thousand separators and currency symbols.\n\n```ctl\n//#CTL2\nstring a = normalizeDecimal(\"1,035.24\");     // \"1035.24\"\nstring b = normalizeDecimal(\"123 456,789\");  // \"123456.789\"\nstring c = normalizeDecimal(\"\u20ac127\");         // \"127\"\n```\n\nIt returns a normalized string, not a decimal value. You typically use it before `str2decimal()`."
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "What does `getMonth()` return for January in CTL2?",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-3592",
+          "index": 3591,
+          "words": 5,
+          "answer": "`getMonth()` returns `1` for January."
+        },
+        {
+          "id": "akmrx-10387",
+          "index": 10386,
+          "words": 42,
+          "answer": "`1` - `getMonth()` is 1-based: January = 1, February = 2, ..., December = 12.\n\n```ctl\ngetMonth(2025-01-15)  // returns 1\ngetMonth(2025-12-31)  // returns 12\n```\n\n`createDate()` also uses 1-based months:\n```ctl\ndate d = createDate(2025, 1, 15);  // January 15, 2025\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "In MAP/REFORMAT, log an info message once per run with today(), then pass records through.",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-3783",
+          "index": 3782,
+          "words": 27,
+          "answer": "```ctl\n//#CTL2\nfunction boolean init() {\n    printLog(info, \"Job started at \" + today());\n    return true;\n}\n\nfunction integer transform() {\n    $out.0.* = $in.0.*;\n    return ALL;\n}\n```"
+        },
+        {
+          "id": "akmrx-3809",
+          "index": 3808,
+          "words": 39,
+          "answer": "```ctl\n//#CTL2\nboolean started; //global variable, by default initialized to false value\n\nfunction integer transform() {\n  if (!started) {\n    started = true;\n    printLog(info, \"Job started at \" + date2str(today(), \"yyyy-MM-dd HH:mm:ss\"));\n  }\n  $out.0.* = $in.0.*;\n  return ALL;\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "In MAP/REFORMAT, parse JSON and cast to map. If cast fails, log error and skip.",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-3792",
+          "index": 3791,
+          "words": 74,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  try {\n    if (isnull($in.0.json)) {\n      printLog(error, \"Expected JSON object but got null for raw_id=\" + nvl($in.0.raw_id, \"\"));\n      return SKIP;\n    }\n    variant v = parseJson($in.0.json);\n    map[string, variant] m = cast(v, map, string, variant);\n    $out.0.id = cast(m[\"id\"], string) : null;\n    return ALL;\n  } catch (CTLException ex) {\n    printLog(error, \"Expected JSON object but got different structure for raw_id=\" + nvl($in.0.raw_id, \"\") + \": \" + ex.message);\n    return SKIP;\n  }\n}\n```"
+        },
+        {
+          "id": "akmrx-3812",
+          "index": 3811,
+          "words": 67,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  try {\n    variant v = parseJson(nvl($in.0.json, \"\"));\n    map[string, variant] m = cast(v, map, string, variant); //casting to map reuqires also specifying key and value types\n    $out.0.id = cast(m[\"id\"], string) : null;\n    return ALL;\n  } catch (CTLException ex) {\n    printLog(error, \"Expected JSON object but got different structure for raw_id=\" + nvl($in.0.raw_id, \"\") + \": \" + ex.message);\n    return SKIP;\n  }\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "In MAP/REFORMAT, if required map key is missing, log error and skip record.",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-3793",
+          "index": 3792,
+          "words": 60,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  if (isnull($in.0.json)) {\n    printLog(error, \"Missing customer_id in json for raw_id=\" + $in.0.raw_id);\n    return -1;\n  }\n\n  variant v = parseJson($in.0.json);\n  map[string, variant] m = cast(v, map, string, variant);\n\n  if (m[\"customer_id\"] == null) {\n    printLog(error, \"Missing customer_id in json for raw_id=\" + $in.0.raw_id);\n    return -1;\n  }\n\n  $out.0.customer_id = cast(m[\"customer_id\"], string) : null;\n  return ALL;\n}\n```"
+        },
+        {
+          "id": "akmrx-3813",
+          "index": 3812,
+          "words": 102,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  if (isnull($in.0.json)) {\n    printLog(error, \"Missing json for raw_id=\" + nvl($in.0.raw_id, \"\"));\n    return -1;\n  }\n\n  variant v = parseJson($in.0.json);\n  if (isnull(v)) {\n    printLog(error, \"Invalid json for raw_id=\" + nvl($in.0.raw_id, \"\"));\n    return -1;\n  }\n\n  map[string, variant] m = cast(v, map, string, variant); // casting to container type map requires additional type paremerers for key and value\n\n  if (!containsKey(m,\"customer_id\")) {\n    printLog(error, \"Missing customer_id in json for raw_id=\" + nvl($in.0.raw_id, \"\"));\n    return -1;\n  }\n\n  $out.0.customer_id = cast(m[\"customer_id\"], string) : null;\n  if (isnull($out.0.customer_id)) {\n    printLog(error, \"Null/invalid customer_id in json for raw_id=\" + nvl($in.0.raw_id, \"\"));\n    return -1;\n  }\n\n  return ALL;\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "In MAP/REFORMAT, detect schema mismatch: expecting revenue_amount as string, but got null. Log fatal and raiseError.",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-3796",
+          "index": 3795,
+          "words": 59,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  variant v = parseJson($in.0.json);\n  map[string, variant] m = cast(v, map, string, variant);\n\n  if (m[\"revenue_amount\"] == null) {\n    printLog(fatal, \"Schema mismatch: revenue_amount missing/null for raw_id=\" + $in.0.raw_id);\n    raiseError(\"Schema mismatch: revenue_amount is required in JSON for raw_id=\" + $in.0.raw_id);\n  }\n\n  decimal rev = str2decimal(nvl(cast(m[\"revenue_amount\"], string) : null, \"\"));\n  $out.0.revenue_amount = rev;\n  return ALL;\n}\n```"
+        },
+        {
+          "id": "akmrx-3814",
+          "index": 3813,
+          "words": 54,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  variant v = parseJson($in.0.json);\n\n  if (isnull(v) || !containsKey(v,\"revenue_amount\") || isnull(v[\"revenue_amount\"])) {\n    printLog(fatal, \"Schema mismatch: revenue_amount missing/null for raw_id=\" + nvl($in.0.raw_id, \"\"));\n    raiseError(\"Schema mismatch: revenue_amount is required in JSON for raw_id=\" + nvl($in.0.raw_id, \"\"));\n  }\n\n  decimal rev = (str2decimal(cast(v[\"revenue_amount\"], string)) : null);\n  $out.0.revenue_amount = rev;\n  return ALL;\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "In MAP/REFORMAT, parse JSON, and if parsing fails, log fatal and raiseError with user-friendly context.",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-3797",
+          "index": 3796,
+          "words": 61,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  try {\n    variant v = parseJson($in.0.json);\n    map[string, variant] m = cast(v, map, string, variant);\n    $out.0.id = cast(m[\"id\"], string);\n    return ALL;\n  } catch (CTLException ex) {\n    printLog(fatal, \"Unrecoverable JSON parse failure for raw_id=\" + nvl($in.0.raw_id, \"\") + \": \" + ex.message);\n    raiseError(\"Invalid JSON for raw_id=\" + nvl($in.0.raw_id, \"\") + \": \" + ex.message);\n  }\n}\n```"
+        },
+        {
+          "id": "akmrx-3815",
+          "index": 3814,
+          "words": 58,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  variant v = null;\n  try {\n    v = parseJson($in.0.json);\n    $out.0.id = cast(v[\"id\"], string) : null;\n    return ALL;\n  } catch (CTLException ex) {\n    printLog(fatal, \"Unrecoverable JSON parse failure for raw_id=\" + nvl($in.0.raw_id, \"\") + \": \" + ex.message);\n    raiseError(\"Invalid JSON for raw_id=\" + nvl($in.0.raw_id, \"\") + \": \" + ex.message);\n  }\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "In MAP/REFORMAT, parse date with str2date(input, pattern). If parsing fails, raiseError mentioning expected pattern and value.",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-3799",
+          "index": 3798,
+          "words": 47,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  string pat = \"yyyy-MM-dd\";\n  try {\n    date d = str2date($in.0.ds, pat);\n    $out.0.dt = d;\n    return ALL;\n  } catch (CTLException ex) {\n    raiseError(\"Invalid date '\" + $in.0.ds + \"'; expected pattern \" + pat + \": \" + ex.message);\n  }\n}\n```"
+        },
+        {
+          "id": "akmrx-3816",
+          "index": 3815,
+          "words": 61,
+          "answer": "```ctl\n//#CTL2\nconst string pat = \"yyyy-MM-dd\"; //pattern defined at global level as constat - non modifiable after initialization\n\nfunction integer transform() {\n  try {\n    date d = str2date($in.0.ds, pat);\n    $out.0.dt = d;\n    return ALL;\n  } catch (CTLException ex) {\n    raiseError(\"Invalid date '\" + nvl($in.0.ds, \"\") + \"'; expected pattern \" + pat + \": \" + ex.message);\n  }\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "In MAP/REFORMAT, input JSON is expected to be an array. If it's not, raiseError with a message that explains the expected shape.",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-3803",
+          "index": 3802,
+          "words": 64,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  try {\n    if (isBlank($in.0.json)) {\n      raiseError(\"Expected JSON array in field json for id=\" + nvl($in.0.id, \"\") + \".\");\n    }\n    variant v = parseJson($in.0.json);\n    list[variant] arr = cast(v, list, variant);\n    $out.0.count = length(arr);\n    return ALL;\n  } catch (CTLException ex) {\n    raiseError(\"Expected JSON array in field json for id=\" + nvl($in.0.id, \"\") + \". \" + ex.message);\n  }\n}\n```"
+        },
+        {
+          "id": "akmrx-3818",
+          "index": 3817,
+          "words": 56,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n    variant v = null;\n    if (isnull($in.0.json)) {\n       raiseError(\"Expected JSON array in field json for id=\" + toString($in.0.id) + \". Input json is null.\");\n    }\n    v = parseJson($in.0.json);\n    if(!(v typeof list)){\n       raiseError(\"Expected JSON array in field json for id=\" + toString($in.0.id) + \".\");\n    }\n    $out.0.count_items = length(v);\n    return ALL;\n\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "In MAP/REFORMAT, if revenue_amount exceeds an absolute maximum, raiseError to stop processing.",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-3804",
+          "index": 3803,
+          "words": 51,
+          "answer": "```ctl\n//#CTL2\nfunction integer transform() {\n  decimal rev = $in.0.revenue_amount;\n  decimal max = 999999999D;\n\n  if (!isnull(rev) && rev > max) {\n    raiseError(\"Revenue too large for customer_id=\" + nvl($in.0.customer_id, \"\") + \" rev=\" + nvl(rev, 0D) + \" (max \" + max + \")\");\n  }\n\n  $out.0.* = $in.0.*;\n  return ALL;\n}\n```"
+        },
+        {
+          "id": "akmrx-3819",
+          "index": 3818,
+          "words": 55,
+          "answer": "```ctl\n//#CTL2\n\nconst  decimal max = 999999999D; //max defined as constant\n\nfunction integer transform() {\n  decimal rev = $in.0.revenue_amount;\n  if (!isnull(rev) && rev > max) {\n    raiseError(\"Revenue too large for customer_id=\" + nvl($in.0.customer_id, \"\") + \" rev=\" + rev + \" (max \" + max + \")\");\n  }\n\n  $out.0.* = $in.0.*;\n  return ALL;\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "After normalizeDecimal turns a euro-formatted value into 9876.50, should I still pass a German pattern to str2decimal?",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-4326",
+          "index": 4325,
+          "words": 44,
+          "answer": "No. Normalization has already produced a plain decimal string, so use the one-argument overload:\n\nstring normalized = normalizeDecimal($in.0.amountText);\ndecimal amount = str2decimal(normalized);\n\nA format and locale describe the original presentation. For a known German source, parse the raw value directly with str2decimal($in.0.amountText, \"#,##0.00\", \"de.DE\")."
+        },
+        {
+          "id": "akmrx-4348",
+          "index": 4347,
+          "words": 44,
+          "answer": "No. Normalization has already produced a plain decimal string, so use the one-argument overload:\n\nstring normalized = normalizeDecimal($in.0.amountText);\ndecimal amount = str2decimal(normalized);\n\nA format and locale describe the original presentation. For a known German source, parse the raw value directly with str2decimal($in.0.amountText, \"#.##0,00\", \"de.DE\")."
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "I need letters only from A-17 blue, producing Ablue. Is getAlphanumericChars suitable?",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-4330",
+          "index": 4329,
+          "words": 33,
+          "answer": "Yes. `getAlphanumericChars($in.0.label, true, false)` is the direct built-in for letters only. A regex replacement is an alternative:\n\nstring lettersOnly = replace($in.0.label, \"[^A-Za-z]\", \"\");\n\nThe pattern matches every character that is not a letter."
+        },
+        {
+          "id": "akmrx-4349",
+          "index": 4348,
+          "words": 36,
+          "answer": "No. getAlphanumericChars(string) has one argument and retains both letters and digits. To retain ASCII letters only, use a regex replacement:\n\nstring lettersOnly = replace($in.0.label, \"[^A-Za-z]\", \"\");\n\nThe pattern matches every character that is not a letter."
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "Can getAlphanumericChars(input, \"[0-9]\") select just the digits from an invoice code?",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-4333",
+          "index": 4332,
+          "words": 53,
+          "answer": "No. getAlphanumericChars() does not accept a regex or selector; its one-argument form keeps letters and digits; the three-argument overload selects alpha and numeric characters independently. For digits only, remove non-digits:\n\nstring digits = replace($in.0.invoiceCode, \"[^0-9]\", \"\");\n\nDo not use this to prepare a decimal amount because it removes the decimal separator and sign."
+        },
+        {
+          "id": "akmrx-4350",
+          "index": 4349,
+          "words": 44,
+          "answer": "No. getAlphanumericChars() does not accept a regex or selector; its one-argument form keeps letters and digits. For digits only, remove non-digits:\n\nstring digits = replace($in.0.invoiceCode, \"[^0-9]\", \"\");\n\nDo not use this to prepare a decimal amount because it removes the decimal separator and sign."
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "What are sequences in CloverDX?",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-4880",
+          "index": 4879,
+          "words": 122,
+          "answer": "Sequences in CloverDX generate unique sequential values, typically used for creating primary keys or unique identifiers.\n\n**Types of sequences:**\n\n**1. SimpleSequence** - Simple counter, persisted on diskxml\n<Sequence id=\"OrderSeq\" name=\"OrdersSequence\" type=\"SIMPLE_SEQUENCE\"\n  start=\"1\"\n  step=\"1\"\n  fileURL=\"${DATAIN_DIR}/setquence.dat\"\n  cached=\"100\"/>\n**Using sequences in CTL2:**\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    // Get next value from sequence\n    $out.0.order_id = sequence(OrderSeq).next();\n    $out.0.customer_name = $in.0.name;\n    return ALL;\n}\n```\n\n**Sequence functions:**\n- `sequence(SeqId).next()` - Get next value and increment\n- `sequence(SeqId).current()` - Get current value without incrementing\n- `sequence(SeqId).reset()` - Reset to start value\n\n**Properties:**\n- **start**: Initial value\n- **step**: Increment amount\n- **cached**: Number of values to cache (performance)\n\n**Use cases:**\n- Generating surrogate keys\n- Creating unique transaction IDs\n- Batch numbering\n- Row numbering within transformations"
+        },
+        {
+          "id": "akmrx-9421",
+          "index": 9420,
+          "words": 43,
+          "answer": "Sequences in CloverDX are graph objects designed to generate numbers, for example for record numbering or unique identifiers. In CTL2 you do not define sequences inline in code; you access an existing graph sequence through `sequence(name)` and then call `current()`, `next()`, or `reset()`."
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "I am using a Rollup to aggregate shipments by route. Each input has:\n\n- route_id: string (not null)\n- metrics_json: string (nullable)   // JSON object of metrics like { \"weight\": 5000, \"boxes\": 120 }\n\nThe group accumulator record `RouteAgg` has:\n- route_id: string (not null)\n- last_metrics: variant (nullable)\n\nIn the Rollup `finishGroup` I want to convert `last_metrics` (a JSON string copied from input) into a map and keep it as a variant for output. Can you show the Rollup functions to do that using `toMap`? Assume the output port has fields `route_id` and `metrics_map: variant`.",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-8206",
+          "index": 8205,
+          "words": 109,
+          "answer": "`toMap()` cannot convert a parsed JSON variant. Use `cast()` and store the resulting map in the accumulator's `variant` field during `finishGroup()`.\n\n```ctl\n//#CTL2\nfunction void initGroup(RouteAgg groupAccumulator) {\n    groupAccumulator.route_id = \"\";\n    groupAccumulator.last_metrics = null;\n}\n\nfunction boolean updateGroup(RouteAgg groupAccumulator) {\n    groupAccumulator.route_id = $in.0.route_id;\n\n    if (!isnull($in.0.metrics_json)) {\n        groupAccumulator.last_metrics = $in.0.metrics_json;\n    }\n\n    return false;\n}\n\nfunction boolean finishGroup(RouteAgg groupAccumulator) {\n    if (!isnull(groupAccumulator.last_metrics)) {\n        variant parsed = parseJson(cast(groupAccumulator.last_metrics, string));\n        groupAccumulator.last_metrics = cast(parsed, map, string, variant);\n    }\n\n    return true;\n}\n\nfunction integer updateTransform(integer counter, RouteAgg groupAccumulator) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, RouteAgg groupAccumulator) {\n    if (counter > 0) return SKIP;\n\n    $out.0.route_id = groupAccumulator.route_id;\n    $out.0.metrics_map = groupAccumulator.last_metrics;\n    return ALL;\n}\n```"
+        },
+        {
+          "id": "akmrx-8209",
+          "index": 8208,
+          "words": 107,
+          "answer": "Use `cast()`, not `toMap()`. `toMap()` builds a map from key/value lists; it does not convert a parsed JSON `variant`.\n\n```ctl\n//#CTL2\nfunction void initGroup(RouteAgg groupAccumulator) {\n    groupAccumulator.route_id = \"\";\n    groupAccumulator.last_metrics = null;\n}\n\nfunction boolean updateGroup(RouteAgg groupAccumulator) {\n    groupAccumulator.route_id = $in.0.route_id;\n\n    if (!isnull($in.0.metrics_json)) {\n        groupAccumulator.last_metrics = $in.0.metrics_json;\n    }\n\n    return false;\n}\n\nfunction boolean finishGroup(RouteAgg groupAccumulator) {\n    if (!isnull(groupAccumulator.last_metrics)) {\n        variant parsed = parseJson(cast(groupAccumulator.last_metrics, string));\n        groupAccumulator.last_metrics = cast(parsed, map, string, variant);\n    }\n\n    return true;\n}\n\nfunction integer updateTransform(integer counter, RouteAgg groupAccumulator) {\n    return SKIP;\n}\n\nfunction integer transform(integer counter, RouteAgg groupAccumulator) {\n    if (counter > 0) return SKIP;\n\n    $out.0.route_id = groupAccumulator.route_id;\n    $out.0.metrics_map = groupAccumulator.last_metrics;\n    return ALL;\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "Given Input Metadata on Port 0:\n<Metadata id=\"InLogs\">\n<Record name=\"LogEntry\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"timestamp\" type=\"date\"/>\n    <Field name=\"level\" type=\"string\"/>\n    <Field name=\"message\" type=\"string\"/>\n</Record>\n</Metadata>\n\nWrite a Filter expression that passes log entries where message contains the word \"timeout\".",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-11644",
+          "index": 11643,
+          "words": 52,
+          "answer": "```ctl\n//#CTL2\n!isnull($in.0.message) && $in.0.message ?= \"\\\\btimeout\\\\b\"\n```\n\n`?=` searches for a regex match anywhere in the message. The `\\\\b` word boundaries ensure that `timeout` is matched as a word rather than as part of a longer token such as `timeouts`.\n\nFor case-insensitive matching:\n\n```ctl\n//#CTL2\n!isnull($in.0.message) && $in.0.message ?= \"(?i)\\\\btimeout\\\\b\"\n```"
+        },
+        {
+          "id": "akmrx-11685",
+          "index": 11684,
+          "words": 41,
+          "answer": "A Filter uses a bare boolean expression. Because `?=` uses regex containment, use word boundaries to avoid matching a larger word such as `timeouts`.\n\n```ctl\n//#CTL2\nnvl($in.0.message, \"\") ?= \"\\\\btimeout\\\\b\"\n```\n\nThis is case-sensitive. For case-insensitive matching, use the pattern `\"(?i)\\\\btimeout\\\\b\"`."
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data.json",
+      "prompt": "What are all the comparison and string operators available in CTL2?",
+      "in_reasoning_corpus": false,
+      "variants": [
+        {
+          "id": "akmrx-11647",
+          "index": 11646,
+          "words": 148,
+          "answer": "CTL2 comparison and pattern operators are:\n\n| Purpose | Operators |\n|---|---|\n| Equal | `==`, `.eq.` |\n| Not equal | `!=`, `<>`, `.ne.` |\n| Less than | `<`, `.lt.` |\n| Greater than | `>`, `.gt.` |\n| Less than or equal | `<=`, `=<`, `.le.` |\n| Greater than or equal | `>=`, `=>`, `.ge.` |\n| Regex full match | `~=`, `.regex.` |\n| Regex contains | `?=` |\n| String concatenation | `+` |\n\nRelated logical operators are `&&` / `and`, `||` / `or`, and `!` / `not`.\n\n```ctl\nboolean adult = !isnull($in.0.age) && $in.0.age >= 18;\nboolean fullId = $in.0.code ~= \"[A-Z]{3}\";\nboolean hasError = $in.0.log ?= \"(?i)error\";\nstring fullName = nvl($in.0.first, \"\") + \" \" + nvl($in.0.last, \"\");\n```\n\nEquality and inequality are null-safe. Ordered comparisons such as `<` and `>=` must be guarded when either operand can be null."
+        },
+        {
+          "id": "akmrx-11686",
+          "index": 11685,
+          "words": 136,
+          "answer": "**Comparison operators**\n\n- Equality: `==` or `.eq.`\n- Inequality: `!=`, `<>`, or `.ne.`\n- Less than: `<` or `.lt.`\n- Greater than: `>` or `.gt.`\n- Less than or equal: `<=`, `=<`, or `.le.`\n- Greater than or equal: `>=`, `=>`, or `.ge.`\n\nEquality and inequality are null-safe. Ordered comparisons require non-null operands.\n\n**String and pattern operators**\n\n- `+` concatenates strings.\n- `~=` or `.regex.` performs a whole-string regex match.\n- `?=` performs a regex-contains match.\n\nRelated logical operators are `&&` / `and`, `||` / `or`, and `!` / `not`.\n\nMembership is not an operator: use `in(value, collection)`. For maps, it tests keys; use `containsValue(map, value)` to test values.\n\n```ctl\n!isnull($in.0.age) && $in.0.age >= 18;\n$in.0.email ~= \"[a-z]+@[a-z]+\\\\.[a-z]+\";\n$in.0.log ?= \"(?i)error\";\n$out.0.name = nvl($in.0.first, \"\") + \" \" + nvl($in.0.last, \"\");\nin($in.0.country, [\"US\", \"CA\", \"MX\"]);\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "prompt": "In MAP/REFORMAT, parse a JSON string constant and write name (string), age (integer), and city (string) to output fields.",
+      "in_reasoning_corpus": true,
+      "variants": [
+        {
+          "id": "jdixp-649",
+          "index": 648,
+          "words": 48,
+          "answer": "Use `parseJson()` and explicitly cast the resulting properties to the output types.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    string jsonText = \"{\\\"name\\\":\\\"Zoe\\\",\\\"age\\\":42,\\\"city\\\":\\\"Tokyo\\\"}\";\n    variant v = parseJson(jsonText);\n\n    $out.0.name = cast(v[\"name\"], string) : null;\n    $out.0.age = cast(v[\"age\"], integer) : null;\n    $out.0.city = cast(v[\"city\"], string) : null;\n    return ALL;\n}\n```"
+        },
+        {
+          "id": "jdixp-658",
+          "index": 657,
+          "words": 50,
+          "answer": "Parse the constant JSON and cast every variant property to its destination field type.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    string jsonText = \"{\\\"name\\\":\\\"Marta\\\",\\\"age\\\":18,\\\"city\\\":\\\"London\\\"}\";\n    variant v = parseJson(jsonText);\n\n    $out.0.name = cast(v[\"name\"], string) : null;\n    $out.0.age = cast(v[\"age\"], integer) : null;\n    $out.0.city = cast(v[\"city\"], string) : null;\n    return ALL;\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "prompt": "Given metadata record PersonRec(name:string, age:integer, city:string) on output port 0, parse JSON and assign the filled record directly to $out.0.",
+      "in_reasoning_corpus": true,
+      "variants": [
+        {
+          "id": "jdixp-656",
+          "index": 655,
+          "words": 61,
+          "answer": "Declare the local record using the supplied metadata name, fill it from JSON, and assign it to output port 0.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    string jsonText = \"{\\\"name\\\":\\\"Bob\\\",\\\"age\\\":25,\\\"city\\\":\\\"London\\\"}\";\n    variant v = parseJson(jsonText);\n    PersonRec p;\n\n    p.name = cast(v[\"name\"], string) : null;\n    p.age = cast(v[\"age\"], integer) : null;\n    p.city = cast(v[\"city\"], string) : null;\n    $out.0 = p;\n    return ALL;\n}\n```"
+        },
+        {
+          "id": "jdixp-657",
+          "index": 656,
+          "words": 58,
+          "answer": "Use the provided `PersonRec` metadata for the local record and assign the matching record to port 0.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    string jsonText = \"{\\\"name\\\":\\\"Eve\\\",\\\"age\\\":46,\\\"city\\\":\\\"Berlin\\\"}\";\n    variant v = parseJson(jsonText);\n    PersonRec p;\n\n    p.name = cast(v[\"name\"], string) : null;\n    p.age = cast(v[\"age\"], integer) : null;\n    p.city = cast(v[\"city\"], string) : null;\n    $out.0 = p;\n    return ALL;\n}\n```"
+        }
+      ]
+    },
+    {
+      "file": "CTL_LoRA_training_data_think.json",
+      "prompt": "Validate the proposed CTL2 implementation against the original request. Focus on CTL2 syntax and whether the implementation satisfies the requested business logic.\n\nORIGINAL REQUEST:\nGiven Output Metadata on Port 0:\n<Metadata id=\"OutAuditSchedule\">\n<Record name=\"AuditScheduleRecord\" fieldDelimiter=\",\" recordDelimiter=\"\\n\" type=\"delimited\">\n    <Field name=\"control_run_id\" type=\"long\"/>\n    <Field name=\"review_date\" type=\"date\" format=\"yyyy-MM-dd\"/>\n    <Field name=\"compliance_year\" type=\"integer\" nullable=\"false\"/>\n    <Field name=\"compliance_month\" type=\"integer\"/>\n    <Field name=\"iso_week_number\" type=\"integer\" nullable=\"true\"/>\n    <Field name=\"weekday_code\" type=\"integer\"/>\n    <Field name=\"season_window\" type=\"string\" nullable=\"false\"/>\n    <Field name=\"site_visit_required\" type=\"boolean\"/>\n</Record>\n</Metadata>\n\nWrite a DataGenerator that creates a Nordics energy and utilities compliance audit schedule for dates from 2024-10-01 through 2025-03-31, but only outputs records when the date is either a Monday or the last calendar day of the month. Populate season_window as \"dark_season\" for dates in November through February and \"shoulder_season\" otherwise. Set site_visit_required to true only when the generated date is the last calendar day of the month and is not a Saturday or Sunday.\n\nPROPOSED CTL2 IMPLEMENTATION:\n```ctl\n//#CTL2\n\ndate currentDate;\ndate endDate;\n\nfunction boolean init() {\n    currentDate = str2date(\"2024-10-01\", \"yyyy-MM-dd\");\n    endDate = str2date(\"2025-03-31\", \"yyyy-MM-dd\");\n    return true;\n}\n\nfunction integer generate() {\n    if (currentDate > endDate) {\n        return STOP;\n    }\n\n    integer dayOfWeek = getDayOfWeek(currentDate);\n    integer dayOfMonth = getDay(currentDate);\n    integer month = getMonth(currentDate);\n    integer year = getYear(currentDate);\n\n    // Check if it's Monday or last day of the month\n    boolean isMonday = (dayOfWeek == 2);\n    boolean isLastDayOfMonth = (dateAdd(currentDate, 1, day) > dateAdd(currentDate, -1, month));\n\n    if (!isMonday && !isLastDayOfMonth) {\n        currentDate = dateAdd(currentDate, 1, day);\n        return SKIP;\n    }\n\n    $out.0.control_run_id = randomLong();\n    $out.0.review_date = currentDate;\n    $out.0.compliance_year = year;\n    $out.0.compliance_month = month;\n    $out.0.iso_week_number = getWeekNumber(currentDate);\n    $out.0.weekday_code = dayOfWeek;\n\n    if (month >= 11 || month <= 2) {\n        $out.0.season_window = \"dark_season\";\n    } else {\n        $out.0.season_window = \"shoulder_season\";\n    }\n\n    // Site visit required only on last day of month and not weekend\n    $out.0.site_visit_required = isLastDayOfMonth && (dayOfWeek != 6 && dayOfWeek != 7);\n\n    currentDate = dateAdd(currentDate, 1, day);\n    return OK;\n}\n```",
+      "in_reasoning_corpus": true,
+      "variants": [
+        {
+          "id": "jdixp-975",
+          "index": 974,
+          "words": 130,
+          "answer": "ISSUES:\n  [ERROR] `getWeekNumber()` is not a CTL2 function, so the assignment to `iso_week_number` cannot compile.\n  [ERROR] `generate()` returns `STOP` after the range and `SKIP` for nonmatching dates. DataGenerator configuration must control invocation count, and each `generate()` call must emit one row.\n  [WARNING] `getDayOfWeek()` numbers Monday as 1, so `dayOfWeek == 2` selects Tuesdays rather than Mondays.\n  [WARNING] The last-day test compares tomorrow with a date one month earlier and is effectively true for ordinary dates, so it does not identify month ends.\n\nSUGGESTIONS:\n  - Use a supported CTL2 week extraction such as `date2num(currentDate, week)` when it matches the graph's required week-number convention.\n  - Configure the required output count, advance the module-level date cursor until the next Monday or month-end, emit that row, and return a normal output code.\n\nVERDICT: FAIL"
+        },
+        {
+          "id": "jdixp-979",
+          "index": 978,
+          "words": 166,
+          "answer": "ISSUES:\n  [ERROR] `getWeekNumber()` is not a CTL2 function, so the assignment to `iso_week_number` cannot compile.\n  [ERROR] `generate()` uses `return STOP;` to stop after the range and `return SKIP;` for nonmatching dates. DataGenerator configuration must control invocation count, while every `generate()` call must emit one record.\n  [WARNING] `getDayOfWeek()` numbers Monday as 1, so `dayOfWeek == 2` selects Tuesday rather than Monday.\n  [WARNING] The `isLastDayOfMonth` comparison is true for ordinary dates because tomorrow is almost always later than a date one month earlier, so non-Mondays are selected incorrectly.\n\nSUGGESTIONS:\n  - Use a supported CTL2 week extraction such as `date2num(currentDate, week)` when it matches the graph's required week-number convention.\n  - Configure the component for the required number of output invocations. Keep the date cursor at module scope, advance it inside each call until the next Monday or month-end, emit that record, and return `OK`.\n  - Detect month end by comparing the next day's month with the current month; `month` and `year` do not need to be renamed.\n\nVERDICT: FAIL"
+        }
+      ]
+    }
+  ]
+}
