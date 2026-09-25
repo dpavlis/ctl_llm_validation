@@ -140,10 +140,42 @@ VERDICT: FAIL
 
 Use `ISSUES:\n  [INFO] No issues found.` with `VERDICT: PASS` for clean code.
 
-**If a record carries reasoning, emit it as a separate `reasoning_content` field — never
-hand-write `<think>` tags.** `content` holds the answer, `reasoning_content` the thinking;
+### Every record must carry `reasoning_content` — this is not optional
+
+**Write a `reasoning_content` field on every new record in A and B, and on every conversion
+in C.** A record without it trains in one phase; a record with it trains in two, and the
+second phase is the one that matters most here (see below). Never hand-write `<think>`
+tags: `content` holds the answer, `reasoning_content` holds the thinking, and
 `convert_think.py` merges them. The merge needs an exact literal spelling and a hand-typed
 variant fails silently, training the reasoning with loss where it should have none.
+
+**Why it is mandatory here.** The pipeline builds two datasets. Phase 1 trains on every
+record, answers only. Phase 3 trains *only* on records that have reasoning, runs last, and
+is short and gentle. The Rollup imbalance exists in both, and it is worse where it counts:
+
+| | per-record : summary-only | ratio | summary-only as share of corpus |
+|---|---|---|---|
+| phase 1 | 25 : 342 | 1:13.7 | 3.0% |
+| phase 3 | 19 : 95 | 1:5.0 | **10.0%** |
+
+Phase 3 is over three times denser in summary-only Rollup content and it is the last thing
+the model sees, which is why this failure is dose-sensitive. Records written without
+`reasoning_content` would land in phase 1 only and leave phase 3 untouched at 1:5.0 —
+fixing the phase that is not driving the problem. With reasoning on all ~20 new records,
+phase 3 moves to roughly 1:2.4.
+
+Note that conversions do not help phase 3 much on their own: of the listed conversion
+targets, all but `treasoniae_62` currently live outside the reasoning corpus. Giving them
+`reasoning_content` as part of the rewrite is what pulls them into phase 3.
+
+**What the reasoning should say.** For a generate record, walk the decision the pattern
+turns on rather than narrating the code: why this task needs the per-record loop at all,
+therefore why `updateGroup()` returns true, why `updateTransform()` needs the `counter`
+guard (a port return re-invokes it), why it returns the port number rather than `ALL`, and
+why the running value is read after the accumulator has folded in the current record. For
+a validate record, reach the rule before stating the verdict. Name the fields and functions
+of that specific record rather than referring to them generically. Around 200-300 tokens
+is right; length must come from grounding, not restatement.
 
 Every record needs `id`, `messages`, and `source_file` / `source_index` / `source_id`.
 
@@ -159,6 +191,16 @@ def body(s):
     if not m: return ''
     rest = s[m.end():]; nxt = re.search(r'\nfunction\s', rest)
     return rest[:nxt.start()] if nxt else rest[:800]
+
+rea = lambda e: ''.join(m.get('reasoning_content','') or '' for m in e['messages'] if m['role']=='assistant')
+missing = [e.get('id') for e in R if not rea(e).strip()]
+print('records with NO reasoning_content (want 0):', len(missing), missing[:5])
+print('records with hand-written <think> tags (want 0):',
+      sum(1 for e in R if '<think>' in asst(e) or '<think>' in rea(e)))
+import statistics as st
+tok = sorted(len(rea(e).split()) * 4 // 3 for e in R if rea(e).strip())
+if tok: print('reasoning tokens: median %d  p10 %d  p90 %d  (target ~200-300)' % (
+    st.median(tok), tok[len(tok)//10], tok[9*len(tok)//10]))
 
 gen = [e for e in R if 'ISSUES:' not in asst(e)]
 per = [e for e in gen if re.search(r'\$out\.\d+\.', body(asst(e)))]
@@ -194,6 +236,16 @@ roll = [e for e in R if HAS.search(a(e))]
 per  = [e for e in roll if re.search(r'\$out\.\d+\.', body(a(e)))]
 print(f'per-record {len(per)} : summary-only {len(roll)-len(per)}  = 1:{(len(roll)-len(per))/max(1,len(per)):.1f}')
 print('  baseline was 1:13.7 (25 : 342); target after this work is about 1:5 (66 : 321)')
+```
+
+**Run the same ratio check on `CTL_LoRA_training_data_think.json`** — that is the phase-3
+dataset and the one this work most needs to move:
+
+```python
+# identical to the block above, but opening CTL_LoRA_training_data_think.json
+#   baseline 1:5.0 (19 : 95); target about 1:2.4 or better
+# If this number has not moved, the new records are missing reasoning_content
+# and the intervention has not touched the phase that drives the failure.
 ```
 
 Then rebuild both corpus files and run the standard pre-flight (findings §5.1): no
