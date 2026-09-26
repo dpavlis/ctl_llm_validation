@@ -7,7 +7,7 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-09-23 with the phase-3 dose test (§3.6), the targeted-examples retrain
+Last updated 2026-09-26 with the checkpoint-selection defect (§4.4), the phase-3 dose test (§3.6), the targeted-examples retrain
 (§3.7), and the words-per-finding result that explains WRONG findings (§3.8).
 
 ---
@@ -435,7 +435,53 @@ fix1. A first pass at the fix2 comparison used the pooled number and concluded f
 had roughly doubled its wrong findings; on the correct metric the increase is 4.3
 points and is explained by §3.8.
 
-### 4.4 Noise floor
+### 4.4 `load_best_model_at_end` was picking checkpoints at random — now disabled
+
+The SFT eval_loss curve is flat across the back half of training, so "best checkpoint"
+was decided by noise, and the SFT dose reaching DPO swung by 2× between otherwise
+identical runs:
+
+| run | SFT checkpoint | through training | best eval_loss |
+|---|---|---|---|
+| fix1 | 1750 / 1924 | 91% | 0.13478 |
+| fix2 | 1800 / 1940 | 93% | 0.13638 |
+| fix3 | 1950 / 1962 | 99% | 0.13906 |
+| **fix4** | **950 / 1968** | **48%** | 0.13931 |
+
+In the fix4 run **16 of 39 evaluated checkpoints were within 0.002 eval_loss of the
+best**, and step 950 beat step 1000 by **0.00004**. fix4 then posted the worst validate
+score measured (0.5538 against fix2's 0.8462) — a confound larger than most of the
+effects this project has been chasing, and one that silently contaminated every
+cross-run comparison before it.
+
+**The eval sets are also mismatched to what the phases teach**, so eval_loss is the
+wrong signal twice over:
+
+| | train validate share | eval validate share |
+|---|---|---|
+| phase 1 | 12.6% | 3.9% |
+| **phase 3** | **41.8%** | **5.0%** |
+
+Phase 3 trains 42% validate content and is evaluated on three validate records, two of
+them single-finding; of the 47 multi-defect reviews in phase-3 training the eval set
+contains one. Eval answers are also shorter than training answers (35w vs 51w in phase
+1, 38w vs 62w in phase 3), which pushes loss toward saturation and flattens the curve.
+
+The eval sets are otherwise **clean**: no duplicate prompts, no overlap with the judged
+suite, no missing `//#CTL2` headers, and no invalid CTL2 (a library scan flagged 20
+records, all false positives — `lookup()`/`sequence()` are syntax constructs, `freq()` is
+a helper the prompt asks the model to define, and `toDecimal()` appears in a validate
+record that correctly flags it as not existing).
+
+`load_best_model_at_end: false` on all three phases as of 2026-09-26. train.py's
+`find_best_checkpoint()` then falls through to the last checkpoint: deterministic and
+full-dose. **Set the dose with `num_train_epochs`, or export a specific checkpoint by
+hand — never by letting eval_loss choose.** Note this locks phase 3 at its heaviest dose
+(3 epochs), which is a real choice rather than a safe default: §3.6 and the fix3
+checkpoint tests found a lighter phase-3 dose much better on T37 (ckpt-100 0.97 vs
+ckpt-250 0.57).
+
+### 4.5 Noise floor
 
 Suite sd is 0.004–0.017 at T=0.4 — much tighter than the 0.054 seen under the old configs,
 but that improvement came from removing the penalties, not from temperature. Differences
