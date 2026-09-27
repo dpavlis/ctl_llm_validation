@@ -7,8 +7,14 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-09-26 with the checkpoint-selection defect (§4.4), the phase-3 dose test (§3.6), the targeted-examples retrain
-(§3.7), and the words-per-finding result that explains WRONG findings (§3.8).
+Last updated 2026-09-27 with the SFT-checkpoint confound confirmed and the two dose effects
+shown non-additive (§3.9, §4.4), the checkpoint-selection defect (§4.4), the phase-3 dose test
+(§3.6), the targeted-examples retrain (§3.7), and the words-per-finding result that explains
+WRONG findings (§3.8).
+
+**Two suites are in play.** Rows above `fix3` were measured on the 38-test v4 suite; `fix3`
+onward include T39/T40, a new `fix` task type. Suite scores are **not** comparable across the
+two — compare generate, validate and the like-for-like column instead.
 
 ---
 
@@ -28,6 +34,43 @@ Last updated 2026-09-26 with the checkpoint-selection defect (§4.4), the phase-
 | **b12** | 11468 | **12** | none | 0.8847 | 0.034 | 0.9602 | 0.7393 | **14/114** |
 | ckpt100 | 11468 | 24 | 2.6 ep @ 12/step | 0.8710 | 0.014 | 0.9564 | 0.7068 | 0/114 |
 
+### 1.1 The 40-test suite (T39/T40 added — `fix` task type)
+
+Not comparable to the table above on **suite**; generate, validate and the like-for-like
+column are. Like-for-like is T1–T38 excluding T5, which changed rubric when B5 was retired.
+
+| model | SFT ckpt | phase 3 | **generate** | perfect | T37 | validate | fix | like-for-like | unclosed `<think>` |
+|---|---|---|---|---|---|---|---|---|---|
+| **0917** (38-test) | — | none | **0.9858** | 92% | 0.97 | 0.8034 | — | 0.9258 | 0/114 |
+| **fix4 @ p3 ckpt-100** | **950** | 1.1 ep | **0.9691** | 84% | **1.00** | 0.6297 | 0.695 | 0.8647 | 0/200 |
+| **fix5** | **1950** | 2.8 ep | 0.9592 | 82% | 0.84 | **0.8064** | 0.610 | **0.9139** | 0/200 |
+| **fix2** (38-test) | 1800 | 2.1 ep | 0.9568 | 81% | 0.77 | **0.8462** | — | 0.9243 | 0/114 |
+| fix3 | 1950 | 2.9 ep | 0.9527 | 80% | 0.57 | 0.7111 | **0.792** | 0.8742 | 0/120 |
+| **fix5 @ p3 ckpt-100** | **1950** | 1.1 ep | 0.9500 | 78% | **1.00** | 0.7897 | 0.440 | 0.9099 | **3/200** |
+| fix4 | 950 | 2.6 ep | 0.9462 | 77% | 0.94 | 0.5538 | 0.500 | 0.8245 | 0/200 |
+
+fix4, fix4_ck100, fix5 and fix5_ck100 are **n=5**; the rest n=3. T37 is bimodal — it scores
+either ~1.0 or ~0.3, never in between — so n=3 cannot separate a fixed model from a broken
+one, and every future T37 claim needs n≥5.
+
+**fix5, fix4 and fix4_ck100 share one SFT training run** (`2026-09-25-19-50-25_sft`). fix4
+exported checkpoint-950, fix5 checkpoint-1950, with DPO and phase 3 retrained on top of each.
+That makes the SFT-dose comparison a genuine one-variable test, not a between-runs one.
+
+**Validate findings, validate tests only** (§4.3 — never pool generate findings into this):
+
+| model | CAUGHT | MISSED+MISSING | **WRONG** | n | traps sprung | median answer |
+|---|---|---|---|---|---|---|
+| fix2 | 81.7% | 7.5% | 10.8% | 93 | 4/61 | 64w |
+| **fix5 @ ckpt-100** | **80.0%** | 7.9% | **12.1%** | 140 | 9/103 | 61w |
+| **fix5** | 79.2% | 6.7% | 14.1% | 149 | 10/106 | 60w |
+| 0917 | 78.7% | **5.3%** | 16.0% | 94 | **2/61** | 114w |
+| fix3 | 73.3% | 17.8% | **8.9%** | 90 | 6/65 | 53w |
+| fix4 @ ckpt-100 | 58.8% | 17.6% | 23.6% | 148 | 16/109 | 56w |
+| **fix4** | **48.6%** | **27.0%** | **24.3%** | 148 | 9/106 | **46w** |
+
+The median-answer column tracks everything else in the table, exactly as §3.8 predicts.
+
 All exports are under `/home/pavlisd/exports/` with a matching `configs/eval_T04_*.yaml`.
 
 **Empty answers are excluded from the score shown.** A run where the model never emitted
@@ -45,6 +88,12 @@ test.py was 0.7860; 0.8847 is its quality net of the format failure. See §3.4.
 > this project.** As of `fix2` (§3.7) that is finally over on validate — fix2 scores
 > **0.8462 against 0917's 0.8034**, the first model to beat it there — though 0917 still
 > leads on generate (0.9858 vs 0.9568) and the suite gap is inside the noise floor.
+>
+> **As of fix5 (2026-09-27) 0917 still leads on generate, 0.9858 vs 0.9592, and that gap
+> is now the main unexplained result.** It is not T37 — fix5 matches 0917 there. It is
+> spread thinly across the suite, which is why like-for-like stays close (0.9258 vs
+> 0.9139). fix5 is the best model from the new corpus: best generate of the three
+> full-SFT variants, best validate (0.8064), and much the best of them on the fix tests.
 > Read §3.8 before treating fix2's higher WRONG count as a regression: it is a
 > side effect of answering more completely, not of knowing less.
 
@@ -375,6 +424,93 @@ something that is not broken — and it appeared where compression was worst.
 
 ---
 
+### 3.9 The two dose effects are not additive; the safe phase-3 floor scales with SFT dose
+
+fix4 and fix5 come from the **same SFT training run**, exported at checkpoint-950 and
+checkpoint-1950. That makes the SFT-dose comparison a one-variable test, and it separates
+two things that had been confounded in every earlier run:
+
+| | generate | validate | T37 |
+|---|---|---|---|
+| SFT 950, phase 3 full (fix4) | 0.9462 | 0.5538 | 0.94 |
+| SFT 950, phase 3 ckpt-100 | **0.9691** | 0.6297 | **1.00** |
+| SFT 1950, phase 3 full (fix5) | 0.9592 | **0.8064** | 0.84 |
+| SFT 1950, phase 3 ckpt-100 | 0.9500 | 0.7897 | **1.00** |
+
+**SFT dose drives validate** (0.55 → 0.81 at matched phase 3; phase-3 dose moves it ~0.06).
+**Phase-3 dose drives T37.** But the generate gain from a light phase 3 **did not carry
+over**: on the fully-trained SFT it reversed, 0.9592 → 0.9500. ckpt-100 was not adding
+generate quality on fix4 — it was compensating for a half-trained SFT adapter, and with a
+properly trained one underneath there is nothing left to compensate for.
+
+**This retires fix4's validate collapse as a corpus problem.** fix4 posted the worst
+validate score measured (0.5538) on the same corpus that scored 0.8064 at full SFT dose.
+Nothing was wrong with the Rollup corpus work; the adapter was half-trained (§4.4).
+
+#### The light dose reintroduced the `</think>` format failure — but only at full SFT
+
+| model | unclosed `<think>` |
+|---|---|
+| 0917, fix2, fix3, fix4, fix4 @ ckpt-100, fix5 | 0 / 114–200 |
+| **fix5 @ ckpt-100** | **3 / 200** (T5 runs 2 & 5, T11 run 1) |
+
+The model wrote its answer inside the thinking channel and emitted EOS after 144–447
+tokens — nowhere near the 16384 budget, so this is a format failure, not truncation.
+
+**It is not a corpus defect.** All 1053 phase-3 records have balanced tags in
+LlamaFactory's exact `thought_words` spelling, phase 1 has zero `<think>` tags, and the
+longest phase-3 record is 3885 tokens against a 4096 `cutoff_len` — nothing is being cut
+mid-block.
+
+The mechanism is dose interaction. Phase 3 is the only phase that trains `<think>`
+content, and checkpoint-100 of 264 is ~1.1 epochs. On fix4's weak SFT that sufficed; on
+fix5's fully-trained SFT there is more non-thinking behaviour underneath to overwrite, and
+1.1 epochs no longer reliably installs the closing tag. §3.4 found phase 1 erodes the
+`</think>` boundary and phase 3 restores it — this is the quantitative form of that:
+**the phase-3 dose needed to restore the boundary scales with the phase-1 dose.** Do not
+carry a phase-3 checkpoint across a change in SFT dose without re-checking the format
+failure count.
+
+### 3.10 The fix task (T39/T40): 1222 examples, 9 of the right shape, 0 with reasoning
+
+T39/T40 are the weakest tests for every model (0.44–0.79, none above 0.8). The obvious
+explanation — no fix-type training data — is **wrong**. The corpus has 1222 fix-like
+records, 10.4% of it, including two dedicated files
+(`CTL_LoRA_fix_this_code.json`, `CTL_LoRAT_fix_this_code_think.json`).
+
+The gap is shape, not volume. T39/T40 ask for a **compound** answer: *"List every problem
+you fix with the reason, then give the complete corrected code."*
+
+| fix-like records | count |
+|---|---|
+| total | 1222 |
+| enumerate **zero** issues — corrected code only | **1069 (87%)** |
+| enumerate ≥3 issues | 107 |
+| prompt states a specification | 62 |
+| **both (the T39/T40 shape)** | **9** |
+| **…of which carry `reasoning_content`** | **0** |
+
+So the corpus trains the second half of the task almost exclusively, and **phase 3 — the
+phase that runs last and sets answer shape — contains no T39/T40-shaped record at all.**
+
+The failure signature confirms it is not a recall problem. Across fix5 and fix5 @ ckpt-100
+every T39/T40 failure is **WRONG, never MISSED**: the model does enumerate, and explains
+incorrectly. Words-per-issue tracks the score exactly as §3.8 predicts:
+
+| model | words per issue | fix score |
+|---|---|---|
+| fix3 | 27 | 0.792 |
+| fix5 | 26 | 0.610 |
+| fix5 @ ckpt-100 | **17** | **0.440** |
+
+The light phase-3 dose compressed fix explanations below the ~25-word threshold, which is
+the mechanism behind that 0.44. **The fix task is a third instance of the length-budget
+result, not a separate capability gap** — and the remedy is the same: spec-shaped fix
+records that enumerate each defect with a reason at ≥35 words, carrying
+`reasoning_content` so they reach phase 3.
+
+---
+
 ## 4. Measurement — read this before trusting any older number
 
 ### 4.1 The eval configs were never equivalent
@@ -472,6 +608,16 @@ suite, no missing `//#CTL2` headers, and no invalid CTL2 (a library scan flagged
 records, all false positives — `lookup()`/`sequence()` are syntax constructs, `freq()` is
 a helper the prompt asks the model to define, and `toDecimal()` appears in a validate
 record that correctly flags it as not existing).
+
+**Confirmed by direct test (§3.9).** fix5 re-exported the *same* SFT run at
+checkpoint-1950 instead of 950: validate went 0.5538 → 0.8064, CAUGHT 48.6% → 79.2%,
+median validate answer 46w → 60w. The checkpoint accident was the whole of fix4's
+collapse.
+
+> **Caveat on the fix5 run itself:** it started before the config change landed, so its
+> DPO and postSFT phases still logged `Loading best model` and selected 450/472 and
+> 250/264. Both are ≥95% through, so the result is clean — but `load_best_model_at_end:
+> false` has not yet actually been exercised end to end. The next full run is the first.
 
 `load_best_model_at_end: false` on all three phases as of 2026-09-26. train.py's
 `find_best_checkpoint()` then falls through to the last checkpoint: deterministic and
@@ -602,6 +748,15 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
 
 ## 6. Open questions, in priority order
 
+0. **Spec-shaped fix records — the largest addressable gap (§3.10).**
+   T39/T40 are the weakest tests for every model. The corpus has 1222 fix-like
+   records but only **9** of the T39/T40 shape (spec + enumerated defects +
+   corrected code) and **0** of those carry `reasoning_content`, so phase 3
+   never sees one. Every failure is WRONG rather than MISSED, and
+   words-per-issue tracks the score — so this is the same length-budget
+   result as §3.8, and the fix is the same: enumerate each defect with a
+   reason at ≥35 words, with `reasoning_content` so it reaches phase 3.
+   Needs a spec.
 1. **Per-finding explanation budget — the lever that replaced phase-3 dose.**
    The corpus teaches 19 words per issue line and shrinks to 17.4 on 5-bug
    records, below the ~25 threshold where factual errors start (§3.8). It has
@@ -615,9 +770,13 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
    written but had no measurable effect — diagnose why before writing more of
    them. Candidate explanation: those records are single-finding and short,
    so they teach the label without the reasoning that justifies it.
-3. ~~**Phase-3 dose.**~~ **Closed (§3.6).** ckpt-50 and ckpt-100 were exported
-   and evaluated. The dose controls length but not quality; ckpt-50 is the worst
-   model on all three scores and reintroduces the `</think>` format failure.
+3. ~~**Phase-3 dose.**~~ **Closed twice (§3.6, §3.9).** The dose controls length,
+   not quality. §3.9 adds the interaction: a light phase 3 helps only when the SFT
+   adapter is under-trained, and at full SFT dose it reintroduces the `</think>`
+   format failure (3/200) and compresses fix explanations below the 25-word
+   threshold. **Leave phase 3 at full dose**; the one thing it still buys is T37
+   (1.00 vs 0.84), which is better addressed in the corpus.
+   Untested middle ground: ckpt-150/175, already on disk.
 4. ~~**Severity calibration (over-escalation).**~~ **Closed (§3.7).** T24 went
    3 WRONG → 0 after the Group A WARNING-side records.
 3. ~~**What in the new corpus costs 0.03?**~~ **Answered (§3.5):** 115 prompts
