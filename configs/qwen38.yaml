@@ -298,4 +298,6 @@ export:
   export_legacy_format: false
 
   # Override the auto-generated export path if you want a fixed location:
-  export_dir: /home/pavlisd/exports/qwen38/
+  # Name each run's export distinctly -- the eval configs and the findings table
+  # reference these by name, and a generic path would overwrite the previous run.
+  export_dir: /home/pavlisd/exports/qwen38_fix6/
