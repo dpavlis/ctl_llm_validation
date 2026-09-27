@@ -122,7 +122,26 @@ sft:
   - dataset: clover_ctl_trainign_data
     enable_thinking: false        # empty <think> block goes in the prompt, no loss
     eval_dataset: clover_ctl_eval_data
-    cutoff_len:  3200
+    # Raised 3200 -> 4096 on 2026-09-27 so no record is truncated. Measured with
+    # the qwen3_8 chat template applied (raw content undercounts by the template
+    # markers, so measure the templated length, not the concatenated fields):
+    #
+    #     phase 1   n=11821   median 344   p95 955   p99 1647   max 3777
+    #
+    # At 3200 three records were silently cut mid-answer. Truncation is not a
+    # neutral loss -- a record cut inside its answer trains the model to stop
+    # there, which is the same mechanism suspected behind unclosed <think> blocks
+    # (findings 3.9), so the corpus should never rely on it.
+    #
+    # 4096 costs almost nothing: with packing: false the collator pads to the
+    # longest sequence IN THE BATCH, not to cutoff_len, and p95 is 955 tokens.
+    # Only those three records get longer. It also matches phase 3, so a record
+    # that fits one phase fits the other.
+    #
+    # Re-measure after any corpus addition. The fix-to-spec records added on
+    # 2026-09-27 are the longest new class (median 1088, max 1348) and still sit
+    # well inside this.
+    cutoff_len:  4096
     lr_scheduler_type: cosine_with_restarts #cosine_with_min_lr  #linear # #constant_with_warmupa
     lr_scheduler_kwargs:
       #min_lr: 5.0e-6
