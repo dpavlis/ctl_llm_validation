@@ -27,6 +27,19 @@ model) but no other context about this project.
 > specification. The fault is something *missing*, not something wrong. Keep those records,
 > keep their ids, and add what they lack. Regenerating would discard properties that are
 > already verified and reintroduce variance for no gain.
+>
+> **Second amendment, 2026-09-28 — this pass writes no reasoning.** An earlier version of
+> this document made `reasoning_content` mandatory. That is withdrawn. Training on authored
+> reasoning traces was measured to make the model worse on every task type, including this
+> one: it replaced the model's own thinking — long, self-checking, scaled to difficulty — with
+> the traces' short, fixed-length style, and fix-task thinking fell from ~1480 words to ~180.
+> The work in this pass is on the **answers** only. See "No `reasoning_content` in this
+> pass" below for what to do with the traces the 24 records already carry.
+>
+> **Status:** the amendment pass was carried out in `ctl_lora_training` commit `83c0136`
+> ("implemented updated spec - fixed 24 examples"). All 24 answers now carry an
+> already-correct affirmation. Any further edit under this document follows the no-reasoning
+> rule above.
 
 You are working inside the `ctl_lora_training` repository. Everything referenced below is
 in it:
@@ -35,14 +48,14 @@ in it:
 |---|---|
 | `sft_training_data/` | the training corpus, one JSON file per set |
 | `sft_training_data/CTL_LoRA_fix_this_code.json` | 126 existing fix records — read, but see the warning below |
-| `sft_training_data/CTL_LoRAT_fix_this_code_think.json` | 4 fix records that carry reasoning |
+| `sft_training_data/CTL_LoRAT_fix_this_code_think.json` | 4 older fix records (answers in prose form) |
 | `references/CTL2_Reference_for_LLM_compact.md` | the language reference |
 | `references/ctl-function-library.json` | every built-in function and its signature |
 | `references/componet_contracts.md` | which functions each component must define, and what may be written where |
 | `references/CTL2_Example_Generation_Playbook.md` | house style for generate records |
 | `references/CTL2_SFT_Validation_Playbook.md` | house style for validate records |
-| `references/CTL2_Reasoning_Trace_Playbook.md` | house style for `reasoning_content` |
-| `utils/convert_think.py` | merges `reasoning_content` into the tagged form |
+| `references/CTL2_Reasoning_Trace_Playbook.md` | **not used in this pass** — no reasoning is written |
+| `utils/convert_think.py` | rebuilds the merged training files after the edit |
 
 Edit `sft_training_data/CTL_LoRAT_fix_to_spec.json` in place. It holds 28 records: the 24
 to amend, with ids prefixed `fixtospec_`, and 4 older ones (`fixthiscc4_133` through
@@ -111,10 +124,10 @@ broken code and defect set. What changes in each:
    broken code where the record does not already contain one, and add the matching
    affirmation item to the answer's list. See "Seed constructs that look broken but are
    correct" below.
-2. **Add the same affirmation to the `reasoning_content`**, reached the same way the trace
-   reaches a defect.
-3. **Re-check the corrected code against every numbered requirement** and against the
+2. **Re-check the corrected code against every numbered requirement** and against the
    minimal-repair rule below; trim any change that does not trace to a listed item.
+
+Do not write or edit `reasoning_content` — see "No `reasoning_content` in this pass" below.
 
 Adding an affirmation item does **not** change a record's defect count — the distribution
 below is a count of *defects*, and it must still hold after the edit. The tables in this
@@ -308,14 +321,9 @@ Note also that all nine put the corrected code **first** and a terse "What was f
 list after it. Invert that: reasons first, code second.
 
 For the explanation style you *do* want, read the multi-defect validate records in
-`sft_training_data/CTL_LoRAT_multibug_validate_thinking.json`. Their per-finding prose is
-the register to match; the difference is that a fix record must also produce the corrected
-code.
-
-For the reasoning style, read the four records in
-`sft_training_data/CTL_LoRAT_fix_this_code_think.json` (`fixthiscc4_133` through
-`fixthiscc4_136`) — their `reasoning_content` is well-judged at 163–202 words, though they
-write their answers as prose rather than an enumerated list.
+`sft_training_data/CTL_LoRAT_multibug_validate_thinking.json`. Their per-finding answer
+prose (the `content` field, not their `reasoning_content`) is the register to match; the
+difference is that a fix record must also produce the corrected code.
 
 ## Format
 
@@ -342,38 +350,32 @@ Number the items and reference the requirement each one bears on by its number. 
 grounding is cheap and it is what keeps the explanation anchored to the specification
 rather than drifting into general commentary.
 
-### Every record must carry `reasoning_content` — this is not optional
+### No `reasoning_content` in this pass
 
-**Write a `reasoning_content` field on every one of the 24 records.** `content` holds the
-answer, `reasoning_content` holds the thinking, and `convert_think.py` merges them. Never
-hand-write `<think>` tags: the merge needs an exact literal spelling and a hand-typed
-variant fails silently, training the reasoning with loss where it should carry none.
+**Do not write, edit or extend reasoning in any record.** If you change an answer, leave its
+`reasoning_content` exactly as it is — do not update it to match and do not delete it.
+Leave the four older `fixthiscc4_*` records exactly as they are.
 
-**Why it is mandatory here.** The pipeline builds two datasets. Phase 1 trains on every
-record, answers only. Phase 3 trains *only* on records that have reasoning, runs last, and
-sets the shape of the answer the model actually produces. The gap is far worse in phase 3:
+**Why no reasoning.** The pipeline trains in two places. Phase 1 trains every record's
+*answer*. A separate later round, phase 3, trained the model on authored reasoning traces.
+That round was measured to be a net cost on every task type: it replaced the model's own
+thinking with the traces' style, and the model's native thinking — which it produces
+without being taught — scored better than the taught version everywhere, fix-to-spec most
+of all (0.740 against 0.385). Authored traces are not being trained any more, so writing
+them is effort with no effect. The answer is what trains, and the answer is what this pass
+improves.
 
-| | fix-like records | of the task shape above |
-|---|---|---|
-| phase 1 (11797 records) | 1222 (10.4%) | 9 |
-| **phase 3 (1053 records)** | 90 (8.5%) | **0** |
+**Why leave existing traces alone rather than delete or update them.** Whether authored
+traces are trained at all is decided by the training pipeline — whether its reasoning round
+runs — not by any one data file. Deleting traces here would make that decision silently for
+24 records and leave the rest of the corpus's 1000-odd traces untouched, and updating them
+spends effort on a field that no longer affects the model. The record is state as of commit
+`83c0136`, in which each trace was already revised to match its amended answer.
 
-Phase 3 has never seen a single record of this shape. Records written without
-`reasoning_content` land in phase 1 only and leave that zero untouched — fixing the phase
-that is not driving the problem. With reasoning on all 24, phase 3 goes from 0 to 24.
+If the project reintroduces reasoning training, traces will be generated from the model's
+own output rather than authored, and will replace these wholesale.
 
-**What the reasoning should say.** Walk the specification against the code, requirement by
-requirement, and reach each defect the way a reviewer would: read requirement 3, look at
-what the code does for that field, notice the divergence, work out what reaches the output.
-Reason about the *behaviour* — what the value is at that line, what happens when the field
-is null, what the arithmetic produces — rather than narrating the code. Name the fields and
-functions of that specific record; a trace that would fit any record teaches nothing.
-**Reach the correct-but-suspicious construct in the trace too**, and reach it the same
-way — look at it, work out what it actually does, conclude it is fine. Only 6 of the first
-batch's 24 traces did this; it is mandatory, not a flourish. A trace that finds a defect in
-every construct it examines teaches the model that every construct it examines is
-defective. Around 250–350 tokens is right, and the length
-must come from grounding, not restatement.
+Never hand-write `<think>` tags anywhere, in any field.
 
 ### Record fields
 
@@ -383,7 +385,7 @@ Use the `id` prefix `fixtospec_`.
 
 ## Verification
 
-Run from the repository root. All five checks must pass.
+Run from the repository root. Every check marked "want" must pass; check 7 is advisory.
 
 ```python
 import json, re, statistics as st
@@ -397,8 +399,8 @@ print('records (want 28: the 24 amended + 4 untouched older ones):', len(R))
 print('ids preserved (want 24 fixtospec_*):',
       sum(1 for e in R if str(e.get('id','')).startswith('fixtospec_')))
 
-# 1. reasoning on every record, and no hand-written tags anywhere
-print('missing reasoning_content (want 0):', [e['id'] for e in R if not rea(e).strip()])
+# 1. no hand-written tags anywhere (reasoning_content is left as found — not checked)
+AMENDED = [e for e in R if str(e.get('id','')).startswith('fixtospec_')]
 print('hand-written <think> (want 0):',
       sum(1 for e in R if '<think>' in asst(e) or '<think>' in rea(e)))
 
@@ -415,11 +417,19 @@ for e in R:
         bad.append((e['id'], f'{len(short)} of {len(items)} items under 35 words'))
 print('records failing the 35-word floor (want 0):', bad)
 
-# 3. defect-count distribution
+# 3. item-count distribution. The list holds defects AND already-correct affirmations:
+#    a record with 3 or 4 defects carries 1 affirmation, one with 5 or 6 carries 2. So the
+#    defect targets 3:6, 4:8, 5:7, 6:3 become item totals 4:6, 5:8, 7:7, 8:3.
+#    Count totals, not defects: telling a defect item from an affirmation by wording is
+#    unreliable (defect items often end by noting a neighbouring construct is fine).
 from collections import Counter
-counts = Counter(len(re.findall(r'^\s*\d+[.)]\s+\S',
-                 re.sub(r'```.*?```','',asst(e),flags=re.S), re.M)) for e in R)
-print('defects per record (want 3:6, 4:8, 5:7, 6:3):', dict(sorted(counts.items())))
+OK = re.compile(r'correct as written|already correct|is correct and|needs no change|'
+                r'not a defect|no change (is )?(needed|required)', re.I)
+def items(e):
+    return re.findall(r'^\s*\d+[.)]\s+\S.*(?:\n(?!\s*\d+[.)]\s)(?!\s*$).*)*',
+                      re.sub(r'```.*?```','',asst(e),flags=re.S), re.M)
+totals = Counter(len(items(e)) for e in R if str(e.get('id','')).startswith('fixtospec_'))
+print('items per record (want 4:6, 5:8, 7:7, 8:3):', dict(sorted(totals.items())))
 
 # 4. order — reasons before code, and the code is complete and fenced
 print('code before the list (want 0):',
@@ -432,14 +442,9 @@ print('prompts with no numbered spec (want 0):',
       [e['id'] for e in R if len(re.findall(r'^\s*\d+[.)]\s+\S', user(e), re.M)) < 4])
 print('prompts with no code block (want 0):', [e['id'] for e in R if '```' not in user(e)])
 
-# 6. NEW — every record affirms at least one construct as already correct,
-#    in the answer AND in the reasoning
-OK = re.compile(r'correct as written|already correct|is correct and|needs no change|'
-                r'not a defect|no change (is )?(needed|required)', re.I)
+# 6. every amended record's answer affirms at least one construct as already correct
 print('answers with no already-correct affirmation (want 0):',
-      [e['id'] for e in R if not OK.search(re.sub(r'```.*?```','',asst(e),flags=re.S))])
-print('reasoning with no already-correct affirmation (want 0):',
-      [e['id'] for e in R if not OK.search(rea(e))])
+      [e['id'] for e in AMENDED if not OK.search(re.sub(r'```.*?```','',asst(e),flags=re.S))])
 
 # 7. NEW — minimal repair: every changed line should trace to an enumerated item.
 #    This prints the change ratio for a human to eyeball; a record rewriting most of
@@ -463,33 +468,8 @@ print('duplicate prompts (want 0):',
       len(R) - len({' '.join(user(e).split()) for e in R}))
 ```
 
-Then confirm the corpus-level effect, from the repository root:
-
-```python
-import json, glob, re
-FIX  = re.compile(r'\b(fix|correct|repair|debug)\w*\b', re.I)
-SPEC = re.compile(r'\bspecification\b|\bspec\b|\brequirements?\b', re.I)
-def load(f):
-    d = json.load(open(f))
-    return d if isinstance(d, list) else (d.get('examples') or d.get('records') or [])
-p3 = shaped = 0
-for f in glob.glob('sft_training_data/*.json'):
-    if 'DPO' in f: continue
-    for e in load(f):
-        if not isinstance(e, dict) or not e.get('messages'): continue
-        r = ''.join(m.get('reasoning_content','') or '' for m in e['messages'] if m['role']=='assistant')
-        if not r.strip(): continue
-        p3 += 1
-        u = next((m.get('content','') for m in e['messages'] if m['role']=='user'), '')
-        a = ''.join(m.get('content','') or '' for m in e['messages'] if m['role']=='assistant')
-        n = len(re.findall(r'^\s*(?:[-*]|\d+[.)])\s+\S', re.sub(r'```.*?```','',a,flags=re.S), re.M))
-        if FIX.search(u) and '```' in u and '```' in a and n >= 3 and SPEC.search(u):
-            shaped += 1
-print(f'phase 3: {p3} records, {shaped} of the fix-to-spec shape  (was 1053 / 0; want ~24)')
-```
-
-Finally, regenerate the merged corpora with `utils/convert_think.py` and confirm the new
-records appear in both the phase-1 and phase-3 files with balanced `<think>` tags.
+If you rebuild the merged files with `utils/convert_think.py`, confirm the 24 amended
+records appear in the full build — that build is the one that trains their answers.
 
 ---
 
@@ -517,3 +497,10 @@ true, which is the §3.8 mechanism operating on this task.
 
 Do not cite test IDs in the brief above — the generating agent must not be able to target
 the benchmark.
+
+Why reasoning was withdrawn (findings §3.12, §3.13): on the fix6 weights, the SFT+DPO chain
+evaluated with thinking on scored fix 0.740; adding the phase-3 adapter trained on authored
+traces dropped it to 0.385. Median fix-task thinking fell from 1484 to 177 words. The
+authored fix traces averaged 146 words — shorter than the authored validate traces (172) —
+so the corpus taught the model to spend less thought on the hardest task type than on an
+easier one.
