@@ -44,7 +44,7 @@ column are. Like-for-like is T1–T38 excluding T5, which changed rubric when B5
 | model | SFT ckpt | phase 3 | **generate** | perfect | T37 | validate | fix | like-for-like | unclosed `<think>` |
 |---|---|---|---|---|---|---|---|---|---|
 | **0917** (38-test) | — | none | **0.9858** | 92% | 0.97 | 0.8034 | — | 0.9258 | 0/114 |
-| **fix6_sftdpo, no think** | **1972** | **none** | **0.9849** | **90%** | **1.00** | **0.8475** | 0.500 | **0.9411** | 0/200 |
+| **fix6_sftdpo, no think** (2×n=5) | **1972** | **none** | 0.9815 | 91% | **1.00** | **0.8467** | 0.533 | **0.9386** | 0/200 |
 | **fix6_sftdpo, think** | **1972** | **none** | **0.9804** | 87% | **1.00** | 0.7795 | **0.740** | 0.9147 | 1/200 |
 | **fix6** | **1972** | 3 ep | **0.9772** | **87%** | **1.00** | 0.7231 | 0.385 | 0.9035 | 1/200 |
 | **fix4 @ p3 ckpt-100** | **950** | 1.1 ep | **0.9691** | 84% | **1.00** | 0.6297 | 0.695 | 0.8647 | 0/200 |
@@ -608,9 +608,25 @@ last two rows differ **only** in the `enable_thinking` flag at inference.
 | chain | thinking | generate | perfect | validate | fix | T37 | like-for-like |
 |---|---|---|---|---|---|---|---|
 | SFT+DPO+phase3 (fix6) | ON | 0.9772 | 87% | 0.7231 | 0.385 | 1.00 | 0.9035 |
-| **SFT+DPO** | **OFF** | **0.9849** | **90%** | **0.8475** | 0.500 | 1.00 | **0.9411** |
+| **SFT+DPO** (mean of 2×n=5) | **OFF** | 0.9815 | 91% | **0.8467** | 0.533 | 1.00 | **0.9386** |
 | SFT+DPO | ON | 0.9804 | 87% | 0.7795 | **0.740** | 1.00 | 0.9147 |
-| *0917 reference* | *—* | *0.9858* | *92%* | *0.8034* | *—* | *0.97* | *0.9258* |
+| *0917 reference* | *—* | ***0.9858*** | *92%* | *0.8034* | *—* | *0.9258* | |
+
+The thinking-OFF row is the mean of **two independent n=5 runs**, because the first was run
+twice (see the data-integrity note). Keeping both is worth it — they disagree by more than
+the suite sd suggested:
+
+| | run 1 | run 2 | mean |
+|---|---|---|---|
+| generate | 0.9848 | 0.9781 | 0.9815 |
+| validate | 0.8477 | 0.8456 | 0.8467 |
+| fix | 0.500 | 0.565 | 0.533 |
+| like-for-like | 0.9411 | 0.9361 | 0.9386 |
+
+**Generate at n=5 is not reliable to three decimal places.** The two runs differ by 0.0067,
+which is larger than several differences this project has treated as real. Validate, by
+contrast, reproduces to 0.002. Treat any generate difference under ~0.01 as unresolved
+without a second run.
 
 #### Phase 3 costs accuracy on every axis — this supersedes §3.2
 
@@ -631,16 +647,18 @@ gentle round on the tagged subset, running last, is now a net negative.
 
 Same weights, flag flipped:
 
-| | thinking OFF | thinking ON |
+| | thinking OFF (2×n=5) | thinking ON |
 |---|---|---|
-| generate | **0.9849** | 0.9804 |
-| validate | **0.8475** | 0.7795 |
-| **fix** | 0.500 | **0.740** |
-| median validate answer | **64w** | 124w |
-| validate CAUGHT / WRONG | (lost, see below) | 81.2% / 14.8% |
+| generate | 0.9815 | 0.9804 | 
+| validate | **0.8467** | 0.7795 |
+| **fix** | 0.533 | **0.740** |
+| median validate answer | **65w** | 124w |
+| validate CAUGHT / WRONG | **86.8% / 4.6%** | 81.2% / 14.8% |
 
-Thinking helps the one task that needs multi-step deliberation — fix-to-spec, +0.24 — and
-hurts generate and validate. On validate it nearly doubles the answer and the extra words
+**Generate is a tie** — 0.9815 against 0.9804, inside the run-to-run spread measured above.
+An earlier revision of this section claimed thinking-off won on generate; that rested on a
+single run of 0.9848 and did not survive the repeat. Thinking helps the one task that needs
+multi-step deliberation — fix-to-spec, +0.21 — and costs 0.067 on validate. On validate it nearly doubles the answer and the extra words
 become WRONG findings: **§3.8's length mechanism running in reverse.** Past ~35 words per
 finding the budget stops buying correctness and starts buying elaboration, and elaboration
 past the point of knowledge is where false claims come from.
@@ -649,18 +667,24 @@ past the point of knowledge is where false claims come from.
 
 #### The current best model
 
-`qwen38_fix6_sftdpo` with thinking off is the best model this project has produced. Generate
-0.9849 against 0917's 0.9858 is inside the noise floor (§4.5 puts that at ~0.02 at suite
-level), while it beats 0917 on validate (0.8475 vs 0.8034) and like-for-like (0.9411 vs
-0.9258), and beats fix2's 0.8462 — the previous validate record. `configs/mut_validate_qwen38.yaml`
+`qwen38_fix6_sftdpo` with thinking off is the best model this project has produced, on the
+strength of validate rather than generate. Generate 0.9815 sits below 0917's 0.9858 by about
+the run-to-run spread, so the two are not separated; validate 0.8467 beats 0917's 0.8034 and
+fix2's 0.8462 — the previous record — and like-for-like 0.9386 beats 0917's 0.9258.
+
+Its second run posted **the lowest WRONG rate ever measured, 4.6%**, with the *highest*
+CAUGHT rate, 86.8%. Every earlier low-WRONG model bought it by answering tersely and missing
+findings instead (fix3: WRONG 8.9% but MISSED 17.8%). This one does not trade. `configs/mut_validate_qwen38.yaml`
 was repointed to it on 2026-09-28, with `enable_thinking: false`.
 
 > **Data-integrity note.** The thinking-OFF results JSON was overwritten. Both configs point
 > at the same export, so test.py derived the same model name, and the two runs were launched
 > in the same second — identical output filenames. The scores above are reconstructed from
 > the 200 per-test rows in the run log and agree exactly with the summary line, but the
-> judge-finding detail for that row is lost. A re-run was launched to regenerate it; sampling
-> variance means it will not reproduce 0.9849 exactly. **When running two evals against one
+> judge-finding detail for that row is lost. A re-run regenerated it and came in at generate
+> 0.9781 / validate 0.8456 / fix 0.565, which is why this section reports means of two runs.
+> Note also that `logs/Qwen3.8-27B.yaml` had preserved all three runs by model and timestamp,
+> so only the per-finding detail of the first run was actually lost, not its scores. **When running two evals against one
 > export, give them distinct model names or stagger the launches.**
 
 ---
@@ -782,6 +806,11 @@ checkpoint tests found a lighter phase-3 dose much better on T37 (ckpt-100 0.97 
 ckpt-250 0.57).
 
 ### 4.5 Noise floor
+
+> **Added 2026-09-28:** two independent n=5 runs of the same model on the same config gave
+> generate 0.9848 and 0.9781 — a spread of 0.0067, while validate reproduced to 0.002.
+> **Generate is the noisier metric**, and differences under ~0.01 on it need a second run
+> before they mean anything (§3.12).
 
 Suite sd is 0.004–0.017 at T=0.4 — much tighter than the 0.054 seen under the old configs,
 but that improvement came from removing the penalties, not from temperature. Differences
