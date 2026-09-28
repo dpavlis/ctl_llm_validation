@@ -7,7 +7,8 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-09-27 with the SFT-checkpoint confound confirmed and the two dose effects
+Last updated 2026-09-28 with fix6 (§3.11 — T37 closed, best generate yet, fix score down
+and why), the SFT-checkpoint confound confirmed and the two dose effects
 shown non-additive (§3.9, §4.4), the checkpoint-selection defect (§4.4), the phase-3 dose test
 (§3.6), the targeted-examples retrain (§3.7), and the words-per-finding result that explains
 WRONG findings (§3.8).
@@ -42,6 +43,7 @@ column are. Like-for-like is T1–T38 excluding T5, which changed rubric when B5
 | model | SFT ckpt | phase 3 | **generate** | perfect | T37 | validate | fix | like-for-like | unclosed `<think>` |
 |---|---|---|---|---|---|---|---|---|---|
 | **0917** (38-test) | — | none | **0.9858** | 92% | 0.97 | 0.8034 | — | 0.9258 | 0/114 |
+| **fix6** | **1972** | 3 ep | **0.9772** | **87%** | **1.00** | 0.7231 | 0.385 | 0.9035 | 1/200 |
 | **fix4 @ p3 ckpt-100** | **950** | 1.1 ep | **0.9691** | 84% | **1.00** | 0.6297 | 0.695 | 0.8647 | 0/200 |
 | **fix5** | **1950** | 2.8 ep | 0.9592 | 82% | 0.84 | **0.8064** | 0.610 | **0.9139** | 0/200 |
 | **fix2** (38-test) | 1800 | 2.1 ep | 0.9568 | 81% | 0.77 | **0.8462** | — | 0.9243 | 0/114 |
@@ -62,6 +64,7 @@ That makes the SFT-dose comparison a genuine one-variable test, not a between-ru
 | model | CAUGHT | MISSED+MISSING | **WRONG** | n | traps sprung | median answer |
 |---|---|---|---|---|---|---|
 | fix2 | 81.7% | 7.5% | 10.8% | 93 | 4/61 | 64w |
+| fix6 | 72.8% | 16.3% | **10.9%** | 147 | 10/106 | 52w |
 | **fix5 @ ckpt-100** | **80.0%** | 7.9% | **12.1%** | 140 | 9/103 | 61w |
 | **fix5** | 79.2% | 6.7% | 14.1% | 149 | 10/106 | 60w |
 | 0917 | 78.7% | **5.3%** | 16.0% | 94 | **2/61** | 114w |
@@ -508,6 +511,85 @@ the mechanism behind that 0.44. **The fix task is a third instance of the length
 result, not a separate capability gap** — and the remedy is the same: spec-shaped fix
 records that enumerate each defect with a reason at ≥35 words, carrying
 `reasoning_content` so they reach phase 3.
+
+---
+
+### 3.11 fix6: T37 closed and the best generator yet, but targeted fix records made the fix score worse
+
+fix6 is the first run with a fully deterministic adapter chain — `load_best_model_at_end:
+false` actually took effect on all three phases (checkpoint 1972/1972, 472/472, 270/270,
+and **zero** `Loading best model` lines in the log; fix5's run still had two). It also
+carries the 24 fix-to-spec records and `cutoff_len` raised to 4096.
+
+**Two results are unambiguously good:**
+
+- **Generate 0.9772, 87% perfect runs** — the best the new corpus has produced, cutting
+  the gap to 0917 from 0.027 to 0.009.
+- **T37 is 1.00 across all five runs at FULL phase-3 dose.** Every previous perfect T37
+  required the light dose that §3.9 showed costs generate and the `</think>` boundary.
+  That trade-off is gone; the Rollup work of §3.9 is closed.
+
+**The fix score fell to 0.385**, against fix5's 0.610 — despite 24 records written
+specifically for that task.
+
+#### The §3.10 length mechanism does NOT explain this — retracted for this case
+
+Words-per-issue moved the *right* way, 26 → 29, and the score still dropped. §3.10
+correctly identified the length budget as the mechanism behind the fix3/fix5/fix5-ckpt100
+ordering, but it is not what is happening here. What changed is the **corrected code**,
+not the enumeration:
+
+| | fix5 | fix6 |
+|---|---|---|
+| defects CAUGHT (of 40) | 31 | 29 |
+| words per issue | 26 | 29 |
+| **traps + forbidden sprung** | **7** | **15** |
+
+Detection and explanation are flat to slightly better. The traps doubled, and they are all
+about the code the model then writes:
+
+| trap | fix5 | fix6 | what it catches |
+|---|---|---|---|
+| `T40.F3` | 2 | **4** | corrected code will not compile, or adds a new runtime failure |
+| `T39.F2` | 0 | **3** | the fix breaks a *different* numbered requirement |
+| `T39.FP2` | 0 | **3** | claims `~=` is a partial match (it is a whole-string regex) |
+| `T40.FP1` | 5 | 5 | declared-but-unassigned variables "start null" — unchanged |
+
+A judge note states it plainly: *"Three of four seeded defects are correctly fixed. The
+date-pattern correction is defective because it changes the required calendar year `yyyy`
+to week year `YYYY`, and the response also falsely criticizes the originally correct
+whole-string regex."*
+
+#### The cause is in the spec that generated the records
+
+`spec/fix_to_spec_examples_spec.md` weighted the enumeration half heavily — a 35-word
+floor per item, reasons before code, requirement-number grounding — and said almost
+nothing about the corrected code beyond "the complete transform, every contract function".
+Auditing the 24 records against what the benchmark actually penalises:
+
+| property | records having it |
+|---|---|
+| answer affirms some construct is already correct | 14 / 24 loosely worded, **5 / 24** in the explicit form the amended spec now requires |
+| **reasoning** affirms some construct is already correct | **1 / 24** explicit (6 / 24 loose) — the spec asked for this |
+| **seeds a construct that LOOKS broken but must be left alone** | **0 / 24** |
+| states that the fix must not break another requirement | 0 / 24 |
+
+So the records train enumerate-and-rewrite with no counterweight teaching restraint, and
+the corresponding corpus-wide effects are consistent: validate WRONG fell to 10.9% (best
+since fix3) while validate MISSED rose to 16.3% and median validate answers shrank to 52w.
+The model got better at *stating* things and worse at *leaving things alone*.
+
+**The lesson generalises beyond this task.** Records that teach finding defects also teach
+finding defects that are not there, unless the same records demonstrate the negative case.
+Every future defect-oriented corpus round should seed correct-but-suspicious constructs and
+require the answer to name them as correct.
+
+#### One unclosed `<think>`
+
+1/200 (T5 run 2). Expected 0: §3.9 attributed the failure to a light phase-3 dose over a
+full SFT, and this run is full dose on both. So the dose explanation is necessary but not
+sufficient — a low background rate exists independently. Too small to act on at n=1; record
+it and watch.
 
 ---
 

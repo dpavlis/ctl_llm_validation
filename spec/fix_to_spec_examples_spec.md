@@ -4,6 +4,21 @@
 self-contained brief. It assumes CTL2 knowledge (the language and the CloverDX component
 model) but no other context about this project.
 
+> **Amendment, 2026-09-28 — read this before generating.** A first batch of 24 records
+> written to the original version of this document was trained and measured. The
+> enumeration half improved (words per issue 26 → 29, and the model's wrong-explanation
+> rate fell to its best in five runs) but the **fix score went down**, because the
+> *corrected code* got worse: it began breaking requirements the broken code satisfied,
+> introducing code that does not compile, and "fixing" constructs that were already
+> correct.
+>
+> The cause was an imbalance in this document: it specified the enumeration in detail and
+> the corrected code barely at all. Two sections are new and are the priority for this
+> batch — **"The corrected code is a minimal repair"** and **"Seed constructs that look
+> broken but are correct"**. An audit of the first batch found 0 of 24 records seeding a
+> correct-but-suspicious construct, and only 6 of 24 reasoning traces affirming anything
+> as already correct. Do not repeat that.
+
 You are working inside the `ctl_lora_training` repository. Everything referenced below is
 in it:
 
@@ -127,6 +142,79 @@ writing the answer, check the broken code against the specification line by line
 confirm the defect list is **exhaustive** — a record whose answer misses a defect that is
 genuinely present teaches the model to stop looking early.
 
+## Seed constructs that look broken but are correct
+
+**Every record must seed at least one construct that looks defective and is not**, and the
+answer must name it and say it is correct. In records with 5 or 6 defects, seed two.
+
+This is the single most important addition to this document. Without it, a record teaches
+only "scan this transform and report what is wrong", and a model trained on nothing but
+that reports things that are not wrong — which is how the first batch lost more points
+than it gained. The correct-but-suspicious construct is what teaches the model where to
+stop.
+
+Good candidates, all of them true CTL2 facts that read as bugs to a careless reviewer:
+
+- **Declared-but-unassigned variables are not null.** They start at their type defaults: a
+  numeric type at 0, a `date` at the epoch, a `list` or `map` as an empty container, a
+  `boolean` at false. So a first `+`, a first comparison or a first `append()` on an
+  unassigned global does **not** throw, and adding explicit initializers is a style choice,
+  not a bug fix.
+- **`++` and `--` work on any writable numeric l-value**, including output record fields
+  (`$out.0.counter++`) and the fields of an accumulator or internal record (`acc.count++`).
+  Only read-only targets are invalid — input fields (`$in.0.f`), literals, and list or map
+  elements. Rewriting `$out.0.n++` as `$out.0.n = $out.0.n + 1` is equivalent, not a fix.
+- **`~=` is a whole-string regex match** and `?=` is the contains match. `$in.0.code ~=
+  "CZ|SK"` matches exactly "CZ" or "SK" and is the right operator when the spec asks for
+  either of two exact values.
+- **A Rollup group always contains at least one record**, so a divide-by-group-count guard
+  against zero is defending against a case that cannot occur.
+- **The conditional-fail expression works in both `//#CTL2` and `//#CTL2:COMPILE`.** The
+  header does not change which constructs are legal.
+- **Returning an output port number from `updateTransform()` or `transform()` is correct**
+  — it emits to that one port and re-invokes the function with `counter + 1`, which a
+  `counter` guard terminates. `ALL` is not a synonym; it broadcasts to every connected
+  port.
+
+State the affirmation in the same register as a defect item, at the same length, and place
+it in the list with the defects rather than in a separate afterthought section:
+
+> 4. `acc.total` is declared without an initializer and first used in `acc.total = acc.total
+>    + $in.0.amount`. This is **correct as written** and needs no change: an unassigned
+>    `decimal` starts at 0, not null, so the first addition of a group is well-defined.
+>    Requirement 3 is already satisfied here.
+
+Number these items in sequence with the defects. The point is that the model cannot tell
+in advance which items will turn out to be defects and which will not.
+
+## The corrected code is a minimal repair
+
+**Change only what the enumerated defects require. Everything else stays byte-identical to
+the input.** This is a hard rule and the second reason the first batch regressed.
+
+Concretely, before you write the corrected block:
+
+1. **Re-read every numbered requirement against your corrected code**, not just the ones
+   you fixed. A fix that satisfies requirement 2 and breaks requirement 5 scores worse than
+   no fix at all. This is the single most common way the task is failed.
+2. **The corrected code must compile.** Every function named must exist in
+   `references/ctl-function-library.json` with that signature; every component contract
+   function required by `references/componet_contracts.md` must be present, including the
+   ones you did not touch.
+3. **Do not trade one runtime failure for another.** Guarding a null in one place while
+   leaving the same value unguarded in the comparison two lines down is not a fix.
+4. **Do not restructure what already works.** Renaming variables, reordering assignments,
+   changing formatting or "tidying" untouched functions all count as unrequested changes.
+
+A record may restructure substantially **only when a requirement genuinely demands it** —
+for example, when the spec requires skipping null inputs and the transform must build a
+filtered list to do so. When that happens, the enumerated item must say why the
+restructure is necessary, so the record teaches the reason rather than the habit.
+
+The test to apply to your own record: diff the broken and corrected code, and check that
+every changed line traces to a numbered item in your list. If a changed line does not,
+either remove the change or add the item it belongs to.
+
 ## The length floor — the point of this document
 
 **Every enumerated defect needs at least 35 words of explanation.** This is the binding
@@ -214,7 +302,10 @@ The corrected code is the complete transform: every function the component contr
 requires, not only the ones that changed. Check `references/componet_contracts.md` — a
 Rollup needs all five lifecycle functions even when four are untouched.
 
-Number the items and reference the requirement each one violates by its number. That
+The list contains the correct-but-suspicious affirmations alongside the defects, numbered
+in one sequence — an item is not necessarily a defect, and that is the point.
+
+Number the items and reference the requirement each one bears on by its number. That
 grounding is cheap and it is what keeps the explanation anchored to the specification
 rather than drifting into general commentary.
 
@@ -244,8 +335,11 @@ what the code does for that field, notice the divergence, work out what reaches 
 Reason about the *behaviour* — what the value is at that line, what happens when the field
 is null, what the arithmetic produces — rather than narrating the code. Name the fields and
 functions of that specific record; a trace that would fit any record teaches nothing.
-Include at least one construct you check and find **correct**, so the trace models
-verification rather than defect-hunting. Around 250–350 tokens is right, and the length
+**Reach the correct-but-suspicious construct in the trace too**, and reach it the same
+way — look at it, work out what it actually does, conclude it is fine. Only 6 of the first
+batch's 24 traces did this; it is mandatory, not a flourish. A trace that finds a defect in
+every construct it examines teaches the model that every construct it examines is
+defective. Around 250–350 tokens is right, and the length
 must come from grounding, not restatement.
 
 ### Record fields
@@ -302,6 +396,32 @@ print('answers with no //#CTL2 header (want 0):',
 print('prompts with no numbered spec (want 0):',
       [e['id'] for e in R if len(re.findall(r'^\s*\d+[.)]\s+\S', user(e), re.M)) < 4])
 print('prompts with no code block (want 0):', [e['id'] for e in R if '```' not in user(e)])
+
+# 6. NEW — every record affirms at least one construct as already correct,
+#    in the answer AND in the reasoning
+OK = re.compile(r'correct as written|already correct|is correct and|needs no change|'
+                r'not a defect|no change (is )?(needed|required)', re.I)
+print('answers with no already-correct affirmation (want 0):',
+      [e['id'] for e in R if not OK.search(re.sub(r'```.*?```','',asst(e),flags=re.S))])
+print('reasoning with no already-correct affirmation (want 0):',
+      [e['id'] for e in R if not OK.search(rea(e))])
+
+# 7. NEW — minimal repair: every changed line should trace to an enumerated item.
+#    This prints the change ratio for a human to eyeball; a record rewriting most of
+#    the transform needs a stated reason in its list, so inspect anything over ~50%.
+import difflib
+def last_code(t):
+    m = re.findall(r'```(?:ctl)?\n(.*?)```', t, re.S)
+    return m[-1] if m else ''
+for e in R:
+    b = [l.strip() for l in last_code(user(e)).strip().splitlines() if l.strip()]
+    c = [l.strip() for l in last_code(asst(e)).strip().splitlines() if l.strip()]
+    if not b or not c: continue
+    sm = difflib.SequenceMatcher(None, b, c)
+    ch = sum(max(i2-i1, j2-j1) for tag,i1,i2,j1,j2 in sm.get_opcodes() if tag != 'equal')
+    pct = 100*ch/len(b)
+    if pct > 50:
+        print(f'  INSPECT {e["id"]}: {pct:.0f}% of lines changed — is every change in the list?')
 
 # uniqueness
 print('duplicate prompts (want 0):',
