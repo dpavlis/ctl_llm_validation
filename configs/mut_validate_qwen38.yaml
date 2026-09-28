@@ -5,23 +5,25 @@
 # Both changes are measured, at n=5 on the 40-test suite (findings 3.12):
 #
 #   model / mode                        generate   validate   like-for-like
-#   qwen38_fix6_sftdpo, thinking OFF      0.9849     0.8475       0.9411
+#   qwen38_fix6_sftdpo, thinking OFF      0.9815     0.8467       0.9386   (mean of 2 runs)
 #   qwen38_fix6_sftdpo, thinking ON       0.9804     0.7795       0.9147
 #   qwen38_fix6 (with phase 3), ON        0.9772     0.7231       0.9035
 #   qwen38_0917 (previous best generate)  0.9858     0.8034       0.9258
 #   qwen38_fix1 (what this used to be)    0.9715     0.7885         --
 #
-# This is the best validate score measured on any model, and its generate is
-# within the noise floor of the best ever. Two things drive it:
+# This is the best validate score measured on any model; validate reproduced to
+# 0.002 across two runs. Generate is NOT a reason for the choice: the two runs
+# gave 0.9848 and 0.9781, and generate at n=5 is not separable below ~0.01, so
+# on generate this model ties both thinking-ON and 0917. Two things drive it:
 #
 #   1. The phase-3 (thinking-trained) adapter is NOT in the chain. It was
 #      costing accuracy on every axis once the corpus fixes landed.
 #   2. enable_thinking is false. For validation specifically this is worth
-#      +0.068: thinking nearly doubles the answer (64w -> 124w) and the extra
-#      words turn into WRONG findings, which is the 3.8 length mechanism in
-#      reverse. Do NOT set this true for validation work.
+#      +0.067: thinking nearly doubles the answer (65w -> 124w) and the extra
+#      words turn into WRONG findings (4.6% -> 14.8%), which is the 3.8 length
+#      mechanism in reverse. Do NOT set this true for validation work.
 #
-# The one task that WANTS thinking is fix-to-spec (0.740 with, 0.500 without).
+# The one task that WANTS thinking is fix-to-spec (0.740 with, 0.533 without).
 # If this config is ever repurposed for that, flip enable_thinking back on and
 # expect validate to regress.
 

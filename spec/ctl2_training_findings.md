@@ -7,7 +7,8 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-09-28 with the phase-3 2x2 (§3.12 — phase 3 is a net cost, thinking is a
+Last updated 2026-09-28 with why phase 3 hurts (§3.13 — the authored traces replaced the
+model's own reasoning style), the phase-3 2x2 (§3.12 — phase 3 is a net cost, thinking is a
 per-task trade, and the best model to date), fix6 (§3.11 — T37 closed, best generate yet, fix score down
 and why), the SFT-checkpoint confound confirmed and the two dose effects
 shown non-additive (§3.9, §4.4), the checkpoint-selection defect (§4.4), the phase-3 dose test
@@ -689,6 +690,144 @@ was repointed to it on 2026-09-28, with `enable_thinking: false`.
 
 ---
 
+### 3.13 Why phase 3 hurts: the authored traces replaced the model's own reasoning
+
+§3.12 showed phase 3 is a net cost. This section is the mechanism. The key comparison is
+already inside §3.12's 2×2: the SFT+DPO model evaluated with thinking ON never had loss on
+a reasoning trace — phase 1 and DPO both put an empty `<think>` block in the prompt — so its
+thinking is the model's own. It beat the phase-3 model at the same inference setting on
+every task type, fix most of all (0.740 against 0.385). So the question is what differs
+between the thinking the model does unprompted and the thinking the traces taught it.
+
+#### Four sources of thinking, measured the same way
+
+| | base Qwen3.8-27B, no LoRA | SFT+DPO, thinking ON | after phase 3 (fix6) | training traces |
+|---|---|---|---|---|
+| median words — generate | 1142 | 268 | 71 | 134 |
+| median words — validate | 802 | 239 | 131 | 172 |
+| median words — **fix** | **2976** | **1484** | **177** | **146** |
+| spread across task types | — | 6.2× | 2.5× | **1.3×** |
+| "wait" | 100% | 44% | **0%** | 0.4% |
+| "actually" | 100% | 46% | 1.5% | 1.0% |
+| "let me" | 100% | 89% | 0.5% | 0.0% |
+| check / verify | 82% | 67% | 17% | 11% |
+| first person ("I") | 100% | 55% | 1% | 0.4% |
+| typical opening | "The user wants a…" | "The user wants a…" | a declarative fact | a declarative fact |
+
+The base column is a style sample (11 tests × 1 run, `configs/eval_T04_base_think.yaml`;
+`/home/pavlisd/exports/qwen38_base` symlinks the HF snapshot), not a benchmark; its word
+counts are for those 11 tests, where the SFT+DPO model's own medians were 429 / 178 / 1409.
+The markers are unambiguous even at that size. Its scores were mostly 0 — genuine CTL2
+failures (Java JSON APIs, a Reformat-style Rollup, the `~=` misconception), not format
+failures: every answer was complete and fenced.
+
+**Read across the row.** Base and SFT+DPO reason in the same style — same opening, same
+self-checking — and SFT on answers alone shortened that thinking 2–4× without changing its
+character. Phase 3 then **replaced** the style with the traces': third person, declarative,
+forward-only, nearly constant in length.
+
+#### Mechanism 1 — length stopped scaling with difficulty
+
+Natively the model thinks six times longer on a fix task than on a validate task. The
+training traces spend *less* on fix (146 words) than on validate (172) — a 1.3× spread
+across all three task types. After phase 3, fix thinking fell from 1484 words to 177, and
+the fix score from 0.740 to 0.385.
+
+Per test, the more phase 3 compressed a test's thinking, the more score it lost. Split the
+40 tests into terciles by compression ratio (native words / phase-3 words):
+
+| tercile | median compression | mean score lost to phase 3 |
+|---|---|---|
+| least compressed | 1.6× | +0.028 |
+| middle | 2.9× | +0.035 |
+| most compressed | 5.5× | +0.051 |
+
+The trend is monotone but modest at 40 tests. The large individual losses are concentrated
+on the hardest tests: T39 (fix, +0.52 at 10.4× compression), T5 (multi-bug validate,
++0.40), T18 and T22 (+0.40, +0.33 — both long listed as known-weak capability gaps), and
+T40 (fix, +0.19). Native thinking scores higher on 12 tests, lower on 8, tied on 20.
+
+#### Mechanism 2 — self-verification was trained out
+
+In native traces, "actually, let me reconsider" is where the model checks itself. Sampled
+from the hard tests, these moves re-derive `isnull` casing, whether `~=` is a whole-string
+or partial match, and the `lookup()` API — mid-answer, before committing. Only **3.9%** of
+the 1077 training traces contain *any* re-check move.
+
+This is not an accident of authoring. `references/CTL2_Reasoning_Trace_Playbook.md`, the
+style guide the generating agents followed, bans it explicitly:
+
+> *"Forward motion only. No 'wait', no 'hmm', no 'let me reconsider', no restarts, no
+> self-doubt performed for its own sake… This is the rule that buys you the token savings
+> over stock Qwen behaviour, so hold it strictly."*
+
+and states the goal as *"a thinking model that reasons accurately about CTL2 in few
+tokens"*, with length bands of 12–150 words. The playbook also contradicts itself: its own
+rule R3 says *"match what the base model already produces inside `<think>`; the further you
+move from it, the more data you need"* — while R7 bans the base model's most characteristic
+moves and the bands sit 3–10× below its native length.
+
+#### What that does to validate
+
+| mode | CAUGHT | MISSED | WRONG |
+|---|---|---|---|
+| no thinking | **86.8%** | 8.6% | **4.6%** |
+| native thinking | 81.2% | **4.0%** | 14.8% |
+| phase-3 thinking | 72.8% | 16.3% | 10.9% |
+
+Native thinking finds the most defects and pays for it in WRONG findings (§3.8 in reverse:
+past ~35 words per finding, extra words buy elaboration, not correctness). Phase-3 thinking
+pays **the cost of thinking without the benefit** — WRONG more than twice no-think's, MISSED
+four times native's. Native thinking's two largest per-test losses to phase 3 (of eight) point the same way:
+T7 and T4 are both traps on *correct* code, where long thinking talks itself into a false
+positive. That vice is real, and it is why thinking stays off for validate (§3.12) — but the
+remedy is not to train the model to think less on everything.
+
+#### The traces are well-made; the premise is wrong
+
+By the playbook's own standard the execution is good. Only **4%** of validate traces open by
+asserting the verdict — the anti-pattern the playbook worked hardest against — templating
+was policed (the reasoning fix list, 2026-09-24), and facts were verified under R11. What
+failed is the objective: **compress an RL-trained reasoner by SFT on traces written by a
+different model.** SFT can move the model's thinking toward any style; it cannot also keep
+the accuracy that the native style's length and self-checking were buying.
+
+It was also an expensive way to fail. By a word-count proxy, **62% of phase 3's loss lands on
+trace tokens and 38% on answers**, so most of that phase's gradient taught style rather than
+CTL2.
+
+For context on what the model was trained on: as I understand the published Qwen3 recipe —
+not confirmed for 3.8 — thinking behaviour comes from long-CoT data followed by reasoning
+RL, and the later thinking-mode SFT used **the model's own rejection-sampled outputs**
+precisely so that additional SFT would not disturb what RL had installed. Phase 3 did the
+opposite. The measurements above stand on their own either way.
+
+#### Consequences
+
+1. **Phase 3 stays out** (§3.12), and so does any further authored-trace work. The
+   fix-to-spec brief no longer requires `reasoning_content` (`spec/fix_to_spec_examples_spec.md`,
+   commit `92ad814`). The playbook's R7 and its length bands should not be applied to any
+   future trace.
+2. **Authored `reasoning_content` in the corpus is now inert, not harmful** — phase 1 strips
+   it, and it only trains if a reasoning round runs. It does not need removing; it needs
+   the pipeline not to consume it. Note that `configs/qwen38.yaml` still defines the
+   `post_dpo_sft` phase, so a plain full run would train it again.
+3. **If reasoning training comes back, it should be self-distilled, not authored.**
+   Generate traces with the SFT+DPO model on the training prompts, keep only those whose
+   answer is judged correct against the reference, and train on those. The traces are then
+   in the model's own distribution, so the gradient goes to CTL2 rather than to style.
+   `spec/self_distillation_spec.md` drafts it.
+4. **Shorter thinking is an RL problem, not an SFT one.** If thinking length ever matters for
+   cost, a length-penalised RL objective is the tool; imposing it through SFT data costs
+   accuracy, as measured here.
+
+**Caveats.** The base sample is 11 tests at one run. The native-vs-phase-3 per-test
+comparison uses one n=5 run of each, and §3.12 showed generate at n=5 moves by ~0.007
+between repeats, so the tercile deltas are directional rather than precise. The fix and
+validate differences are far larger than that spread.
+
+---
+
 ## 4. Measurement — read this before trusting any older number
 
 ### 4.1 The eval configs were never equivalent
@@ -931,20 +1070,23 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
 
 ## 6. Open questions, in priority order
 
-0. **Retrain without phase 3 (§3.12).** The 2x2 was run by dropping the phase-3
+0. **Retrain without phase 3 (§3.12, §3.13).** The 2x2 was run by dropping the phase-3
    adapter from an existing chain, which is not the same as training without it:
    phase 1 and DPO were unchanged, so this shows phase 3 subtracts, not that a
-   two-phase pipeline is optimal. Confirm with a run configured as SFT+DPO only,
-   and decide whether the reasoning records still earn their place in phase 1.
-1. **Spec-shaped fix records — the largest addressable gap (§3.10).**
-   T39/T40 are the weakest tests for every model. The corpus has 1222 fix-like
-   records but only **9** of the T39/T40 shape (spec + enumerated defects +
-   corrected code) and **0** of those carry `reasoning_content`, so phase 3
-   never sees one. Every failure is WRONG rather than MISSED, and
-   words-per-issue tracks the score — so this is the same length-budget
-   result as §3.8, and the fix is the same: enumerate each defect with a
-   reason at ≥35 words, with `reasoning_content` so it reaches phase 3.
-   Needs a spec.
+   two-phase pipeline is optimal. Confirm with a run configured as SFT+DPO only —
+   `configs/qwen38.yaml` still defines `post_dpo_sft`, so this needs a config change,
+   not just a flag at eval time. The same run is the first to train the amended
+   fix-to-spec answers (item 1).
+1. **Fix-to-spec records — amended, not yet trained (§3.10, §3.11).** The 24 records
+   now carry already-correct affirmations and minimal-repair corrections
+   (`ctl_lora_training` commit `83c0136`); no model has been trained on them yet.
+   Reasoning was withdrawn from that brief (§3.13), so they matter through their
+   answers in phase 1 only. Measure on T39/T40 after item 0.
+1a. **Self-distilled reasoning, if reasoning training is wanted at all (§3.13).**
+   Thinking helps fix-to-spec (+0.21) even untrained. Whether training the think
+   channel on the model's *own* correct traces helps further is untested;
+   `spec/self_distillation_spec.md` drafts the experiment. Do it after item 0, so
+   there is a clean two-phase baseline to compare against.
 2. **Per-finding explanation budget — the lever that replaced phase-3 dose.**
    The corpus teaches 19 words per issue line and shrinks to 17.4 on 5-bug
    records, below the ~25 threshold where factual errors start (§3.8). It has
