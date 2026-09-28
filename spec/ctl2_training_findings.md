@@ -7,7 +7,9 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-09-28 with why phase 3 hurts (§3.13 — the authored traces replaced the
+Last updated 2026-09-28 with the model×mode 2×2 and the 0917 baseline correction (§3.14 —
+**0917's validate 0.8034 does not reproduce; it is 0.6918/0.8164 at n=5**), why phase 3
+hurts (§3.13 — the authored traces replaced the
 model's own reasoning style), the phase-3 2x2 (§3.12 — phase 3 is a net cost, thinking is a
 per-task trade, and the best model to date), fix6 (§3.11 — T37 closed, best generate yet, fix score down
 and why), the SFT-checkpoint confound confirmed and the two dose effects
@@ -25,7 +27,7 @@ two — compare generate, validate and the like-for-like column instead.
 
 | model | phase-1 corpus | phase-1 batch | phase 3 | suite | sd | generate | validate | empty answers |
 |---|---|---|---|---|---|---|---|---|
-| **0917 — old corpus** | 11453 | 12 | none | **0.9234** | 0.017 | **0.9858** | **0.8034** | 0/114 |
+| **0917 — old corpus** | 11453 | 12 | none | **0.9234** | 0.017 | **0.9858** | 0.8034 ⚠ | 0/114 |
 | **fix2 — targeted examples** | 11634 | 12 | 2.1 ep @ 12/step | **0.9189** | 0.022 | 0.9568 | **0.8462** | 0/114 |
 | **fix1 — fixed corpus** | 11543 | 12 | 2.8 ep @ 12/step | **0.9089** | 0.024 | 0.9715 | 0.7885 | 0/114 |
 | fix1 @ p3 ckpt-100 | 11543 | 12 | 1.6 ep @ 12/step | 0.9081 | 0.021 | 0.9661 | 0.7966 | 0/114 |
@@ -44,7 +46,9 @@ column are. Like-for-like is T1–T38 excluding T5, which changed rubric when B5
 
 | model | SFT ckpt | phase 3 | **generate** | perfect | T37 | validate | fix | like-for-like | unclosed `<think>` |
 |---|---|---|---|---|---|---|---|---|---|
-| **0917** (38-test) | — | none | **0.9858** | 92% | 0.97 | 0.8034 | — | 0.9258 | 0/114 |
+| **0917, no think** (n=5) | — | none | **0.9832** | 93% | **1.00** | 0.8164 | 0.600 | 0.9342 | 0/200 |
+| **0917, think** (n=5) | — | none | **0.9853** | 92% | **1.00** | 0.6918 | 0.635 | — | 0/200 |
+| 0917 (38-test, n=3) | — | none | 0.9858 | 92% | 0.97 | 0.8034 ⚠ | — | 0.9258 | 0/114 |
 | **fix6_sftdpo, no think** (2×n=5) | **1972** | **none** | 0.9815 | 91% | **1.00** | **0.8467** | 0.533 | **0.9386** | 0/200 |
 | **fix6_sftdpo, think** | **1972** | **none** | **0.9804** | 87% | **1.00** | 0.7795 | **0.740** | 0.9147 | 1/200 |
 | **fix6** | **1972** | 3 ep | **0.9772** | **87%** | **1.00** | 0.7231 | 0.385 | 0.9035 | 1/200 |
@@ -78,6 +82,12 @@ That makes the SFT-dose comparison a genuine one-variable test, not a between-ru
 
 The median-answer column tracks everything else in the table, exactly as §3.8 predicts.
 
+> ⚠ **0917's validate 0.8034 does not reproduce.** It is an n=3 measurement on the 38-test
+> suite; at n=5 on the current suite the same model scores **0.6918** with thinking on and
+> **0.8164** with it off (§3.14). Every validate comparison against 0.8034 in the sections
+> below is optimistic by roughly that margin. Generate's 0.9858 *does* reproduce (0.9853 at
+> n=5), so only the validate column is affected.
+
 All exports are under `/home/pavlisd/exports/` with a matching `configs/eval_T04_*.yaml`.
 
 **Empty answers are excluded from the score shown.** A run where the model never emitted
@@ -95,6 +105,10 @@ test.py was 0.7860; 0.8847 is its quality net of the format failure. See §3.4.
 > this project.** As of `fix2` (§3.7) that is finally over on validate — fix2 scores
 > **0.8462 against 0917's 0.8034**, the first model to beat it there — though 0917 still
 > leads on generate (0.9858 vs 0.9568) and the suite gap is inside the noise floor.
+>
+> ⚠ **Both halves of that claim need revising at n=5 (§3.14).** 0917's validate is 0.6918
+> with thinking on, so fix2 beat it by far more than 0.004 — and 0917 with thinking *off*
+> scores 0.8164, which fix2's 0.8462 still beats. The generate lead is real and reproduces.
 >
 > **As of fix5 (2026-09-27) 0917 still leads on generate, 0.9858 vs 0.9592, and that gap
 > is now the main unexplained result.** It is not T37 — fix5 matches 0917 there. It is
@@ -531,7 +545,8 @@ carries the 24 fix-to-spec records and `cutoff_len` raised to 4096.
 **Two results are unambiguously good:**
 
 - **Generate 0.9772, 87% perfect runs** — the best the new corpus has produced, cutting
-  the gap to 0917 from 0.027 to 0.009.
+  the gap to 0917 from 0.027 to 0.009. (§3.14 re-measures 0917 at n=5: the
+  remaining generate gap to the best no-phase-3 model is ~0.003, a tie.)
 - **T37 is 1.00 across all five runs at FULL phase-3 dose.** Every previous perfect T37
   required the light dose that §3.9 showed costs generate and the `</think>` boundary.
   That trade-off is gone; the Rollup work of §3.9 is closed.
@@ -828,6 +843,78 @@ validate differences are far larger than that spread.
 
 ---
 
+### 3.14 The complete model×mode 2×2, and the 0917 baseline correction
+
+Four cells, **n=5 each, same suite (v4, 40 tests), same sampling** (T=0.4 / top_p 0.95 /
+top_k 20). The `fix6_sftdpo` thinking-OFF row is the mean of three runs.
+
+| model | thinking | generate | perfect | validate | fix | WRONG | traps | like-for-like |
+|---|---|---|---|---|---|---|---|---|
+| 0917 | OFF | **0.9832** | 93% | 0.8164 | 0.600 | 15.3% | 17 | 0.9342 |
+| 0917 | ON | **0.9853** | 92% | 0.6918 | 0.635 | 20.4% | 14 | — |
+| **fix6_sftdpo** | OFF | 0.9800 | 91% | **0.8449** | 0.537 | **4.6%** | 13 | **0.9386** |
+| fix6_sftdpo | ON | 0.9804 | 87% | 0.7795 | **0.740** | 14.8% | 13 | 0.9147 |
+
+#### 0917's validate baseline of 0.8034 is not reproducible — use 0.6918 (think) / 0.8164 (no think)
+
+**0.8034 appears throughout the sections above and every use of it is optimistic.** It came
+from an n=3 run on the 38-test suite. Re-measured at n=5 on the current suite:
+
+| 0917 run | conditions | validate | CAUGHT | WRONG | traps |
+|---|---|---|---|---|---|
+| 2026-09-20 | n=3, 38 tests, thinking ON | 0.8034 | 78.7% | 16.0% | **2 / 61** |
+| **2026-09-28** | **n=5, 40 tests, thinking ON** | **0.6918** | 72.4% | 20.4% | **14** |
+| **2026-09-28** | **n=5, 40 tests, thinking OFF** | **0.8164** | 83.3% | 15.3% | 17 |
+
+The trap count is the tell: 2 of 61 at n=3 against 14 at n=5. Traps are rare events and n=3
+systematically under-samples them. **Never compare a validate score measured at n=3 with one
+measured at n=5** — §2, §3.5 and §3.7 all do, and overstate the older models accordingly.
+
+Generate reproduced almost exactly across the same gap: **0.9858 (n=3) → 0.9853 (n=5)**, a
+spread of 0.0005. So the n-sensitivity is asymmetric: **validate needs the higher n because
+it is trap-sensitive; generate is stable**, and only differences under ~0.01 there need a
+repeat (§4.5).
+
+#### Thinking off helps validate on BOTH models — §3.12's rule generalises
+
+| | thinking ON | thinking OFF | Δ |
+|---|---|---|---|
+| 0917 | 0.6918 | **0.8164** | **+0.125** |
+| fix6_sftdpo | 0.7795 | **0.8449** | **+0.065** |
+
+§3.12 established this on one model. It now holds on a model trained on a completely
+different corpus, with no phase-3 round in either, so it is a property of the **task** and
+not of a checkpoint. Note this is the *inference-time* flag, a separate question from
+§3.13's finding about authored traces — 0917 never saw a trace at all, and thinking still
+costs it 0.125 on validate.
+
+#### What the corpus work actually bought — both models in their best mode
+
+| | 0917 (no think) | fix6_sftdpo (no think) |
+|---|---|---|
+| generate | **0.9832** | 0.9800 |
+| validate | 0.8164 | **0.8449** |
+| **WRONG** | 15.3% | **4.6%** |
+| MISSED | **1.3%** | 8.6% |
+| like-for-like | 0.9342 | **0.9386** |
+
+**Generate is a tie** — 0.003 apart, inside the spread. 0917 does not *lose* any generate
+pairing, so the honest statement is that the corpus work drew level on generate rather than
+surpassing it. Earlier sections describing a large unexplained generate gap to 0917 were
+comparing a phase-3 model against a no-phase-3 one; §3.12 and §3.13 account for most of it.
+
+**The gain is on validate and it is specifically a precision gain.** WRONG falls 15.3% →
+4.6%, a third of the rate, while MISSED rises 1.3% → 8.6%. 0917 finds nearly everything and
+is wrong about a sixth of what it says; fix6_sftdpo finds less and is wrong far less often.
+Under this project's stated preference for precision over recall on validation that is the
+better trade — but it **is** a trade, and 0917's recall is the stronger.
+
+**T37 is 1.00 for 0917 too**, at n=5. So T37 was never a capability the new corpus added:
+the old corpus had it, and the fix2/fix3 scores were a regression that has since been
+recovered rather than a gap that was closed.
+
+---
+
 ## 4. Measurement — read this before trusting any older number
 
 ### 4.1 The eval configs were never equivalent
@@ -946,10 +1033,16 @@ ckpt-250 0.57).
 
 ### 4.5 Noise floor
 
-> **Added 2026-09-28:** two independent n=5 runs of the same model on the same config gave
-> generate 0.9848 and 0.9781 — a spread of 0.0067, while validate reproduced to 0.002.
-> **Generate is the noisier metric**, and differences under ~0.01 on it need a second run
-> before they mean anything (§3.12).
+> **Added 2026-09-28, revised with §3.14.** Two effects, in opposite directions:
+>
+> *Within one model at fixed n*, generate is the noisier metric: two n=5 runs of
+> `fix6_sftdpo` gave 0.9848 and 0.9781 (spread 0.0067) while validate reproduced to 0.002.
+> Differences under ~0.01 on generate need a second run.
+>
+> *Across different n*, **validate is the fragile one.** 0917 measured 0.8034 at n=3 and
+> 0.6918 at n=5 on the same mode, because false-positive traps are rare events that n=3
+> under-samples — 2 of 61 against 14. Generate over the same gap moved 0.9858 → 0.9853.
+> **Never compare validate scores measured at different n.**
 
 Suite sd is 0.004–0.017 at T=0.4 — much tighter than the 0.054 seen under the old configs,
 but that improvement came from removing the penalties, not from temperature. Differences
