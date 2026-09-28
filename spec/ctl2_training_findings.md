@@ -7,7 +7,8 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-09-28 with fix6 (§3.11 — T37 closed, best generate yet, fix score down
+Last updated 2026-09-28 with the phase-3 2x2 (§3.12 — phase 3 is a net cost, thinking is a
+per-task trade, and the best model to date), fix6 (§3.11 — T37 closed, best generate yet, fix score down
 and why), the SFT-checkpoint confound confirmed and the two dose effects
 shown non-additive (§3.9, §4.4), the checkpoint-selection defect (§4.4), the phase-3 dose test
 (§3.6), the targeted-examples retrain (§3.7), and the words-per-finding result that explains
@@ -43,6 +44,8 @@ column are. Like-for-like is T1–T38 excluding T5, which changed rubric when B5
 | model | SFT ckpt | phase 3 | **generate** | perfect | T37 | validate | fix | like-for-like | unclosed `<think>` |
 |---|---|---|---|---|---|---|---|---|---|
 | **0917** (38-test) | — | none | **0.9858** | 92% | 0.97 | 0.8034 | — | 0.9258 | 0/114 |
+| **fix6_sftdpo, no think** | **1972** | **none** | **0.9849** | **90%** | **1.00** | **0.8475** | 0.500 | **0.9411** | 0/200 |
+| **fix6_sftdpo, think** | **1972** | **none** | **0.9804** | 87% | **1.00** | 0.7795 | **0.740** | 0.9147 | 1/200 |
 | **fix6** | **1972** | 3 ep | **0.9772** | **87%** | **1.00** | 0.7231 | 0.385 | 0.9035 | 1/200 |
 | **fix4 @ p3 ckpt-100** | **950** | 1.1 ep | **0.9691** | 84% | **1.00** | 0.6297 | 0.695 | 0.8647 | 0/200 |
 | **fix5** | **1950** | 2.8 ep | 0.9592 | 82% | 0.84 | **0.8064** | 0.610 | **0.9139** | 0/200 |
@@ -186,7 +189,10 @@ Fixed by giving phase 1 both datasets. With `enable_thinking: false`,
 `Template.remove_thought()` strips each block into the *prompt*, so it carries no loss.
 Verified through LlamaFactory's loader: 11468 examples, zero `<think>` under loss.
 
-### 3.2 Phase 3 helps, modestly, and mainly on generate
+### 3.2 Phase 3 helps, modestly, and mainly on generate — SUPERSEDED by §3.12
+
+> Measured before the corpus fixes. On the current corpus phase 3 is a net cost on every
+> axis; see §3.12. Kept for the trail.
 
 sftdpo → p1fix on identical sampling: suite **+0.018**, generate **+0.023**, validate +0.008.
 Thinking length drops 1272 → 932 chars and token-exhaustion failures fall.
@@ -593,6 +599,72 @@ it and watch.
 
 ---
 
+### 3.12 Phase 3 is a net cost, and inference-time thinking is a per-task trade
+
+A 2×2 on the fix6 weights, n=5 throughout. The SFT+DPO rows share one export
+(`qwen38_fix6_sftdpo`, SFT checkpoint-1972 + DPO checkpoint-472, no phase-3 adapter), so the
+last two rows differ **only** in the `enable_thinking` flag at inference.
+
+| chain | thinking | generate | perfect | validate | fix | T37 | like-for-like |
+|---|---|---|---|---|---|---|---|
+| SFT+DPO+phase3 (fix6) | ON | 0.9772 | 87% | 0.7231 | 0.385 | 1.00 | 0.9035 |
+| **SFT+DPO** | **OFF** | **0.9849** | **90%** | **0.8475** | 0.500 | 1.00 | **0.9411** |
+| SFT+DPO | ON | 0.9804 | 87% | 0.7795 | **0.740** | 1.00 | 0.9147 |
+| *0917 reference* | *—* | *0.9858* | *92%* | *0.8034* | *—* | *0.97* | *0.9258* |
+
+#### Phase 3 costs accuracy on every axis — this supersedes §3.2
+
+Holding thinking ON and removing only the phase-3 adapter: generate 0.9772 → 0.9804,
+validate 0.7231 → 0.7795, **fix 0.385 → 0.740**. §3.2 ("phase 3 helps, modestly, and mainly
+on generate") was measured before the corpus fixes and no longer holds. The whole of §3.9's
+dose-tuning problem dissolves too: at zero dose there is no dose to tune.
+
+**T37 is 1.00 across five runs with no phase-3 adapter at all.** The Rollup fix lives in the
+phase-1 corpus, not the reasoning round — which also retires the §3.9 finding that T37 was
+phase-3 dose-sensitive. It was, on the old corpus; it no longer is.
+
+This does not say reasoning data is worthless — those records still train in phase 1 with
+their `<think>` blocks stripped, and that is where their content lands. It says the extra
+gentle round on the tagged subset, running last, is now a net negative.
+
+#### Inference-time thinking is a genuine trade, not a free win
+
+Same weights, flag flipped:
+
+| | thinking OFF | thinking ON |
+|---|---|---|
+| generate | **0.9849** | 0.9804 |
+| validate | **0.8475** | 0.7795 |
+| **fix** | 0.500 | **0.740** |
+| median validate answer | **64w** | 124w |
+| validate CAUGHT / WRONG | (lost, see below) | 81.2% / 14.8% |
+
+Thinking helps the one task that needs multi-step deliberation — fix-to-spec, +0.24 — and
+hurts generate and validate. On validate it nearly doubles the answer and the extra words
+become WRONG findings: **§3.8's length mechanism running in reverse.** Past ~35 words per
+finding the budget stops buying correctness and starts buying elaboration, and elaboration
+past the point of knowledge is where false claims come from.
+
+**Practical rule: thinking off for generate and validate, on for fix-to-spec.**
+
+#### The current best model
+
+`qwen38_fix6_sftdpo` with thinking off is the best model this project has produced. Generate
+0.9849 against 0917's 0.9858 is inside the noise floor (§4.5 puts that at ~0.02 at suite
+level), while it beats 0917 on validate (0.8475 vs 0.8034) and like-for-like (0.9411 vs
+0.9258), and beats fix2's 0.8462 — the previous validate record. `configs/mut_validate_qwen38.yaml`
+was repointed to it on 2026-09-28, with `enable_thinking: false`.
+
+> **Data-integrity note.** The thinking-OFF results JSON was overwritten. Both configs point
+> at the same export, so test.py derived the same model name, and the two runs were launched
+> in the same second — identical output filenames. The scores above are reconstructed from
+> the 200 per-test rows in the run log and agree exactly with the summary line, but the
+> judge-finding detail for that row is lost. A re-run was launched to regenerate it; sampling
+> variance means it will not reproduce 0.9849 exactly. **When running two evals against one
+> export, give them distinct model names or stagger the launches.**
+
+---
+
 ## 4. Measurement — read this before trusting any older number
 
 ### 4.1 The eval configs were never equivalent
@@ -830,7 +902,12 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
 
 ## 6. Open questions, in priority order
 
-0. **Spec-shaped fix records — the largest addressable gap (§3.10).**
+0. **Retrain without phase 3 (§3.12).** The 2x2 was run by dropping the phase-3
+   adapter from an existing chain, which is not the same as training without it:
+   phase 1 and DPO were unchanged, so this shows phase 3 subtracts, not that a
+   two-phase pipeline is optimal. Confirm with a run configured as SFT+DPO only,
+   and decide whether the reasoning records still earn their place in phase 1.
+1. **Spec-shaped fix records — the largest addressable gap (§3.10).**
    T39/T40 are the weakest tests for every model. The corpus has 1222 fix-like
    records but only **9** of the T39/T40 shape (spec + enumerated defects +
    corrected code) and **0** of those carry `reasoning_content`, so phase 3
@@ -839,7 +916,7 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
    result as §3.8, and the fix is the same: enumerate each defect with a
    reason at ≥35 words, with `reasoning_content` so it reaches phase 3.
    Needs a spec.
-1. **Per-finding explanation budget — the lever that replaced phase-3 dose.**
+2. **Per-finding explanation budget — the lever that replaced phase-3 dose.**
    The corpus teaches 19 words per issue line and shrinks to 17.4 on 5-bug
    records, below the ~25 threshold where factual errors start (§3.8). It has
    1 reasoning record with ≥5 findings. Every future recall improvement will

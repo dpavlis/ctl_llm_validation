@@ -1,9 +1,33 @@
-# mut_validate configuration — Qwen3.8 (thinking model)
+# mut_validate configuration — Qwen3.8
 # Run: python mut_validate.py data/sft_input/your_file.json --config configs/mut_validate_qwen38.yaml
+#
+# Repointed 2026-09-28 from qwen38_fix1 to qwen38_fix6_sftdpo, with thinking OFF.
+# Both changes are measured, at n=5 on the 40-test suite (findings 3.12):
+#
+#   model / mode                        generate   validate   like-for-like
+#   qwen38_fix6_sftdpo, thinking OFF      0.9849     0.8475       0.9411
+#   qwen38_fix6_sftdpo, thinking ON       0.9804     0.7795       0.9147
+#   qwen38_fix6 (with phase 3), ON        0.9772     0.7231       0.9035
+#   qwen38_0917 (previous best generate)  0.9858     0.8034       0.9258
+#   qwen38_fix1 (what this used to be)    0.9715     0.7885         --
+#
+# This is the best validate score measured on any model, and its generate is
+# within the noise floor of the best ever. Two things drive it:
+#
+#   1. The phase-3 (thinking-trained) adapter is NOT in the chain. It was
+#      costing accuracy on every axis once the corpus fixes landed.
+#   2. enable_thinking is false. For validation specifically this is worth
+#      +0.068: thinking nearly doubles the answer (64w -> 124w) and the extra
+#      words turn into WRONG findings, which is the 3.8 length mechanism in
+#      reverse. Do NOT set this true for validation work.
+#
+# The one task that WANTS thinking is fix-to-spec (0.740 with, 0.500 without).
+# If this config is ever repurposed for that, flip enable_thinking back on and
+# expect validate to regress.
 
 model:
   # Path to the merged/exported safetensors checkpoint (the MUT)
-  checkpoint_dir: /home/pavlisd/exports/qwen38_fix1/
+  checkpoint_dir: /home/pavlisd/exports/qwen38_fix6_sftdpo/
   adapter_dir: null      # optional LoRA adapter dir (unmerged checkpoint)
   dtype: bfloat16        # float16 | bfloat16 | float32
   attn_impl: flash_attention_2   # flash_attention_2 | sdpa
@@ -17,7 +41,8 @@ model:
   # nothink. When true, the model's chain-of-thought is split off at the
   # `</think>` tag and ONLY the text after it is judged, appended to the
   # conversation history, or exported as training data.
-  enable_thinking: true
+  # false as of 2026-09-28 — measured, not stylistic. See the header block.
+  enable_thinking: false
   # Handed to the chat template as `reasoning_effort` when thinking is on.
   # Qwen3.8 accepts low | medium | xhigh; null leaves the template default.
   # Templates that do not read it warn at load time instead of failing quietly.
