@@ -7,7 +7,8 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-09-28 with the model×mode 2×2 and the 0917 baseline correction (§3.14 —
+Last updated 2026-09-28 with reasoning effort (§3.15 — the knob is weak; thinking off still
+wins validate, effort does not move fix), the model×mode 2×2 and the 0917 baseline correction (§3.14 —
 **0917's validate 0.8034 does not reproduce; it is 0.6918/0.8164 at n=5**), why phase 3
 hurts (§3.13 — the authored traces replaced the
 model's own reasoning style), the phase-3 2x2 (§3.12 — phase 3 is a net cost, thinking is a
@@ -912,6 +913,61 @@ better trade — but it **is** a trade, and 0917's recall is the stronger.
 **T37 is 1.00 for 0917 too**, at n=5. So T37 was never a capability the new corpus added:
 the old corpus had it, and the fix2/fix3 scores were a regression that has since been
 recovered rather than a gap that was closed.
+
+---
+
+### 3.15 Reasoning effort barely matters — thinking off still wins validate
+
+Every thinking-ON measurement above ran at `reasoning_effort: medium`, which is also what
+training used, so train and eval saw the same system prompt. (At `xhigh` the template
+prepends *"Reasoning effort is set to xhigh…"* to the system message; no recorded eval prompt
+contains it.) Qwen3.8 accepts `low` / `medium` / `xhigh`, so the two other levels were run on
+the same weights, `qwen38_fix6_sftdpo`, n=5: `low` on the full suite, `xhigh` on the fix tests
+only because it is slow.
+
+| | thinking OFF (3 runs) | low | medium | xhigh (fix only) |
+|---|---|---|---|---|
+| generate | 0.9800 | 0.9774 | 0.9804 | — |
+| **validate** | **0.8449** | 0.8013 | 0.7795 | — |
+| fix | 0.537 | 0.785 | 0.740 | 0.740 |
+| validate CAUGHT / MISSED / WRONG | **86.8 / 8.6 / 4.6** | 78.9 / 5.9 / 15.1 | 81.2 / 4.0 / 14.8 | — |
+| traps sprung (validate) | 13 | **6** | 13 | — |
+| median thinking, gen / val / fix (words) | — | 236 / 210 / 1136 | 268 / 239 / 1484 | — / — / 3253 |
+| median validate answer | 65w | 104w | 124w | — |
+| median seconds per fix sample | — | — | 160 | 286 |
+
+Configs: `configs/eval_T04_fix6_sftdpo_low.yaml`, `configs/eval_T04_fix6_sftdpo_xhigh.yaml`.
+Both use symlinked model paths (`/home/pavlisd/exports/qwen38_fix6_sftdpo_{low,xhigh}`) so
+their results files get distinct model names — the §3.12 overwrite cannot recur. Only the
+MUT's effort changed; the judge stayed at `medium`.
+
+**The knob is weak on this model.** `medium` → `low` cut thinking only 12–23%; `medium` →
+`xhigh` doubled it on fix. Length still scales with difficulty at every level (fix ≈ 5×
+validate), so the native adaptivity §3.13 describes survives the knob.
+
+**Validate: `low` is not the middle ground.** The hope was that a shorter native trace would
+keep thinking's detection gain without its WRONG cost. It did not: WRONG stayed at 15.1%,
+because the over-elaboration lives in the *answer* that thinking produces (104w at `low`, 124w
+at `medium`, 65w with thinking off), and `low` barely shortens that. It did halve the traps
+sprung, 13 → 6. Validate at `low` is still 0.044 below thinking off. **Thinking stays off for
+validate** — and §3.14 showed the same holds on 0917, so this is the task, not the model.
+
+**Fix: effort makes no measurable difference.** `low` 0.785 against `medium` 0.740 is one T40
+run flipping from 0.3 to 0.75 — noise at 10 samples. `xhigh` matched `medium` run for run
+(scores identical across all 10 runs; the answers are all different texts, and the judge
+failed the same items in each). T39 is solved at every level. What remains is **T40.FP1 in 10
+of 10 runs at both `medium` and `xhigh`**: the model believes declared-but-unassigned
+variables start null, where they start at their type defaults. Twice the thinking reasons
+longer from the same false premise. That is a knowledge gap, not missing deliberation — and
+it is one of the correct-but-suspicious constructs seeded into the amended fix-to-spec
+records (`ctl_lora_training` `83c0136`), which no model has been trained on yet.
+
+**Rule:** thinking off for generate and validate; for fix-to-spec, thinking on at `low` — as
+good as `medium` and ~25% less thinking. Never `xhigh`: ~80% more time for nothing measured.
+
+**Implication for §3.13's consequence 4.** If thinking length ever matters for cost, the
+built-in `low` setting is the first thing to try before any training-based compression, but
+it buys little here. A real reduction would still need RL.
 
 ---
 
