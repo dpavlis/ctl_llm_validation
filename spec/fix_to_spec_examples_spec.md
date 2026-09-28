@@ -1,7 +1,7 @@
 # Fix-to-spec records — teaching the enumerate-then-correct task
 
-**~24 new records.** Everything above the "Internal tracking" section at the end is a
-self-contained brief. It assumes CTL2 knowledge (the language and the CloverDX component
+**Amend the 24 records that already exist — do not regenerate them.** Everything above the
+"Internal tracking" section at the end is a self-contained brief. It assumes CTL2 knowledge (the language and the CloverDX component
 model) but no other context about this project.
 
 > **Amendment, 2026-09-28 — read this before generating.** A first batch of 24 records
@@ -17,7 +17,16 @@ model) but no other context about this project.
 > batch — **"The corrected code is a minimal repair"** and **"Seed constructs that look
 > broken but are correct"**. An audit of the first batch found 0 of 24 records seeding a
 > correct-but-suspicious construct, and only 6 of 24 reasoning traces affirming anything
-> as already correct. Do not repeat that.
+> as already correct.
+>
+> **This is an edit pass, not a regeneration.** The 24 records in
+> `sft_training_data/CTL_LoRAT_fix_to_spec.json` pass every other check in this document:
+> the component mix and defect distribution are exact, every enumerated item clears the
+> 35-word floor (median 47, minimum 40), no record calls a function outside the library or
+> omits a required contract function, and every prompt carries a real numbered
+> specification. The fault is something *missing*, not something wrong. Keep those records,
+> keep their ids, and add what they lack. Regenerating would discard properties that are
+> already verified and reintroduce variance for no gain.
 
 You are working inside the `ctl_lora_training` repository. Everything referenced below is
 in it:
@@ -35,7 +44,11 @@ in it:
 | `references/CTL2_Reasoning_Trace_Playbook.md` | house style for `reasoning_content` |
 | `utils/convert_think.py` | merges `reasoning_content` into the tagged form |
 
-Write the new records to a new file, `sft_training_data/CTL_LoRAT_fix_to_spec.json`.
+Edit `sft_training_data/CTL_LoRAT_fix_to_spec.json` in place. It holds 28 records: the 24
+to amend, with ids prefixed `fixtospec_`, and 4 older ones (`fixthiscc4_133` through
+`fixthiscc4_136`) that predate this document. **Leave the four alone** — they are a
+different, prose-form shape and the verification script below flags them; that is expected,
+not something to fix.
 
 ## The task to teach
 
@@ -91,8 +104,28 @@ the code against the specification line by line. That check is what the record t
 
 ## What to produce
 
-**24 new records.** Every one must be unique: a distinct component, specification, domain
-and defect set. Do not produce variants of one scenario with the field names changed.
+**The 24 existing records, amended.** Each one keeps its id, component, specification,
+broken code and defect set. What changes in each:
+
+1. **Add one correct-but-suspicious construct** (two in the 5- and 6-defect records) to the
+   broken code where the record does not already contain one, and add the matching
+   affirmation item to the answer's list. See "Seed constructs that look broken but are
+   correct" below.
+2. **Add the same affirmation to the `reasoning_content`**, reached the same way the trace
+   reaches a defect.
+3. **Re-check the corrected code against every numbered requirement** and against the
+   minimal-repair rule below; trim any change that does not trace to a listed item.
+
+Adding an affirmation item does **not** change a record's defect count — the distribution
+below is a count of *defects*, and it must still hold after the edit. The tables in this
+section are therefore unchanged targets, not new ones to hit.
+
+If a record already contains a construct that happens to be correct-but-suspicious, name it
+rather than inventing a second one.
+
+Should a record turn out to be unsalvageable — the specification is ambiguous, or a claimed
+defect is not actually a defect — replace that one record and say which, rather than
+regenerating the set.
 
 ### Defect count per record
 
@@ -360,7 +393,9 @@ asst = lambda e: ''.join(m.get('content','') or '' for m in e['messages'] if m['
 rea  = lambda e: ''.join(m.get('reasoning_content','') or '' for m in e['messages'] if m['role']=='assistant')
 user = lambda e: next(m['content'] for m in e['messages'] if m['role']=='user')
 
-print('records (want 24):', len(R))
+print('records (want 28: the 24 amended + 4 untouched older ones):', len(R))
+print('ids preserved (want 24 fixtospec_*):',
+      sum(1 for e in R if str(e.get('id','')).startswith('fixtospec_')))
 
 # 1. reasoning on every record, and no hand-written tags anywhere
 print('missing reasoning_content (want 0):', [e['id'] for e in R if not rea(e).strip()])
