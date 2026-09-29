@@ -1047,9 +1047,9 @@
         {
           "id": "T18.B2",
           "code": "r.unit_price and r.currency accessed without null check",
-          "description": "When no record matches the lookup key, `.get()` returns null. Accessing `r.unit_price` or `r.currency` on a null record throws a NullPointerException at runtime. An `isnull(r)` guard with fallback defaults is required before any field access.",
+          "description": "When no record matches the lookup key, `.get()` returns null. Accessing `r.unit_price` or `r.currency` on a null record throws a NullPointerException at runtime. Whether a miss happens depends on the data — nothing in the task says every product_id is present in PriceLookup — so this is a runtime-data risk (WARNING), not a certain failure (ERROR). An `isnull(r)` guard with fallback defaults is the recommended repair.",
           "correct_fix": "PriceRec r = lookup(PriceLookup).get($in.0.product_id);\nif (!isnull(r)) {\n    $out.0.unit_price = round(r.unit_price, 2);\n    $out.0.currency   = r.currency;\n} else {\n    $out.0.unit_price = 0.00D;\n    $out.0.currency   = \"UNKNOWN\";\n}",
-          "severity": "ERROR"
+          "severity": "WARNING"
         }
       ],
       "rubric": {
@@ -1060,7 +1060,7 @@
         ],
         "fix_quality": {
           "T18.B1": "Must state the correct form is `lookup(TableName).get(key)` and that passing the key to `lookup()` directly is invalid. Must flag as ERROR (compile error).",
-          "T18.B2": "Must explain that `.get()` returns null on a miss and that field access on null throws at runtime. Must suggest an `isnull(r)` guard with defaults. Must flag as ERROR."
+          "T18.B2": "Must explain that `.get()` returns null on a miss and that field access on null throws at runtime. Must suggest an `isnull(r)` guard with defaults. Must flag as WARNING, not ERROR: the failure depends on whether the key is present in the lookup, so it is a runtime-data risk, not a certain failure. The verdict is FAIL because of T18.B1, not because of this finding."
         },
         "verdict_expected": "FAIL",
         "scoring": {
