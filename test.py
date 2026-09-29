@@ -2207,8 +2207,14 @@ eval_config.yaml schema:
                         help="Print effective config and exit without running tests.")
     parser.add_argument("--compare", nargs="+", metavar="FILE",
                         help="Compare two or more results JSON files side by side.")
-    parser.add_argument("--no-llm-summary", action="store_true",
-                        help="Skip the LLM-generated failure analysis after the run.")
+    # Off by default: the analysis is an extra judge call per run that nobody
+    # reads in automated runs. --no-llm-summary is kept so existing commands
+    # keep working; it is now the default.
+    llm_summary = parser.add_mutually_exclusive_group()
+    llm_summary.add_argument("--llm-summary", dest="llm_summary", action="store_true", default=False,
+                             help="Generate the LLM-written failure analysis after the run (off by default).")
+    llm_summary.add_argument("--no-llm-summary", dest="llm_summary", action="store_false",
+                             help="Skip the LLM-written failure analysis (the default; kept for compatibility).")
     parser.add_argument("--no-log", action="store_true",
                         help="Skip writing eval results to the shared run log.")
     parser.add_argument("--debug", action="store_true",
@@ -2325,7 +2331,7 @@ eval_config.yaml schema:
     _print(f"  {summary_path}")
 
     # ── LLM failure analysis ──────────────────────────────────────────────
-    if not args.no_llm_summary:
+    if args.llm_summary:
         judge_cfg = cfg.get("judge", {})
         try:
             judge_client = make_judge_client(judge_cfg)

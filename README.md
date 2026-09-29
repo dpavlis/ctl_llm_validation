@@ -576,7 +576,8 @@ python test.py --compare results/a.json results/b.json     # diff two result set
 | `--suite-file FILE` / `-s` | Use a specific test suite file |
 | `--dry-run` | Preview without calling any model |
 | `--compare FILE FILE` | Diff two prior result JSON files |
-| `--no-llm-summary` | Skip the LLM-written summary paragraph |
+| `--llm-summary` | Write the LLM-generated failure analysis after the run (off by default) |
+| `--no-llm-summary` | Skip the failure analysis — now the default; kept for compatibility |
 | `--no-log` | Don't append to `logs/<BaseModel>.yaml` |
 | `--debug` | Verbose per-test streaming output |
 
