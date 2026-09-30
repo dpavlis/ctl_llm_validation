@@ -464,6 +464,15 @@ class TestKnownFalseBeliefs(unittest.TestCase):
         self.assertEqual(sd.belief_hits("`byte2hex` accepts exactly one `byte` argument."),
                          ["byte2hex takes one argument"])
         self.assertEqual(sd.belief_hits("Use getWeek($in.0.d) for the week."), ["getWeek() is a function"])
+        for code in ('if ($in.0.status in ["BACKORDER", "PARTIAL"]) {', "if ($in.0.code in allowedCodes) {",
+                     'boolean hit = code in ["X", "Y"];', 'if ($in.0.cur !in ["SEK", "NOK"]) {'):
+            self.assertEqual(sd.belief_hits(code), ["infix `in` operator"], code)
+
+    def test_infix_in_ignores_valid_calls_and_prose(self):
+        for text in ('if (in($in.0.status, ["BACKORDER", "PARTIAL"])) {', "$in.0.status.in(codes)",
+                     "abv_percent must be non-null and in [0, 96].", "The rules are evaluated in order):",
+                     "Capture $in.0.sensor_id in append? Or in transform?", 'if (!in($in.0.cur, ["SEK"])) {'):
+            self.assertEqual(sd.belief_hits(text), [], text)
 
     def test_negated_and_true_statements_pass(self):
         for text in ("`=` makes a deep copy; it does not alias the list.",

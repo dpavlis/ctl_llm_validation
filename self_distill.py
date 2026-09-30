@@ -1849,6 +1849,13 @@ KNOWN_FALSE_BELIEFS: dict[str, re.Pattern] = {
         r"appendAll[^\n.]{0,60}(?:does not exist|doesn't exist|unsupported|not supported|lists only)", re.I),
     "writing an unconnected port is harmless": re.compile(
         r"(?:unconnected|not connected)[^\n.]{0,80}(?:harmless|dead code|no effect|is ignored)", re.I),
+    # Membership is in(x, list) or x.in(list); `x in [...]` and `x !in [...]` are
+    # syntax errors (checked with the compiler). Both models keep the infix form in
+    # "corrected" code (suite T41.B1, 6/6 runs). The operand shapes exclude prose
+    # and interval notation ("in [0, 96]"): no false hit in the answers or traces
+    # of all runs so far.
+    "infix `in` operator": re.compile(
+        r"\$(?:in|out)\.\w+\.\w+\s+!?in\s+(?:\[|\w+\s*\))|\b\w+\s+!?in\s+\[\s*\""),
 }
 _NEGATION_RE = re.compile(r"\b(?:not|no|never|doesn't|does not|don't|isn't|is not|without|rather than)\b[^\n.]{0,25}$", re.I)
 
