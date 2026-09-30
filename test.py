@@ -1256,6 +1256,7 @@ def append_eval_log(
         "suite_score":    results["suite_score"],
         "generate_score": results["generate_score"],
         "validate_score": results["validate_score"],
+        "fix_score":      results.get("fix_score"),
         "tests":          tests_summary,
     }
 
@@ -1279,8 +1280,12 @@ def append_eval_log(
 # ---------------------------------------------------------------------------
 
 def _resolve_mut_overrides(mut_cfg: dict, test_type: str, test: dict) -> tuple[str, float, float, int, float]:
-    """Return (system_prompt, temperature, top_p) applying any per-type MUT config overrides."""
-    type_cfg = mut_cfg.get(test_type) or {}
+    """Return (system_prompt, temperature, top_p) applying any per-type MUT config overrides.
+
+    A fix test is a review that also returns code, so a config without a `fix:`
+    section samples it with the `validate:` settings rather than the bare defaults.
+    """
+    type_cfg = mut_cfg.get(test_type) or (mut_cfg.get("validate") if test_type == "fix" else None) or {}
     system_prompt = type_cfg.get("system_prompt") or test["system_prompt"]
     temperature = type_cfg["temperature"] if "temperature" in type_cfg else test.get("temperature", 0.1)
     top_p = type_cfg.get("top_p", 1.0)
@@ -1552,12 +1557,12 @@ def _error_result(test: dict, run_index: int, reason: str, duration: float) -> d
 # ---------------------------------------------------------------------------
 
 def _filter_tests_by_type(tests: list[dict], test_type: Optional[str]) -> list[dict]:
-    """Return only tests matching the requested type (generate/validate)."""
+    """Return only tests matching the requested type (generate/validate/fix)."""
     if not test_type:
         return tests
 
     normalized = str(test_type).lower()
-    if normalized not in {"generate", "validate"}:
+    if normalized not in {"generate", "validate", "fix"}:
         raise ValueError(f"Unsupported test type filter: {test_type}")
 
     return [t for t in tests if str(t.get("type", "generate")).lower() == normalized]
@@ -1651,12 +1656,15 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug
     # Suite-level averages — derived from each result's recorded type, not hardcoded ID sets
     generate_ids = {r["test_id"] for r in all_results if r.get("test_type") == "generate"}
     validate_ids = {r["test_id"] for r in all_results if r.get("test_type") == "validate"}
+    fix_ids      = {r["test_id"] for r in all_results if r.get("test_type") == "fix"}
 
     def _mean(tid_set: set) -> float:
         scores = [r["numeric_score"] for r in all_results if r["test_id"] in tid_set]
         return sum(scores) / len(scores) if scores else 0.0
 
-    all_tids = {r["test_id"] for r in all_results}
+    # suite_score stays generate + validate only, so it remains comparable with
+    # every run made before fix tests existed; fix_score is reported beside it.
+    all_tids = generate_ids | validate_ids
 
     # Run-level MUT description, so two results files can be compared without
     # having to know which eval config produced each.
@@ -1681,6 +1689,7 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug
         "suite_score":    round(_mean(all_tids), 4),
         "generate_score": round(_mean(generate_ids), 4),
         "validate_score": round(_mean(validate_ids), 4),
+        "fix_score":      round(_mean(fix_ids), 4) if fix_ids else None,
         "tests":          all_results,
     }
 
@@ -1783,7 +1792,9 @@ def generate_llm_failure_summary(judge_client, results: dict, suite_file: Path) 
         f"Run: {results['timestamp']}\n"
         f"Suite score: {results['suite_score']:.4f}  "
         f"Generate: {results['generate_score']:.4f}  "
-        f"Validate: {results['validate_score']:.4f}\n\n"
+        f"Validate: {results['validate_score']:.4f}"
+        + (f"  Fix: {results['fix_score']:.4f}" if results.get("fix_score") is not None else "")
+        + "\n\n"
         f"---\n\n{combined}"
     )
     return judge_client.evaluate(_FAILURE_ANALYSIS_SYSTEM, user_msg)
@@ -1878,6 +1889,8 @@ def write_summary_md(results: dict, output_dir: Path) -> Path:
         f"**Generate score:** {results['generate_score']:.4f}",
         f"**Validate score:** {results['validate_score']:.4f}",
     ]
+    if results.get("fix_score") is not None:
+        lines.append(f"**Fix score:**      {results['fix_score']:.4f}")
 
     criticals = [
         (r["test_id"], r["run"], r["critical_failure"])
@@ -1971,6 +1984,7 @@ def print_summary_table(results: dict, prev_entry: Optional[dict] = None):
             f"\nSuite: {_suite_delta('suite_score')}  "
             f"Generate: {_suite_delta('generate_score')}  "
             f"Validate: {_suite_delta('validate_score')}"
+            + (f"  Fix: {_suite_delta('fix_score')}" if results.get("fix_score") is not None else "")
         )
     else:
         print("\n" + "=" * 84)
@@ -2007,6 +2021,7 @@ def print_summary_table(results: dict, prev_entry: Optional[dict] = None):
             f"Suite: {_suite_delta_plain('suite_score')}  "
             f"Generate: {_suite_delta_plain('generate_score')}  "
             f"Validate: {_suite_delta_plain('validate_score')}"
+            + (f"  Fix: {_suite_delta_plain('fix_score')}" if results.get("fix_score") is not None else "")
         )
 
 
@@ -2197,6 +2212,8 @@ eval_config.yaml schema:
                         help="Run only generate-type tests.")
     parser.add_argument("--validate-only", action="store_true",
                         help="Run only validate-type tests.")
+    parser.add_argument("--fix-only", action="store_true",
+                        help="Run only fix-type tests.")
     parser.add_argument("--runs", "-n", type=int, metavar="N",
                         help="Runs per test — overrides config runs_per_test.")
     parser.add_argument("--output-dir", "-o", metavar="DIR",
@@ -2254,6 +2271,8 @@ eval_config.yaml schema:
         cfg["test_type_filter"] = "generate"
     elif args.validate_only:
         cfg["test_type_filter"] = "validate"
+    elif args.fix_only:
+        cfg["test_type_filter"] = "fix"
     if args.runs:
         cfg["runs_per_test"] = args.runs
     if args.output_dir:

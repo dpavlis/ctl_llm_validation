@@ -1,8 +1,8 @@
 {
   "version": "4.0",
-  "description": "CTL2 model evaluation test suite V4 — the single consolidated suite: 38 tests (T1-T38), 25 generate and 13 validate, covering CTL2 generation and validation quality across Reformat, Denormalizer, Normalizer, Rollup, Partition, Filter, ExtHashJoin, Lookup, Sequence, DataGenerator and standalone functions. Supersedes V2 (T1-T28, T37) and V3 (T29-T36), which are merged here in full; the V3 judge addenda A-E apply to every test.",
+  "description": "CTL2 model evaluation test suite V4 — the single consolidated suite: 43 tests (T1-T43), 25 generate, 13 validate and 5 fix, covering CTL2 generation, validation and spec-driven fixing quality across Reformat, Denormalizer, Normalizer, Rollup, Partition, Filter, ExtHashJoin, Lookup, Sequence, DataGenerator and standalone functions. Supersedes V2 (T1-T28, T37) and V3 (T29-T36), which are merged here in full; the V3 judge addenda A-E apply to every test.",
   "judge_system_prompt": "You are an expert CTL2 code reviewer evaluating LLM responses against a rubric.\nFor each test you receive:\n  - The prompt sent to the model\n  - The model's response\n  - The evaluation rubric\n\nScore each required finding as: CAUGHT | MISSED | WRONG (caught but incorrect fix/explanation).\nScore forbidden content as: PRESENT (bad) | ABSENT (good).\nProvide a final verdict: PASS | PARTIAL | FAIL with a brief justification.",
-  "judge_instructions": "For each test, you will receive:\n  1. This test definition (system_prompt, user_message, rubric)\n  2. The model's actual response\n\nEvaluate the response against the rubric:\n  - For GENERATE tests: check each required item as PRESENT | MISSING | WRONG\n  - For VALIDATE tests: check each required finding as CAUGHT | MISSED | WRONG\n  - For VALIDATE tests: check each false-positive trap as TRIGGERED | AVOIDED\n  - Check all forbidden items as ABSENT (good) | PRESENT (bad)\n\nOutput a structured evaluation:\n  FINDINGS: [list each rubric item with its status]\n  FALSE_POSITIVES: [for validate tests — any wrong flags not in rubric]\n  VERDICT: PASS | PARTIAL | FAIL\n  SCORE: N/M (required items met)\n  NOTES: brief justification\n\nFor VALIDATE tests: always cross-check every $out.N.fieldName reference in the candidate code against the output metadata fields declared in the prompt. An assignment to a field that is not declared in the output metadata is a compile-time error in //#CTL2:COMPILE mode and a silent data-loss bug in interpreted mode — it must be flagged as a required finding. Do not assume the model caught it; verify explicitly.\n\nFor VALIDATE tests on Rollup components: the minimum required Rollup lifecycle functions are initGroup, updateGroup, finishGroup, updateTransform, and transform — all five must be defined in the code regardless of runtime control flow. Check for EACH of the five by name and account for every one that is absent; a snippet is frequently missing more than one. Score each missing function as its own required finding: naming one omission does not earn credit for another, and a generic remark such as 'the lifecycle is incomplete' or 'some required functions are missing' earns credit for none of them — the model must name the function it means. Two omissions are especially easy to conflate, so weigh them separately: (a) finishGroup() is the function that gates group output — transform() is invoked for a group only when finishGroup() returns true, so when finishGroup() is absent the group emits NOTHING and everything in transform() is unreachable; this is normally the most consequential omission in a snippet and must never be waved through because transform() itself looks correct. (b) updateTransform() must be defined even when updateGroup() returns false — that return value only means updateTransform() is not INVOKED for the record (the accumulation in updateGroup's body still runs); it does not make DEFINING updateTransform() optional. Omitting either is a missing required function and must be flagged as a required finding, not dismissed as a false positive.\n\nCrediting required findings from SUGGESTIONS, not just ISSUES: when a required bug sits on the same token/line as another required bug (e.g. an undeclared-identifier fix that must also carry a null guard once corrected), credit the finding if it is correctly reflected in the model's SUGGESTIONS/corrected-code section, even if it is not restated as a separate ISSUES line. Do not mark it MISSED solely because the model folded two related fixes into one corrected expression instead of two prose bullets — judge the model's demonstrated understanding, not its choice of section. Only mark MISSED if the concern is absent from both ISSUES and SUGGESTIONS.\n\nOperator null-safety in CTL2 (recurring confusion — verify carefully both directions): == and != are null-safe (evaluate to false/true on null operands, never throw). Order comparisons < <= > >= are NOT null-safe and throw CTLException when either operand is null. Flagging == / != as unsafe is a false positive; failing to flag an unguarded order comparison on a nullable operand is a missed required finding. Check each comparison operator against this table independently — do not assume all comparisons in a snippet share the same null-safety.\n\nIncrement/decrement operators (++/--) in CTL2 — the rule is WRITABILITY of the l-value, not whether it is a record field. ++/-- are valid on ANY writable numeric l-value: local and module-level variables, output record fields ($out.N.field++, --$out.N.field), and the fields of any internal/writable record — which INCLUDES the Rollup group accumulator (acc.count++, groupAccumulator.order_count++ are both correct CTL2) and module-level record variables. They are NOT valid on input record fields ($in.N.field), because input records are READ-ONLY, nor on literals or list/map elements (list[i], map[k]). Therefore: flagging ++/-- on an output field, on an accumulator field, or on any other internal record field as invalid, non-compiling, or 'not allowed on record fields' is a FALSE POSITIVE — do not raise it and do not demand the expanded `x = x + 1` rewrite, which is an equivalent style choice, never a fix. Flagging ++/-- on an input field, a literal, or a list/map element as invalid is a correct required finding.\n\n\n## V3 addendum A — compilability is a hard gate (ALL tests, overrides everything below)\n\nCode that would not compile CANNOT be scored PASS, no matter how many required\nrubric items it otherwise satisfies. Before assigning any verdict, type-check the\ncandidate code; if it would be rejected by the CTL2 compiler, the verdict is FAIL\nand the compile error must be listed as an issue. Rubric coverage is scored on top\nof compilability, never instead of it.\n\nCheck at minimum, for every call and assignment in the response:\n\n  - Built-in function ARITY, ARGUMENT ORDER, and ARGUMENT TYPES against the real\n    CTL2 signature. A plausible-reading call with a mistyped argument is still a\n    compile error. Highest-frequency case: passing a SCALAR where a list/map is\n    required — `in(value, collection)` and `containsValue(collection, value)` both\n    demand a collection, so `in(\"X\", $in.0.some_string_field)` does not compile and\n    is not an alternative spelling of `$in.0.some_string_field != \"X\"`. Note also\n    that in() and containsValue() take their arguments in OPPOSITE order.\n  - Undeclared identifiers, and variables used outside their scope (e.g. a local\n    declared inside one function referenced from another).\n  - Assignment to a $out.N field not declared in the output metadata, or reading a\n    $in.N field not declared in the input metadata.\n  - Type mismatches without an explicit cast/conversion, including assigning a\n    variant to a typed field, and calling a function whose return type cannot be\n    assigned to the target field.\n  - Missing required lifecycle functions, or a lifecycle function declared with the\n    wrong signature or return type.\n  - Java/JS syntax that has no CTL2 equivalent — method-call chaining on values\n    (`x.trim()`), `new`, lambdas.\n\nConversely, do NOT invent compile errors. If a construct is valid CTL2, it compiles\neven when it is not the form the rubric quoted — see addendum B.\n\n## V3 addendum B — do not penalise unspecified freedom (GENERATE tests)\n\nScore ONLY against what the user message actually asks for plus what the rubric\nexplicitly lists. Where the user message leaves an implementation choice open, any\ncorrect, type-safe realisation of that choice is fully credited.\n\n  - Do NOT mark a required item MISSING/WRONG because the model chose a different\n    but equivalent construct than the rubric's example. Rubric checks quote a\n    representative form; equivalents count. Examples of equivalents that must be\n    credited: isBlank(x) for isnull(x) || x == \"\"; num2str(n) for \"\" + n;\n    str2date(\"2025-07-01\",\"yyyy-MM-dd\") for createDate(2025,7,1); a switch/if-chain\n    for a ternary; reading back an already-assigned $out field instead of holding\n    the value in a local; a wildcard record copy instead of field-by-field\n    assignment; and, ON A LIST ONLY, in(value, list) for containsValue(list, value).\n    The test is whether the emitted data is identical, not whether the source text\n    matches. (On a MAP those two are NOT equivalent — in() tests keys, containsValue()\n    tests values — and on a scalar neither compiles at all.)\n  - Do NOT invent requirements for fields or behaviours the user message never\n    constrains. If an output field's value is not specified by the prompt, the only\n    thing to check is that it is assigned and type-correct for its metadata.\n  - Do NOT report an ISSUE whose only basis is 'the reference/expected pattern is\n    different'. There is no reference answer in this rubric. An issue must cite a\n    concrete defect: a compile error, a runtime CTLException, wrong emitted data, a\n    violated prompt rule, or a listed forbidden item.\n  - A forbidden item fires only on the construct it names. Read its rationale before\n    marking PRESENT — several forbidden items scope themselves narrowly (for\n    instance forbidding row-count STOP logic while explicitly permitting a counter\n    variable), and a superficial keyword match is not enough.\n  - Extra work the prompt did not ask for is not automatically a defect. Penalise it\n    only if it breaks a stated rule, produces wrong data, or matches a forbidden\n    item. Otherwise ignore it, or at most note it as a non-scoring observation.\n\n## V3 addendum C — severity discipline: an issue must be demonstrable\n\nBefore marking any required item MISSING/WRONG, firing a forbidden item, or listing\nan ISSUE, state the concrete failure it causes: a compile error, a runtime\nCTLException, or a specific input row whose emitted output would be wrong. If you\ncannot name that failure, it is NOT an issue — record it under NOTES as a\nnon-scoring style observation and leave the score untouched.\n\n  - A value that is provably overwritten before it can ever be read is a DEAD STORE,\n    not a defect. Trace the control flow before objecting to an initialisation:\n    if a guard flag or an unconditional assignment guarantees the field is set\n    before use, the initial value cannot reach the output and must not be scored.\n    'A different initial value would be tidier / more idiomatic / self-documenting'\n    is a NOTE.\n  - Defensive code beyond what the prompt requires (an extra null check, a\n    divide-by-zero guard, a wider isnull() guard) is never a defect. It cannot\n    produce wrong data for any input the prompt describes. Do not deduct for it and\n    do not report it as an issue.\n  - Distinguish 'the accumulator/state field is reset' from 'reset to the particular\n    literal I had in mind'. Only fields that ACCUMULATE across records (counters,\n    totals, running min/max, capture flags) can leak between groups; fields that are\n    unconditionally reassigned per group cannot.\n  - Cosmetic and structural preferences — brace style, one-line function bodies,\n    variable naming, inlining an expression instead of using a local, ordering of\n    independent statements, presence or absence of comments — are never issues.\n  - When in doubt about severity, prefer the lower one. A wrongly-scored PASS on a\n    stylistic quibble is a smaller evaluation error than a FAIL on working code.\n\n## V3 addendum D — trace module state across TWO groups (stateful components)\n\nFor any component holding module-level state across records — Denormalizer\n(append/transform/clean), Rollup (initGroup/updateGroup/transform), Normalizer\n(count/transform/clean) — do not judge the per-record function in isolation.\nSimulate the SECOND group and check every piece of state is either re-armed by the\nreset function or unconditionally overwritten before it is next read. State that is\ncorrect on group 1 and stale on group 2 is a silent data-corruption bug and outranks\nevery stylistic item in the rubric.\n\n  - Match the RESET against the SENTINEL, as a pair, and check the DECLARATION too.\n    Two recurring CTL2 traps: (i) lists and maps are default-initialised to\n    empty — not null — so an `isnull(list)` 'first record' marker is dead code that\n    never fires even once (addendum E); (ii) `clear(list)` / `clear(map)` empties\n    the collection but leaves the reference NON-NULL, so it does not re-arm an\n    isnull() marker on explicitly null-assigned state. Same class of error for a\n    counter reset to 0 versus a flag tested for false. Read the declaration, the\n    reset function and the accumulating function together, every time.\n  - Prefer emptiness over nullness when judging the FIX: reusing an\n    already-allocated list/map via clear() is the better CTL2 idiom, so the correct\n    remedy for the trap above is for the accumulating function to test\n    `length(x) == 0` (or a dedicated boolean flag that the reset clears), NOT for\n    the reset function to null the collection. Do not demand null-ing.\n  - Ask explicitly, for each state variable: on group 2, is the value read before it\n    is written? If yes, the group-1 value reaches the output — report it as an issue\n    with the concrete stale value, per addendum C.\n  - This check applies even when every individual required item is satisfied. A\n    response can tick every box and still be FAIL because its state lifecycle is\n    broken across groups.\n\n## V3 addendum E — CTL2 null and default-initialisation semantics (get the REASON right)\n\nTwo independent facts, frequently conflated. Both must be applied as stated.\n\n  1. NULLABILITY IS UNIVERSAL. Every CTL2 type can hold null, including the\n     primitives — integer, long, number, decimal, boolean, date, string. `long x =\n     null;` is VALID CTL2; `isnull(x)` then returns true. There is no\n     'primitive types cannot be null' rule in CTL2. Reporting `long x = null;`,\n     `boolean b = null;`, or `isnull(<primitive variable>)` as a type error, a\n     compile error, or an invalid construct is a FALSE POSITIVE and must not be\n     raised. Do not import Java's primitive/wrapper distinction into CTL2.\n\n  2. DECLARATION WITHOUT AN INITIALISER YIELDS A DEFAULT VALUE, NOT NULL. A\n     module-level or local declaration with no explicit initialiser is\n     default-initialised:\n       - numeric types (integer, long, number, decimal) -> 0 (0L / 0D as typed)\n       - string  -> \"\" (empty string, NOT null)\n       - boolean -> false\n       - date    -> start of the UNIX epoch (1970-01-01)\n       - list    -> EMPTY LIST (not null)\n       - map     -> EMPTY MAP  (not null)\n       - variant -> null\n     VARIANT IS THE ONLY TYPE WITH NO DEFAULT VALUE, because it can hold anything;\n     it alone starts as null. For every other type, `isnull(x)` on a\n     declared-but-unassigned variable is FALSE. Test emptiness with\n     `length(x) == 0` (lists, maps, strings) or isBlank() (strings) — never with\n     isnull().\n     Corollary for GENERATE tests: `string[] ids;` is already equivalent to\n     `string[] ids = [];`, and `map[string,integer] m;` to `m = {};`. Appending\n     to, clearing, iterating or taking the length of such a variable from the\n     very first record is safe. NEVER report a missing `= []` / `= {}`\n     initialiser as a bug, a null-safety risk, or a suggested improvement, and\n     never withhold credit for a reset/lifecycle rubric item because of it.\n\n  3. VARIABLES AND RECORD FIELDS DIFFER — do not carry a conclusion from one to the\n     other. The defaults in (2) apply to local and module-level VARIABLES. An unset\n     RECORD FIELD ($in/$out/accumulator) is null, NOT the type's zero value, unless\n     the metadata defines a Default. So `long batchId;` is 0L while an unassigned\n     `$out.0.some_long` is null. resetRecord(record) sets fields back to\n     null/default.\n\n  Useful null-safe primitives when judging emptiness tests: length(x) returns 0 for\n  a null string, list, map or record, so `length(codes) == 0` is a safe emptiness\n  test even when the list is null. isnull(\"\") is false; isBlank(\"\") is true.\n  `null + \"text\"` yields \"nulltext\" rather than throwing. Ordering operators\n  (< <= > >=) do throw on null; == and != do not.\n\n  Consequence to apply when judging first-record / first-group sentinels: an\n  isnull() test on ANY declared-but-unassigned variable other than a variant is\n  false from the very first record, so the guarded block is DEAD CODE and never\n  executes even once. After `long batchId;` the value is 0L; after `string[] codes;`\n  the value is an empty list, not null; after `string s;`, isnull(s) is false while\n  isBlank(s) is true. Trace what the dead block was supposed to do — it is usually\n  a one-time capture, and skipping it entirely means the captured value keeps its\n  default for the WHOLE RUN (e.g. every output row carries key 0). This IS a real\n  defect and must be reported, but the reason is the DEFAULT VALUE, not a\n  nullability restriction. To use a null sentinel the code must assign null\n  explicitly (`long batchId = null;`, `string[] codes = null;`), which is legal, or\n  use a variant, or test `length(x) == 0` / a boolean flag instead.\n\n  State the correct mechanism in the issue text. A right conclusion supported by an\n  invented language rule is still a defective report: it teaches the wrong lesson\n  and contradicts addendum A's instruction not to invent compile errors. If you are\n  not certain a construct is rejected by the CTL2 compiler, do not call it one —\n  describe the observable behaviour instead.\n",
+  "judge_instructions": "For each test, you will receive:\n  1. This test definition (system_prompt, user_message, rubric)\n  2. The model's actual response\n\nEvaluate the response against the rubric:\n  - For GENERATE tests: check each required item as PRESENT | MISSING | WRONG\n  - For VALIDATE tests: check each required finding as CAUGHT | MISSED | WRONG\n  - For VALIDATE tests: check each false-positive trap as TRIGGERED | AVOIDED\n  - Check all forbidden items as ABSENT (good) | PRESENT (bad)\n\nOutput a structured evaluation:\n  FINDINGS: [list each rubric item with its status]\n  FALSE_POSITIVES: [for validate tests — any wrong flags not in rubric]\n  VERDICT: PASS | PARTIAL | FAIL\n  SCORE: N/M (required items met)\n  NOTES: brief justification\n\nFor VALIDATE tests: always cross-check every $out.N.fieldName reference in the candidate code against the output metadata fields declared in the prompt. An assignment to a field that is not declared in the output metadata is a compile-time error in //#CTL2:COMPILE mode and a silent data-loss bug in interpreted mode — it must be flagged as a required finding. Do not assume the model caught it; verify explicitly.\n\nFor VALIDATE tests on Rollup components: the minimum required Rollup lifecycle functions are initGroup, updateGroup, finishGroup, updateTransform, and transform — all five must be defined in the code regardless of runtime control flow. Check for EACH of the five by name and account for every one that is absent; a snippet is frequently missing more than one. Score each missing function as its own required finding: naming one omission does not earn credit for another, and a generic remark such as 'the lifecycle is incomplete' or 'some required functions are missing' earns credit for none of them — the model must name the function it means. Two omissions are especially easy to conflate, so weigh them separately: (a) finishGroup() is the function that gates group output — transform() is invoked for a group only when finishGroup() returns true, so when finishGroup() is absent the group emits NOTHING and everything in transform() is unreachable; this is normally the most consequential omission in a snippet and must never be waved through because transform() itself looks correct. (b) updateTransform() must be defined even when updateGroup() returns false — that return value only means updateTransform() is not INVOKED for the record (the accumulation in updateGroup's body still runs); it does not make DEFINING updateTransform() optional. Omitting either is a missing required function and must be flagged as a required finding, not dismissed as a false positive.\n\nCrediting required findings from SUGGESTIONS, not just ISSUES: when a required bug sits on the same token/line as another required bug (e.g. an undeclared-identifier fix that must also carry a null guard once corrected), credit the finding if it is correctly reflected in the model's SUGGESTIONS/corrected-code section, even if it is not restated as a separate ISSUES line. Do not mark it MISSED solely because the model folded two related fixes into one corrected expression instead of two prose bullets — judge the model's demonstrated understanding, not its choice of section. Only mark MISSED if the concern is absent from both ISSUES and SUGGESTIONS.\n\nOperator null-safety in CTL2 (recurring confusion — verify carefully both directions): == and != are null-safe (evaluate to false/true on null operands, never throw). Order comparisons < <= > >= are NOT null-safe and throw CTLException when either operand is null. Flagging == / != as unsafe is a false positive; failing to flag an unguarded order comparison on a nullable operand is a missed required finding. Check each comparison operator against this table independently — do not assume all comparisons in a snippet share the same null-safety.\n\nIncrement/decrement operators (++/--) in CTL2 — the rule is WRITABILITY of the l-value, not whether it is a record field. ++/-- are valid on ANY writable numeric l-value: local and module-level variables, output record fields ($out.N.field++, --$out.N.field), and the fields of any internal/writable record — which INCLUDES the Rollup group accumulator (acc.count++, groupAccumulator.order_count++ are both correct CTL2) and module-level record variables. They are NOT valid on input record fields ($in.N.field), because input records are READ-ONLY, nor on literals or list/map elements (list[i], map[k]). Therefore: flagging ++/-- on an output field, on an accumulator field, or on any other internal record field as invalid, non-compiling, or 'not allowed on record fields' is a FALSE POSITIVE — do not raise it and do not demand the expanded `x = x + 1` rewrite, which is an equivalent style choice, never a fix. Flagging ++/-- on an input field, a literal, or a list/map element as invalid is a correct required finding.\n\n\n## V3 addendum A — compilability is a hard gate (ALL tests, overrides everything below)\n\nCode that would not compile CANNOT be scored PASS, no matter how many required\nrubric items it otherwise satisfies. Before assigning any verdict, type-check the\ncandidate code; if it would be rejected by the CTL2 compiler, the verdict is FAIL\nand the compile error must be listed as an issue. Rubric coverage is scored on top\nof compilability, never instead of it.\n\nCheck at minimum, for every call and assignment in the response:\n\n  - Built-in function ARITY, ARGUMENT ORDER, and ARGUMENT TYPES against the real\n    CTL2 signature. A plausible-reading call with a mistyped argument is still a\n    compile error. Highest-frequency case: passing a SCALAR where a list/map is\n    required — `in(value, collection)` and `containsValue(collection, value)` both\n    demand a collection, so `in(\"X\", $in.0.some_string_field)` does not compile and\n    is not an alternative spelling of `$in.0.some_string_field != \"X\"`. Note also\n    that in() and containsValue() take their arguments in OPPOSITE order.\n  - Undeclared identifiers, and variables used outside their scope (e.g. a local\n    declared inside one function referenced from another).\n  - Assignment to a $out.N field not declared in the output metadata, or reading a\n    $in.N field not declared in the input metadata.\n  - Type mismatches without an explicit cast/conversion, including assigning a\n    variant to a typed field, and calling a function whose return type cannot be\n    assigned to the target field.\n  - Missing required lifecycle functions, or a lifecycle function declared with the\n    wrong signature or return type.\n  - Java/JS syntax that has no CTL2 equivalent — method-call chaining on values\n    (`x.trim()`), `new`, lambdas.\n\nConversely, do NOT invent compile errors. If a construct is valid CTL2, it compiles\neven when it is not the form the rubric quoted — see addendum B.\n\n## V3 addendum B — do not penalise unspecified freedom (GENERATE tests)\n\nScore ONLY against what the user message actually asks for plus what the rubric\nexplicitly lists. Where the user message leaves an implementation choice open, any\ncorrect, type-safe realisation of that choice is fully credited.\n\n  - Do NOT mark a required item MISSING/WRONG because the model chose a different\n    but equivalent construct than the rubric's example. Rubric checks quote a\n    representative form; equivalents count. Examples of equivalents that must be\n    credited: isBlank(x) for isnull(x) || x == \"\"; num2str(n) for \"\" + n;\n    str2date(\"2025-07-01\",\"yyyy-MM-dd\") for createDate(2025,7,1); a switch/if-chain\n    for a ternary; reading back an already-assigned $out field instead of holding\n    the value in a local; a wildcard record copy instead of field-by-field\n    assignment; and, ON A LIST ONLY, in(value, list) for containsValue(list, value).\n    The test is whether the emitted data is identical, not whether the source text\n    matches. (On a MAP those two are NOT equivalent — in() tests keys, containsValue()\n    tests values — and on a scalar neither compiles at all.)\n  - Do NOT invent requirements for fields or behaviours the user message never\n    constrains. If an output field's value is not specified by the prompt, the only\n    thing to check is that it is assigned and type-correct for its metadata.\n  - Do NOT report an ISSUE whose only basis is 'the reference/expected pattern is\n    different'. There is no reference answer in this rubric. An issue must cite a\n    concrete defect: a compile error, a runtime CTLException, wrong emitted data, a\n    violated prompt rule, or a listed forbidden item.\n  - A forbidden item fires only on the construct it names. Read its rationale before\n    marking PRESENT — several forbidden items scope themselves narrowly (for\n    instance forbidding row-count STOP logic while explicitly permitting a counter\n    variable), and a superficial keyword match is not enough.\n  - Extra work the prompt did not ask for is not automatically a defect. Penalise it\n    only if it breaks a stated rule, produces wrong data, or matches a forbidden\n    item. Otherwise ignore it, or at most note it as a non-scoring observation.\n\n## V3 addendum C — severity discipline: an issue must be demonstrable\n\nBefore marking any required item MISSING/WRONG, firing a forbidden item, or listing\nan ISSUE, state the concrete failure it causes: a compile error, a runtime\nCTLException, or a specific input row whose emitted output would be wrong. If you\ncannot name that failure, it is NOT an issue — record it under NOTES as a\nnon-scoring style observation and leave the score untouched.\n\n  - A value that is provably overwritten before it can ever be read is a DEAD STORE,\n    not a defect. Trace the control flow before objecting to an initialisation:\n    if a guard flag or an unconditional assignment guarantees the field is set\n    before use, the initial value cannot reach the output and must not be scored.\n    'A different initial value would be tidier / more idiomatic / self-documenting'\n    is a NOTE.\n  - Defensive code beyond what the prompt requires (an extra null check, a\n    divide-by-zero guard, a wider isnull() guard) is never a defect. It cannot\n    produce wrong data for any input the prompt describes. Do not deduct for it and\n    do not report it as an issue.\n  - Distinguish 'the accumulator/state field is reset' from 'reset to the particular\n    literal I had in mind'. Only fields that ACCUMULATE across records (counters,\n    totals, running min/max, capture flags) can leak between groups; fields that are\n    unconditionally reassigned per group cannot.\n  - Cosmetic and structural preferences — brace style, one-line function bodies,\n    variable naming, inlining an expression instead of using a local, ordering of\n    independent statements, presence or absence of comments — are never issues.\n  - When in doubt about severity, prefer the lower one. A wrongly-scored PASS on a\n    stylistic quibble is a smaller evaluation error than a FAIL on working code.\n\n## V3 addendum D — trace module state across TWO groups (stateful components)\n\nFor any component holding module-level state across records — Denormalizer\n(append/transform/clean), Rollup (initGroup/updateGroup/transform), Normalizer\n(count/transform/clean) — do not judge the per-record function in isolation.\nSimulate the SECOND group and check every piece of state is either re-armed by the\nreset function or unconditionally overwritten before it is next read. State that is\ncorrect on group 1 and stale on group 2 is a silent data-corruption bug and outranks\nevery stylistic item in the rubric.\n\n  - Match the RESET against the SENTINEL, as a pair, and check the DECLARATION too.\n    Two recurring CTL2 traps: (i) lists and maps are default-initialised to\n    empty — not null — so an `isnull(list)` 'first record' marker is dead code that\n    never fires even once (addendum E); (ii) `clear(list)` / `clear(map)` empties\n    the collection but leaves the reference NON-NULL, so it does not re-arm an\n    isnull() marker on explicitly null-assigned state. Same class of error for a\n    counter reset to 0 versus a flag tested for false. Read the declaration, the\n    reset function and the accumulating function together, every time.\n  - Prefer emptiness over nullness when judging the FIX: reusing an\n    already-allocated list/map via clear() is the better CTL2 idiom, so the correct\n    remedy for the trap above is for the accumulating function to test\n    `length(x) == 0` (or a dedicated boolean flag that the reset clears), NOT for\n    the reset function to null the collection. Do not demand null-ing.\n  - Ask explicitly, for each state variable: on group 2, is the value read before it\n    is written? If yes, the group-1 value reaches the output — report it as an issue\n    with the concrete stale value, per addendum C.\n  - This check applies even when every individual required item is satisfied. A\n    response can tick every box and still be FAIL because its state lifecycle is\n    broken across groups.\n\n## V3 addendum E — CTL2 null and default-initialisation semantics (get the REASON right)\n\nTwo independent facts, frequently conflated. Both must be applied as stated.\n\n  1. NULLABILITY IS UNIVERSAL. Every CTL2 type can hold null, including the\n     primitives — integer, long, number, decimal, boolean, date, string. `long x =\n     null;` is VALID CTL2; `isnull(x)` then returns true. There is no\n     'primitive types cannot be null' rule in CTL2. Reporting `long x = null;`,\n     `boolean b = null;`, or `isnull(<primitive variable>)` as a type error, a\n     compile error, or an invalid construct is a FALSE POSITIVE and must not be\n     raised. Do not import Java's primitive/wrapper distinction into CTL2.\n\n  2. DECLARATION WITHOUT AN INITIALISER YIELDS A DEFAULT VALUE, NOT NULL. A\n     module-level or local declaration with no explicit initialiser is\n     default-initialised:\n       - numeric types (integer, long, number, decimal) -> 0 (0L / 0D as typed)\n       - string  -> \"\" (empty string, NOT null)\n       - boolean -> false\n       - date    -> start of the UNIX epoch (1970-01-01)\n       - list    -> EMPTY LIST (not null)\n       - map     -> EMPTY MAP  (not null)\n       - variant -> null\n     VARIANT IS THE ONLY TYPE WITH NO DEFAULT VALUE, because it can hold anything;\n     it alone starts as null. For every other type, `isnull(x)` on a\n     declared-but-unassigned variable is FALSE. Test emptiness with\n     `length(x) == 0` (lists, maps, strings) or isBlank() (strings) — never with\n     isnull().\n     Corollary for GENERATE tests: `string[] ids;` is already equivalent to\n     `string[] ids = [];`, and `map[string,integer] m;` to `m = {};`. Appending\n     to, clearing, iterating or taking the length of such a variable from the\n     very first record is safe. NEVER report a missing `= []` / `= {}`\n     initialiser as a bug, a null-safety risk, or a suggested improvement, and\n     never withhold credit for a reset/lifecycle rubric item because of it.\n\n  3. VARIABLES AND RECORD FIELDS DIFFER — do not carry a conclusion from one to the\n     other. The defaults in (2) apply to local and module-level VARIABLES. An unset\n     RECORD FIELD ($in/$out/accumulator) is null, NOT the type's zero value, unless\n     the metadata defines a Default. So `long batchId;` is 0L while an unassigned\n     `$out.0.some_long` is null. resetRecord(record) sets fields back to\n     null/default.\n\n  Useful null-safe primitives when judging emptiness tests: length(x) returns 0 for\n  a null string, list, map or record, so `length(codes) == 0` is a safe emptiness\n  test even when the list is null. isnull(\"\") is false; isBlank(\"\") is true.\n  `null + \"text\"` yields \"nulltext\" rather than throwing. Ordering operators\n  (< <= > >=) do throw on null; == and != do not.\n\n  Consequence to apply when judging first-record / first-group sentinels: an\n  isnull() test on ANY declared-but-unassigned variable other than a variant is\n  false from the very first record, so the guarded block is DEAD CODE and never\n  executes even once. After `long batchId;` the value is 0L; after `string[] codes;`\n  the value is an empty list, not null; after `string s;`, isnull(s) is false while\n  isBlank(s) is true. Trace what the dead block was supposed to do — it is usually\n  a one-time capture, and skipping it entirely means the captured value keeps its\n  default for the WHOLE RUN (e.g. every output row carries key 0). This IS a real\n  defect and must be reported, but the reason is the DEFAULT VALUE, not a\n  nullability restriction. To use a null sentinel the code must assign null\n  explicitly (`long batchId = null;`, `string[] codes = null;`), which is legal, or\n  use a variant, or test `length(x) == 0` / a boolean flag instead.\n\n  State the correct mechanism in the issue text. A right conclusion supported by an\n  invented language rule is still a defective report: it teaches the wrong lesson\n  and contradicts addendum A's instruction not to invent compile errors. If you are\n  not certain a construct is rejected by the CTL2 compiler, do not call it one —\n  describe the observable behaviour instead.\n\n## FIX tests (type \"fix\")\n\nA fix test gives the model a specification, port metadata and defective code, and asks it\nto list the problems and return the complete corrected code. It is graded on the corrected\ncode, not on the list alone. The seeded defects are in `bugs`, and their ids are the\nrequired findings.\n\nScore each required finding as:\n  - CAUGHT: the response names the defect with a correct mechanism AND the corrected code\n    actually removes it, in a way that satisfies the specification.\n  - WRONG: only half of that. Either the defect is named but the corrected code still has\n    it, or it is fixed in a way that breaks the specification or adds a new failure, or it\n    is fixed with a false reason, or it is fixed silently with no explanation.\n  - MISSED: neither named nor fixed.\n\nCheck the corrected code as a whole, not only the lines the model says it changed:\n  - Addendum A applies to it. If the corrected code would not compile, or uses a construct\n    or function that does not exist in CTL2, the corresponding forbidden item is PRESENT\n    and the verdict cannot be PASS.\n  - Walk the specification item by item against the corrected code. A change that breaks\n    behaviour the specification requires is a forbidden item even when it is presented as\n    a fix.\n  - Rewriting correct code into an equivalent form (for example `~= \"A|B\"` into\n    `== \"A\" || == \"B\"`) is not a defect and not a finding. It triggers a false-positive\n    trap only when the response calls the original code wrong.\n\nA response that returns fragments or a diff and no complete corrected code fails the\ncompleteness forbidden item. A fix test's verdict is PASS, PARTIAL or FAIL per its own\n`scoring`. There is no ISSUES/VERDICT block to check.\n",
   "tests": [
     {
       "test_id": "T1",
@@ -2525,6 +2525,524 @@
           "PASS": "T38.B1 caught as ERROR with the correct fix (updateGroup must return true), and no trap triggered.",
           "PARTIAL": "T38.B1 caught, but the model also triggers T38.FP2 or T38.FP3, or gives a vague fix that does not name updateGroup's return value.",
           "FAIL": "T38.B1 missed, wrong PASS verdict (including a PASS whose prose describes the suppression but files it outside ISSUES), the defect reported below ERROR severity, or T38.FP1 triggered (model attacks the port-number returns instead of the suppressed output loop)."
+        }
+      }
+    },
+    {
+      "test_id": "T39",
+      "type": "fix",
+      "component": "Reformat (fix to spec, compiled)",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Fix the following CTL2 Reformat transform so that it compiles and does what the specification says. List every problem you fix with the reason, then give the complete corrected code.\n\nSpecification (one output record per input order line):\n1. order_id: copied unchanged.\n2. customer_name: the input name with surrounding whitespace trimmed. When the input name is null, empty or whitespace-only, output \"UNKNOWN\".\n3. A record with a null qty is dropped and sent to no output.\n4. line_total: qty x unit_price, reduced by discount_pct percent, rounded half-up to 2 decimal places. discount_pct is a whole-number percentage from 0 to 100, and null means no discount. Example: qty 3, unit_price 20.00, discount_pct 10 gives 54.00.\n5. order_date: parsed from order_date_text, which is written as day.month.year with a two-digit day, a two-digit month and a four-digit year (15.03.2026 is 15 March 2026). When order_date_text is null or cannot be parsed, order_date is null and the record is still sent.\n6. is_domestic: true exactly when country_code is \"CZ\" or \"SK\", otherwise false. country_code is always an uppercase two-letter ISO code.\n7. order_month: the calendar month of order_date, 1 = January through 12 = December. Null when order_date is null.\n8. The transform must stay in compiled mode. Keep the //#CTL2:COMPILE header.\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"OrderLine\" type=\"delimited\"><Field name=\"order_id\" type=\"long\" nullable=\"false\"/><Field name=\"customer_name\" type=\"string\" nullable=\"true\"/><Field name=\"qty\" type=\"integer\" nullable=\"true\"/><Field name=\"unit_price\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/><Field name=\"discount_pct\" type=\"integer\" nullable=\"true\"/><Field name=\"order_date_text\" type=\"string\" nullable=\"true\"/><Field name=\"country_code\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"PricedLine\" type=\"delimited\"><Field name=\"order_id\" type=\"long\" nullable=\"false\"/><Field name=\"customer_name\" type=\"string\" nullable=\"false\"/><Field name=\"line_total\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/><Field name=\"order_date\" type=\"date\" nullable=\"true\"/><Field name=\"is_domestic\" type=\"boolean\" nullable=\"false\"/><Field name=\"order_month\" type=\"integer\" nullable=\"true\"/></Record></Metadata>\n\n```ctl\n//#CTL2:COMPILE\nfunction integer transform() {\n    $out.0.order_id = $in.0.order_id;\n    $out.0.customer_name = if(isBlank($in.0.customer_name), \"UNKNOWN\", trim($in.0.customer_name));\n    if ($in.0.qty == null) {\n        return SKIP;\n    }\n    integer disc = nvl($in.0.discount_pct, 0);\n    $out.0.line_total = round($in.0.qty * $in.0.unit_price * ((100 - disc) / 100), 2);\n    date d = str2date($in.0.order_date_text, \"dd.mm.yyyy\") : null;\n    $out.0.order_date = d;\n    $out.0.is_domestic = $in.0.country_code ~= \"CZ|SK\";\n    $out.0.order_month = getMonth(d) - 1;\n    return ALL;\n}\n```",
+      "bugs": [
+        {
+          "id": "T39.B1",
+          "kind": "compile",
+          "code": "if(isBlank($in.0.customer_name), \"UNKNOWN\", trim($in.0.customer_name))",
+          "description": "`if` is control flow only in CTL2. There is no `if(cond, a, b)` function, so this line does not compile.",
+          "correct_fix": [
+            "isBlank($in.0.customer_name) ? \"UNKNOWN\" : trim($in.0.customer_name)",
+            "iif(isBlank($in.0.customer_name), \"UNKNOWN\", trim($in.0.customer_name))",
+            "an if/else statement assigning the two values"
+          ]
+        },
+        {
+          "id": "T39.B2",
+          "kind": "semantic",
+          "code": "$in.0.qty * $in.0.unit_price * ((100 - disc) / 100)",
+          "description": "`(100 - disc) / 100` is evaluated in integer arithmetic first, and integer division truncates. It is 0 for every discount from 1 to 100 and 1 only for no discount. Promotion to decimal is per operator and does not reach back into the parenthesised integer division. The spec example (qty 3, unit_price 20.00, discount_pct 10) gives 0.00 instead of 54.00.",
+          "correct_fix": [
+            "$in.0.qty * $in.0.unit_price * (100 - disc) / 100D",
+            "$in.0.qty * $in.0.unit_price * ((100 - disc) / 100D)",
+            "any form that makes the division decimal before it truncates, e.g. 1D * (100 - disc) / 100"
+          ]
+        },
+        {
+          "id": "T39.B3",
+          "kind": "semantic",
+          "code": "str2date($in.0.order_date_text, \"dd.mm.yyyy\")",
+          "description": "In the date pattern, `mm` is minutes, not month. The spec gives the format as day.month.year, so `15.03.2026` is read as 15 January 2026 00:03. The month goes into the minutes and the default month is used. Parsing succeeds, so the conditional fail never falls back and the wrong date is emitted silently. The spec states the format, so this is a provable defect, not a style remark.",
+          "correct_fix": "str2date($in.0.order_date_text, \"dd.MM.yyyy\") : null"
+        },
+        {
+          "id": "T39.B4",
+          "kind": "semantic",
+          "code": "$out.0.order_month = getMonth(d) - 1;",
+          "description": "getMonth() is already 1-based (January = 1), so `- 1` shifts every month down by one, giving March as 2 and January as 0. It also breaks the null path: getMonth(null) returns null, and `null - 1` throws at runtime, so any record whose date is null or unparseable fails. The spec requires those records to be sent with order_month null.",
+          "correct_fix": "$out.0.order_month = getMonth(d);"
+        }
+      ],
+      "rubric": {
+        "description": "Fix a compiled Reformat to match an explicit spec. There are four seeded defects: one compile error (T39.B1, if() used as a function) and three semantic defects that compile and run but break the spec (T39.B2 integer division zeroes the discounted total, T39.B3 `mm` is minutes, T39.B4 getMonth is already 1-based and `- 1` also throws on a null date). The response must return complete corrected code. Two correct constructs must survive: the conditional-fail expression under //#CTL2:COMPILE (T39.FP1) and the whole-string regex match `~= \"CZ|SK\"` (T39.FP2).",
+        "required_findings": [
+          "T39.B1",
+          "T39.B2",
+          "T39.B3",
+          "T39.B4"
+        ],
+        "fix_quality": {
+          "T39.B1": "Ternary, iif() or an if/else statement are all correct. Keeping the if(...) call, or replacing it with an invented function, is WRONG.",
+          "T39.B2": "The division has to happen in decimal. A D-suffixed literal (100D) or multiplying before dividing by a decimal both work. Dividing by 100.0 (a number literal) also removes the truncation and counts as CAUGHT, but note it as inexact. Only claiming a precision or rounding problem without naming integer truncation is WRONG. Swapping nvl(discount_pct, 0) for something that changes the no-discount case is WRONG.",
+          "T39.B3": "Must name `mm` as minutes and change it to `MM`. The conditional fail and its null fallback must stay. Adding the strict argument to str2date is an acceptable extra, not required. Changing the pattern to anything other than day.month.year (dd.MM.yyyy) is WRONG.",
+          "T39.B4": "Must remove the `- 1` because getMonth() is 1-based. Explaining the null path is a plus but not required, since removing `- 1` fixes it too. A guard such as `if (d != null) $out.0.order_month = getMonth(d);` is also correct. Keeping any offset, or claiming getMonth() is 0-based, is WRONG."
+        },
+        "false_positive_traps": [
+          {
+            "id": "T39.FP1",
+            "trap": "Flagging `str2date(...) : null` as unsupported in //#CTL2:COMPILE mode, rewriting it to try-catch for that reason, or switching the header to //#CTL2.",
+            "reality": "The conditional-fail expression works identically in interpreted and compiled mode. The line is valid once `mm` is corrected. Switching the header also violates spec item 8.",
+            "critical": false
+          },
+          {
+            "id": "T39.FP2",
+            "trap": "Calling `$in.0.country_code ~= \"CZ|SK\"` wrong, e.g. claiming ~= is a partial or contains match, or replacing it with `?= \"CZ|SK\"`.",
+            "reality": "~= is a whole-string regex match, so `CZ|SK` matches exactly \"CZ\" or \"SK\", which is what spec item 6 requires. `?=` is the contains match and would be the wrong operator. Rewriting to `== \"CZ\" || == \"SK\"` without calling the original wrong is fine.",
+            "critical": false
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T39.F1",
+            "check": "The response gives no complete corrected transform, only fragments, a diff or prose.",
+            "rationale": "The task is to return fixed code."
+          },
+          {
+            "id": "T39.F2",
+            "check": "The corrected code breaks behaviour the spec requires, e.g. a null qty is no longer dropped (nvl to 0), the \"UNKNOWN\" default is gone, an unparseable date now fails the record instead of giving null, or the //#CTL2:COMPILE header is changed.",
+            "rationale": "A fix that breaks a different spec item is not a fix."
+          },
+          {
+            "id": "T39.F3",
+            "check": "The corrected code would not compile, or uses a function or construct that does not exist in CTL2 (e.g. toDecimal(), if() as a function, a Java method call).",
+            "rationale": "Addendum A: compilability is a hard gate."
+          }
+        ],
+        "reference_solution": "//#CTL2:COMPILE\nfunction integer transform() {\n    $out.0.order_id = $in.0.order_id;\n    $out.0.customer_name = isBlank($in.0.customer_name) ? \"UNKNOWN\" : trim($in.0.customer_name);\n    if ($in.0.qty == null) {\n        return SKIP;\n    }\n    integer disc = nvl($in.0.discount_pct, 0);\n    $out.0.line_total = round($in.0.qty * $in.0.unit_price * (100 - disc) / 100D, 2);\n    date d = str2date($in.0.order_date_text, \"dd.MM.yyyy\") : null;\n    $out.0.order_date = d;\n    $out.0.is_domestic = $in.0.country_code ~= \"CZ|SK\";\n    $out.0.order_month = getMonth(d);\n    return ALL;\n}",
+        "reference_solution_note": "One correct answer. Other forms that satisfy the spec and compile are equally correct.",
+        "scoring": {
+          "PASS": "All 4 required findings CAUGHT in a complete corrected transform that compiles. No false-positive trap triggered and no forbidden item present.",
+          "PARTIAL": "3 of 4 CAUGHT in a complete, compiling corrected transform, or all 4 CAUGHT but one trap triggered or one of T39.F2/T39.F3 present.",
+          "FAIL": "2 or fewer CAUGHT, or T39.F1 present (no complete corrected code), or the corrected code does not compile."
+        }
+      }
+    },
+    {
+      "test_id": "T40",
+      "type": "fix",
+      "component": "Denormalizer (fix to spec)",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Fix the following CTL2 Denormalizer transform so that it compiles and does what the specification says. List every problem you fix with the reason, then give the complete corrected code.\n\nThe Denormalizer groups its input by customer_id (the input is sorted by customer_id) and emits one output record per customer.\n\nSpecification:\n1. customer_id: the customer of the group.\n2. shipped_count: the number of the customer's orders whose status is \"SHIPPED\". Status values are always uppercase.\n3. shipped_total: the sum of order_amount over those shipped orders. A null order_amount counts as 0, and the order is still counted in shipped_count.\n4. avg_shipped: shipped_total / shipped_count, rounded half-up to 2 decimal places. A customer can have no shipped orders at all. Then shipped_count is 0, shipped_total is 0 and avg_shipped is null.\n5. last_order_date: the latest order_date among all of this customer's orders, whatever their status. order_date is never null and is always later than 2000-01-01.\n6. statuses: the distinct status values of this customer's orders, in the order they were first seen, joined with \",\" (e.g. \"NEW,SHIPPED\").\n\nPort 0 (in):\n<Metadata id=\"M0\"><Record name=\"CustomerOrder\" type=\"delimited\"><Field name=\"customer_id\" type=\"long\" nullable=\"false\"/><Field name=\"order_id\" type=\"long\" nullable=\"false\"/><Field name=\"order_date\" type=\"date\" nullable=\"false\"/><Field name=\"status\" type=\"string\" nullable=\"false\"/><Field name=\"order_amount\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/></Record></Metadata>\n\nPort 0 (out):\n<Metadata id=\"M1\"><Record name=\"CustomerSummary\" type=\"delimited\"><Field name=\"customer_id\" type=\"long\" nullable=\"false\"/><Field name=\"shipped_count\" type=\"integer\" nullable=\"false\"/><Field name=\"shipped_total\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/><Field name=\"avg_shipped\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/><Field name=\"last_order_date\" type=\"date\" nullable=\"false\"/><Field name=\"statuses\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\n```ctl\n//#CTL2\nlong customerId;\ninteger shippedCount;\ndecimal shippedTotal;\ndate lastOrderDate;\nstring[] statuses;\n\nfunction integer append() {\n    customerId = $in.0.customer_id;\n    if ($in.0.status == \"SHIPPED\") {\n        shippedCount++;\n        shippedTotal = shippedTotal + $in.0.order_amount;\n    }\n    if ($in.0.order_date > lastOrderDate) {\n        lastOrderDate = $in.0.order_date;\n    }\n    if (!statuses.contains($in.0.status)) {\n        push(statuses, $in.0.status);\n    }\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.customer_id = customerId;\n    $out.0.shipped_count = shippedCount;\n    $out.0.shipped_total = shippedTotal;\n    $out.0.avg_shipped = round(shippedTotal / shippedCount, 2);\n    $out.0.last_order_date = lastOrderDate;\n    $out.0.statuses = join(\",\", statuses);\n    return OK;\n}\n\nfunction void clean() {\n    shippedCount = 0;\n    shippedTotal = 0D;\n    clear(statuses);\n}\n```",
+      "bugs": [
+        {
+          "id": "T40.B1",
+          "kind": "compile",
+          "code": "!statuses.contains($in.0.status)",
+          "description": "CTL2 lists have no `.contains()`. Object notation resolves to the string function contains(string, string), which does not accept a string[] as its first argument, so this does not compile.",
+          "correct_fix": [
+            "!in($in.0.status, statuses)",
+            "!$in.0.status.in(statuses)",
+            "!containsValue(statuses, $in.0.status)"
+          ]
+        },
+        {
+          "id": "T40.B2",
+          "kind": "semantic",
+          "code": "shippedTotal = shippedTotal + $in.0.order_amount;",
+          "description": "order_amount is nullable, and arithmetic with a null operand throws at runtime. The first shipped order with a null amount fails the graph, but spec item 3 says it counts as 0.",
+          "correct_fix": [
+            "shippedTotal = shippedTotal + nvl($in.0.order_amount, 0D);",
+            "an explicit null guard that adds nothing for a null amount while still counting the order"
+          ]
+        },
+        {
+          "id": "T40.B3",
+          "kind": "semantic",
+          "code": "$out.0.avg_shipped = round(shippedTotal / shippedCount, 2);",
+          "description": "When a customer has no shipped orders, shippedCount is 0, and decimal division by zero throws at runtime. Spec item 4 requires avg_shipped to be null in that case. The divisor is the shipped count, not the group size, so it really can be 0 even though every group has at least one record.",
+          "correct_fix": "Guard on shippedCount > 0 (or != 0) and assign null otherwise, e.g. if/else or a ternary with a null branch."
+        },
+        {
+          "id": "T40.B4",
+          "kind": "semantic",
+          "code": "function void clean() { ... }  // lastOrderDate is never reset",
+          "description": "clean() runs after each group's transform() and resets the other accumulators, but not lastOrderDate. The next customer starts from the previous customer's latest date, and the `>` test only replaces it with a later one. A customer whose orders are all earlier than the previous customer's latest order is emitted with the previous customer's date, which breaks spec item 5. The first group is correct only because a date variable starts at the epoch.",
+          "correct_fix": [
+            "lastOrderDate = zeroDate(); in clean()",
+            "lastOrderDate = 1970-01-01; (or any date literal earlier than 2000-01-01) in clean()",
+            "lastOrderDate = null; in clean() together with a guard such as `if (isnull(lastOrderDate) || $in.0.order_date > lastOrderDate)`"
+          ]
+        }
+      ],
+      "rubric": {
+        "description": "Fix a Denormalizer to match an explicit spec. There are four seeded defects: one compile error (T40.B1, .contains() on a list) and three semantic defects that compile but break the spec (T40.B2 null amount throws in the sum, T40.B3 division by zero when there are no shipped orders, T40.B4 lastOrderDate is not reset in clean(), so it leaks across customers). The response must return complete corrected code. Two correct things must not be \"fixed\": declared-but-unassigned globals start at their type defaults, not null (T40.FP1), and == on strings compares by value (T40.FP2).",
+        "required_findings": [
+          "T40.B1",
+          "T40.B2",
+          "T40.B3",
+          "T40.B4"
+        ],
+        "fix_quality": {
+          "T40.B1": "in() in either call form, or containsValue(), is correct. Keeping .contains() or inventing a list method is WRONG.",
+          "T40.B2": "nvl(order_amount, 0D) is the expected fix. nvl(order_amount, 0) is also valid, since integer widens to decimal. Using `shippedTotal += $in.0.order_amount` is WRONG, because += substitutes a default only for a null LEFT side and still throws on a null right operand. Skipping the whole order when the amount is null is WRONG, because it drops the order from shipped_count (spec item 3).",
+          "T40.B3": "Any guard that yields null for a 0 count is correct. Defaulting avg_shipped to 0 instead of null is WRONG (spec item 4). Wrapping the division in try-catch counts as CAUGHT only if the catch assigns null.",
+          "T40.B4": "Must reset lastOrderDate in clean(), or reset it equivalently at the start of each group, and explain that the previous customer's value leaks. Resetting to null while keeping the unguarded `>` comparison is WRONG: an ordering comparison with a null operand throws, so the next customer's first record would fail. Resetting to zeroDate() or an early date literal, or to null together with an isnull() guard, is correct."
+        },
+        "false_positive_traps": [
+          {
+            "id": "T40.FP1",
+            "trap": "Claiming lastOrderDate, shippedCount, shippedTotal or statuses start as null, or that the first `>` comparison, the first `+` or the first push() throws because a global is uninitialized.",
+            "reality": "Declared-but-unassigned variables start at their type defaults: a date at the epoch 1970-01-01 00:00:00 GMT, integer and decimal at 0, a list as an empty list. The first group works. Adding explicit initializers is harmless style, but presenting it as a bug fix triggers this trap. The real defect is the missing reset between groups (T40.B4).",
+            "critical": false
+          },
+          {
+            "id": "T40.FP2",
+            "trap": "Claiming `$in.0.status == \"SHIPPED\"` compares references and must use an equals()-style function or compare().",
+            "reality": "In CTL2, == compares strings by value.",
+            "critical": false
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T40.F1",
+            "check": "The response gives no complete corrected Denormalizer code (append, transform and clean), only fragments, a diff or prose.",
+            "rationale": "The task is to return fixed code."
+          },
+          {
+            "id": "T40.F2",
+            "check": "The corrected code breaks behaviour the spec requires, e.g. last_order_date is computed over shipped orders only, null-amount orders are no longer counted in shipped_count, avg_shipped becomes 0 instead of null, or statuses are sorted or no longer distinct.",
+            "rationale": "A fix that breaks a different spec item is not a fix."
+          },
+          {
+            "id": "T40.F3",
+            "check": "The corrected code would not compile, uses a function or construct that does not exist in CTL2, or adds a new runtime failure (e.g. a null reset of lastOrderDate with the unguarded `>` still in place).",
+            "rationale": "Addendum A: compilability is a hard gate. A fix must not trade one runtime failure for another."
+          }
+        ],
+        "reference_solution": "//#CTL2\nlong customerId;\ninteger shippedCount;\ndecimal shippedTotal;\ndate lastOrderDate;\nstring[] statuses;\n\nfunction integer append() {\n    customerId = $in.0.customer_id;\n    if ($in.0.status == \"SHIPPED\") {\n        shippedCount++;\n        shippedTotal = shippedTotal + nvl($in.0.order_amount, 0D);\n    }\n    if ($in.0.order_date > lastOrderDate) {\n        lastOrderDate = $in.0.order_date;\n    }\n    if (!in($in.0.status, statuses)) {\n        push(statuses, $in.0.status);\n    }\n    return OK;\n}\n\nfunction integer transform() {\n    $out.0.customer_id = customerId;\n    $out.0.shipped_count = shippedCount;\n    $out.0.shipped_total = shippedTotal;\n    if (shippedCount > 0) {\n        $out.0.avg_shipped = round(shippedTotal / shippedCount, 2);\n    } else {\n        $out.0.avg_shipped = null;\n    }\n    $out.0.last_order_date = lastOrderDate;\n    $out.0.statuses = join(\",\", statuses);\n    return OK;\n}\n\nfunction void clean() {\n    shippedCount = 0;\n    shippedTotal = 0D;\n    lastOrderDate = zeroDate();\n    clear(statuses);\n}",
+        "reference_solution_note": "One correct answer. Other forms that satisfy the spec and compile are equally correct.",
+        "scoring": {
+          "PASS": "All 4 required findings CAUGHT in complete corrected code that compiles. No false-positive trap triggered and no forbidden item present.",
+          "PARTIAL": "3 of 4 CAUGHT in complete, compiling corrected code, or all 4 CAUGHT but one trap triggered or one of T40.F2/T40.F3 present.",
+          "FAIL": "2 or fewer CAUGHT, or T40.F1 present (no complete corrected code), or the corrected code does not compile."
+        }
+      }
+    },
+    {
+      "test_id": "T41",
+      "type": "fix",
+      "component": "Rollup (fix to spec)",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Fix the following CTL2 Rollup transform so that it compiles and does what the specification says. List every problem you fix with the reason, then give the complete corrected code.\n\nThe Rollup groups its input by warehouse_id (the input is sorted by warehouse_id). The group accumulator record is StockAcc, given below.\n\nSpecification (exactly one output record per warehouse):\n1. warehouse_id: the warehouse of the group.\n2. line_count: the number of stock lines of the warehouse.\n3. total_qty: the sum of qty over all the warehouse's lines. qty is never null.\n4. avg_qty_per_line: total_qty / line_count as a whole number, truncated toward zero. Integer division is intended here.\n5. backorder_count: the number of lines whose status is \"BACKORDER\" or \"PARTIAL\". Status values are always uppercase.\n6. backorder_value: the sum of qty x unit_cost over those backordered lines. A null unit_cost counts as 0, and the line is still counted in backorder_count. 0 when the warehouse has no backordered lines.\n7. avg_backorder_value: backorder_value / backorder_count, rounded half-up to 2 decimal places. Null when the warehouse has no backordered lines.\n8. Warehouses with no backordered lines are still output, with backorder_count 0.\n\nInput port 0:\n<Metadata id=\"M0\"><Record name=\"StockLine\" type=\"delimited\"><Field name=\"warehouse_id\" type=\"string\" nullable=\"false\"/><Field name=\"sku\" type=\"string\" nullable=\"false\"/><Field name=\"qty\" type=\"integer\" nullable=\"false\"/><Field name=\"unit_cost\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/><Field name=\"status\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nOutput port 0:\n<Metadata id=\"M1\"><Record name=\"WarehouseStock\" type=\"delimited\"><Field name=\"warehouse_id\" type=\"string\" nullable=\"false\"/><Field name=\"line_count\" type=\"integer\" nullable=\"false\"/><Field name=\"total_qty\" type=\"long\" nullable=\"false\"/><Field name=\"avg_qty_per_line\" type=\"long\" nullable=\"false\"/><Field name=\"backorder_count\" type=\"integer\" nullable=\"false\"/><Field name=\"backorder_value\" type=\"decimal\" length=\"14\" scale=\"2\" nullable=\"false\"/><Field name=\"avg_backorder_value\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/></Record></Metadata>\n\nAccumulator metadata:\n<Metadata id=\"M2\"><Record name=\"StockAcc\" type=\"delimited\"><Field name=\"warehouse_id\" type=\"string\"/><Field name=\"line_count\" type=\"integer\"/><Field name=\"total_qty\" type=\"long\"/><Field name=\"backorder_count\" type=\"integer\"/><Field name=\"backorder_value\" type=\"decimal\" length=\"14\" scale=\"2\"/></Record></Metadata>\n\n```ctl\n//#CTL2\nfunction void initGroup(StockAcc acc) {\n    acc.warehouse_id = $in.0.warehouse_id;\n    acc.line_count = 0;\n    acc.total_qty = 0L;\n    acc.backorder_count = 0;\n}\n\nfunction boolean updateGroup(StockAcc acc) {\n    acc.line_count++;\n    acc.total_qty = acc.total_qty + $in.0.qty;\n    if ($in.0.status in [\"BACKORDER\", \"PARTIAL\"]) {\n        acc.backorder_count++;\n        acc.backorder_value = acc.backorder_value + $in.0.qty * nvl($in.0.unit_cost, 0D);\n    }\n    return false;\n}\n\nfunction integer updateTransform(integer counter, StockAcc acc) {\n    return SKIP;\n}\n\nfunction boolean finishGroup(StockAcc acc) {\n    return acc.backorder_count > 0;\n}\n\nfunction integer transform(integer counter, StockAcc acc) {\n    if (counter > 0) return SKIP;\n    $out.0.warehouse_id = acc.warehouse_id;\n    $out.0.line_count = acc.line_count;\n    $out.0.total_qty = acc.total_qty;\n    $out.0.avg_qty_per_line = acc.total_qty / acc.line_count;\n    $out.0.backorder_count = acc.backorder_count;\n    $out.0.backorder_value = acc.backorder_value;\n    $out.0.avg_backorder_value = round(acc.backorder_value / acc.backorder_count, 2);\n    return ALL;\n}\n```",
+      "bugs": [
+        {
+          "id": "T41.B1",
+          "kind": "compile",
+          "code": "$in.0.status in [\"BACKORDER\", \"PARTIAL\"]",
+          "description": "CTL2 has no infix `in` operator. Membership is the function in(element, list), or the object-notation form element.in(list), so this condition does not compile.",
+          "correct_fix": [
+            "in($in.0.status, [\"BACKORDER\", \"PARTIAL\"])",
+            "$in.0.status.in([\"BACKORDER\", \"PARTIAL\"])",
+            "$in.0.status == \"BACKORDER\" || $in.0.status == \"PARTIAL\""
+          ]
+        },
+        {
+          "id": "T41.B2",
+          "kind": "semantic",
+          "code": "function void initGroup(StockAcc acc) { ... }  // backorder_value is never assigned",
+          "description": "initGroup() assigns every accumulator field except backorder_value. An accumulator field that initGroup() does not assign is null at the start of the group (unlike a declared CTL2 variable, it does not start at its type default), so the first `acc.backorder_value + ...` throws on the null operand. A `default` attribute on the accumulator metadata field does not help either: it is a read/parse-side default and is not applied to the per-group accumulator state (verified on a real graph, 2026-09-30). Every warehouse with a backordered line fails, and warehouses without one would output a null backorder_value into a non-nullable field, against spec item 6.",
+          "correct_fix": "acc.backorder_value = 0D; in initGroup()"
+        },
+        {
+          "id": "T41.B3",
+          "kind": "semantic",
+          "code": "return acc.backorder_count > 0;  // in finishGroup()",
+          "description": "finishGroup() gates output: transform() runs for a group only when it returns true. Returning `backorder_count > 0` drops every warehouse with no backordered lines, but spec item 8 and the heading (\"exactly one output record per warehouse\") require them.",
+          "correct_fix": "return true; in finishGroup()"
+        },
+        {
+          "id": "T41.B4",
+          "kind": "semantic",
+          "code": "$out.0.avg_backorder_value = round(acc.backorder_value / acc.backorder_count, 2);",
+          "description": "backorder_count counts a filtered subset of the group, so it can be 0, and decimal division by zero throws. The buggy code hides this only because finishGroup() drops those warehouses (T41.B3). Once B3 is fixed, every warehouse without backordered lines fails here, and spec item 7 requires null for them.",
+          "correct_fix": "Guard on backorder_count > 0 (or != 0) and assign null otherwise, e.g. if/else or a ternary with a null branch."
+        }
+      ],
+      "rubric": {
+        "description": "Fix a Rollup to match an explicit spec. There are four seeded defects: one compile error (T41.B1, infix `in`) and three semantic defects (T41.B2 backorder_value not initialised in initGroup, so it is null and the sum throws; T41.B3 finishGroup filters out warehouses that must be output; T41.B4 division by a filtered count that can be 0, exposed once B3 is fixed). The response must return complete corrected code with all five Rollup functions. Two correct constructs must survive: the unguarded total_qty / line_count division (T41.FP1, a Rollup group has at least one record) and the integer division itself (T41.FP2, spec item 4 asks for it).",
+        "required_findings": [
+          "T41.B1",
+          "T41.B2",
+          "T41.B3",
+          "T41.B4"
+        ],
+        "fix_quality": {
+          "T41.B1": "in() in either call form, or an explicit == ... || == ... test, is correct. Keeping the infix `in`, or inventing a contains()/includes() list method, is WRONG.",
+          "T41.B2": "Must assign backorder_value = 0D (or 0) in initGroup(). Guarding the addition with nvl(acc.backorder_value, 0D) also removes the failure and counts as CAUGHT, but note it as indirect: it leaves backorder_value null for warehouses with no backordered lines unless the output also defaults it. Claiming the field starts at 0 as a declared variable would, and that the line is fine, is WRONG. Fixing it by adding a default=\"0\" attribute to the StockAcc metadata instead of assigning it in initGroup() is WRONG: the metadata default is not applied to accumulator state.",
+          "T41.B3": "Must make finishGroup() return true for every group. Moving the filter elsewhere (e.g. `return SKIP` in transform() for zero-backorder warehouses) is WRONG, since those warehouses must be output.",
+          "T41.B4": "Any guard that yields null for a 0 backorder_count is correct. Defaulting avg_backorder_value to 0 is WRONG (spec item 7). Arguing that no guard is needed because a Rollup group always has a record is WRONG here: the divisor is the backordered subset, not the group size."
+        },
+        "false_positive_traps": [
+          {
+            "id": "T41.FP1",
+            "trap": "Calling `acc.total_qty / acc.line_count` a division-by-zero risk, or presenting a zero guard on line_count as a bug fix.",
+            "reality": "A Rollup group is built from its input records, so every group has at least one record and line_count is at least 1 whenever transform() runs. The divisor that really can be 0 is backorder_count (T41.B4).",
+            "critical": false
+          },
+          {
+            "id": "T41.FP2",
+            "trap": "Calling `acc.total_qty / acc.line_count` wrong because it truncates, or rewriting it with a decimal division.",
+            "reality": "Spec item 4 asks for a whole number truncated toward zero, and long / integer is long division, which is exactly that. A decimal division would not even fit the long output field without a conversion.",
+            "critical": false
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T41.F1",
+            "check": "The response gives no complete corrected Rollup code (all five functions: initGroup, updateGroup, updateTransform, finishGroup, transform), only fragments, a diff or prose.",
+            "rationale": "The task is to return fixed code, and all five Rollup functions are mandatory."
+          },
+          {
+            "id": "T41.F2",
+            "check": "The corrected code breaks behaviour the spec requires, e.g. drops updateTransform() or finishGroup(), counts a null-cost line out of backorder_count, sets avg_backorder_value to 0 instead of null, or emits more than one record per warehouse.",
+            "rationale": "A fix that breaks a different spec item is not a fix."
+          },
+          {
+            "id": "T41.F3",
+            "check": "The corrected code would not compile, or uses a function or construct that does not exist in CTL2 (e.g. an infix `in`, a list .contains() method, a Java method call).",
+            "rationale": "Addendum A: compilability is a hard gate."
+          }
+        ],
+        "reference_solution": "//#CTL2\nfunction void initGroup(StockAcc acc) {\n    acc.warehouse_id = $in.0.warehouse_id;\n    acc.line_count = 0;\n    acc.total_qty = 0L;\n    acc.backorder_count = 0;\n    acc.backorder_value = 0D;\n}\n\nfunction boolean updateGroup(StockAcc acc) {\n    acc.line_count++;\n    acc.total_qty = acc.total_qty + $in.0.qty;\n    if (in($in.0.status, [\"BACKORDER\", \"PARTIAL\"])) {\n        acc.backorder_count++;\n        acc.backorder_value = acc.backorder_value + $in.0.qty * nvl($in.0.unit_cost, 0D);\n    }\n    return false;\n}\n\nfunction integer updateTransform(integer counter, StockAcc acc) {\n    return SKIP;\n}\n\nfunction boolean finishGroup(StockAcc acc) {\n    return true;\n}\n\nfunction integer transform(integer counter, StockAcc acc) {\n    if (counter > 0) return SKIP;\n    $out.0.warehouse_id = acc.warehouse_id;\n    $out.0.line_count = acc.line_count;\n    $out.0.total_qty = acc.total_qty;\n    $out.0.avg_qty_per_line = acc.total_qty / acc.line_count;\n    $out.0.backorder_count = acc.backorder_count;\n    $out.0.backorder_value = acc.backorder_value;\n    if (acc.backorder_count > 0) {\n        $out.0.avg_backorder_value = round(acc.backorder_value / acc.backorder_count, 2);\n    } else {\n        $out.0.avg_backorder_value = null;\n    }\n    return ALL;\n}",
+        "reference_solution_note": "One correct answer. Other forms that satisfy the spec and compile are equally correct.",
+        "scoring": {
+          "PASS": "All 4 required findings CAUGHT in complete corrected code that compiles. No false-positive trap triggered and no forbidden item present.",
+          "PARTIAL": "3 of 4 CAUGHT in complete, compiling corrected code, or all 4 CAUGHT but one trap triggered or one of T41.F2/T41.F3 present.",
+          "FAIL": "2 or fewer CAUGHT, or T41.F1 present (no complete corrected code), or the corrected code does not compile."
+        }
+      }
+    },
+    {
+      "test_id": "T42",
+      "type": "fix",
+      "component": "Partition (fix to spec)",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Fix the following CTL2 Partition transform so that it compiles and does what the specification says. List every problem you fix with the reason, then give the complete corrected code.\n\nThe Partition routes shipments to four output ports. Records pass through unchanged; the Partition only chooses the port. The rules are checked in this order, and the first one that matches decides:\n1. promised_date is null: port 3 (manual review).\n2. Express: service is \"EXPRESS\" and promised_date is at most 2 calendar days after ship_date: port 0. service may arrive in any letter case (\"EXPRESS\", \"Express\", \"express\"). Example: shipped 2026-03-10, promised 2026-03-12 is express; promised 2026-03-13 is not.\n3. Heavy: weight_kg is 30 or more: port 1.\n4. Everything else: port 2.\n5. A record whose routing fails for any reason goes to port 3.\n\nInput port 0:\n<Metadata id=\"M0\"><Record name=\"Shipment\" type=\"delimited\"><Field name=\"shipment_id\" type=\"long\" nullable=\"false\"/><Field name=\"service\" type=\"string\" nullable=\"false\"/><Field name=\"ship_date\" type=\"date\" nullable=\"false\"/><Field name=\"promised_date\" type=\"date\" nullable=\"true\"/><Field name=\"weight_kg\" type=\"decimal\" length=\"10\" scale=\"3\" nullable=\"false\"/><Field name=\"dest_country\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nOutput ports 0 to 3 carry the same Shipment metadata.\n\n```ctl\n//#CTL2\nfunction integer getOutputPort() {\n    if ($in.0.promised_date == null) {\n        return 3;\n    }\n    boolean express = $in.0.service == \"EXPRESS\"\n        && dateDiff($in.0.ship_date, $in.0.promised_date, day) <= 2;\n    if ($in.0.weight_kg > 30) {\n        return 1;\n    }\n    if (express) {\n        $out.0.route = \"EXPRESS\";\n        return 0;\n    }\n    return 2;\n}\n\nfunction integer getOutputPortOnError(string errorMessage, string stackTrace) {\n    return 3;\n}\n```",
+      "bugs": [
+        {
+          "id": "T42.B1",
+          "kind": "compile",
+          "code": "$out.0.route = \"EXPRESS\";",
+          "description": "A Partition transform only chooses the output port; it cannot write output records, so assigning $out.0.route does not compile (and Shipment has no route field either). Records pass through unchanged, as the spec says.",
+          "correct_fix": "Remove the assignment and keep `return 0;`."
+        },
+        {
+          "id": "T42.B2",
+          "kind": "semantic",
+          "code": "dateDiff($in.0.ship_date, $in.0.promised_date, day) <= 2",
+          "description": "dateDiff(later, earlier, unit) returns later minus earlier. With ship_date first it returns ship_date - promised_date, which is 0 or negative for every real shipment, so `<= 2` is always true and every EXPRESS shipment goes to port 0 however late its promise. The spec example (shipped 03-10, promised 03-13) is routed as express.",
+          "correct_fix": [
+            "dateDiff($in.0.promised_date, $in.0.ship_date, day) <= 2",
+            "dateDiff($in.0.ship_date, $in.0.promised_date, day) >= -2"
+          ]
+        },
+        {
+          "id": "T42.B3",
+          "kind": "semantic",
+          "code": "$in.0.service == \"EXPRESS\"",
+          "description": "== compares strings exactly, including case. The spec says service may arrive as \"Express\" or \"express\", and those shipments are never routed as express.",
+          "correct_fix": [
+            "upperCase($in.0.service) == \"EXPRESS\"",
+            "lowerCase($in.0.service) == \"express\"",
+            "$in.0.service ~= \"(?i)express\""
+          ]
+        },
+        {
+          "id": "T42.B4",
+          "kind": "semantic",
+          "code": "$in.0.weight_kg > 30",
+          "description": "Spec rule 3 says 30 or more is heavy, so a shipment of exactly 30 kg must go to port 1. `> 30` sends it to port 2.",
+          "correct_fix": [
+            "$in.0.weight_kg >= 30",
+            "$in.0.weight_kg >= 30D"
+          ]
+        },
+        {
+          "id": "T42.B5",
+          "kind": "semantic",
+          "code": "if ($in.0.weight_kg > 30) { return 1; }  // tested before `if (express)`",
+          "description": "The spec checks the rules in order and the first match decides: express (rule 2) comes before heavy (rule 3). The code computes `express` first but tests the weight first, so a heavy EXPRESS shipment inside the 2-day window goes to port 1 instead of port 0.",
+          "correct_fix": "Test `express` (return 0) before the weight test (return 1)."
+        }
+      ],
+      "rubric": {
+        "description": "Fix a Partition to match an explicit routing spec. There are five seeded defects: one compile error (T42.B1, a Partition writing $out) and four semantic defects (T42.B2 dateDiff arguments reversed, so every EXPRESS shipment passes the 2-day test; T42.B3 case-sensitive service comparison; T42.B4 `> 30` excludes exactly 30 kg; T42.B5 the weight rule is tested before the express rule, against the spec's rule order). The response must return complete corrected code. Four correct things must survive: the == null test on promised_date (T42.FP1), getOutputPortOnError() (T42.FP2), the decimal-to-integer-literal comparison (T42.FP3), and computing `express` into a variable after the null check (T42.FP4).",
+        "required_findings": [
+          "T42.B1",
+          "T42.B2",
+          "T42.B3",
+          "T42.B4",
+          "T42.B5"
+        ],
+        "fix_quality": {
+          "T42.B1": "Must remove the $out.0.route assignment. Adding a route field to the metadata, or moving the assignment elsewhere, is WRONG: a Partition cannot write output records and the spec says records pass unchanged.",
+          "T42.B2": "Swapping the arguments (promised_date first) or keeping the order and testing >= -2 are both correct. Must say why: dateDiff returns later minus earlier, so the original is never above 2. Changing the unit, or adding 1 to the day count, is WRONG.",
+          "T42.B3": "upperCase()/lowerCase() on service, or a case-insensitive regex, is correct. Changing the literal to \"Express\" is WRONG, since the spec allows every letter case.",
+          "T42.B4": "Must change > to >=. Changing the literal to 29 is WRONG: weight_kg is decimal with 3 places, so 29.5 kg would become heavy.",
+          "T42.B5": "Must put the express test before the weight test and say it follows the spec's rule order. Fixing only the other defects leaves heavy express shipments on port 1, which is MISSED. Moving the null-promise check anywhere but first is WRONG."
+        },
+        "false_positive_traps": [
+          {
+            "id": "T42.FP1",
+            "trap": "Claiming `$in.0.promised_date == null` throws, is unreliable, or must be rewritten with isnull() to be correct.",
+            "reality": "== and != are null-safe in CTL2 and never throw; `x == null` is a valid null test. Rewriting it with isnull() is harmless style but not a fix.",
+            "critical": false
+          },
+          {
+            "id": "T42.FP2",
+            "trap": "Claiming getOutputPortOnError() is not a Partition function, or removing it.",
+            "reality": "getOutputPortOnError(string errorMessage, string stackTrace) is the Partition error handler, and returning 3 implements spec rule 5. Removing it breaks rule 5.",
+            "critical": false
+          },
+          {
+            "id": "T42.FP3",
+            "trap": "Calling the comparison of the decimal weight_kg with the integer literal 30 a type error that needs 30D or a conversion.",
+            "reality": "Numeric operands widen per operator, so decimal compared with integer is valid. Writing 30D is fine style, but presenting it as a bug fix triggers this trap.",
+            "critical": false
+          },
+          {
+            "id": "T42.FP4",
+            "trap": "Claiming the `boolean express = ...` line calls dateDiff() with a null promised_date and throws, or that && does not short-circuit.",
+            "reality": "The line runs only after `promised_date == null` has already returned 3, so promised_date is never null there, and && short-circuits anyway. Computing the flag first is fine; the defect is the order of the two ifs that follow (T42.B5).",
+            "critical": false
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T42.F1",
+            "check": "The response gives no complete corrected Partition code (getOutputPort and getOutputPortOnError), only fragments, a diff or prose.",
+            "rationale": "The task is to return fixed code."
+          },
+          {
+            "id": "T42.F2",
+            "check": "The corrected code breaks behaviour the spec requires, e.g. departs from the spec's rule order, drops the null-promise check, routes errors anywhere other than port 3, or moves the express window off 2 calendar days.",
+            "rationale": "A fix that breaks a different spec item is not a fix."
+          },
+          {
+            "id": "T42.F3",
+            "check": "The corrected code would not compile, or uses a function or construct that does not exist in CTL2 (e.g. a Java method call such as .equalsIgnoreCase(), or a string as the dateDiff unit).",
+            "rationale": "Addendum A: compilability is a hard gate."
+          }
+        ],
+        "reference_solution": "//#CTL2\nfunction integer getOutputPort() {\n    if ($in.0.promised_date == null) {\n        return 3;\n    }\n    boolean express = upperCase($in.0.service) == \"EXPRESS\"\n        && dateDiff($in.0.promised_date, $in.0.ship_date, day) <= 2;\n    if (express) {\n        return 0;\n    }\n    if ($in.0.weight_kg >= 30) {\n        return 1;\n    }\n    return 2;\n}\n\nfunction integer getOutputPortOnError(string errorMessage, string stackTrace) {\n    return 3;\n}",
+        "reference_solution_note": "One correct answer. Other forms that satisfy the spec and compile are equally correct.",
+        "scoring": {
+          "PASS": "All 5 required findings CAUGHT in complete corrected code that compiles. No false-positive trap triggered and no forbidden item present.",
+          "PARTIAL": "4 of 5 CAUGHT in complete, compiling corrected code, or all 5 CAUGHT but one trap triggered or one of T42.F2/T42.F3 present.",
+          "FAIL": "3 or fewer CAUGHT, or T42.F1 present (no complete corrected code), or the corrected code does not compile."
+        }
+      }
+    },
+    {
+      "test_id": "T43",
+      "type": "fix",
+      "component": "Join (LEFT OUTER, fix to spec)",
+      "temperature": 0.05,
+      "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
+      "user_message": "Fix the following CTL2 transform of an ExtHashJoin so that it compiles and does what the specification says. List every problem you fix with the reason, then give the complete corrected code.\n\nThe join is a LEFT OUTER join on customer_id. Port 0 is the master (orders), port 1 the slave (customers); every order is output once, whether or not a customer matched.\n\nSpecification:\n1. order_id and customer_id: copied from the order.\n2. customer_tier: the customer's tier. \"UNMATCHED\" when no customer matched.\n3. The discount rate is 10% for tier \"GOLD\", 5% for \"SILVER\", and 0 for any other tier and for unmatched orders. Tier values are always uppercase.\n4. net_amount: amount reduced by the discount rate, rounded half-up to 2 decimal places.\n5. email_domain: the part of the customer's email after the \"@\", in lower case (\"jan.novak@Example.COM\" gives \"example.com\"). A non-null email always contains exactly one \"@\". Null when the email is null or no customer matched.\n6. over_limit: true when net_amount is greater than the customer's credit_limit. A null credit_limit means no limit, so over_limit is false; it is also false when no customer matched.\n\nInput port 0:\n<Metadata id=\"M0\"><Record name=\"Order\" type=\"delimited\"><Field name=\"order_id\" type=\"long\" nullable=\"false\"/><Field name=\"customer_id\" type=\"long\" nullable=\"false\"/><Field name=\"amount\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/></Record></Metadata>\n\nInput port 1:\n<Metadata id=\"M1\"><Record name=\"Customer\" type=\"delimited\"><Field name=\"customer_id\" type=\"long\" nullable=\"false\"/><Field name=\"tier\" type=\"string\" nullable=\"false\"/><Field name=\"email\" type=\"string\" nullable=\"true\"/><Field name=\"credit_limit\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"true\"/></Record></Metadata>\n\nOutput port 0:\n<Metadata id=\"M2\"><Record name=\"PricedOrder\" type=\"delimited\"><Field name=\"order_id\" type=\"long\" nullable=\"false\"/><Field name=\"customer_id\" type=\"long\" nullable=\"false\"/><Field name=\"customer_tier\" type=\"string\" nullable=\"false\"/><Field name=\"net_amount\" type=\"decimal\" length=\"12\" scale=\"2\" nullable=\"false\"/><Field name=\"email_domain\" type=\"string\" nullable=\"true\"/><Field name=\"over_limit\" type=\"boolean\" nullable=\"false\"/></Record></Metadata>\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.order_id = $in.0.order_id;\n    $out.0.customer_id = $in.0.customer_id;\n    $out.0.customer_tier = $in.1.tier;\n\n    decimal rate = 0D;\n    if ($in.1.tier.equals(\"GOLD\")) {\n        rate = 0.10D;\n    } else if ($in.1.tier == \"SILVER\") {\n        rate = 0.05D;\n    }\n    decimal net = round($in.0.amount * (1D - rate), 2);\n    $out.0.net_amount = net;\n\n    if (isnull($in.1.email)) {\n        $out.0.email_domain = null;\n    } else {\n        integer at = indexOf($in.1.email, \"@\");\n        $out.0.email_domain = lowerCase(substring($in.1.email, at));\n    }\n\n    $out.0.over_limit = net > $in.1.credit_limit;\n    return ALL;\n}\n```",
+      "bugs": [
+        {
+          "id": "T43.B1",
+          "kind": "compile",
+          "code": "$in.1.tier.equals(\"GOLD\")",
+          "description": "CTL2 has no equals() method. Object notation resolves `x.equals(y)` to a function equals(string, string), which does not exist, so this does not compile. Strings are compared by value with ==.",
+          "correct_fix": [
+            "$in.1.tier == \"GOLD\"",
+            "a switch on $in.1.tier"
+          ]
+        },
+        {
+          "id": "T43.B2",
+          "kind": "semantic",
+          "code": "$out.0.customer_tier = $in.1.tier;",
+          "description": "In a left outer join an unmatched order has every slave field null. customer_tier then gets null, but spec item 2 requires \"UNMATCHED\" (and the output field is non-nullable).",
+          "correct_fix": [
+            "nvl($in.1.tier, \"UNMATCHED\")",
+            "an explicit null test assigning \"UNMATCHED\""
+          ]
+        },
+        {
+          "id": "T43.B3",
+          "kind": "semantic",
+          "code": "lowerCase(substring($in.1.email, at))",
+          "description": "indexOf() is zero-based and returns the position of the \"@\" itself, so substring from `at` keeps the \"@\": \"jan.novak@Example.COM\" gives \"@example.com\", not \"example.com\" (spec item 5).",
+          "correct_fix": "lowerCase(substring($in.1.email, at + 1))"
+        },
+        {
+          "id": "T43.B4",
+          "kind": "semantic",
+          "code": "$out.0.over_limit = net > $in.1.credit_limit;",
+          "description": "> throws at runtime when either operand is null. credit_limit is null for every unmatched order and for customers with no limit, so those orders fail; spec item 6 says over_limit is false for them. Whether it fails depends on the data (every order may have a matching customer with a limit), so the expected severity is WARNING, but the spec defines the null case, so the line must be fixed. Reporting it as ERROR is also accepted.",
+          "correct_fix": [
+            "!isnull($in.1.credit_limit) && net > $in.1.credit_limit",
+            "an if/else that assigns false when credit_limit is null"
+          ]
+        }
+      ],
+      "rubric": {
+        "description": "Fix a left outer ExtHashJoin transform to match an explicit spec. There are four seeded defects: one compile error (T43.B1, a Java-style .equals() call) and three semantic defects (T43.B2 unmatched orders get a null tier instead of \"UNMATCHED\"; T43.B3 the domain keeps the \"@\"; T43.B4 > on a null credit_limit throws). The response must return complete corrected code. Two correct things must not be \"fixed\": slave fields of an unmatched record are null while the record itself exists (T43.FP1), and the two-argument substring(string, fromIndex) exists (T43.FP2).",
+        "required_findings": [
+          "T43.B1",
+          "T43.B2",
+          "T43.B3",
+          "T43.B4"
+        ],
+        "fix_quality": {
+          "T43.B1": "== or a switch on the tier is correct. Keeping .equals(), or replacing it with another invented method (equalsIgnoreCase(), compareTo()), is WRONG.",
+          "T43.B2": "nvl() or an explicit null test giving \"UNMATCHED\" is correct. Testing isnull($in.1) (the whole record) instead of a field is WRONG, since the record is never null.",
+          "T43.B3": "Must start the substring after the \"@\" (at + 1), keeping lowerCase(). Using split(email, \"@\")[1] is also correct. Dropping lowerCase(), or adding a null guard the code already has, does not count as the fix.",
+          "T43.B4": "Any null guard that gives false for a null credit_limit is correct. The severity label does not matter: WARNING (a data-dependent failure) is expected and ERROR is equally accepted; what counts is that the code is fixed. nvl(credit_limit, 0D) is WRONG: it makes every unmatched order and every no-limit customer over the limit."
+        },
+        "false_positive_traps": [
+          {
+            "id": "T43.FP1",
+            "trap": "Claiming the slave record $in.1 is null for an unmatched order, so every $in.1 field access throws, or rewriting the code around isnull($in.1).",
+            "reality": "In a left outer join the slave record exists and all its fields are null when no customer matched. Reading $in.1.tier gives null; it does not throw. The real defects are what the code does with those nulls (T43.B2, T43.B4).",
+            "critical": false
+          },
+          {
+            "id": "T43.FP2",
+            "trap": "Claiming substring() needs three arguments, or that the two-argument substring(string, fromIndex) does not exist.",
+            "reality": "substring(arg, fromIndex) exists and returns the rest of the string from fromIndex. The defect on that line is the start position (T43.B3), not the arity.",
+            "critical": false
+          }
+        ],
+        "forbidden": [
+          {
+            "id": "T43.F1",
+            "check": "The response gives no complete corrected transform, only fragments, a diff or prose.",
+            "rationale": "The task is to return fixed code."
+          },
+          {
+            "id": "T43.F2",
+            "check": "The corrected code breaks behaviour the spec requires, e.g. unmatched orders are skipped or no longer output, the discount applies to unmatched orders, email_domain keeps upper case, or a null credit_limit counts as over the limit.",
+            "rationale": "A fix that breaks a different spec item is not a fix."
+          },
+          {
+            "id": "T43.F3",
+            "check": "The corrected code would not compile, or uses a function or construct that does not exist in CTL2 (e.g. .equals(), a Java method call, an Elvis operator).",
+            "rationale": "Addendum A: compilability is a hard gate."
+          }
+        ],
+        "reference_solution": "//#CTL2\nfunction integer transform() {\n    $out.0.order_id = $in.0.order_id;\n    $out.0.customer_id = $in.0.customer_id;\n    $out.0.customer_tier = nvl($in.1.tier, \"UNMATCHED\");\n\n    decimal rate = 0D;\n    if ($in.1.tier == \"GOLD\") {\n        rate = 0.10D;\n    } else if ($in.1.tier == \"SILVER\") {\n        rate = 0.05D;\n    }\n    decimal net = round($in.0.amount * (1D - rate), 2);\n    $out.0.net_amount = net;\n\n    if (isnull($in.1.email)) {\n        $out.0.email_domain = null;\n    } else {\n        integer at = indexOf($in.1.email, \"@\");\n        $out.0.email_domain = lowerCase(substring($in.1.email, at + 1));\n    }\n\n    $out.0.over_limit = !isnull($in.1.credit_limit) && net > $in.1.credit_limit;\n    return ALL;\n}",
+        "reference_solution_note": "One correct answer. Other forms that satisfy the spec and compile are equally correct.",
+        "scoring": {
+          "PASS": "All 4 required findings CAUGHT in complete corrected code that compiles. No false-positive trap triggered and no forbidden item present.",
+          "PARTIAL": "3 of 4 CAUGHT in complete, compiling corrected code, or all 4 CAUGHT but one trap triggered or one of T43.F2/T43.F3 present.",
+          "FAIL": "2 or fewer CAUGHT, or T43.F1 present (no complete corrected code), or the corrected code does not compile."
         }
       }
     }
