@@ -872,6 +872,10 @@ class AnthropicJudgeClient:
 
 
 class OpenAIJudgeClient:
+    """judge.api picks the endpoint: "chat_completions", "responses", or
+    "auto" (default) — chat, switching to /v1/responses for the rest of the
+    run if the model rejects chat with a request to use it."""
+
     def __init__(self, cfg: dict):
         from openai import OpenAI
 
@@ -879,8 +883,43 @@ class OpenAIJudgeClient:
         api_key = cfg.get("api_key") or os.environ.get("OPENAI_API_KEY")
         self._client = OpenAI(api_key=api_key, base_url=cfg.get("base_url"))
         self._model = cfg.get("model", "gpt-6-sol")
+        api = str(cfg.get("api") or "auto").strip().lower()
+        if api not in ("auto", "chat_completions", "responses"):
+            raise ValueError(f"judge.api must be 'auto', 'chat_completions' or 'responses', got {api!r}")
+        self._api_cfg = api
+        self._api = None if api == "auto" else api
 
     def evaluate(self, system_prompt: str, user_message: str) -> str:
+        if self._api == "responses":
+            return self._evaluate_responses(system_prompt, user_message)
+        try:
+            return self._evaluate_chat(system_prompt, user_message)
+        except Exception as exc:  # noqa: BLE001 — only the endpoint rejection switches
+            from openai import BadRequestError
+
+            if not (isinstance(exc, BadRequestError) and "/v1/responses" in str(exc) and self._api_cfg == "auto"):
+                raise
+            _print(f"  [dim]Judge {self._model}: switching to /v1/responses ({str(exc)[:120]})[/dim]")
+            self._api = "responses"
+            return self._evaluate_responses(system_prompt, user_message)
+
+    def _sampling(self) -> tuple[Optional[float], Optional[str]]:
+        # Some OpenAI models only support default temperature. Keep omitted
+        # unless judge.temperature is explicitly set in config.
+        # Accept both judge.reasoning_effort and judge.effort aliases.
+        return self._cfg.get("temperature"), self._cfg.get("reasoning_effort", self._cfg.get("effort"))
+
+    def _evaluate_responses(self, system_prompt: str, user_message: str) -> str:
+        temperature, effort = self._sampling()
+        kwargs: dict = {"model": self._model, "instructions": system_prompt, "input": user_message, "store": False}
+        if temperature is not None:
+            kwargs["temperature"] = temperature
+        if effort:
+            kwargs["reasoning"] = {"effort": effort}
+        resp = self._client.responses.create(**kwargs)
+        return getattr(resp, "output_text", "") or ""
+
+    def _evaluate_chat(self, system_prompt: str, user_message: str) -> str:
         kwargs: dict = {
             "model": self._model,
             "messages": [
@@ -889,14 +928,9 @@ class OpenAIJudgeClient:
             ],
         }
 
-        # Some OpenAI models only support default temperature. Keep omitted
-        # unless judge.temperature is explicitly set in config.
-        temperature = self._cfg.get("temperature")
+        temperature, effort = self._sampling()
         if temperature is not None:
             kwargs["temperature"] = temperature
-
-        # Accept both judge.reasoning_effort and judge.effort aliases.
-        effort = self._cfg.get("reasoning_effort", self._cfg.get("effort"))
         if effort:
             kwargs["reasoning_effort"] = effort
 
