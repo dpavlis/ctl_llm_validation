@@ -122,7 +122,7 @@ _LOGS_DIR      = _SCRIPT_DIR / "logs"
 
 # Candidate suite filenames for auto-discovery, newest first. An explicit
 # suite_file in the config (or --suite-file) always wins over these.
-_SUITE_FILENAMES     = ("ctl2_test_suite_v4.json", "ctl2_test_suite_v2.json", "ctl2_test_suite.json")
+_SUITE_FILENAMES     = ("ctl2_test_suite_v4.json", "ctl2_test_suite.json")
 _SUITE_FILENAME      = _SUITE_FILENAMES[0]
 _CTL2_REF_FILENAME   = "ctl2-basics.md"
 _DEFAULT_JUDGE_MODEL = "claude-opus-4-20250514"
