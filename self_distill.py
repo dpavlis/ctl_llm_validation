@@ -17,7 +17,7 @@ from CTL_LoRA_fix_this_code.json.
 
 Stages (each resumable; files live in data/self_distill/<run>/):
 
-  python self_distill.py select     --run NAME [--pilot] [--seed 0]
+  python self_distill.py select     --run NAME [--pilot] [--seed 0] [--exclude-runs RUN,...]
   python self_distill.py check-refs --run NAME [--no-compile]
   CUDA_VISIBLE_DEVICES=1 python self_distill.py sample --run NAME --shard 0/2
   CUDA_VISIBLE_DEVICES=2 python self_distill.py sample --run NAME --shard 1/2
@@ -797,6 +797,18 @@ def select_pilot(pool: list[dict], seed: int, plan: tuple = PILOT_PLAN) -> tuple
     return chosen, summarize_selection(chosen, pool, dict(quotas), shortfall, notes)
 
 
+def prompts_of_runs(runs: list[str], runs_dir: Path) -> dict[str, set[str]]:
+    """{run: prompt ids in its prompts.jsonl}. A run without one is an error, so
+    a mistyped name cannot silently exclude nothing."""
+    found: dict[str, set[str]] = {}
+    for run in runs:
+        path = runs_dir / run / "prompts.jsonl"
+        if not path.exists():
+            raise SystemExit(f"ERROR: --exclude-runs run {run!r} has no prompts.jsonl under {rel(runs_dir)}")
+        found[run] = {p["prompt_id"] for p in read_jsonl(path)}
+    return found
+
+
 def cmd_select(args) -> int:
     out = run_dir(args)
     prompts_path = out / "prompts.jsonl"
@@ -806,6 +818,17 @@ def cmd_select(args) -> int:
         return 1
     excluded, excl_counts = load_exclusion_set()
     pool, pool_report = build_pool(excluded)
+    excluded_runs: dict[str, set[str]] = {}
+    if args.exclude_runs:
+        # Prompts an earlier run already drew: a second-generation teacher is
+        # sent only to prompts no run has sampled.
+        excluded_runs = prompts_of_runs([r.strip() for r in args.exclude_runs.split(",") if r.strip()],
+                                        Path(args.runs_dir))
+        drawn = set().union(*excluded_runs.values())
+        before = len(pool)
+        pool = [p for p in pool if p["prompt_id"] not in drawn]
+        print(f"  --exclude-runs: {before - len(pool)} of {before} pool prompts already drawn by "
+              f"{', '.join(excluded_runs)}; {len(pool)} remain")
     reusable: dict[str, tuple[str, list[dict]]] = {}
     mut_cfg = None
     if args.reuse_from:
@@ -835,6 +858,8 @@ def cmd_select(args) -> int:
         "exclusion_sources": excl_counts,
         "exclusion_prompts": len(excluded),
         "pool": pool_report,
+        "excluded_runs": {run: len(ids) for run, ids in excluded_runs.items()},
+        "pool_after_run_exclusion": len(pool),
         "selection": summary,
         "compile_bucket_differs_from_component": sum(
             1 for p in chosen if p["compile_bucket"] != p["component"]),
@@ -2360,6 +2385,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--reuse-from", default=None,
                    help="comma-separated earlier runs whose samples to reuse where teacher, prompt text, "
                         "system prompt, sampling and seed all match (full selection prefers those prompts)")
+    p.add_argument("--exclude-runs", default=None,
+                   help="comma-separated earlier runs whose prompts are removed from the pool before selection "
+                        "(to send a new teacher only to prompts no run has sampled)")
     p.add_argument("--k", type=int, default=DEFAULT_K, help="samples per prompt the reused prompts must have")
     p.add_argument("--plan", default=None,
                    help="targeted pilot: <group>:<count>,... using pilot groups (e.g. validate_pass_warn:15)")

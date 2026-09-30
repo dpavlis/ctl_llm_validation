@@ -404,6 +404,31 @@ class TestPlanOption(unittest.TestCase):
             sd.parse_plan("pass_warn:15")
 
 
+class TestExcludeRuns(unittest.TestCase):
+    def test_missing_run_is_an_error(self):
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaises(SystemExit):
+                sd.prompts_of_runs(["nope"], Path(d))
+
+    def test_real_select_skips_prompts_drawn_by_earlier_runs(self):
+        excluded, _ = sd.load_exclusion_set()
+        pool, _ = sd.build_pool(excluded)
+        pass_warn = [p["prompt_id"] for p in pool if sd.pilot_group(p) == "validate_pass_warn"]
+        drawn = pass_warn[:-2]
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            (root / "old").mkdir()
+            (root / "old" / "prompts.jsonl").write_text("".join(json.dumps({"prompt_id": pid}) + "\n" for pid in drawn))
+            args = sd.build_parser().parse_args(
+                ["select", "--run", "new", "--runs-dir", d, "--plan", "validate_pass_warn:5", "--exclude-runs", "old"])
+            self.assertEqual(sd.cmd_select(args), 0)
+            chosen = [p["prompt_id"] for p in sd.read_jsonl(root / "new" / "prompts.jsonl")]
+            report = json.loads((root / "new" / "select_report.json").read_text())
+        self.assertEqual(sorted(chosen), sorted(pass_warn[-2:]))
+        self.assertEqual(report["excluded_runs"], {"old": len(drawn)})
+        self.assertEqual(report["selection"]["shortfall"], {"validate_pass_warn": 3})
+
+
 class TestSampleReuse(unittest.TestCase):
     MUT = {"model_path": "/models/teacher", "max_new_tokens": 16384, "reasoning_effort": "medium",
            "chat_template_name": "qwen3_8",
