@@ -47,7 +47,7 @@ judge:
   #   responses        — always /v1/responses.
   api: auto
   # Official OpenAI API — kept here for quick swap-back, see prior comparison run.
-  model: gpt-5.4
+  model: gpt-6-sol #gpt-5.4
   api_key: ${OPENAI_API_KEY}
     #base_url: null           # null = official OpenAI API
   max_completion_tokens: 8192   # cap on the judge's response length per call (includes hidden reasoning tokens)
@@ -97,7 +97,7 @@ judge:
 # of --tweak — see review_judge.check_numeric_claim().
 tweak_llm:
   provider: openai
-  model: gpt-5.4
+  model: gpt-6-sol #gpt-5.4
   api_key: ${OPENAI_API_KEY}
   base_url: null
   # See the judge section's `api` comment. auto | chat_completions | responses.

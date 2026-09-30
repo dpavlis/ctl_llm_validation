@@ -110,7 +110,8 @@ judge:
 
   # Uncomment to use OpenAI as judge:
   provider: openai
-  model: gpt-5.4
+  model: gpt-6-sol #gpt-5.4
+  reasoning_effort: medium
   api_key: ${OPENAI_API_KEY}
  
 

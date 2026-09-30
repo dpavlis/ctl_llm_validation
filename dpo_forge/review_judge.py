@@ -2238,7 +2238,7 @@ class ReviewJudgeClient:
 
     def _call_openai_responses(self, system: str, user_message: str, purpose: str = "") -> str:
         llm = self._get_llm()
-        model = self._cfg.get("model", "gpt-5.6-terra")
+        model = self._cfg.get("model", "gpt-6-sol")
         max_tokens = self._cfg.get("max_completion_tokens", self._cfg.get("max_tokens", 4096))
         use_tool = self.lookup_enabled_for(purpose) and self._responses_supports_tools
 

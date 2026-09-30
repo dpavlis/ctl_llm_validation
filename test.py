@@ -878,7 +878,7 @@ class OpenAIJudgeClient:
         self._cfg = cfg
         api_key = cfg.get("api_key") or os.environ.get("OPENAI_API_KEY")
         self._client = OpenAI(api_key=api_key, base_url=cfg.get("base_url"))
-        self._model = cfg.get("model", "gpt-4o")
+        self._model = cfg.get("model", "gpt-6-sol")
 
     def evaluate(self, system_prompt: str, user_message: str) -> str:
         kwargs: dict = {

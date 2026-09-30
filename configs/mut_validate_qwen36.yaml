@@ -37,7 +37,7 @@ judge:
     #base_url: http://virt-ai:3000/v1
   max_retries: 2           # retries on an unparseable review response
   # Official OpenAI API — kept here for quick swap-back, see prior comparison run.
-  model: gpt-5.6-terra #gpt-5.4
+  model: gpt-6-sol #gpt-5.6-terra #gpt-5.4
   api_key: ${OPENAI_API_KEY}
   # OpenAI endpoint: auto | chat_completions | responses.
   # auto = chat.completions normally, /v1/responses for calls that carry the
@@ -82,7 +82,7 @@ tweak_llm:
     #model: Qwen3-Coder-Next
     #api_key: not-needed
     #base_url: http://virt-ai:3000/v1
-  model: gpt-5.6-terra #gpt-5.4
+  model: gpt-6-sol #gpt-5.6-terra #gpt-5.4
   api_key: ${OPENAI_API_KEY}
   # OpenAI endpoint: auto | chat_completions | responses.
   # auto = chat.completions normally, /v1/responses for calls that carry the

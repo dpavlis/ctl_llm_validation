@@ -171,7 +171,7 @@ JUDGE_PURPOSES = tuple(f"selfdistill_{t}" for t in TASK_TYPES) + ("selfdistill_c
 JUDGE_DEFAULTS: dict = {
     "provider": "openai",
     "api": "auto",
-    "model": "gpt-5.6-terra",
+    "model": "gpt-6-sol",
     "max_retries": 2,
     "max_completion_tokens": 8192,
     "reasoning_effort": "medium",
