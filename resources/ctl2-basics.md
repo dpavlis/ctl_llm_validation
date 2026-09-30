@@ -307,9 +307,10 @@ expr1 : expr2 : ... : exprN;
 - If all expressions throw, graph fails.
 - Usable in assignment, output mapping, and function arguments.
 - Can return `null`; use `nvl()` when non-null fallback is required.
+- Works identically in interpreted (`//#CTL2`) and compiled (`//#CTL2:COMPILE`) mode. It is **not** an interpreted-only construct; never flag it, or rewrite it to try-catch, because of the compile header.
 
 ```ctl
-date d = str2date($in.0.text, "yyyy-MM-dd") : str2date($in.0.text, "dd.MM.yyyy") : null;   // assignment/mapping/arg contexts
+date d = str2date($in.0.text, "yyyy-MM-dd") : str2date($in.0.text, "dd.MM.yyyy") : null;   // assignment/mapping/arg contexts; valid under //#CTL2 and //#CTL2:COMPILE
 ```
 
 ---
