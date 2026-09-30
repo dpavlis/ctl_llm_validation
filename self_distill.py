@@ -1896,9 +1896,14 @@ KNOWN_FALSE_BELIEFS: dict[str, re.Pattern] = {
 }
 # Around a match, words that make the claim a true one: a Rollup accumulator field
 # unassigned in initGroup IS null, and so are declared variant/byte/cbyte values.
+# A quoted `x in [...]` followed by "is not valid CTL2 syntax" is a correct finding
+# that flags the construct, not a use of it.
 _BELIEF_TRUE_CONTEXT: dict[str, re.Pattern] = {
     "declared variables start null": re.compile(
         r"accumulator|\bacc\.\w|\bgroup\.\w|variant|\bc?byte\b|lookup|map key|missing key", re.I),
+    "infix `in` operator": re.compile(
+        r"not (?:valid|allowed|supported|a CTL2)|invalid|no infix|not an? (?:infix )?operator|"
+        r"(?:does not|doesn't|won't|will not) (?:compile|parse)|syntax error|parser error", re.I),
 }
 # A negation just before the match, in the same clause: "`=` does not alias the
 # list" is a correct statement. Punctuation ends the clause, so a heading such as

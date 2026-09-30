@@ -512,7 +512,9 @@ class TestKnownFalseBeliefs(unittest.TestCase):
     def test_infix_in_ignores_valid_calls_and_prose(self):
         for text in ('if (in($in.0.status, ["BACKORDER", "PARTIAL"])) {', "$in.0.status.in(codes)",
                      "abv_percent must be non-null and in [0, 96].", "The rules are evaluated in order):",
-                     "Capture $in.0.sensor_id in append? Or in transform?", 'if (!in($in.0.cur, ["SEK"])) {'):
+                     "Capture $in.0.sensor_id in append? Or in transform?", 'if (!in($in.0.cur, ["SEK"])) {',
+                     '2. **`$in.0.status in ["BACKORDER", "PARTIAL"]` is not valid CTL2 syntax.** Use in().',
+                     '[ERROR] `$in.0.cur in ["SEK", "NOK"]` - CTL2 has no infix `in` operator, so this does not compile.'):
             self.assertEqual(sd.belief_hits(text), [], text)
 
     def test_negated_and_true_statements_pass(self):
