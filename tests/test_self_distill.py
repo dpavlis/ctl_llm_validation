@@ -457,6 +457,51 @@ class TestSampleReuse(unittest.TestCase):
         self.assertEqual((records.name, train.name), ("selfdistill_full1_records.json", "selfdistill_full1_train.json"))
 
 
+class TestKnownFalseBeliefs(unittest.TestCase):
+    def test_hits(self):
+        self.assertEqual(sd.belief_hits("5. `dateAdd($in.0.day, 1L, day)` mutates the date."),
+                         ["dateAdd mutates its argument"])
+        self.assertEqual(sd.belief_hits("`byte2hex` accepts exactly one `byte` argument."),
+                         ["byte2hex takes one argument"])
+        self.assertEqual(sd.belief_hits("Use getWeek($in.0.d) for the week."), ["getWeek() is a function"])
+
+    def test_negated_and_true_statements_pass(self):
+        for text in ("`=` makes a deep copy; it does not alias the list.",
+                     "dateAdd never mutates the date; it returns a new one.",
+                     "`isNull(record, string)` exists; `isnull(any)` tests one value.",
+                     "Writing $out.1 on an unconnected port does not compile."):
+            self.assertEqual(sd.belief_hits(text), [], text)
+
+
+class TestAssemblePostFilterRejects(unittest.TestCase):
+    def test_audit_reject_and_belief_scan_repick(self):
+        import argparse
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "r"
+            out.mkdir()
+            prompt = {"prompt_id": "p" * 16, "task_type": "fix", "component": "REFORMAT", "user": "U",
+                      "reference": "R", "source_file": "f.json", "source_index": 0, "source_id": "x",
+                      "record_id": "x"}
+            (out / "prompts.jsonl").write_text(json.dumps(prompt) + "\n")
+            answers = ["plain answer 0", "`dateAdd(d, 1L, day)` mutates the date.", "plain answer 2"]
+            rows = [{"prompt_id": prompt["prompt_id"], "sample_idx": j, "task_type": "fix", "thinking": f"trace {j}",
+                     "answer": a, "prompt_tokens": 10, "new_tokens": 10, "system_prompt": "S", "teacher_model": "t",
+                     "sampling": {}, "seed": 0} for j, a in enumerate(answers)]
+            (out / "samples.shard0.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+            (out / "judged.jsonl").write_text("".join(json.dumps(
+                {"prompt_id": prompt["prompt_id"], "sample_idx": j, "task_type": "fix", "accepted": True,
+                 "rejected_at": None, "reason": None}) + "\n" for j in range(3)))
+            (out / "audit_rejects.json").write_text(json.dumps(
+                [{"prompt_id": prompt["prompt_id"], "sample_idx": 0, "reason": "false claim"}]))
+            args = argparse.Namespace(run="r", runs_dir=d, seed=0, cutoff=8192, allow_incomplete=False)
+            self.assertEqual(sd.cmd_assemble(args), 0)
+            kept = json.loads((out / "selfdistill_r_records.json").read_text())
+            self.assertEqual([r["sample_idx"] for r in kept], [2])   # 0 audited out, 1 states a false belief
+            self.assertEqual(kept[0]["accepted_of_k"], "1/3")
+            report = json.loads((out / "report.json").read_text())
+            self.assertEqual(set(report["post_filter_rejects"]), {prompt["prompt_id"] + "#0", prompt["prompt_id"] + "#1"})
+
+
 class TestShard(unittest.TestCase):
     def test_parse_shard(self):
         self.assertEqual(sd.parse_shard("1/2"), (1, 2))

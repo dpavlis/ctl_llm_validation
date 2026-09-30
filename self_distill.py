@@ -1827,6 +1827,44 @@ class Judge:
 # ---------------------------------------------------------------------------
 
 
+# Known false CTL2 beliefs the teacher has stated (spec/validate_multifinding_
+# coverage_spec.md, the belief table; the full1 audit). A deterministic
+# backstop behind the claims pass, applied to the ANSWER only: a trace may state
+# a belief and correct it later, which is allowed. Each pattern was checked
+# against the 214 full1 records — one hit, the false claim the audit found.
+# Between two keywords of a positive claim: any text without a sentence end or
+# a negation ("dateAdd never mutates" is a true statement).
+_GAP = r"(?:(?!\b(?:not|never|no|doesn't|does not|don't|isn't|is not|without)\b)[^\n.]){0,60}"
+_CALL = r"(?:\([^()\n]*\))?`?"   # an optional argument list, so `dateAdd($in.0.d, 1L, day)` still matches
+KNOWN_FALSE_BELIEFS: dict[str, re.Pattern] = {
+    "dateAdd mutates its argument": re.compile(r"dateAdd" + _CALL + _GAP + r"\bmutat", re.I),
+    "byte2hex takes one argument": re.compile(
+        r"byte2hex" + _CALL + _GAP + r"\b(?:only|exactly) one\b|byte2hex\(byte\)`? only\b", re.I),
+    "isNull() does not exist": re.compile(
+        r"isNull\(?\)?`?[^\n.]{0,30}(?:does not exist|doesn't exist|is not a (?:CTL2 )?function)", re.I),
+    "getWeek() is a function": re.compile(r"\bgetWeek\s*\("),
+    "list/map assignment aliases": re.compile(
+        r"\b(?:list|map|array)s?\b" + _GAP + r"\balias(?:es|ing|ed)?\b", re.I),
+    "map appendAll does not exist": re.compile(
+        r"appendAll[^\n.]{0,60}(?:does not exist|doesn't exist|unsupported|not supported|lists only)", re.I),
+    "writing an unconnected port is harmless": re.compile(
+        r"(?:unconnected|not connected)[^\n.]{0,80}(?:harmless|dead code|no effect|is ignored)", re.I),
+}
+_NEGATION_RE = re.compile(r"\b(?:not|no|never|doesn't|does not|don't|isn't|is not|without|rather than)\b[^\n.]{0,25}$", re.I)
+
+
+def belief_hits(text: str) -> list[str]:
+    """Names of the known false beliefs `text` states. A match right after a
+    negation ("`=` does not alias the list") is a correct statement and skipped."""
+    hits = []
+    for name, pattern in KNOWN_FALSE_BELIEFS.items():
+        for m in pattern.finditer(text or ""):
+            if not _NEGATION_RE.search(text[max(0, m.start() - 40):m.start()]):
+                hits.append(name)
+                break
+    return hits
+
+
 def evaluate_sample(prompt: dict, sample: dict, mcp_cfg: Optional[dict], judge: Judge,
                     synth: Optional[MetadataSynth] = None) -> dict:
     """Checks cheapest first; the first failing check is recorded as the
@@ -1868,6 +1906,10 @@ def evaluate_sample(prompt: dict, sample: dict, mcp_cfg: Optional[dict], judge: 
     if not claims["clean"]:
         return reject("claims", "false_claim", claims=claims["verdict"], judge=row["judge"],
                       compile=row["compile"])
+    beliefs = belief_hits(sample["answer"])
+    if beliefs:
+        return reject("beliefs", "known_false_belief", beliefs=beliefs, judge=row["judge"],
+                      claims=row["claims"], compile=row["compile"])
     return {**row, "accepted": True, "rejected_at": None, "reason": None}
 
 
@@ -2032,6 +2074,24 @@ def cmd_assemble(args) -> int:
     prompts = load_prompts(out)
     samples = load_samples(out)
     judged = load_judged(out)
+    # Samples rejected after filtering: a manual audit (audit_rejects.json) and
+    # the known-false-belief backstop, for runs filtered before it existed.
+    # They leave the accepted set, so another accepted sample of the same
+    # prompt can be picked instead.
+    audit_rejects = {(r["prompt_id"], r["sample_idx"]): r["reason"]
+                     for r in (json.loads((out / "audit_rejects.json").read_text())
+                               if (out / "audit_rejects.json").exists() else [])}
+    samples_for_scan = load_samples(out)
+    post_rejects: dict[tuple[str, int], str] = {}
+    for key, r in judged.items():
+        if not r["accepted"]:
+            continue
+        if key in audit_rejects:
+            post_rejects[key] = "audit:" + audit_rejects[key]
+        elif key in samples_for_scan and belief_hits(samples_for_scan[key]["answer"]):
+            post_rejects[key] = "beliefs:" + ",".join(belief_hits(samples_for_scan[key]["answer"]))
+    judged = {k: ({**r, "accepted": False, "rejected_at": "post_filter", "reason": post_rejects[k]}
+                  if k in post_rejects else r) for k, r in judged.items()}
     by_prompt_samples: dict[str, list[dict]] = defaultdict(list)
     for (pid, _j), s in samples.items():
         by_prompt_samples[pid].append(s)
@@ -2125,12 +2185,19 @@ def cmd_assemble(args) -> int:
     audit_rng = random.Random(f"{args.seed}:audit")
     audit = audit_rng.sample(kept, math.ceil(0.1 * len(kept))) if kept else []
     ref_by_id = {p["prompt_id"]: p["reference"] for p in prompts}
-    (out / "audit_sample.jsonl").write_text("".join(json.dumps({
-        "id": r["id"], "task_type": r["task_type"], "component": r["component"],
-        "user": r["messages"][1]["content"], "thinking": r["messages"][2]["reasoning_content"],
-        "answer": r["messages"][2]["content"], "reference": ref_by_id[r["prompt_id"]],
-        "audit_false_claim": None, "audit_note": "",
-    }, ensure_ascii=False) + "\n" for r in audit), encoding="utf-8")
+    audit_path = out / "audit_sample.jsonl"
+    # A completed audit is a record of what was read; re-assembling (say, after
+    # an audit reject) must not replace it with a fresh, unaudited sample.
+    if any(r.get("audited") for r in read_jsonl(audit_path)):
+        audit = read_jsonl(audit_path)
+        print(f"  keeping the audited {rel(audit_path)} ({len(audit)} records)")
+    else:
+        audit_path.write_text("".join(json.dumps({
+            "id": r["id"], "task_type": r["task_type"], "component": r["component"],
+            "user": r["messages"][1]["content"], "thinking": r["messages"][2]["reasoning_content"],
+            "answer": r["messages"][2]["content"], "reference": ref_by_id[r["prompt_id"]],
+            "audit_false_claim": None, "audit_note": "",
+        }, ensure_ascii=False) + "\n" for r in audit), encoding="utf-8")
 
     stats = {}
     for path in sorted(out.glob("sample_stats.shard*.json")):
@@ -2151,6 +2218,7 @@ def cmd_assemble(args) -> int:
         "kept": len(kept),
         "kept_by_task": dict(Counter(r["task_type"] for r in kept)),
         "kept_from_reused_samples": sum(1 for r in kept if r.get("reused_from")),
+        "post_filter_rejects": {f"{k[0]}#{k[1]}": v for k, v in sorted(post_rejects.items())},
         "tagged_records": len(tagged),
         "tagged_with_reasoning": n_reasoning,
         "dropped_over_cutoff": over_cutoff,
