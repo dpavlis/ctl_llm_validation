@@ -1856,19 +1856,46 @@ KNOWN_FALSE_BELIEFS: dict[str, re.Pattern] = {
     # of all runs so far.
     "infix `in` operator": re.compile(
         r"\$(?:in|out)\.\w+\.\w+\s+!?in\s+(?:\[|\w+\s*\))|\b\w+\s+!?in\s+\[\s*\""),
+    # A declared variable starts at its type default (a list empty, a date the
+    # epoch, a number 0), never null. Both models claim otherwise in 40/40 runs of
+    # suite T40 (trap T40.FP1). The contexts where null IS right are excluded below.
+    "declared variables start null": re.compile(
+        r"\b(?:module-level|global|declared|uninitiali[sz]ed|(?:has )?no initiali[sz]er|without an? (?:initiali[sz]er|initial value))\b"
+        + _GAP + r"\b(?:defaults? to|starts?(?: out)? (?:as|at)|initiali[sz]es? to|(?:is|are) initiali[sz]ed to|begins? as)\s*`?null\b"
+        r"|\b(?:CTL2 )?`?(?:date|string|integer|long|decimal|number|boolean|list|map)(?:\[\])?`? (?:variables?|lists?|maps?|globals?)"
+        r" (?:defaults? to|starts? as|(?:is|are) initiali[sz]ed to) `?null\b"
+        r"|\bno initiali[sz]er\b[^\n.]{0,12}(?:→|->|so|, so|means)\s*`?null\b"
+        r"|`[^`\n]*;` (?:defaults? to|starts? as) `?null\b"
+        r"|\b(?:is|are) `?null`? by default\b"
+        r"|\bdefaults? to `?null`?(?: by default)?\b(?=[^\n]{0,40}(?:declar|initiali[sz]er|module|global))", re.I),
 }
-_NEGATION_RE = re.compile(r"\b(?:not|no|never|doesn't|does not|don't|isn't|is not|without|rather than)\b[^\n.]{0,25}$", re.I)
+# Around a match, words that make the claim a true one: a Rollup accumulator field
+# unassigned in initGroup IS null, and so are declared variant/byte/cbyte values.
+_BELIEF_TRUE_CONTEXT: dict[str, re.Pattern] = {
+    "declared variables start null": re.compile(
+        r"accumulator|\bacc\.\w|\bgroup\.\w|variant|\bc?byte\b|lookup|map key|missing key", re.I),
+}
+# A negation just before the match, in the same clause: "`=` does not alias the
+# list" is a correct statement. Punctuation ends the clause, so a heading such as
+# "not initialised** - a module-level date defaults to null" is still a claim.
+_NEGATION_RE = re.compile(r"\b(?:not|no|never|doesn't|does not|don't|isn't|is not|without|rather than)\b[^\n.*:;–—-]{0,25}$", re.I)
 
 
 def belief_hits(text: str) -> list[str]:
     """Names of the known false beliefs `text` states. A match right after a
-    negation ("`=` does not alias the list") is a correct statement and skipped."""
+    negation ("`=` does not alias the list"), or in a context where the claim is
+    true (_BELIEF_TRUE_CONTEXT), is skipped."""
     hits = []
+    text = text or ""
     for name, pattern in KNOWN_FALSE_BELIEFS.items():
-        for m in pattern.finditer(text or ""):
-            if not _NEGATION_RE.search(text[max(0, m.start() - 40):m.start()]):
-                hits.append(name)
-                break
+        true_context = _BELIEF_TRUE_CONTEXT.get(name)
+        for m in pattern.finditer(text):
+            if _NEGATION_RE.search(text[max(0, m.start() - 40):m.start()]):
+                continue
+            if true_context and true_context.search(text[max(0, m.start() - 200):m.end() + 60]):
+                continue
+            hits.append(name)
+            break
     return hits
 
 

@@ -468,6 +468,22 @@ class TestKnownFalseBeliefs(unittest.TestCase):
                      'boolean hit = code in ["X", "Y"];', 'if ($in.0.cur !in ["SEK", "NOK"]) {'):
             self.assertEqual(sd.belief_hits(code), ["infix `in` operator"], code)
 
+    def test_declared_null_default(self):
+        name = "declared variables start null"
+        for text in ("A module-level `string[]` defaults to `null` in CTL2.",
+                     "**`lastOrderDate` not initialised** – A module-level `date` defaults to `null`.",
+                     "`skills` is declared without an initializer, so it starts as `null`.",
+                     "CTL2 date variables default to null.",
+                     "`statuses` has no initializer → defaults to `null`.",
+                     "The list is null by default (`string[] folderSegments;`)."):
+            self.assertIn(name, sd.belief_hits(text), text)
+        for text in ("Declared variables start at their type defaults, not null.",
+                     "A declared list is not null by default; it is empty.",
+                     "An accumulator field not assigned in initGroup starts as null.",
+                     "A declared `variant` defaults to null.",
+                     "`order_amount` is nullable, so a null amount throws in the sum."):
+            self.assertNotIn(name, sd.belief_hits(text), text)
+
     def test_infix_in_ignores_valid_calls_and_prose(self):
         for text in ('if (in($in.0.status, ["BACKORDER", "PARTIAL"])) {', "$in.0.status.in(codes)",
                      "abv_percent must be non-null and in [0, 96].", "The rules are evaluated in order):",
