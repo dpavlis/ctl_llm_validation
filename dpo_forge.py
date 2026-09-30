@@ -233,6 +233,9 @@ def cmd_run(args: argparse.Namespace):
             model=setup_llm_cfg.get("model", "claude-opus-4-20250514"),
             mcp_client=mcp_client,
             api_key=setup_llm_cfg.get("api_key"),
+            base_url=setup_llm_cfg.get("base_url"),
+            reasoning_effort=setup_llm_cfg.get("reasoning_effort", setup_llm_cfg.get("effort")),
+            api=setup_llm_cfg.get("api", "auto"),
         )
     else:
         print("[dpo-forge] No clover.endpoint configured — running Phase 1 (no execution validation)")

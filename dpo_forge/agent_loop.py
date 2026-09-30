@@ -22,6 +22,13 @@ class AgentLoop:
     Supports Anthropic and OpenAI providers. Tools are drawn from the
     MCPClient's tool list; an optional filter narrows which tools the
     LLM sees.
+
+    OpenAI has two endpoints. Reasoning models (gpt-5.6-terra, gpt-6-sol)
+    reject function tools on /v1/chat/completions and require /v1/responses;
+    OpenAI-compatible local servers often implement only chat. `api` picks
+    one: "chat_completions", "responses", or "auto" — chat first, switching
+    to responses for the rest of this loop's life on that rejection (the same
+    rule as dpo_forge.review_judge.ReviewJudgeClient).
     """
 
     def __init__(
@@ -33,7 +40,9 @@ class AgentLoop:
         base_url: Optional[str] = None,
         max_tokens: int = 8192,
         max_rounds: int = 40,
-        temperature: float = 0.0,
+        temperature: Optional[float] = 0.0,
+        reasoning_effort: Optional[str] = None,
+        api: str = "auto",
     ):
         self._provider = provider
         self._model = model
@@ -43,6 +52,15 @@ class AgentLoop:
         self._max_tokens = max_tokens
         self._max_rounds = max_rounds
         self._temperature = temperature
+        self._reasoning_effort = reasoning_effort or None
+        api = (api or "auto").strip().lower()
+        if api not in ("auto", "chat_completions", "responses"):
+            raise ValueError(f"AgentLoop api must be 'auto', 'chat_completions' or 'responses', got {api!r}")
+        self._api_cfg = api
+        self._openai_api: Optional[str] = None if api == "auto" else api
+        # Some models reject a non-default temperature outright (gpt-6-sol:
+        # "Unsupported parameter: 'temperature'"). Dropped once rejected.
+        self._supports_temperature = True
         self._llm = None
 
     def _get_llm(self):
@@ -79,8 +97,14 @@ class AgentLoop:
 
         if self._provider == "anthropic":
             return self._run_anthropic(system_prompt, messages, all_tools)
-        else:
+        if self._openai_api == "responses":
+            return self._run_openai_responses(system_prompt, user_message, all_tools)
+        try:
             return self._run_openai(system_prompt, messages, all_tools)
+        except _SwitchToResponses as exc:
+            print(f"    [agent] {self._model} needs /v1/responses for tools ({exc}); switching", flush=True)
+            self._openai_api = "responses"
+            return self._run_openai_responses(system_prompt, user_message, all_tools)
 
     # ------------------------------------------------------------------
     # Anthropic
@@ -144,13 +168,16 @@ class AgentLoop:
             kwargs: dict[str, Any] = dict(
                 model=self._model,
                 messages=all_msgs,
-                temperature=self._temperature,
             )
+            if self._supports_temperature and self._temperature is not None:
+                kwargs["temperature"] = self._temperature
+            if self._reasoning_effort:
+                kwargs["reasoning_effort"] = self._reasoning_effort
             if tools:
                 kwargs["tools"] = tools
                 kwargs["tool_choice"] = "auto"
 
-            response = llm.chat.completions.create(**kwargs)
+            response = self._create(llm.chat.completions.create, kwargs, tools_on_chat=bool(tools))
             choice = response.choices[0]
 
             if choice.finish_reason == "stop":
@@ -179,6 +206,83 @@ class AgentLoop:
             f"[agent_loop] Exceeded {self._max_rounds} rounds without stop"
         )
 
+    def _run_openai_responses(self, system: str, user_message: str, mcp_tools: list) -> str:
+        llm = self._get_llm()
+        tools = [_responses_tool(t) for t in self._mcp.to_openai_tools(mcp_tools)]
+        # store=False keeps nothing server-side, so every output item — reasoning
+        # items included — is sent back each round for reasoning continuity.
+        items: list = [{"role": "user", "content": user_message}]
+
+        for _round in range(self._max_rounds):
+            print(f"    [agent round {_round+1}] LLM call …", flush=True)
+            kwargs: dict[str, Any] = dict(
+                model=self._model,
+                instructions=system,
+                input=items,
+                max_output_tokens=self._max_tokens,
+                store=False,
+            )
+            if self._supports_temperature and self._temperature is not None:
+                kwargs["temperature"] = self._temperature
+            if self._reasoning_effort:
+                kwargs["reasoning"] = {"effort": self._reasoning_effort}
+            if tools:
+                kwargs["tools"] = tools
+                kwargs["tool_choice"] = "auto"
+
+            response = self._create(llm.responses.create, kwargs)
+            output = list(getattr(response, "output", None) or [])
+            calls = [item for item in output if getattr(item, "type", None) == "function_call"]
+
+            if not calls:
+                text = getattr(response, "output_text", "") or ""
+                if not text and getattr(response, "status", None) == "incomplete":
+                    reason = getattr(getattr(response, "incomplete_details", None), "reason", None)
+                    raise RuntimeError(
+                        f"[agent_loop] {self._model} returned no answer (incomplete: {reason}); "
+                        f"max_output_tokens={self._max_tokens} is likely spent on reasoning"
+                    )
+                print(f"    [agent round {_round+1}] done ({getattr(response, 'status', 'completed')})", flush=True)
+                return text
+
+            for item in output:
+                items.append(item.model_dump(exclude_none=True) if hasattr(item, "model_dump") else item)
+            for call in calls:
+                try:
+                    args = json.loads(call.arguments or "{}")
+                except json.JSONDecodeError:
+                    args = {}
+                print(f"    [agent round {_round+1}] tool: {call.name}  {_fmt_args(args, call.name)}", flush=True)
+                result = self._call_tool_safe(call.name, args)
+                items.append({
+                    "type": "function_call_output",
+                    "call_id": call.call_id,
+                    "output": _to_str(result),
+                })
+
+        raise RuntimeError(
+            f"[agent_loop] Exceeded {self._max_rounds} rounds without a final answer"
+        )
+
+    def _create(self, create, kwargs: dict, tools_on_chat: bool = False):
+        """Call `create`, dropping a rejected temperature and retrying. On chat,
+        a rejection that asks for /v1/responses raises _SwitchToResponses
+        (unless the endpoint is pinned to chat by config)."""
+        from openai import BadRequestError
+
+        while True:
+            try:
+                return create(**kwargs)
+            except BadRequestError as exc:
+                msg = str(exc)
+                if tools_on_chat and "/v1/responses" in msg and self._api_cfg == "auto":
+                    raise _SwitchToResponses(msg[:200]) from exc
+                if "temperature" in msg and "temperature" in kwargs:
+                    self._supports_temperature = False
+                    kwargs.pop("temperature")
+                    continue
+                raise
+
     # ------------------------------------------------------------------
 
     def _call_tool_safe(self, name: str, arguments: dict) -> Any:
@@ -186,6 +290,17 @@ class AgentLoop:
             return self._mcp.call_tool(name, arguments)
         except Exception as exc:
             return f"[tool error] {exc}"
+
+
+class _SwitchToResponses(Exception):
+    """Chat completions refused function tools for this model; use /v1/responses."""
+
+
+def _responses_tool(chat_tool: dict) -> dict:
+    """Chat-completions function tool -> Responses API function tool (flat)."""
+    fn = chat_tool["function"]
+    return {"type": "function", "name": fn["name"], "description": fn.get("description", ""),
+            "parameters": fn.get("parameters") or {"type": "object", "properties": {}}}
 
 
 def _resolve_key(configured: Optional[str], env_name: str) -> Optional[str]:

@@ -82,7 +82,11 @@ clover:
 
 setup_llm:
   provider: openai
-  model: gpt-5.4
+  model: gpt-6-sol #gpt-5.4
+  reasoning_effort: medium
+  # auto: chat first, /v1/responses once chat refuses function tools (gpt-6-sol does);
+  # chat_completions | responses pin the endpoint.
+  api: auto
   api_key: ${OPENAI_API_KEY}
   cache: true                   # cache setup bundle per example_id in state DB
 
