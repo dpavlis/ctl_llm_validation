@@ -87,8 +87,10 @@ DEFAULT_CONFIG: dict = {
         "system_prompt": None,
         # Thinking mode for the model under test. False keeps the historical
         # behavior (template forced to nothink). When true, the MUT's
-        # chain-of-thought is split off at `</think>` and only the answer is
-        # judged, kept in the conversation history, or exported.
+        # chain-of-thought is split off at `</think>`: only the answer is
+        # judged and kept in the conversation history, while the thinking
+        # text is exported separately as `reasoning_content` on the
+        # assistant turn (see split_thinking() call sites below).
         "enable_thinking": False,
         # Passed to the chat template as `reasoning_effort` when thinking is
         # on; None leaves the template's own default. Qwen3.8 accepts
@@ -744,7 +746,7 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
         # old fixed 2-attempt shape (which is exactly what this produces
         # when args.attempts == 2, the previous hardcoded behavior).
         prior_review = None
-        last_mut_text = last_code = last_review = None
+        last_mut_text = last_code = last_review = last_thinking = None
         outcome = None  # "first_pass" | "self_corrected" | "exhausted" | "skip"
 
         for attempt in range(1, args.attempts + 1):
@@ -753,12 +755,14 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
                 messages, temperature=temperature, top_p=top_p, top_k=top_k,
                 repetition_penalty=repetition_penalty, max_new_tokens=max_new_tokens, seed=seed,
             )
-            # Chain-of-thought is scratch work: it is logged for debugging but
-            # never judged, never re-fed to the MUT as history, and never
-            # exported as training data. `mut_text` is the answer only.
+            # Chain-of-thought is never judged and never re-fed to the MUT as
+            # conversation history — `mut_text` is the answer only, and that's
+            # what `messages` accumulates across attempts. It is still
+            # exported, separately, as `reasoning_content` on the assistant
+            # turn (see below) so it isn't lost from the training data.
             thinking, mut_text = split_thinking(raw_mut_text, generator.enable_thinking)
             if thinking:
-                _log_full_body(f"MUT thinking (attempt {attempt}, {len(thinking)} chars, discarded)",
+                _log_full_body(f"MUT thinking (attempt {attempt}, {len(thinking)} chars)",
                                thinking, log_fh, console=args.verbose)
             if generator.enable_thinking and not mut_text:
                 # No `</think>` in the completion — the model spent the whole
@@ -827,8 +831,11 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
                     break
                 _log_review(f"review-{attempt}", review, log_fh)
 
-            messages.append({"role": "assistant", "content": mut_text})
-            last_mut_text, last_code, last_review = mut_text, code, review
+            assistant_msg = {"role": "assistant", "content": mut_text}
+            if thinking:
+                assistant_msg["reasoning_content"] = thinking
+            messages.append(assistant_msg)
+            last_mut_text, last_code, last_review, last_thinking = mut_text, code, review, thinking
 
             is_pass = review.verdict == "PASS" and (attempt > 1 or not review.has_warning)
             if is_pass:
@@ -935,11 +942,16 @@ def _cmd_run_inner(args: argparse.Namespace, cfg: dict, input_path: Path, log_fh
 
             n_judge_fixed += 1
             extra["attempts_used"] = args.attempts
+            mut_turn = {"role": "assistant", "content": last_mut_text}
+            if last_thinking:
+                mut_turn["reasoning_content"] = last_thinking
             conversation = [
                 {"role": "system", "content": system} if system else None,
                 {"role": "user", "content": prompt},
-                {"role": "assistant", "content": last_mut_text},
+                mut_turn,
                 {"role": "user", "content": last_review.render() + "\n\nPlease fix the issues above and provide the corrected code."},
+                # The judge's fix() produces no reasoning to attach here — no
+                # `reasoning_content` key, not even an empty one.
                 {"role": "assistant", "content": fixed_code},
             ]
             conversation = [m for m in conversation if m is not None]
