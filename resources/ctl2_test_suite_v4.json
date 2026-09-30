@@ -2830,7 +2830,7 @@
       "component": "Partition (fix to spec)",
       "temperature": 0.05,
       "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.",
-      "user_message": "Fix the following CTL2 Partition transform so that it compiles and does what the specification says. List every problem you fix with the reason, then give the complete corrected code.\n\nThe Partition routes shipments to four output ports. Records pass through unchanged; the Partition only chooses the port. The rules are checked in this order, and the first one that matches decides:\n1. promised_date is null: port 3 (manual review).\n2. Express: service is \"EXPRESS\" and promised_date is at most 2 calendar days after ship_date: port 0. service may arrive in any letter case (\"EXPRESS\", \"Express\", \"express\"). Example: shipped 2026-03-10, promised 2026-03-12 is express; promised 2026-03-13 is not.\n3. Heavy: weight_kg is 30 or more: port 1.\n4. Everything else: port 2.\n5. A record whose routing fails for any reason goes to port 3.\n\nInput port 0:\n<Metadata id=\"M0\"><Record name=\"Shipment\" type=\"delimited\"><Field name=\"shipment_id\" type=\"long\" nullable=\"false\"/><Field name=\"service\" type=\"string\" nullable=\"false\"/><Field name=\"ship_date\" type=\"date\" nullable=\"false\"/><Field name=\"promised_date\" type=\"date\" nullable=\"true\"/><Field name=\"weight_kg\" type=\"decimal\" length=\"10\" scale=\"3\" nullable=\"false\"/><Field name=\"dest_country\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nOutput ports 0 to 3 carry the same Shipment metadata.\n\n```ctl\n//#CTL2\nfunction integer getOutputPort() {\n    if ($in.0.promised_date == null) {\n        return 3;\n    }\n    boolean express = $in.0.service == \"EXPRESS\"\n        && dateDiff($in.0.ship_date, $in.0.promised_date, day) <= 2;\n    if ($in.0.weight_kg > 30) {\n        return 1;\n    }\n    if (express) {\n        $out.0.route = \"EXPRESS\";\n        return 0;\n    }\n    return 2;\n}\n\nfunction integer getOutputPortOnError(string errorMessage, string stackTrace) {\n    return 3;\n}\n```",
+      "user_message": "Fix the following CTL2 Partition transform so that it compiles and does what the specification says. List every problem you fix with the reason, then give the complete corrected code.\n\nThe Partition routes shipments to five output ports. Records pass through unchanged; the Partition only chooses the port. The rules are checked in this order, and the first one that matches decides:\n1. promised_date is null, or ship_date is earlier than the ship_date of the previous input record (the input should arrive sorted by ship_date): port 3 (manual review).\n2. Express: service is \"EXPRESS\" and promised_date is at most 2 calendar days after ship_date: port 0. service may arrive in any letter case and with surrounding spaces (\"EXPRESS\", \"Express \", \" express\"). The other service values are \"STANDARD\", \"EXPRESS_SAVER\" and \"NO_EXPRESS\", and none of them is express. Example: shipped 2026-03-10, promised 2026-03-12 is express; promised 2026-03-13 is not.\n3. Heavy: weight_kg is 30 or more: port 1.\n4. Everything else alternates between port 2 and port 4: the first record that reaches this rule goes to port 2, the second to port 4, the third to port 2, and so on. Only records that reach this rule count toward the alternation.\n5. A record whose routing fails for any reason goes to port 3.\n\nInput port 0:\n<Metadata id=\"M0\"><Record name=\"Shipment\" type=\"delimited\"><Field name=\"shipment_id\" type=\"long\" nullable=\"false\"/><Field name=\"service\" type=\"string\" nullable=\"false\"/><Field name=\"ship_date\" type=\"date\" nullable=\"false\"/><Field name=\"promised_date\" type=\"date\" nullable=\"true\"/><Field name=\"weight_kg\" type=\"decimal\" length=\"10\" scale=\"3\" nullable=\"false\"/><Field name=\"dest_country\" type=\"string\" nullable=\"false\"/></Record></Metadata>\n\nOutput ports 0 to 4 carry the same Shipment metadata.\n\n```ctl\n//#CTL2\ninteger turn;\ndate prevShip;\n\nfunction integer getOutputPort() {\n    turn++;\n    boolean outOfOrder = $in.0.ship_date < prevShip;\n    prevShip = $in.0.ship_date;\n    if ($in.0.promised_date == null || outOfOrder) {\n        return 3;\n    }\n    boolean express = upperCase(trim($in.0.service)) ?= \"EXPRESS\"\n        && dateDiff($in.0.ship_date, $in.0.promised_date, day) <= 2;\n    if ($in.0.weight_kg >= 30) {\n        return 1;\n    }\n    if (express) {\n        $out.0.route = \"EXPRESS\";\n        return 0;\n    }\n    return (turn % 2 == 1) ? 2 : 4;\n}\n\nfunction integer getOutputPortOnError(string errorMessage, string stackTrace) {\n    return 3;\n}\n```",
       "bugs": [
         {
           "id": "T42.B1",
@@ -2843,7 +2843,7 @@
           "id": "T42.B2",
           "kind": "semantic",
           "code": "dateDiff($in.0.ship_date, $in.0.promised_date, day) <= 2",
-          "description": "dateDiff(later, earlier, unit) returns later minus earlier. With ship_date first it returns ship_date - promised_date, which is 0 or negative for every real shipment, so `<= 2` is always true and every EXPRESS shipment goes to port 0 however late its promise. The spec example (shipped 03-10, promised 03-13) is routed as express.",
+          "description": "dateDiff(later, earlier, unit) returns later minus earlier. With ship_date first it returns ship_date - promised_date, which is 0 or negative for every real shipment, so `<= 2` is always true and every EXPRESS shipment passes the 2-day test however late its promise. The spec example (shipped 03-10, promised 03-13) is treated as express.",
           "correct_fix": [
             "dateDiff($in.0.promised_date, $in.0.ship_date, day) <= 2",
             "dateDiff($in.0.ship_date, $in.0.promised_date, day) >= -2"
@@ -2852,34 +2852,30 @@
         {
           "id": "T42.B3",
           "kind": "semantic",
-          "code": "$in.0.service == \"EXPRESS\"",
-          "description": "== compares strings exactly, including case. The spec says service may arrive as \"Express\" or \"express\", and those shipments are never routed as express.",
+          "code": "upperCase(trim($in.0.service)) ?= \"EXPRESS\"",
+          "description": "?= is the regex CONTAINS match: it is true when the pattern matches anywhere in the string. \"EXPRESS_SAVER\" and \"NO_EXPRESS\" both contain EXPRESS, so those non-express services pass the test and, inside the 2-day window, go to port 0. The trim/upperCase normalisation is correct; only the operator is wrong.",
           "correct_fix": [
-            "upperCase($in.0.service) == \"EXPRESS\"",
-            "lowerCase($in.0.service) == \"express\"",
-            "$in.0.service ~= \"(?i)express\""
+            "upperCase(trim($in.0.service)) == \"EXPRESS\"",
+            "upperCase(trim($in.0.service)) ~= \"EXPRESS\""
           ]
         },
         {
           "id": "T42.B4",
           "kind": "semantic",
-          "code": "$in.0.weight_kg > 30",
-          "description": "Spec rule 3 says 30 or more is heavy, so a shipment of exactly 30 kg must go to port 1. `> 30` sends it to port 2.",
-          "correct_fix": [
-            "$in.0.weight_kg >= 30",
-            "$in.0.weight_kg >= 30D"
-          ]
+          "code": "if ($in.0.weight_kg >= 30) { return 1; }  // tested before `if (express)`",
+          "description": "The spec checks the rules in order and the first match decides: express (rule 2) comes before heavy (rule 3). The code computes `express` first but tests the weight first, so a heavy EXPRESS shipment inside the 2-day window goes to port 1 instead of port 0.",
+          "correct_fix": "Test `express` (return 0) before the weight test (return 1)."
         },
         {
           "id": "T42.B5",
           "kind": "semantic",
-          "code": "if ($in.0.weight_kg > 30) { return 1; }  // tested before `if (express)`",
-          "description": "The spec checks the rules in order and the first match decides: express (rule 2) comes before heavy (rule 3). The code computes `express` first but tests the weight first, so a heavy EXPRESS shipment inside the 2-day window goes to port 1 instead of port 0.",
-          "correct_fix": "Test `express` (return 0) before the weight test (return 1)."
+          "code": "turn++;  // first statement of getOutputPort()",
+          "description": "The counter is incremented for every record, including those routed by rules 1-3, but spec rule 4 counts only the records that reach it. Any null-promise, express or heavy record between two rule-4 records shifts the alternation, so rule-4 records no longer alternate 2, 4, 2, 4.",
+          "correct_fix": "Increment turn only on the rule-4 path, just before `return (turn % 2 == 1) ? 2 : 4;`."
         }
       ],
       "rubric": {
-        "description": "Fix a Partition to match an explicit routing spec. There are five seeded defects: one compile error (T42.B1, a Partition writing $out) and four semantic defects (T42.B2 dateDiff arguments reversed, so every EXPRESS shipment passes the 2-day test; T42.B3 case-sensitive service comparison; T42.B4 `> 30` excludes exactly 30 kg; T42.B5 the weight rule is tested before the express rule, against the spec's rule order). The response must return complete corrected code. Four correct things must survive: the == null test on promised_date (T42.FP1), getOutputPortOnError() (T42.FP2), the decimal-to-integer-literal comparison (T42.FP3), and computing `express` into a variable after the null check (T42.FP4).",
+        "description": "Fix a Partition to match an explicit routing spec. There are five seeded defects: one compile error (T42.B1, a Partition writing $out) and four semantic defects (T42.B2 dateDiff arguments reversed, so every EXPRESS shipment passes the 2-day test; T42.B3 `?=` is a contains match, so EXPRESS_SAVER and NO_EXPRESS count as express; T42.B4 the weight rule is tested before the express rule, against the spec's rule order; T42.B5 the alternation counter counts every record instead of only rule-4 records). The response must return complete corrected code. Six correct things must survive: the == null test (T42.FP1), getOutputPortOnError() (T42.FP2), the decimal-to-integer-literal comparison (T42.FP3), computing `express` into a variable after the null check (T42.FP4), the uninitialised `integer turn;`, which starts at 0 (T42.FP5), and the uninitialised `date prevShip;`, which starts at the epoch, so the first `<` comparison is safe (T42.FP6).",
         "required_findings": [
           "T42.B1",
           "T42.B2",
@@ -2890,9 +2886,9 @@
         "fix_quality": {
           "T42.B1": "Must remove the $out.0.route assignment. Adding a route field to the metadata, or moving the assignment elsewhere, is WRONG: a Partition cannot write output records and the spec says records pass unchanged.",
           "T42.B2": "Swapping the arguments (promised_date first) or keeping the order and testing >= -2 are both correct. Must say why: dateDiff returns later minus earlier, so the original is never above 2. Changing the unit, or adding 1 to the day count, is WRONG.",
-          "T42.B3": "upperCase()/lowerCase() on service, or a case-insensitive regex, is correct. Changing the literal to \"Express\" is WRONG, since the spec allows every letter case.",
-          "T42.B4": "Must change > to >=. Changing the literal to 29 is WRONG: weight_kg is decimal with 3 places, so 29.5 kg would become heavy.",
-          "T42.B5": "Must put the express test before the weight test and say it follows the spec's rule order. Fixing only the other defects leaves heavy express shipments on port 1, which is MISSED. Moving the null-promise check anywhere but first is WRONG."
+          "T42.B3": "Must replace ?= with == (or with the whole-string match ~=) and say that ?= matches anywhere in the string. Keeping ?= with an anchored pattern (\"^EXPRESS$\") is also correct. Claiming ?= is a whole-string match, or removing trim()/upperCase(), is WRONG.",
+          "T42.B4": "Must put the express test before the weight test and say it follows the spec's rule order. Moving the null-promise check anywhere but first is WRONG.",
+          "T42.B5": "Must move the increment onto the rule-4 path so that only records reaching rule 4 advance the counter, and the first of them still goes to port 2. Resetting turn per record, or changing the parity so the first rule-4 record goes to port 4, is WRONG."
         },
         "false_positive_traps": [
           {
@@ -2916,7 +2912,19 @@
           {
             "id": "T42.FP4",
             "trap": "Claiming the `boolean express = ...` line calls dateDiff() with a null promised_date and throws, or that && does not short-circuit.",
-            "reality": "The line runs only after `promised_date == null` has already returned 3, so promised_date is never null there, and && short-circuits anyway. Computing the flag first is fine; the defect is the order of the two ifs that follow (T42.B5).",
+            "reality": "The line runs only after `promised_date == null` has already returned 3, so promised_date is never null there, and && short-circuits anyway. Computing the flag first is fine; the defect is the order of the two ifs that follow (T42.B4).",
+            "critical": false
+          },
+          {
+            "id": "T42.FP5",
+            "trap": "Claiming `integer turn;` starts as null so that `turn++` or `turn % 2` throws, or presenting an added `= 0` initialiser as a bug fix.",
+            "reality": "A declared CTL2 variable without an initialiser starts at its type default, 0 for integer, and keeps its value across records for the whole run. `= 0` is harmless style; the real defect with turn is where it is incremented (T42.B5).",
+            "critical": false
+          },
+          {
+            "id": "T42.FP6",
+            "trap": "Claiming `date prevShip;` starts as null so that `$in.0.ship_date < prevShip` throws on the first record, or presenting an added null guard or initialiser as a bug fix.",
+            "reality": "A declared date without an initialiser starts at the epoch (1970-01-01), not null, so the first comparison is false and the first record is in order. A guard such as `!isnull(prevShip) &&` is harmless, but presenting it as fixing a failure triggers this trap. The out-of-order rule is implemented correctly.",
             "critical": false
           }
         ],
@@ -2928,16 +2936,16 @@
           },
           {
             "id": "T42.F2",
-            "check": "The corrected code breaks behaviour the spec requires, e.g. departs from the spec's rule order, drops the null-promise check, routes errors anywhere other than port 3, or moves the express window off 2 calendar days.",
+            "check": "The corrected code breaks behaviour the spec requires, e.g. departs from the spec's rule order, drops the null-promise check, routes errors anywhere other than port 3, moves the express window off 2 calendar days, no longer sends out-of-order records to port 3, or no longer alternates rule-4 records starting with port 2.",
             "rationale": "A fix that breaks a different spec item is not a fix."
           },
           {
             "id": "T42.F3",
-            "check": "The corrected code would not compile, or uses a function or construct that does not exist in CTL2 (e.g. a Java method call such as .equalsIgnoreCase(), or a string as the dateDiff unit).",
+            "check": "The corrected code would not compile, or uses a function or construct that does not exist in CTL2 (e.g. a Java method call such as .equalsIgnoreCase() or .strip(), or a string as the dateDiff unit).",
             "rationale": "Addendum A: compilability is a hard gate."
           }
         ],
-        "reference_solution": "//#CTL2\nfunction integer getOutputPort() {\n    if ($in.0.promised_date == null) {\n        return 3;\n    }\n    boolean express = upperCase($in.0.service) == \"EXPRESS\"\n        && dateDiff($in.0.promised_date, $in.0.ship_date, day) <= 2;\n    if (express) {\n        return 0;\n    }\n    if ($in.0.weight_kg >= 30) {\n        return 1;\n    }\n    return 2;\n}\n\nfunction integer getOutputPortOnError(string errorMessage, string stackTrace) {\n    return 3;\n}",
+        "reference_solution": "//#CTL2\ninteger turn;\ndate prevShip;\n\nfunction integer getOutputPort() {\n    boolean outOfOrder = $in.0.ship_date < prevShip;\n    prevShip = $in.0.ship_date;\n    if ($in.0.promised_date == null || outOfOrder) {\n        return 3;\n    }\n    boolean express = upperCase(trim($in.0.service)) == \"EXPRESS\"\n        && dateDiff($in.0.promised_date, $in.0.ship_date, day) <= 2;\n    if (express) {\n        return 0;\n    }\n    if ($in.0.weight_kg >= 30) {\n        return 1;\n    }\n    turn++;\n    return (turn % 2 == 1) ? 2 : 4;\n}\n\nfunction integer getOutputPortOnError(string errorMessage, string stackTrace) {\n    return 3;\n}",
         "reference_solution_note": "One correct answer. Other forms that satisfy the spec and compile are equally correct.",
         "scoring": {
           "PASS": "All 5 required findings CAUGHT in complete corrected code that compiles. No false-positive trap triggered and no forbidden item present.",
