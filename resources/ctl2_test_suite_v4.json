@@ -277,13 +277,6 @@
           "severity": "ERROR"
         },
         {
-          "id": "T5.B5",
-          "code": "str2date($in.0.dateStr, \"yyyy-MM-dd\") : 1990-01-01",
-          "description": "The conditional-fail expression (:) is not supported in //#CTL2:COMPILE mode. It is only valid in interpreted //#CTL2 mode. The correct fix for compiled mode is to wrap the call in a try-catch: on success assign the parsed date; in the catch block assign the default date 1990-01-01.",
-          "correct_fix": "try { parsed = str2date($in.0.dateStr, \"yyyy-MM-dd\"); } catch (CTLException ex) { parsed = 1990-01-01; }",
-          "severity": "ERROR"
-        },
-        {
           "id": "T5.B6",
           "code": "$out.0.date_start = parsed;",
           "description": "date_start is not declared in the output metadata (M1 only has result, provider, amount). Assigning to an undeclared output field in //#CTL2:COMPILE mode is a compile-time error.",
@@ -292,12 +285,11 @@
         }
       ],
       "rubric": {
-        "description": "Validator must identify 5 required bugs: T5.B1 (null concat), T5.B3 (isNull wrong arity), T5.B4 (integer overflow), T5.B5 (conditional-fail in COMPILE mode), T5.B6 (undeclared output field date_start). T5.B2 (~= vs ?=) is optional.",
+        "description": "Validator must identify 4 required bugs: T5.B1 (null concat), T5.B3 (isNull wrong arity), T5.B4 (integer overflow), T5.B6 (undeclared output field date_start). T5.B2 (~= vs ?=) is optional. The conditional-fail line (str2date(...) : 1990-01-01) is valid in //#CTL2:COMPILE mode and must NOT be flagged (T5.FP2). There is no T5.B5; the id was retired when it was found to encode a false claim, and the other ids are kept for comparability with earlier runs.",
         "required_findings": [
           "T5.B1",
           "T5.B3",
           "T5.B4",
-          "T5.B5",
           "T5.B6"
         ],
         "optional_findings": [
@@ -309,11 +301,7 @@
         "severity_notes": {
           "T5.B1": "Must be flagged as WARNING minimum. If flagged as INFO and VERDICT is PASS, this is a failure — null string concat is a data quality bug.",
           "T5.B2": "If the model comments on ~=, the explanation must be semantically correct: ~= is whole-string regex match, ?= is substring/contains match. Reporting it at INFO level (noting the difference without calling it a definitive bug) is acceptable and reasonable given that the intent is ambiguous from the code alone. Only score WRONG if the model inverts the semantics (claims ~= is contains, or ?= is whole-string).",
-          "T5.B5": "The correct fix is try-catch with CTLException as the catch type and a direct CTL2 date literal (1990-01-01) as the fallback — no str2date() needed for the fallback since date literals are first-class in CTL2. Suggesting to remove //#CTL2:COMPILE or to use isDate()+ternary are WRONG — the code is intentionally in compiled mode and must stay there. A model that flags the issue but suggests removing the COMPILE header should score WRONG for B5.",
           "T5.B6": "Must be flagged as ERROR. Assigning to an undeclared output field in COMPILE mode is a compile-time error, not a style issue."
-        },
-        "fix_quality": {
-          "T5.B5": "Fix must use: (1) try-catch block, (2) CTLException as the catch type, (3) a direct date literal 1990-01-01 as the fallback — NOT str2date(\"1990-01-01\", \"yyyy-MM-dd\"). Using str2date() to parse a constant string fallback is unnecessarily verbose and demonstrates the model does not know that CTL2 supports date literals directly. Score the fix as WRONG if it wraps the constant fallback in str2date()."
         },
         "verdict_expected": "FAIL",
         "false_positive_traps": [
@@ -322,12 +310,18 @@
             "trap": "Claiming ~= is a 'contains' or 'partial match' operator (it is a whole-string regex match; ?= is the contains/partial operator).",
             "reality": "~= tests whether the entire string matches the regex. ?= tests whether the regex appears anywhere in the string. Inverting these semantics is a critical factual error about CTL2.",
             "critical": true
+          },
+          {
+            "id": "T5.FP2",
+            "trap": "Flagging `str2date($in.0.dateStr, \"yyyy-MM-dd\") : 1990-01-01` as an error because the conditional-fail expression (:) is not supported in //#CTL2:COMPILE mode, or recommending a try-catch rewrite / removing the COMPILE header on that ground.",
+            "reality": "The conditional-fail expression works identically in interpreted //#CTL2 and compiled //#CTL2:COMPILE mode. This line compiles and runs: a null or malformed dateStr yields the date literal 1990-01-01. It is not a defect at any severity. A try-catch is an equivalent alternative, not a required fix.",
+            "critical": false
           }
         ],
         "scoring": {
-          "PASS": "All 5 required bugs caught with correct explanations. T5.FP1 must not be triggered.",
-          "PARTIAL": "4/5 required bugs caught, or T5.B5 identified but fixed incorrectly (e.g. removing COMPILE header instead of using try-catch, or wrapping fallback in str2date).",
-          "FAIL": "3 or fewer required bugs caught, or T5.FP1 triggered (model inverts ~= and ?= semantics), or wrong PASS verdict."
+          "PASS": "All 4 required bugs caught with correct explanations. T5.FP1 and T5.FP2 must not be triggered.",
+          "PARTIAL": "3/4 required bugs caught, or all 4 caught but T5.FP2 triggered (the conditional-fail line flagged as unsupported in COMPILE mode).",
+          "FAIL": "2 or fewer required bugs caught, or T5.FP1 triggered (model inverts ~= and ?= semantics), or wrong PASS verdict."
         }
       }
     },
