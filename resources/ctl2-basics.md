@@ -419,7 +419,7 @@ printErr("message", true);   // with source location
 | `OK` | `0` | Success, send to port 0. |
 | `ALL` | special | Send to all connected output ports. |
 | `SKIP` | `-1` | Skip record. |
-| `STOP` | `-2` | Stop processing (DataGenerator: normal termination). |
+| `STOP` | `-2` | Stop processing. It **aborts** the component (the graph fails); it is not a normal termination. DataGenerator `generate()` must return `OK` or `ALL` — returning `STOP` there is an ERROR; the component configuration sets the record count. |
 | `0`, `1`, `2`... | port index | Send to specific port. |
 
 ### 8.2 Map / Reformat (transformer)
@@ -472,6 +472,8 @@ function integer transform() {
 function integer transformOnError(string errorMessage, string stackTrace) { return SKIP; }
 function void clean() { count = 0; total = 0.0D; }
 ```
+
+In `transform()`, `$in.0` is readable and holds the **last input record of the group**. Reading a group key (constant across the group) there is valid; a value that varies within the group (e.g. the first record's) must be saved during `append()`.
 
 ### 8.5 Normalizer
 
@@ -659,7 +661,7 @@ Metadata defines the structure of records flowing between components. Fields in 
 ```
 
 **Key nullability rules for CTL2:**
-- Unset record fields are `null` by default (not the type's zero value).
+- An output field never assigned is emitted according to its metadata: a nullable field is `null`; a **non-nullable** field (no `default`) is **never null at emission** — it carries its type's zero value (`string` `""`, `integer`/`long`/`decimal` `0`, `number` `0.0`). Emitting a non-nullable field unset therefore does not fail. (Rollup accumulator fields are different: an accumulator field not assigned in `initGroup()` is null — see 8.7 Rollup.)
 - `nullable="false"` is a runtime data-quality constraint — the CTL2 compiler allows null assignment regardless.
 - `nullValue` affects only what is read from source data; within CTL2 the field behaves as a normal nullable field.
 - `""` is null only if no custom `nullValue` is set on the field or its record. Once a custom `nullValue` is configured, `""` stays as `""`.
