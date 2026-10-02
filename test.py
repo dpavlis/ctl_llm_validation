@@ -1735,6 +1735,12 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug
 def write_results_json(results: dict, output_dir: Path) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     path = output_dir / f"results_{results['model']}_{results['timestamp']}.json"
+    if path.exists():
+        # Two runs of one model started in the same second (e.g. a full and a
+        # fix-only eval in parallel): keep both. The summary and failure
+        # analysis are named from results['timestamp'], so they follow.
+        results["timestamp"] = f"{results['timestamp']}-{os.getpid()}"
+        path = output_dir / f"results_{results['model']}_{results['timestamp']}.json"
     with open(path, "w") as f:
         json.dump(results, f, indent=2)
     return path
