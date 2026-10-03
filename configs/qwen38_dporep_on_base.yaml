@@ -1,0 +1,86 @@
+# =============================================================================
+# dporep on the fix6 SFT+DPO base (SFT checkpoint-1972 + DPO checkpoint-472), no phase 3.
+#
+# Targeted DPO pairs: the model's own rejected fix_this_code / multi-finding
+# validate samples (chosen = minimal repair by another agent, spec/
+# dpo_targeted_repairs_spec.md + _round2_spec.md; rejected = the original sample).
+# 88 pairs on 53 prompts (fix_tier2 46, validate_2 30, validate_multi3 12) after
+# two agreeing gpt-6-sol judgements or a user ruling (data/self_distill/dporep/:
+# final_pairs.jsonl provenance, final_classification.json, pair_nll.json).
+# Edited tokens are ~5% of each chosen side (NLL 2.4 vs 0.22); shared tokens 0.21 vs 0.12.
+#
+# Same hyperparameters as configs/qwen38_dpo1_on_base.yaml. No length cap: the
+# chunked DPO log-probs (LlamaFactory 83fda7c8) fit the longest pair (5238 tokens)
+# on one GPU, so cutoff_len sits just above it and nothing is truncated.
+#
+#   cd ~/LlamaFactory
+#   PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True python ~/llama_train/train.py ~/llama_train/configs/qwen38_dporep_on_base.yaml --skip-sft
+# =============================================================================
+
+run_name: qwen38-27B-dporep-on-base
+output_base: saves
+
+# --- Common parameters: identical to configs/qwen38.yaml -------------------
+model_name_or_path: Qwen/Qwen3.8-27B
+trust_remote_code: true
+
+finetuning_type: lora
+template: qwen3_8
+flash_attn: auto
+preprocessing_num_workers: 16
+ddp_timeout: 180000000
+fp16: false
+bf16: true
+
+lora_target: "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj"
+lora_dropout: 0.05
+seed: 42
+
+packing: false
+enable_thinking: false        # set per phase; phase 3 turns it on below
+
+# Must match the sampling config (configs/eval_T04_fix6_sftdpo_think.yaml,
+# mut.reasoning_effort) — the traces were drawn under "medium", which adds no
+# reasoning-effort sentence to the system prompt.
+reasoning_effort: medium
+optim: adamw_torch_fused
+weight_decay: 0.05
+max_grad_norm: 1.0
+warmup_ratio: 0.05
+include_num_input_tokens_seen: true
+plot_loss: true
+
+report_to: wandb
+dataset_dir: data
+
+
+dpo:
+  adapter_name_or_path: /home/pavlisd/LlamaFactory/saves/qwen38-27B/2026-09-27-22-42-04_sft/checkpoint-1972,/home/pavlisd/LlamaFactory/saves/qwen38-27B/2026-09-27-22-42-04_dpo/checkpoint-472
+  dataset: clover_dporep_data
+  enable_thinking: true
+  cutoff_len: 5248
+  dpo_logps_chunk_size: 1024
+  learning_rate: 5.0e-6
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.1
+  num_train_epochs: 2.0
+  max_samples: 150000
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 4
+  lora_rank: 64
+  lora_alpha: 64
+  loraplus_lr_ratio: 1
+  pref_beta: 0.1
+  pref_ftx: 0.1
+  pref_loss: sigmoid
+  logging_steps: 2
+  save_strategy: epoch
+  save_total_limit: 4
+  eval_strategy: "no"
+  load_best_model_at_end: false
+
+export:
+  export_size: 5
+  export_device: auto
+  export_legacy_format: false
+  export_dir: /home/pavlisd/exports/qwen38_fix6_sftdpo_dporep/

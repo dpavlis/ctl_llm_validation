@@ -1,0 +1,1498 @@
+[
+ {
+  "id": "dporep_06fc3a860f05b81d_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1232,
+   "mean_nll": 0.26729369163513184
+  },
+  "rejected": {
+   "tokens": 1151,
+   "mean_nll": 0.09112400561571121
+  },
+  "shared_chosen": 0.16612342865788132,
+  "shared_rejected": 0.08440506912763199,
+  "edited_chosen": 1.171299040759135,
+  "edited_rejected": 0.264253670154224,
+  "edited_frac": 0.10064935064935066
+ },
+ {
+  "id": "dporep_06fc3a860f05b81d_3",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1317,
+   "mean_nll": 0.34804683923721313
+  },
+  "rejected": {
+   "tokens": 1280,
+   "mean_nll": 0.1069021001458168
+  },
+  "shared_chosen": 0.22120986979164792,
+  "shared_rejected": 0.09864950732855238,
+  "edited_chosen": 1.5161269350748705,
+  "edited_rejected": 0.21346809668663144,
+  "edited_frac": 0.0979498861047836
+ },
+ {
+  "id": "dporep_06fc3a860f05b81d_4",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1323,
+   "mean_nll": 0.2367134392261505
+  },
+  "rejected": {
+   "tokens": 1259,
+   "mean_nll": 0.0920923724770546
+  },
+  "shared_chosen": 0.12918653496189392,
+  "shared_rejected": 0.08834711535774666,
+  "edited_chosen": 1.3993480651054153,
+  "edited_rejected": 0.1865818496172095,
+  "edited_frac": 0.08465608465608465
+ },
+ {
+  "id": "dporep_15c945ed5a7ff2a5_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2153,
+   "mean_nll": 0.1797146052122116
+  },
+  "rejected": {
+   "tokens": 2088,
+   "mean_nll": 0.09889569878578186
+  },
+  "shared_chosen": 0.11525104200617048,
+  "shared_rejected": 0.09892633525220976,
+  "edited_chosen": 2.07004061259102,
+  "edited_rejected": 0.08826448085278098,
+  "edited_frac": 0.03297724105898746
+ },
+ {
+  "id": "dporep_15c945ed5a7ff2a5_3",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2328,
+   "mean_nll": 0.20499493181705475
+  },
+  "rejected": {
+   "tokens": 2304,
+   "mean_nll": 0.10476325452327728
+  },
+  "shared_chosen": 0.13655656810427055,
+  "shared_rejected": 0.10249585199364916,
+  "edited_chosen": 4.221801557130768,
+  "edited_rejected": 0.4507686238144136,
+  "edited_frac": 0.01675257731958763
+ },
+ {
+  "id": "dporep_256b31193b031868_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 257,
+   "mean_nll": 0.4520234763622284
+  },
+  "rejected": {
+   "tokens": 231,
+   "mean_nll": 0.27616801857948303
+  },
+  "shared_chosen": 0.31049362271954173,
+  "shared_rejected": 0.27616801896450555,
+  "edited_chosen": 1.7094619956870492,
+  "edited_rejected": null,
+  "edited_frac": 0.10116731517509728
+ },
+ {
+  "id": "dporep_2c3329e43180840c_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1454,
+   "mean_nll": 0.22488324344158173
+  },
+  "rejected": {
+   "tokens": 1465,
+   "mean_nll": 0.1570565402507782
+  },
+  "shared_chosen": 0.18692638382536686,
+  "shared_rejected": 0.1568374174693584,
+  "edited_chosen": 11.224778652191162,
+  "edited_rejected": 0.17690159939581918,
+  "edited_frac": 0.0034387895460797797
+ },
+ {
+  "id": "dporep_2c3329e43180840c_2",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1837,
+   "mean_nll": 0.4261836111545563
+  },
+  "rejected": {
+   "tokens": 1865,
+   "mean_nll": 0.16464196145534515
+  },
+  "shared_chosen": 0.2935857087816643,
+  "shared_rejected": 0.16010525069215406,
+  "edited_chosen": 4.493282064460255,
+  "edited_rejected": 0.25848857815239545,
+  "edited_frac": 0.031573217201959713
+ },
+ {
+  "id": "dporep_3255e2f2e8b23f17_2",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1009,
+   "mean_nll": 0.2727695107460022
+  },
+  "rejected": {
+   "tokens": 974,
+   "mean_nll": 0.1481163054704666
+  },
+  "shared_chosen": 0.16858038938778433,
+  "shared_rejected": 0.14934256468527918,
+  "edited_chosen": 2.613390160067178,
+  "edited_rejected": 4.475928086833392e-05,
+  "edited_frac": 0.04261645193260654
+ },
+ {
+  "id": "dporep_3255e2f2e8b23f17_3",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1037,
+   "mean_nll": 0.30377712845802307
+  },
+  "rejected": {
+   "tokens": 985,
+   "mean_nll": 0.14706619083881378
+  },
+  "shared_chosen": 0.1715330919875015,
+  "shared_rejected": 0.14781463627080357,
+  "edited_chosen": 2.5774463326273063,
+  "edited_rejected": 0.0003724226864960656,
+  "edited_frac": 0.054966248794599805
+ },
+ {
+  "id": "dporep_3c66674e036ee28b_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2050,
+   "mean_nll": 0.15195219218730927
+  },
+  "rejected": {
+   "tokens": 1981,
+   "mean_nll": 0.07189923524856567
+  },
+  "shared_chosen": 0.08178410282427104,
+  "shared_rejected": 0.07191894018315993,
+  "edited_chosen": 2.1367067247194296,
+  "edited_rejected": 0.032871004194021225,
+  "edited_frac": 0.03414634146341464
+ },
+ {
+  "id": "dporep_3c66674e036ee28b_3",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2134,
+   "mean_nll": 0.2695983648300171
+  },
+  "rejected": {
+   "tokens": 2074,
+   "mean_nll": 0.09140793979167938
+  },
+  "shared_chosen": 0.15949942145162838,
+  "shared_rejected": 0.09060805899795962,
+  "edited_chosen": 2.8600871873151066,
+  "edited_rejected": 0.15205085711119815,
+  "edited_frac": 0.04076850984067479
+ },
+ {
+  "id": "dporep_414bb16594136950_1",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 408,
+   "mean_nll": 0.5018175840377808
+  },
+  "rejected": {
+   "tokens": 357,
+   "mean_nll": 0.18801341950893402
+  },
+  "shared_chosen": 0.3464560889281405,
+  "shared_rejected": 0.16273001090630854,
+  "edited_chosen": 1.420820387027955,
+  "edited_rejected": 1.2910019382834435,
+  "edited_frac": 0.14460784313725492
+ },
+ {
+  "id": "dporep_414bb16594136950_2",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 487,
+   "mean_nll": 0.5770841836929321
+  },
+  "rejected": {
+   "tokens": 487,
+   "mean_nll": 0.2552415132522583
+  },
+  "shared_chosen": 0.3733511520011942,
+  "shared_rejected": 0.23227661223802157,
+  "edited_chosen": 3.573930850640717,
+  "edited_rejected": 0.5930477814183412,
+  "edited_frac": 0.06365503080082136
+ },
+ {
+  "id": "dporep_46099f46c8d27dd6_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1390,
+   "mean_nll": 0.19568660855293274
+  },
+  "rejected": {
+   "tokens": 1378,
+   "mean_nll": 0.07535047084093094
+  },
+  "shared_chosen": 0.12582674157531504,
+  "shared_rejected": 0.07384457364848757,
+  "edited_chosen": 3.1603648432223963,
+  "edited_rejected": 0.17760063066376688,
+  "edited_frac": 0.02302158273381295
+ },
+ {
+  "id": "dporep_46099f46c8d27dd6_3",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1614,
+   "mean_nll": 0.16450560092926025
+  },
+  "rejected": {
+   "tokens": 1561,
+   "mean_nll": 0.0636795163154602
+  },
+  "shared_chosen": 0.09731487179151752,
+  "shared_rejected": 0.06316995411373853,
+  "edited_chosen": 1.9998729481341684,
+  "edited_rejected": 0.262025237097987,
+  "edited_frac": 0.03531598513011153
+ },
+ {
+  "id": "dporep_46099f46c8d27dd6_4",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1854,
+   "mean_nll": 0.29983675479888916
+  },
+  "rejected": {
+   "tokens": 1812,
+   "mean_nll": 0.06934551894664764
+  },
+  "shared_chosen": 0.18863012633227177,
+  "shared_rejected": 0.06324815425050266,
+  "edited_chosen": 1.750577497306416,
+  "edited_rejected": 0.18600856044585484,
+  "edited_frac": 0.07119741100323625
+ },
+ {
+  "id": "dporep_5e6003beeb4a0e95_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1495,
+   "mean_nll": 0.26030635833740234
+  },
+  "rejected": {
+   "tokens": 1488,
+   "mean_nll": 0.14322827756404877
+  },
+  "shared_chosen": 0.17693313301599936,
+  "shared_rejected": 0.13967553848054284,
+  "edited_chosen": 3.6392381537232126,
+  "edited_rejected": 0.32196805383629346,
+  "edited_frac": 0.024080267558528427
+ },
+ {
+  "id": "dporep_61029802b0a4ccff_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1126,
+   "mean_nll": 0.27333971858024597
+  },
+  "rejected": {
+   "tokens": 1082,
+   "mean_nll": 0.117469422519207
+  },
+  "shared_chosen": 0.1658259430318895,
+  "shared_rejected": 0.11608392927121354,
+  "edited_chosen": 2.2176987925562592,
+  "edited_rejected": 0.21602391440564286,
+  "edited_frac": 0.052397868561278864
+ },
+ {
+  "id": "dporep_6624233f78c09d69_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 970,
+   "mean_nll": 0.3085412085056305
+  },
+  "rejected": {
+   "tokens": 933,
+   "mean_nll": 0.07589122653007507
+  },
+  "shared_chosen": 0.13823071563371606,
+  "shared_rejected": 0.06891818044532837,
+  "edited_chosen": 2.4326911246599443,
+  "edited_rejected": 0.25479976924664527,
+  "edited_frac": 0.07422680412371134
+ },
+ {
+  "id": "dporep_6702817e4f412423_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1409,
+   "mean_nll": 0.26981931924819946
+  },
+  "rejected": {
+   "tokens": 1349,
+   "mean_nll": 0.09154237061738968
+  },
+  "shared_chosen": 0.1596501677075132,
+  "shared_rejected": 0.08860707356211843,
+  "edited_chosen": 1.4751442761594287,
+  "edited_rejected": 0.1568779589412108,
+  "edited_frac": 0.08374733853797019
+ },
+ {
+  "id": "dporep_6702817e4f412423_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 336,
+   "mean_nll": 0.3451603651046753
+  },
+  "rejected": {
+   "tokens": 280,
+   "mean_nll": 0.1236346960067749
+  },
+  "shared_chosen": 0.21168071659115373,
+  "shared_rejected": 0.11506708075419066,
+  "edited_chosen": 0.9469130008921913,
+  "edited_rejected": 0.5948532104492188,
+  "edited_frac": 0.18154761904761904
+ },
+ {
+  "id": "dporep_68b3e36a67e159b1_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1098,
+   "mean_nll": 0.36035096645355225
+  },
+  "rejected": {
+   "tokens": 992,
+   "mean_nll": 0.16943198442459106
+  },
+  "shared_chosen": 0.22074930747762517,
+  "shared_rejected": 0.16799328176089068,
+  "edited_chosen": 1.5772327396045493,
+  "edited_rejected": 0.3718780555895397,
+  "edited_frac": 0.1029143897996357
+ },
+ {
+  "id": "dporep_6a20644d07c73ddd_3",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1960,
+   "mean_nll": 0.3287334740161896
+  },
+  "rejected": {
+   "tokens": 1957,
+   "mean_nll": 0.09939046949148178
+  },
+  "shared_chosen": 0.22878506138755503,
+  "shared_rejected": 0.09717965690318878,
+  "edited_chosen": 1.4608535595705678,
+  "edited_rejected": 0.1249140516650371,
+  "edited_frac": 0.08112244897959184
+ },
+ {
+  "id": "dporep_6ba3502ed220c373_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 3020,
+   "mean_nll": 0.2824781835079193
+  },
+  "rejected": {
+   "tokens": 3032,
+   "mean_nll": 0.09923692792654037
+  },
+  "shared_chosen": 0.22154707607275573,
+  "shared_rejected": 0.09773421056769195,
+  "edited_chosen": 2.611312879483796,
+  "edited_rejected": 0.14892752931316658,
+  "edited_frac": 0.025496688741721854
+ },
+ {
+  "id": "dporep_6ba3502ed220c373_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2876,
+   "mean_nll": 0.26765042543411255
+  },
+  "rejected": {
+   "tokens": 2871,
+   "mean_nll": 0.09903959184885025
+  },
+  "shared_chosen": 0.21361284295861885,
+  "shared_rejected": 0.09737503396035886,
+  "edited_chosen": 4.4139390104966285,
+  "edited_rejected": 0.2467168732086067,
+  "edited_frac": 0.01286509040333797
+ },
+ {
+  "id": "dporep_72425b498df68706_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1718,
+   "mean_nll": 0.39013391733169556
+  },
+  "rejected": {
+   "tokens": 1645,
+   "mean_nll": 0.08342061936855316
+  },
+  "shared_chosen": 0.2055112117870595,
+  "shared_rejected": 0.0802172501952536,
+  "edited_chosen": 2.1278249256313737,
+  "edited_rejected": 0.137495091278583,
+  "edited_frac": 0.0960419091967404
+ },
+ {
+  "id": "dporep_72425b498df68706_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1476,
+   "mean_nll": 0.3035162389278412
+  },
+  "rejected": {
+   "tokens": 1451,
+   "mean_nll": 0.09002601355314255
+  },
+  "shared_chosen": 0.1877041952227305,
+  "shared_rejected": 0.08332320696939484,
+  "edited_chosen": 1.7004347798456798,
+  "edited_rejected": 0.19384345716800444,
+  "edited_frac": 0.07655826558265583
+ },
+ {
+  "id": "dporep_75dd6cba63bff838_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1329,
+   "mean_nll": 0.18688884377479553
+  },
+  "rejected": {
+   "tokens": 1329,
+   "mean_nll": 0.12869609892368317
+  },
+  "shared_chosen": 0.16046892634867121,
+  "shared_rejected": 0.1286820873220231,
+  "edited_chosen": 3.671676483034389,
+  "edited_rejected": 0.13054513779032959,
+  "edited_frac": 0.007524454477050414
+ },
+ {
+  "id": "dporep_7883e48864c2b035_2",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 389,
+   "mean_nll": 0.6155898571014404
+  },
+  "rejected": {
+   "tokens": 398,
+   "mean_nll": 0.2757489085197449
+  },
+  "shared_chosen": 0.4289187469460167,
+  "shared_rejected": 0.27125413355775396,
+  "edited_chosen": 3.118365949295737,
+  "edited_rejected": 0.3209462354321491,
+  "edited_frac": 0.06940874035989718
+ },
+ {
+  "id": "dporep_8d3c604b8ae1c6f4_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1160,
+   "mean_nll": 0.2618351876735687
+  },
+  "rejected": {
+   "tokens": 1166,
+   "mean_nll": 0.17441914975643158
+  },
+  "shared_chosen": 0.21991877024847203,
+  "shared_rejected": 0.17248596190208226,
+  "edited_chosen": 2.9211994337066347,
+  "edited_rejected": 0.266406442494637,
+  "edited_frac": 0.015517241379310345
+ },
+ {
+  "id": "dporep_8d3c604b8ae1c6f4_2",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1052,
+   "mean_nll": 0.23694941401481628
+  },
+  "rejected": {
+   "tokens": 1049,
+   "mean_nll": 0.14983195066452026
+  },
+  "shared_chosen": 0.19792849266669832,
+  "shared_rejected": 0.14535814394887808,
+  "edited_chosen": 2.7635530246334383,
+  "edited_rejected": 0.5063597022884866,
+  "edited_frac": 0.015209125475285171
+ },
+ {
+  "id": "dporep_92456b3caea67c0d_1",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 673,
+   "mean_nll": 0.29046642780303955
+  },
+  "rejected": {
+   "tokens": 666,
+   "mean_nll": 0.2267541140317917
+  },
+  "shared_chosen": 0.25303515540116966,
+  "shared_rejected": 0.225065552989366,
+  "edited_chosen": 1.2219300296542666,
+  "edited_rejected": 0.2842532953502601,
+  "edited_frac": 0.03863298662704309
+ },
+ {
+  "id": "dporep_92456b3caea67c0d_2",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 857,
+   "mean_nll": 0.4561651647090912
+  },
+  "rejected": {
+   "tokens": 878,
+   "mean_nll": 0.2508567273616791
+  },
+  "shared_chosen": 0.3425900671552008,
+  "shared_rejected": 0.23364560833967182,
+  "edited_chosen": 1.8875716264347642,
+  "edited_rejected": 0.41354244722991834,
+  "edited_frac": 0.073512252042007
+ },
+ {
+  "id": "dporep_a364214f3ed0716b_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1974,
+   "mean_nll": 0.38832318782806396
+  },
+  "rejected": {
+   "tokens": 1942,
+   "mean_nll": 0.11568015068769455
+  },
+  "shared_chosen": 0.27218791184646773,
+  "shared_rejected": 0.11287193024447922,
+  "edited_chosen": 3.2113026218751815,
+  "edited_rejected": 0.23142752197110175,
+  "edited_frac": 0.03951367781155015
+ },
+ {
+  "id": "dporep_ab3034448754836d_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 481,
+   "mean_nll": 0.1668829470872879
+  },
+  "rejected": {
+   "tokens": 478,
+   "mean_nll": 0.1454651951789856
+  },
+  "shared_chosen": 0.1525822384401972,
+  "shared_rejected": 0.1387645539782486,
+  "edited_chosen": 1.2990225963294506,
+  "edited_rejected": 1.2063976526260376,
+  "edited_frac": 0.012474012474012475
+ },
+ {
+  "id": "dporep_ae52ffa5cd07692f_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2223,
+   "mean_nll": 0.30311113595962524
+  },
+  "rejected": {
+   "tokens": 2180,
+   "mean_nll": 0.08463937044143677
+  },
+  "shared_chosen": 0.22724842906816925,
+  "shared_rejected": 0.08198453349670269,
+  "edited_chosen": 1.8333704146325793,
+  "edited_rejected": 0.175332026875882,
+  "edited_frac": 0.04723346828609987
+ },
+ {
+  "id": "dporep_ae52ffa5cd07692f_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2113,
+   "mean_nll": 0.14783133566379547
+  },
+  "rejected": {
+   "tokens": 2102,
+   "mean_nll": 0.058184824883937836
+  },
+  "shared_chosen": 0.0858043420329936,
+  "shared_rejected": 0.0530490672333248,
+  "edited_chosen": 2.3072121941028305,
+  "edited_rejected": 0.2779526013012609,
+  "edited_frac": 0.027922385234264078
+ },
+ {
+  "id": "dporep_b784339002ea23a9_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 900,
+   "mean_nll": 0.12344009429216385
+  },
+  "rejected": {
+   "tokens": 918,
+   "mean_nll": 0.12472399324178696
+  },
+  "shared_chosen": 0.12344010123551602,
+  "shared_rejected": 0.12134655317341163,
+  "edited_chosen": null,
+  "edited_rejected": 0.2935963198643903,
+  "edited_frac": 0.0
+ },
+ {
+  "id": "dporep_b784339002ea23a9_2",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 718,
+   "mean_nll": 0.12474412471055984
+  },
+  "rejected": {
+   "tokens": 718,
+   "mean_nll": 0.1248684674501419
+  },
+  "shared_chosen": 0.12251851437278018,
+  "shared_rejected": 0.1233403762332669,
+  "edited_chosen": 1.7205071449279785,
+  "edited_rejected": 1.2205071449279785,
+  "edited_frac": 0.001392757660167131
+ },
+ {
+  "id": "dporep_cca083a7c8b20780_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 194,
+   "mean_nll": 0.7674614787101746
+  },
+  "rejected": {
+   "tokens": 223,
+   "mean_nll": 0.18009932339191437
+  },
+  "shared_chosen": 0.44457743457484483,
+  "shared_rejected": 0.17924499132889168,
+  "edited_chosen": 5.26300081768288,
+  "edited_rejected": 0.18378107335699126,
+  "edited_frac": 0.06701030927835051
+ },
+ {
+  "id": "dporep_ec3cb1f7df708203_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1165,
+   "mean_nll": 0.3561139404773712
+  },
+  "rejected": {
+   "tokens": 1112,
+   "mean_nll": 0.09797919541597366
+  },
+  "shared_chosen": 0.1980653024018556,
+  "shared_rejected": 0.08868375829921793,
+  "edited_chosen": 1.7853640198464664,
+  "edited_rejected": 0.2527555148714135,
+  "edited_frac": 0.09957081545064378
+ },
+ {
+  "id": "dporep_ec3cb1f7df708203_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 995,
+   "mean_nll": 0.2593870759010315
+  },
+  "rejected": {
+   "tokens": 964,
+   "mean_nll": 0.10703685879707336
+  },
+  "shared_chosen": 0.1693772708445032,
+  "shared_rejected": 0.10170818827256001,
+  "edited_chosen": 1.4307821847631876,
+  "edited_rejected": 0.2301289003671954,
+  "edited_frac": 0.07135678391959799
+ },
+ {
+  "id": "dporep_f1199986b2608610_1",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 1736,
+   "mean_nll": 0.16294923424720764
+  },
+  "rejected": {
+   "tokens": 1761,
+   "mean_nll": 0.0962480753660202
+  },
+  "shared_chosen": 0.1315901603589991,
+  "shared_rejected": 0.09554590279795286,
+  "edited_chosen": 2.3091656135157064,
+  "edited_rejected": 0.1202762551049355,
+  "edited_frac": 0.014400921658986175
+ },
+ {
+  "id": "dporep_f1199986b2608610_2",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 1845,
+   "mean_nll": 0.18949000537395477
+  },
+  "rejected": {
+   "tokens": 1864,
+   "mean_nll": 0.11525041610002518
+  },
+  "shared_chosen": 0.14389696555143877,
+  "shared_rejected": 0.11432079021023105,
+  "edited_chosen": 3.1481528799712186,
+  "edited_rejected": 0.15118974900296858,
+  "edited_frac": 0.015176151761517615
+ },
+ {
+  "id": "dporep_00c8c55a6b09769f_1",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 970,
+   "mean_nll": 0.3315604627132416
+  },
+  "rejected": {
+   "tokens": 934,
+   "mean_nll": 0.09094448387622833
+  },
+  "shared_chosen": 0.20456560157323603,
+  "shared_rejected": 0.08772266628416812,
+  "edited_chosen": 2.8825011492702526,
+  "edited_rejected": 0.3886406612582505,
+  "edited_frac": 0.04742268041237113
+ },
+ {
+  "id": "dporep_055c2b5c05c76c5c_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1827,
+   "mean_nll": 0.3110937178134918
+  },
+  "rejected": {
+   "tokens": 1772,
+   "mean_nll": 0.10571885854005814
+  },
+  "shared_chosen": 0.20583399208001033,
+  "shared_rejected": 0.10196329123980964,
+  "edited_chosen": 2.2736783849001,
+  "edited_rejected": 0.2770913840800248,
+  "edited_frac": 0.05090311986863711
+ },
+ {
+  "id": "dporep_06fc3a860f05b81d_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1333,
+   "mean_nll": 0.30078044533729553
+  },
+  "rejected": {
+   "tokens": 1265,
+   "mean_nll": 0.09906221926212311
+  },
+  "shared_chosen": 0.1537752764973701,
+  "shared_rejected": 0.093463853617586,
+  "edited_chosen": 1.7089965280517105,
+  "edited_rejected": 0.2155661959743546,
+  "edited_frac": 0.09452363090772693
+ },
+ {
+  "id": "dporep_0d80eda14b98b237_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1685,
+   "mean_nll": 0.21085867285728455
+  },
+  "rejected": {
+   "tokens": 1672,
+   "mean_nll": 0.07482019811868668
+  },
+  "shared_chosen": 0.09955301089976161,
+  "shared_rejected": 0.06777276075645816,
+  "edited_chosen": 1.9204271823514185,
+  "edited_rejected": 0.1986985454639498,
+  "edited_frac": 0.06112759643916914
+ },
+ {
+  "id": "dporep_0e31ee042fa644be_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2315,
+   "mean_nll": 0.30097684264183044
+  },
+  "rejected": {
+   "tokens": 2315,
+   "mean_nll": 0.09320187568664551
+  },
+  "shared_chosen": 0.2204568538362448,
+  "shared_rejected": 0.09125762308912988,
+  "edited_chosen": 3.0882074726174604,
+  "edited_rejected": 0.16050295984645926,
+  "edited_frac": 0.028077753779697623
+ },
+ {
+  "id": "dporep_15c945ed5a7ff2a5_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2325,
+   "mean_nll": 0.3973833918571472
+  },
+  "rejected": {
+   "tokens": 2246,
+   "mean_nll": 0.12045728415250778
+  },
+  "shared_chosen": 0.26423896797922386,
+  "shared_rejected": 0.11685568997627852,
+  "edited_chosen": 2.47538727601164,
+  "edited_rejected": 0.2494652226938402,
+  "edited_frac": 0.060215053763440864
+ },
+ {
+  "id": "dporep_2af3da59108d9047_1",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 3594,
+   "mean_nll": 0.5096624493598938
+  },
+  "rejected": {
+   "tokens": 3708,
+   "mean_nll": 0.14426735043525696
+  },
+  "shared_chosen": 0.31933651748247666,
+  "shared_rejected": 0.13342597106721943,
+  "edited_chosen": 3.1813923687738326,
+  "edited_rejected": 0.247306740355255,
+  "edited_frac": 0.06649972175848637
+ },
+ {
+  "id": "dporep_2c3329e43180840c_3",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1392,
+   "mean_nll": 0.3699813485145569
+  },
+  "rejected": {
+   "tokens": 1370,
+   "mean_nll": 0.1638980656862259
+  },
+  "shared_chosen": 0.2091489998880765,
+  "shared_rejected": 0.16175874449610547,
+  "edited_chosen": 4.514506800177452,
+  "edited_rejected": 0.259454625644139,
+  "edited_frac": 0.03735632183908046
+ },
+ {
+  "id": "dporep_3255e2f2e8b23f17_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1078,
+   "mean_nll": 0.28869950771331787
+  },
+  "rejected": {
+   "tokens": 1052,
+   "mean_nll": 0.1346207857131958
+  },
+  "shared_chosen": 0.15661584691567704,
+  "shared_rejected": 0.1343909912834005,
+  "edited_chosen": 2.745455592792413,
+  "edited_rejected": 0.14272686011515268,
+  "edited_frac": 0.05102040816326531
+ },
+ {
+  "id": "dporep_3c66674e036ee28b_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1974,
+   "mean_nll": 0.18716812133789062
+  },
+  "rejected": {
+   "tokens": 1910,
+   "mean_nll": 0.08624646067619324
+  },
+  "shared_chosen": 0.10714646193015176,
+  "shared_rejected": 0.08563643841479551,
+  "edited_chosen": 2.2417782934848267,
+  "edited_rejected": 0.20215095612220396,
+  "edited_frac": 0.037487335359675786
+ },
+ {
+  "id": "dporep_46099f46c8d27dd6_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2032,
+   "mean_nll": 0.33285489678382874
+  },
+  "rejected": {
+   "tokens": 1978,
+   "mean_nll": 0.10217417031526566
+  },
+  "shared_chosen": 0.2197025764281556,
+  "shared_rejected": 0.09584588921309237,
+  "edited_chosen": 1.8275735053018978,
+  "edited_rejected": 0.23649015917812724,
+  "edited_frac": 0.0703740157480315
+ },
+ {
+  "id": "dporep_4db14ccb74bbd31d_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1396,
+   "mean_nll": 0.4878842830657959
+  },
+  "rejected": {
+   "tokens": 1355,
+   "mean_nll": 0.10928517580032349
+  },
+  "shared_chosen": 0.25819790446202556,
+  "shared_rejected": 0.10279291275304381,
+  "edited_chosen": 2.3958125541171635,
+  "edited_rejected": 0.1834994985153786,
+  "edited_frac": 0.10744985673352435
+ },
+ {
+  "id": "dporep_54f4cb6628272a0b_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1551,
+   "mean_nll": 0.2645132839679718
+  },
+  "rejected": {
+   "tokens": 1541,
+   "mean_nll": 0.16271275281906128
+  },
+  "shared_chosen": 0.18302784285429008,
+  "shared_rejected": 0.16164718557527744,
+  "edited_chosen": 3.423642426956063,
+  "edited_rejected": 0.21826951266020406,
+  "edited_frac": 0.025145067698259187
+ },
+ {
+  "id": "dporep_5c78ab7632be71e7_r2",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 3011,
+   "mean_nll": 0.41837039589881897
+  },
+  "rejected": {
+   "tokens": 3022,
+   "mean_nll": 0.11952400207519531
+  },
+  "shared_chosen": 0.29675416249148817,
+  "shared_rejected": 0.11025647892023548,
+  "edited_chosen": 2.489487347522008,
+  "edited_rejected": 0.2675962044087989,
+  "edited_frac": 0.05546330122882763
+ },
+ {
+  "id": "dporep_5e6003beeb4a0e95_2",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1242,
+   "mean_nll": 0.3339344561100006
+  },
+  "rejected": {
+   "tokens": 1178,
+   "mean_nll": 0.13695551455020905
+  },
+  "shared_chosen": 0.1883270099786469,
+  "shared_rejected": 0.13468917816003706,
+  "edited_chosen": 1.996771593783851,
+  "edited_rejected": 0.20884858370185555,
+  "edited_frac": 0.08051529790660225
+ },
+ {
+  "id": "dporep_61029802b0a4ccff_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2448,
+   "mean_nll": 0.24669323861598969
+  },
+  "rejected": {
+   "tokens": 2419,
+   "mean_nll": 0.1155829057097435
+  },
+  "shared_chosen": 0.1776901412209647,
+  "shared_rejected": 0.11475850605497274,
+  "edited_chosen": 3.090097094258767,
+  "edited_rejected": 0.1835249994966967,
+  "edited_frac": 0.02369281045751634
+ },
+ {
+  "id": "dporep_6a20644d07c73ddd_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2553,
+   "mean_nll": 0.35906872153282166
+  },
+  "rejected": {
+   "tokens": 2613,
+   "mean_nll": 0.1284659206867218
+  },
+  "shared_chosen": 0.2909564746671236,
+  "shared_rejected": 0.12390920481094603,
+  "edited_chosen": 2.0836430965258415,
+  "edited_rejected": 0.1997481591126188,
+  "edited_frac": 0.03799451625538582
+ },
+ {
+  "id": "dporep_6ba3502ed220c373_3",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 3017,
+   "mean_nll": 0.41815149784088135
+  },
+  "rejected": {
+   "tokens": 2969,
+   "mean_nll": 0.10878542810678482
+  },
+  "shared_chosen": 0.27074919861413765,
+  "shared_rejected": 0.10097958411633523,
+  "edited_chosen": 2.0933427770368516,
+  "edited_rejected": 0.2192223806944649,
+  "edited_frac": 0.08087504143188598
+ },
+ {
+  "id": "dporep_7883e48864c2b035_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1302,
+   "mean_nll": 0.30215734243392944
+  },
+  "rejected": {
+   "tokens": 1230,
+   "mean_nll": 0.10664355009794235
+  },
+  "shared_chosen": 0.14096856395485283,
+  "shared_rejected": 0.10579142932146478,
+  "edited_chosen": 2.8665246123267987,
+  "edited_rejected": 0.3154150664806366,
+  "edited_frac": 0.05913978494623656
+ },
+ {
+  "id": "dporep_81f01357d7851f77_1",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 3086,
+   "mean_nll": 0.48339352011680603
+  },
+  "rejected": {
+   "tokens": 3473,
+   "mean_nll": 0.14815938472747803
+  },
+  "shared_chosen": 0.3365069502964887,
+  "shared_rejected": 0.14451480445205084,
+  "edited_chosen": 3.2799615533968884,
+  "edited_rejected": 0.16791136821484634,
+  "edited_frac": 0.049902786779001944
+ },
+ {
+  "id": "dporep_830013322f375ed5_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1176,
+   "mean_nll": 0.6878879070281982
+  },
+  "rejected": {
+   "tokens": 1261,
+   "mean_nll": 0.18318131566047668
+  },
+  "shared_chosen": 0.5255373138301674,
+  "shared_rejected": 0.1734346028045905,
+  "edited_chosen": 3.4628339239105115,
+  "edited_rejected": 0.25537191758877636,
+  "edited_frac": 0.055272108843537414
+ },
+ {
+  "id": "dporep_83f396bcea150b6c_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 3224,
+   "mean_nll": 0.3594313859939575
+  },
+  "rejected": {
+   "tokens": 3072,
+   "mean_nll": 0.09563283622264862
+  },
+  "shared_chosen": 0.1888113009655765,
+  "shared_rejected": 0.08816479083574873,
+  "edited_chosen": 2.389127816101993,
+  "edited_rejected": 0.32226509377606327,
+  "edited_frac": 0.07754342431761786
+ },
+ {
+  "id": "dporep_84b3176aba9376a6_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1300,
+   "mean_nll": 0.22231610119342804
+  },
+  "rejected": {
+   "tokens": 1383,
+   "mean_nll": 0.12337891012430191
+  },
+  "shared_chosen": 0.1540366376549458,
+  "shared_rejected": 0.11757542921201741,
+  "edited_chosen": 4.380861014798505,
+  "edited_rejected": 0.19475048804722933,
+  "edited_frac": 0.016153846153846154
+ },
+ {
+  "id": "dporep_8c382eeb4fcd3b6b_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1276,
+   "mean_nll": 0.6673527359962463
+  },
+  "rejected": {
+   "tokens": 1278,
+   "mean_nll": 0.16371117532253265
+  },
+  "shared_chosen": 0.4807977757250766,
+  "shared_rejected": 0.1515142744703846,
+  "edited_chosen": 3.248752289202584,
+  "edited_rejected": 0.3286466269917778,
+  "edited_frac": 0.06739811912225706
+ },
+ {
+  "id": "dporep_a4de9c3156094049_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1631,
+   "mean_nll": 0.28943586349487305
+  },
+  "rejected": {
+   "tokens": 1604,
+   "mean_nll": 0.16086213290691376
+  },
+  "shared_chosen": 0.20223108969043138,
+  "shared_rejected": 0.15969701636287256,
+  "edited_chosen": 3.2284221094972056,
+  "edited_rejected": 0.25314005402251494,
+  "edited_frac": 0.028816676885346414
+ },
+ {
+  "id": "dporep_a9e0adf7745024ef_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2029,
+   "mean_nll": 0.1645888090133667
+  },
+  "rejected": {
+   "tokens": 2037,
+   "mean_nll": 0.08299575001001358
+  },
+  "shared_chosen": 0.10015074932446699,
+  "shared_rejected": 0.0811255672091726,
+  "edited_chosen": 2.7150468338559404,
+  "edited_rejected": 0.1468076110562089,
+  "edited_frac": 0.02464268112370626
+ },
+ {
+  "id": "dporep_a9e0adf7745024ef_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2826,
+   "mean_nll": 0.19597692787647247
+  },
+  "rejected": {
+   "tokens": 2823,
+   "mean_nll": 0.07229148596525192
+  },
+  "shared_chosen": 0.1442114066917273,
+  "shared_rejected": 0.0707879468767567,
+  "edited_chosen": 2.019716007005145,
+  "edited_rejected": 0.12738124674978185,
+  "edited_frac": 0.027600849256900213
+ },
+ {
+  "id": "dporep_a9e0adf7745024ef_3",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2023,
+   "mean_nll": 0.45067715644836426
+  },
+  "rejected": {
+   "tokens": 1997,
+   "mean_nll": 0.10207410156726837
+  },
+  "shared_chosen": 0.3300570797828842,
+  "shared_rejected": 0.09051713584444743,
+  "edited_chosen": 2.024601637924694,
+  "edited_rejected": 0.2861041277516071,
+  "edited_frac": 0.07118141374196738
+ },
+ {
+  "id": "dporep_bec85ad714194d8d_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1947,
+   "mean_nll": 0.23061534762382507
+  },
+  "rejected": {
+   "tokens": 1854,
+   "mean_nll": 0.12007594853639603
+  },
+  "shared_chosen": 0.2013404197081061,
+  "shared_rejected": 0.1209663428314679,
+  "edited_chosen": 0.6027369022265516,
+  "edited_rejected": 0.08727694592802232,
+  "edited_frac": 0.07293271700051361
+ },
+ {
+  "id": "dporep_d0653225e4a54f43_1",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 1683,
+   "mean_nll": 0.3272944986820221
+  },
+  "rejected": {
+   "tokens": 1669,
+   "mean_nll": 0.13742654025554657
+  },
+  "shared_chosen": 0.24704719983225965,
+  "shared_rejected": 0.13336530829634885,
+  "edited_chosen": 2.8442829588818026,
+  "edited_rejected": 0.3117387999808787,
+  "edited_frac": 0.030897207367795602
+ },
+ {
+  "id": "dporep_dd750aade91f857b_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 2388,
+   "mean_nll": 0.27513790130615234
+  },
+  "rejected": {
+   "tokens": 2282,
+   "mean_nll": 0.1597038060426712
+  },
+  "shared_chosen": 0.18793962488436677,
+  "shared_rejected": 0.1590106740114878,
+  "edited_chosen": 1.9830214335771528,
+  "edited_rejected": 0.31718252109603784,
+  "edited_frac": 0.048576214405360134
+ },
+ {
+  "id": "dporep_e3ec95b5e288ac71_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1865,
+   "mean_nll": 0.4556819200515747
+  },
+  "rejected": {
+   "tokens": 1923,
+   "mean_nll": 0.14915795624256134
+  },
+  "shared_chosen": 0.34864982408602213,
+  "shared_rejected": 0.14456463666512642,
+  "edited_chosen": 3.2841632599036745,
+  "edited_rejected": 0.21466726684642726,
+  "edited_frac": 0.03646112600536193
+ },
+ {
+  "id": "dporep_e8364f13126df1b9_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2513,
+   "mean_nll": 0.4370637834072113
+  },
+  "rejected": {
+   "tokens": 2385,
+   "mean_nll": 0.08990137279033661
+  },
+  "shared_chosen": 0.26261718529920397,
+  "shared_rejected": 0.08798658529565234,
+  "edited_chosen": 2.4436333900135927,
+  "edited_rejected": 0.15054486816319107,
+  "edited_frac": 0.07998408276959809
+ },
+ {
+  "id": "dporep_ee53921b5d0441e9_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1275,
+   "mean_nll": 0.44758686423301697
+  },
+  "rejected": {
+   "tokens": 1278,
+   "mean_nll": 0.12557582557201385
+  },
+  "shared_chosen": 0.2996795831383869,
+  "shared_rejected": 0.11810954761759374,
+  "edited_chosen": 4.490385970473289,
+  "edited_rejected": 0.31689943697071915,
+  "edited_frac": 0.03529411764705882
+ },
+ {
+  "id": "dporep_efb504e183071f6c_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1054,
+   "mean_nll": 0.4542725086212158
+  },
+  "rejected": {
+   "tokens": 1012,
+   "mean_nll": 0.15889477729797363
+  },
+  "shared_chosen": 0.25475125628948725,
+  "shared_rejected": 0.14743989570397176,
+  "edited_chosen": 2.6176211474841256,
+  "edited_rejected": 0.3940855398332036,
+  "edited_frac": 0.08444022770398482
+ },
+ {
+  "id": "dporep_efb504e183071f6c_2",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 1294,
+   "mean_nll": 0.3837556838989258
+  },
+  "rejected": {
+   "tokens": 1261,
+   "mean_nll": 0.1411682516336441
+  },
+  "shared_chosen": 0.21908695246711618,
+  "shared_rejected": 0.13984934703410554,
+  "edited_chosen": 2.0882214480190635,
+  "edited_rejected": 0.16038185457582688,
+  "edited_frac": 0.08809891808346214
+ },
+ {
+  "id": "dporep_f1037bf582a4bd20_1",
+  "task_type": "validate_2",
+  "chosen": {
+   "tokens": 947,
+   "mean_nll": 0.4163583219051361
+  },
+  "rejected": {
+   "tokens": 1104,
+   "mean_nll": 0.16318506002426147
+  },
+  "shared_chosen": 0.28739074226056377,
+  "shared_rejected": 0.1677770713361929,
+  "edited_chosen": 3.4189874523787447,
+  "edited_rejected": 0.14191183745135671,
+  "edited_frac": 0.04118268215417107
+ },
+ {
+  "id": "dporep_f37e3bdafd8f6c7f_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1657,
+   "mean_nll": 0.18154270946979523
+  },
+  "rejected": {
+   "tokens": 1622,
+   "mean_nll": 0.08254765719175339
+  },
+  "shared_chosen": 0.11169962452619828,
+  "shared_rejected": 0.08227137374969806,
+  "edited_chosen": 2.522741404507542,
+  "edited_rejected": 0.11674359521838631,
+  "edited_frac": 0.02896801448400724
+ },
+ {
+  "id": "dporep_f37e3bdafd8f6c7f_3",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2769,
+   "mean_nll": 0.28241485357284546
+  },
+  "rejected": {
+   "tokens": 2727,
+   "mean_nll": 0.07910800725221634
+  },
+  "shared_chosen": 0.21443199959983078,
+  "shared_rejected": 0.07578414895032362,
+  "edited_chosen": 2.62782294723076,
+  "edited_rejected": 0.3275663162030974,
+  "edited_frac": 0.028169014084507043
+ },
+ {
+  "id": "dporep_f5cd9a9bf3544503_1",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 1900,
+   "mean_nll": 0.5847970247268677
+  },
+  "rejected": {
+   "tokens": 1848,
+   "mean_nll": 0.12689518928527832
+  },
+  "shared_chosen": 0.4048343079202396,
+  "shared_rejected": 0.12196637664402062,
+  "edited_chosen": 1.7510122883165142,
+  "edited_rejected": 0.16705766532523908,
+  "edited_frac": 0.1336842105263158
+ },
+ {
+  "id": "dporep_f5cd9a9bf3544503_2",
+  "task_type": "fix_tier2",
+  "chosen": {
+   "tokens": 2680,
+   "mean_nll": 0.34927165508270264
+  },
+  "rejected": {
+   "tokens": 2636,
+   "mean_nll": 0.1248968243598938
+  },
+  "shared_chosen": 0.2461542366410293,
+  "shared_rejected": 0.116880536930013,
+  "edited_chosen": 1.7729756321369752,
+  "edited_rejected": 0.271120924507795,
+  "edited_frac": 0.06753731343283582
+ },
+ {
+  "id": "dporep_fea1760e08791a51_1",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 950,
+   "mean_nll": 0.3521326780319214
+  },
+  "rejected": {
+   "tokens": 821,
+   "mean_nll": 0.1232537105679512
+  },
+  "shared_chosen": 0.2522239353689724,
+  "shared_rejected": 0.12243774649755913,
+  "edited_chosen": 0.9501159697507258,
+  "edited_rejected": 0.21813762409562645,
+  "edited_frac": 0.1431578947368421
+ },
+ {
+  "id": "dporep_fea1760e08791a51_2",
+  "task_type": "validate_multi3",
+  "chosen": {
+   "tokens": 918,
+   "mean_nll": 0.37735021114349365
+  },
+  "rejected": {
+   "tokens": 818,
+   "mean_nll": 0.13751831650733948
+  },
+  "shared_chosen": 0.28488351410909557,
+  "shared_rejected": 0.13572279756002,
+  "edited_chosen": 0.9639589763624006,
+  "edited_rejected": 0.19447159676087722,
+  "edited_frac": 0.13616557734204793
+ }
+]
