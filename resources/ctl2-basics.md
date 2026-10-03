@@ -475,6 +475,8 @@ function void clean() { count = 0; total = 0.0D; }
 
 In `transform()`, `$in.0` is readable and holds the **last input record of the group**. Reading a group key (constant across the group) there is valid; a value that varies within the group (e.g. the first record's) must be saved during `append()`.
 
+The output record is built in `transform()`. Writing `$out.0` in `append()` is not a runtime error, but it has no effect on the emitted record — accumulate into module-level variables instead.
+
 ### 8.5 Normalizer
 
 ```ctl
@@ -542,6 +544,8 @@ function integer transform(integer counter, GroupAccMeta groupAccumulator) {
     return ALL;
 }
 ```
+
+`transform()` (and `updateTransform()`) may read `$in.0` — e.g. the group key, which is constant across the group — so copying the key there is valid and needs no saved copy. Values that vary within the group belong in the accumulator.
 
 ### 8.8 Optional init()
 

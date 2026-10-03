@@ -77,7 +77,7 @@
           {
             "id": "T2.1",
             "check": "All accumulation happens in module-level (global) variables, NOT in $out.0 fields inside append().",
-            "rationale": "$out.0 is only accessible in transform() and transformOnError(). Accessing it in append() throws NPE at runtime — the most critical Denormalizer correctness rule."
+            "rationale": "The output record is built in transform(); writing $out.0 in append() is benign but has no effect on the emitted record, so accumulation there is silently lost — the most critical Denormalizer correctness rule."
           },
           {
             "id": "T2.2",
