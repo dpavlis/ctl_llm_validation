@@ -1,0 +1,213 @@
+{
+ "date": "2026-10-04",
+ "reason": "contradict owner rulings 1-6 (memory/spec corpus_ruling_corrections)",
+ "drop": {
+  "selfdistill_af6dbe7175f9f41a_0": "R1 generation runs until STOP",
+  "selfdistill_ee53921b5d0441e9_2": "R2 transform() must not read $in.0",
+  "selfdistill_a7fd21c1f3d22ebc_1": "R2 $in.0 not accessible in transform()",
+  "selfdistill_2d46406ce74c8fb6_1": "R4 transformOnError OK without logging",
+  "selfdistill_f68c67238a4d2b9c_1": "R1 STOP to stop generation",
+  "selfdistill_ba30ed84b9b5f90b_3": "R2 $in.0 not accessible in transform()",
+  "selfdistill_51a7db9041a11c7a_0": "R2 $in.0 only accessible in append()",
+  "selfdistill_f856eff2f4d11596_2": "R3 non-null output field will be null",
+  "selfdistill_334623c892387114_0": "R4 transformOnError OK without logging",
+  "selfdistill_2740f6ff89b970f3_3": "R4 transformOnError OK without logging",
+  "dpo1_a7fd21c1f3d22ebc": "R2",
+  "dpo1_ba30ed84b9b5f90b": "R2",
+  "dpo1_f68c67238a4d2b9c": "R1",
+  "dpo1_334623c892387114": "R4",
+  "dporep_15c945ed5a7ff2a5_1": "R1 borderline: STOP would prematurely stop generation",
+  "dporep_d0653225e4a54f43_1": "R3 borderline: unset record fields default to null"
+ },
+ "files": {
+  "data/self_distill/sd2b/selfdistill_sd2b_train.json": [
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_334623c892387114_0",
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_f856eff2f4d11596_2",
+   "selfdistill_ba30ed84b9b5f90b_3",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2740f6ff89b970f3_3",
+   "selfdistill_51a7db9041a11c7a_0",
+   "selfdistill_a7fd21c1f3d22ebc_1"
+  ],
+  "data/self_distill/sd2b/selfdistill_sd2b_records.json": [
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_334623c892387114_0",
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_f856eff2f4d11596_2",
+   "selfdistill_ba30ed84b9b5f90b_3",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2740f6ff89b970f3_3",
+   "selfdistill_51a7db9041a11c7a_0",
+   "selfdistill_a7fd21c1f3d22ebc_1"
+  ],
+  "data/self_distill/sd2/selfdistill_sd2_records.json": [
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_a7fd21c1f3d22ebc_1",
+   "selfdistill_f68c67238a4d2b9c_1",
+   "selfdistill_ba30ed84b9b5f90b_3",
+   "selfdistill_51a7db9041a11c7a_0",
+   "selfdistill_f856eff2f4d11596_2",
+   "selfdistill_334623c892387114_0",
+   "selfdistill_2740f6ff89b970f3_3"
+  ],
+  "data/self_distill/sd2/selfdistill_sd2_train.json": [
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_a7fd21c1f3d22ebc_1",
+   "selfdistill_f68c67238a4d2b9c_1",
+   "selfdistill_ba30ed84b9b5f90b_3",
+   "selfdistill_51a7db9041a11c7a_0",
+   "selfdistill_f856eff2f4d11596_2",
+   "selfdistill_334623c892387114_0",
+   "selfdistill_2740f6ff89b970f3_3"
+  ],
+  "data/self_distill/dpo1/pairs.jsonl": [
+   "dpo1_a7fd21c1f3d22ebc",
+   "dpo1_334623c892387114",
+   "dpo1_ba30ed84b9b5f90b",
+   "dpo1_f68c67238a4d2b9c"
+  ],
+  "data/self_distill/dpo1/dpo1_train.jsonl": [
+   "dpo1_a7fd21c1f3d22ebc",
+   "dpo1_334623c892387114",
+   "dpo1_ba30ed84b9b5f90b",
+   "dpo1_f68c67238a4d2b9c"
+  ],
+  "data/self_distill/dpo1/pairs.single.jsonl": [
+   "dpo1_a7fd21c1f3d22ebc",
+   "dpo1_334623c892387114",
+   "dpo1_ba30ed84b9b5f90b",
+   "dpo1_f68c67238a4d2b9c"
+  ],
+  "data/self_distill/dpo1/dpo1_train.cap5200.jsonl": [
+   "dpo1_a7fd21c1f3d22ebc",
+   "dpo1_334623c892387114",
+   "dpo1_ba30ed84b9b5f90b",
+   "dpo1_f68c67238a4d2b9c"
+  ],
+  "data/self_distill/dpo1/dpo1_train.single.jsonl": [
+   "dpo1_a7fd21c1f3d22ebc",
+   "dpo1_334623c892387114",
+   "dpo1_ba30ed84b9b5f90b",
+   "dpo1_f68c67238a4d2b9c"
+  ],
+  "data/self_distill/dpo1/pairs.uncapped.jsonl": [
+   "dpo1_a7fd21c1f3d22ebc",
+   "dpo1_334623c892387114",
+   "dpo1_ba30ed84b9b5f90b",
+   "dpo1_f68c67238a4d2b9c"
+  ],
+  "data/self_distill/dpo1/dpo1_train.uncapped.jsonl": [
+   "dpo1_a7fd21c1f3d22ebc",
+   "dpo1_334623c892387114",
+   "dpo1_ba30ed84b9b5f90b",
+   "dpo1_f68c67238a4d2b9c"
+  ],
+  "data/self_distill/dporep/dporep_train.jsonl": [
+   "dporep_15c945ed5a7ff2a5_1",
+   "dporep_d0653225e4a54f43_1"
+  ],
+  "data/self_distill/dporep/final_pairs.jsonl": [
+   "dporep_15c945ed5a7ff2a5_1",
+   "dporep_d0653225e4a54f43_1"
+  ],
+  "data/self_distill/authored20_audit/selfdistill_sd1a_records.json": [
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_a7fd21c1f3d22ebc_1"
+  ],
+  "data/self_distill/authored20_audit/selfdistill_sd1a_train.json": [
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_a7fd21c1f3d22ebc_1"
+  ],
+  "data/self_distill/full1/selfdistill_full1_train.json": [
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_a7fd21c1f3d22ebc_1"
+  ],
+  "data/self_distill/full1/selfdistill_full1_records.json": [
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_a7fd21c1f3d22ebc_1"
+  ],
+  "data/self_distill/gen2full/selfdistill_gen2full_train.json": [
+   "selfdistill_f68c67238a4d2b9c_1",
+   "selfdistill_ba30ed84b9b5f90b_3",
+   "selfdistill_51a7db9041a11c7a_0",
+   "selfdistill_f856eff2f4d11596_2",
+   "selfdistill_334623c892387114_0",
+   "selfdistill_2740f6ff89b970f3_3"
+  ],
+  "data/self_distill/gen2full/selfdistill_gen2full_records.json": [
+   "selfdistill_f68c67238a4d2b9c_1",
+   "selfdistill_ba30ed84b9b5f90b_3",
+   "selfdistill_51a7db9041a11c7a_0",
+   "selfdistill_f856eff2f4d11596_2",
+   "selfdistill_334623c892387114_0",
+   "selfdistill_2740f6ff89b970f3_3"
+  ],
+  "/home/pavlisd/LlamaFactory/data/selfdistill_sd1a_train.json": [
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_a7fd21c1f3d22ebc_1"
+  ],
+  "/home/pavlisd/LlamaFactory/data/selfdistill_sd2b_train.json": [
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_334623c892387114_0",
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_f856eff2f4d11596_2",
+   "selfdistill_ba30ed84b9b5f90b_3",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2740f6ff89b970f3_3",
+   "selfdistill_51a7db9041a11c7a_0",
+   "selfdistill_a7fd21c1f3d22ebc_1"
+  ],
+  "/home/pavlisd/LlamaFactory/data/selfdistill_full1_train.json": [
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_a7fd21c1f3d22ebc_1"
+  ],
+  "/home/pavlisd/LlamaFactory/data/dpo1_train.jsonl": [
+   "dpo1_a7fd21c1f3d22ebc",
+   "dpo1_334623c892387114",
+   "dpo1_ba30ed84b9b5f90b",
+   "dpo1_f68c67238a4d2b9c"
+  ],
+  "/home/pavlisd/LlamaFactory/data/dpo1_full_train.jsonl": [
+   "dpo1_a7fd21c1f3d22ebc",
+   "dpo1_334623c892387114",
+   "dpo1_ba30ed84b9b5f90b",
+   "dpo1_f68c67238a4d2b9c"
+  ],
+  "/home/pavlisd/LlamaFactory/data/dporep_train.jsonl": [
+   "dporep_15c945ed5a7ff2a5_1",
+   "dporep_d0653225e4a54f43_1"
+  ],
+  "/home/pavlisd/LlamaFactory/data/selfdistill_sd2_train.json": [
+   "selfdistill_af6dbe7175f9f41a_0",
+   "selfdistill_ee53921b5d0441e9_2",
+   "selfdistill_2d46406ce74c8fb6_1",
+   "selfdistill_a7fd21c1f3d22ebc_1",
+   "selfdistill_f68c67238a4d2b9c_1",
+   "selfdistill_ba30ed84b9b5f90b_3",
+   "selfdistill_51a7db9041a11c7a_0",
+   "selfdistill_f856eff2f4d11596_2",
+   "selfdistill_334623c892387114_0",
+   "selfdistill_2740f6ff89b970f3_3"
+  ]
+ },
+ "backups": "<file>.pre_rulings1004",
+ "note": "dporep acceptance logs and pair_nll.json are historical check records and were left unfiltered."
+}

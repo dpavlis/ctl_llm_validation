@@ -1081,7 +1081,7 @@ Record metadata helpers return `map[string,string]`, not `variant`.
 **Fundamentals:**
 - Every type can be null. `null` ≠ `""` — `isnull("")` = false.
 - Local var defaults vs. nullability — two different things (see **2.1**): an UNINITIALIZED local of a primitive/scalar type starts at its type-specific NON-NULL default (`byte`/`cbyte`/`variant` start null), but EVERY CTL type — `integer`, `long`, `number`/`double`, `decimal`, `boolean`, `string`, `date` included — can hold a null that was explicitly assigned or propagated in from a field, list element, or function result. After `integer i = null;`, both `isnull(i)` and `i == null` are true. Never claim a scalar local "cannot be null" or that null-testing one is invalid.
-- Unset record fields are null (not type default) unless metadata defines a Default.
+- A never-assigned output field is null only if it is nullable; a non-nullable one carries its type's zero value (`""`, `0`, `0.0`) unless metadata defines a Default. Rollup accumulator fields not assigned in `initGroup()` are null.
 - `isnull(expr)` and `expr == null` / `expr != null` are **interchangeable** for all types (scalars, records, lookup results, etc.).
 - In joins, do NOT test missing slave as `isnull($in.1)`; test a slave field, e.g. `isnull($in.1.region_name)`.
 

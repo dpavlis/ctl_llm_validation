@@ -509,6 +509,31 @@ class TestKnownFalseBeliefs(unittest.TestCase):
                      "`order_amount` is nullable, so a null amount throws in the sum."):
             self.assertNotIn(name, sd.belief_hits(text), text)
 
+    def test_owner_ruling_beliefs(self):
+        # Rulings of 2026-10-02/03: phrasings taken from self-distilled traces that taught them.
+        hits = {
+            "STOP is a normal termination": "The generate() function returns: - `OK` to produce a record - `STOP` to stop generation",
+            "generation runs until STOP": "By default the generator runs until `generate()` returns `STOP`.",
+            "transform() cannot read $in.0": "- `groupOrderId` is captured in `append()` because `$in.0` is not accessible in `transform()`.",
+            "unset output fields are null": "Consequently, `$out.0.id` is never assigned and the non-null output field `id` will be null.",
+            "$out.0 in append() fails": "Writing `$out.0` inside `append()` throws an NPE at runtime.",
+            "OnError returns OK without logging":
+                "function integer transformOnError(string errorMessage, string stackTrace) {\n    $out.0.status = \"FAILED\";\n    return OK;\n}",
+        }
+        for name, text in hits.items():
+            self.assertIn(name, sd.belief_hits(text), text)
+        for text in ("Returning `STOP` aborts the component; it is not a normal termination.",
+                     "`STOP` is a return code, but do not use it as normal completion in this project's DataGenerator flows.",
+                     "In `transform()`, `$in.0` is readable and holds the last input record of the group.",
+                     "Below is valid CTL2 code that reads `$in.0` only in `append()` and emits from saved state in `transform()`.",
+                     "An accumulator field not assigned in initGroup() is null.",
+                     "A never-assigned nullable output field is null; a non-nullable one carries its type's zero value.",
+                     "Writing `$out.0` in `append()` is not a runtime error, but it has no effect on the emitted record.",
+                     "function integer appendOnError(string errorMessage, string stackTrace) {\n"
+                     "    printLog(error, \"append() failed: \" + errorMessage);\n    return OK;\n}",
+                     "[WARNING] `function integer appendOnError(...) { return OK; }` suppresses append errors without logging them."):
+            self.assertEqual([h for h in sd.belief_hits(text) if h in hits], [], text)
+
     def test_infix_in_ignores_valid_calls_and_prose(self):
         for text in ('if (in($in.0.status, ["BACKORDER", "PARTIAL"])) {', "$in.0.status.in(codes)",
                      "abv_percent must be non-null and in [0, 96].", "The rules are evaluated in order):",

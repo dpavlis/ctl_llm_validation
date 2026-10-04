@@ -1893,6 +1893,34 @@ KNOWN_FALSE_BELIEFS: dict[str, re.Pattern] = {
         r"|`[^`\n]*;` (?:defaults? to|starts? as) `?null\b"
         r"|\b(?:is|are) `?null`? by default\b"
         r"|\bdefaults? to `?null`?(?: by default)?\b(?=[^\n]{0,40}(?:declar|initiali[sz]er|module|global))", re.I),
+    # Owner rulings 2026-10-02/03 (spec/corpus_ruling_corrections_spec.md, _round2_spec.md).
+    # STOP aborts the component; DataGenerator generate() must return OK or ALL.
+    "STOP is a normal termination": re.compile(
+        r"`?STOP`?[^\n.]{0,60}(?:normal(?:ly)? (?:termination|end|completion)|cleanly|gracefully"
+        r"|(?:to )?(?:end|stop|finish)s? (?:the )?generation)", re.I),
+    "generation runs until STOP": re.compile(
+        r"(?:runs?|keeps? (?:going|generating)|continues?) until[^\n.]{0,40}returns? `?STOP\b", re.I),
+    # Denormalizer transform() sees the group's last input record; Rollup transform()
+    # and updateTransform() may read $in.0 too.
+    "transform() cannot read $in.0": re.compile(
+        r"\$in\.0`?[^\n.]{0,60}(?:is not (?:accessible|available|readable)|isn't (?:accessible|available)"
+        r"|inaccessible|cannot be (?:read|accessed)|must not be read|(?:is )?stale)[^\n.]{0,40}\btransform\b"
+        r"|\btransform\(\)`?[^\n.]{0,60}\b(?:cannot|can't|must not|MUST NOT|should not|never)\s+(?:read|access)[^\n.]{0,25}\$in\.0"
+        r"|\$in\.0`?\)?[^\n.]{0,20}\b(?:(?:is|are) (?:only )?(?:accessible|available|readable) only|(?:is|are) only (?:accessible|available|readable))"
+        r" (?:in|inside|within) `?(?:append|updateGroup)\(", re.I),
+    # A never-assigned non-nullable output field carries its type's zero value.
+    "unset output fields are null": re.compile(
+        r"\b(?:unset|never[- ]assigned|unassigned|not assigned)\b[^\n.]{0,50}\bfields?\b[^\n.]{0,50}"
+        r"\b(?:are|is|will be|remains?|stays?|defaults? to|come out(?: as)?)\s+`?null\b"
+        r"|\bnon-?null(?:able)? (?:output )?fields?\b[^\n.]{0,60}\bwill be `?null\b", re.I),
+    # Writing $out.0 in Denormalizer append() is benign (no effect), not a failure.
+    "$out.0 in append() fails": re.compile(
+        r"\$out\.0(?:(?!\bnot\b|n't\b|\bno\b)[^\n.]){0,80}\bappend\(\)(?:(?!\bnot\b|n't\b|\bno\b)[^\n.]){0,80}(?:NPE|NullPointer|throws|runtime (?:error|failure|exception))"
+        r"|\bappend\(\)(?:(?!\bnot\b|n't\b|\bno\b)[^\n.]){0,80}\$out\.0(?:(?!\bnot\b|n't\b|\bno\b)[^\n.]){0,80}(?:NPE|NullPointer|throws|runtime (?:error|failure|exception))", re.I),
+    # *OnError callbacks are valid but must not report the failed record as processed
+    # without at least logging it (a silent SKIP is tolerated).
+    "OnError returns OK without logging": re.compile(
+        r"function\s+integer\s+\w+OnError\s*\([^)]*\)\s*\{(?:(?!printLog|printErr|raiseError)[^}])*?\breturn\s+OK\s*;", re.S),
 }
 # Around a match, words that make the claim a true one: a Rollup accumulator field
 # unassigned in initGroup IS null, and so are declared variant/byte/cbyte values.
@@ -1904,6 +1932,11 @@ _BELIEF_TRUE_CONTEXT: dict[str, re.Pattern] = {
     "infix `in` operator": re.compile(
         r"not (?:valid|allowed|supported|a CTL2)|invalid|no infix|not an? (?:infix )?operator|"
         r"(?:does not|doesn't|won't|will not) (?:compile|parse)|syntax error|parser error", re.I),
+    "STOP is a normal termination": re.compile(
+        r"(?i:\babort|\bnot (?:a )?normal|not (?:allowed|valid)|do not use it|don't use it)|\bERROR\b"),
+    "OnError returns OK without logging": re.compile(r"without logging|silently|suppress|no log", re.I),
+    # Unassigned Rollup accumulator fields and nullable output fields ARE null.
+    "unset output fields are null": re.compile(r"accumulator|initGroup|\bacc\.\w|(?<!non-)(?<!non )\bnullable\b", re.I),
 }
 # A negation just before the match, in the same clause: "`=` does not alias the
 # list" is a correct statement. Punctuation ends the clause, so a heading such as
