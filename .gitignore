@@ -5,3 +5,5 @@ saves/
 CTL_LoRA_eval_data.json
 .env
 data/dpo/forge_state.db
+ctl_lora_training/
+data/sft_rebuild_*/
