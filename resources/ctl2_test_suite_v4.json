@@ -2293,8 +2293,8 @@
           },
           {
             "id": "T36.2",
-            "check": "initGroup() resets every accumulator field whose stale value could survive into the next group: claim_count = 0L, net_claim_total = 0D, manual_queue_count = 0, earliest_completion = null, latest_received = null, key_captured = false. The SENTINEL VALUE chosen for service_partner_code is immaterial — null, \"\", or any placeholder all score PRESENT, provided key_captured is reset to false.",
-            "rationale": "The accumulator is reused across groups, so an unreset accumulating field leaks the previous group's data. service_partner_code is NOT such a field: resetting key_captured to false guarantees updateGroup() overwrites it from $in.0 on the group's first record, so whatever it was seeded with is a dead store that can never reach the output. Do not score the seed value. Note the type-correct literals: 0L for long, 0D for decimal, 0 for integer."
+            "check": "initGroup() establishes the baselines the accumulation needs: claim_count = 0L, net_claim_total = 0D, manual_queue_count = 0 and key_captured = false (or code that otherwise handles key_captured starting null). earliest_completion and latest_received may be assigned null explicitly or left unassigned: both score PRESENT, since they start null either way. The SENTINEL VALUE chosen for service_partner_code is immaterial — null, \"\", leaving it unassigned, or any placeholder all score PRESENT, provided key_captured is handled.",
+            "rationale": "Rollup resets the accumulator from its metadata before every group, so nothing carries over from the previous group. Every RepairPartnerAcc field omits nullability (so it is nullable) and has no metadata default, so each starts null: an unassigned counter or total makes the first `+ 1` / `+ amount` throw on a null operand. The two dates are meant to start null (the null seed is handled with isnull() in updateGroup), so an explicit `= null` is redundant but harmless. service_partner_code is overwritten from $in.0 on the group's first record, so its seed is a dead store that can never reach the output. Do not score the seed value. Note the type-correct literals: 0L for long, 0D for decimal, 0 for integer."
           },
           {
             "id": "T36.3",
@@ -2752,8 +2752,11 @@
           "id": "T41.B2",
           "kind": "semantic",
           "code": "function void initGroup(StockAcc acc) { ... }  // backorder_value is never assigned",
-          "description": "initGroup() assigns every accumulator field except backorder_value. An accumulator field that initGroup() does not assign is null at the start of the group (unlike a declared CTL2 variable, it does not start at its type default), so the first `acc.backorder_value + ...` throws on the null operand. A `default` attribute on the accumulator metadata field does not help either: it is a read/parse-side default and is not applied to the per-group accumulator state (verified on a real graph, 2026-09-30). Every warehouse with a backordered line fails, and warehouses without one would output a null backorder_value into a non-nullable field, against spec item 6.",
-          "correct_fix": "acc.backorder_value = 0D; in initGroup()"
+          "description": "initGroup() assigns every accumulator field except backorder_value. StockAcc.backorder_value omits nullability (so it is nullable) and has no metadata default, so the accumulator reset leaves it null at the start of every group (unlike a declared CTL2 variable, it does not start at its type default), and the first `acc.backorder_value + ...` throws on the null operand. Every warehouse with a backordered line fails, and warehouses without one would output a null backorder_value into a non-nullable field, against spec item 6.",
+          "correct_fix": [
+            "acc.backorder_value = 0D; in initGroup()",
+            "a metadata default of 0 on StockAcc.backorder_value, or declaring it nullable=\"false\" (the accumulator reset then starts it at zero)"
+          ]
         },
         {
           "id": "T41.B3",
@@ -2780,7 +2783,7 @@
         ],
         "fix_quality": {
           "T41.B1": "in() in either call form, or an explicit == ... || == ... test, is correct. Keeping the infix `in`, or inventing a contains()/includes() list method, is WRONG.",
-          "T41.B2": "Must assign backorder_value = 0D (or 0) in initGroup(). Guarding the addition with nvl(acc.backorder_value, 0D) also removes the failure and counts as CAUGHT, but note it as indirect: it leaves backorder_value null for warehouses with no backordered lines unless the output also defaults it. Claiming the field starts at 0 as a declared variable would, and that the line is fine, is WRONG. Fixing it by adding a default=\"0\" attribute to the StockAcc metadata instead of assigning it in initGroup() is WRONG: the metadata default is not applied to accumulator state.",
+          "T41.B2": "Must assign backorder_value = 0D (or 0) in initGroup(). Guarding the addition with nvl(acc.backorder_value, 0D) also removes the failure and counts as CAUGHT, but note it as indirect: it leaves backorder_value null for warehouses with no backordered lines unless the output also defaults it. Claiming the field starts at 0 as a declared variable would, and that the line is fine, is WRONG. Adding default=\"0\" to backorder_value in the StockAcc metadata, or declaring it nullable=\"false\", is also a correct fix: the accumulator reset then starts it at zero.",
           "T41.B3": "Must make finishGroup() return true for every group. Moving the filter elsewhere (e.g. `return SKIP` in transform() for zero-backorder warehouses) is WRONG, since those warehouses must be output.",
           "T41.B4": "Any guard that yields null for a 0 backorder_count is correct. Defaulting avg_backorder_value to 0 is WRONG (spec item 7). Arguing that no guard is needed because a Rollup group always has a record is WRONG here: the divisor is the backordered subset, not the group size."
         },
