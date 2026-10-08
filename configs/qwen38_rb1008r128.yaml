@@ -1,0 +1,319 @@
+# =============================================================================
+# rb1008r128: rb1008 data with the SFT LoRA at rank/alpha 128 (was 64); DPO unchanged.
+# Capacity test for rb1008's validate regression.
+# =============================================================================
+# rb1008: rb1007 corpus (ctl_lora_training 7aad390) + fix-mode THINKING traces from rb1006
+# (fixpilot1007: k=4 on the 200 fix-defaults / fix-explained prompts, filtered by format,
+# library, compile, belief scan, judge and claims): all 73 accepted defaults traces, one per
+# prompt for the explained set (81), plus 30 minimal gpt-6-sol repairs of own traces on the
+# prompts where every sample held the "declared variables start null" belief (19 of 27).
+# 184 fix traces x2 join the 464 self-distilled traces x2 as the thinking share.
+# Recipe otherwise unchanged (sft enable_thinking: null, DPO 1953 pairs).
+# 13435 SFT records (1296 with thinking). Data: data/sft_rebuild_20261008/.
+#
+#   cd ~/LlamaFactory
+#   python ~/llama_train/train.py ~/llama_train/configs/qwen38_rb1008.yaml --skip-post-sft
+# =============================================================================
+# =============================================================================
+# LlamaFactory SFT → DPO → Export pipeline config
+#
+# Usage:
+#   cd ~/LlamaFactory
+#   python ~/llama_train/train.py ~/llama_train/configs/example.yaml
+#   python ~/llama_train/train.py ~/llama_train/configs/example.yaml --dry-run
+#
+# The script merges the common section with each phase section, so any key
+# set here in the common area is inherited by both SFT and DPO unless
+# explicitly overridden in the sft: or dpo: subsections.
+# =============================================================================
+
+# --- Pipeline identity (not passed to LlamaFactory) -------------------------
+run_name: qwen38-27B-rb1008r128
+output_base: saves          # All outputs land under saves/<run_name>/<timestamp>_<phase>/
+
+# =============================================================================
+# Common parameters — shared by both SFT and DPO phases
+# =============================================================================
+
+# Model
+model_name_or_path: Qwen/Qwen3.8-27B
+trust_remote_code: true
+
+# Architecture / efficiency
+finetuning_type: lora
+template: qwen3_8     #qwen3_nothink     # Use qwen3_5_nothink for Qwen3.5 variants
+flash_attn: auto
+preprocessing_num_workers: 16
+ddp_timeout: 180000000
+fp16: false                       # Switch to bf16: true for Ampere+ GPUs
+bf16: true                      # Only set to true if your GPU supports it; otherwise use fp16
+
+# LoRA (phase sections can override lora_rank / lora_alpha individually)
+lora_target: "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj"
+# additional_target: "embed_tokens, lm_head" #too aggresive
+lora_dropout: 0.05
+#loraplus_lr_embedding: 1e-6  # without additional_targets enable this has no effect # Standard fallback for token embedding stability
+seed: 42
+
+# Training dynamics (shared defaults — phases override as needed)
+packing: false
+
+# Thinking is set PER PHASE below, not here — the three phases need different
+# values.  See the comment block above the sft: section.
+enable_thinking: false
+
+# Handed to Qwen38ReasoningTemplate.  "xhigh" (the LlamaFactory default) prepends
+# a "Reasoning effort is set to xhigh. Please think carefully..." sentence to the
+# system message; "medium" prepends nothing.  Must match `mut.reasoning_effort`
+# in configs/eval_qwen38.yaml or train and eval see different system prompts.
+reasoning_effort: medium
+optim: adamw_torch_fused #adamw_torch
+weight_decay: 0.05
+max_grad_norm: 1.0
+#lr_scheduler_type: cosine_with_min_lr  #linear # #constant_with_warmupa
+#lr_scheduler_kwargs:
+#    min_lr: 5.0e-6
+warmup_ratio: 0.05
+#warmup_steps: 47  
+logging_steps: 25
+save_steps: 50
+save_strategy: steps
+save_total_limit: 8
+include_num_input_tokens_seen: true
+plot_loss: true
+
+#train_sampling_strategy: "group_by_length" #enable later
+
+# Reporting — set to "none" to disable
+report_to: wandb
+# Uncomment to also log to SwanLab:
+# use_swanlab: true
+# swanlab_project: llamafactory
+# swanlab_run_name: qwen3-clover
+# swanlab_mode: local
+
+# Dataset directory (relative to the directory you run the script from)
+dataset_dir: data
+
+# =============================================================================
+# SFT phase  (merged on top of common; these keys take precedence)
+#
+# Three phases, one invocation:
+#
+#   python train.py configs/qwen38.yaml
+#
+#     1. sft            enable_thinking: false   full corpus, answer only
+#     2. dpo            enable_thinking: false   preference pairs (no <think> in data)
+#     3. post_dpo_sft   enable_thinking: true    reasoning subset
+#     4. export                                  all three adapters merged in order
+#
+# DPO sits in the middle on purpose: its 1872 pairs carry no <think> blocks, so
+# it belongs while the model is still a non-thinking model.  Running it after
+# phase 3 would align the model in a context that never occurs at inference.
+#
+# Why enable_thinking: false works here even though the data has <think> blocks:
+# Template.remove_thought() strips them and Template.encode_oneturn() moves an
+# empty block into the PROMPT, where it carries no loss.  That strip only fires
+# on LlamaFactory's exact thought_words spelling ("<think>\n" ... "\n</think>\n\n"),
+# which is what the fixed convert_think.py now emits.
+# =============================================================================
+sft:
+  # ONE dataset, not the old `clover_ctl_trainign_data,clover_ctl_think_data`
+  # pair.  As of the 2026-09-21 rebuild, clover_ctl_trainign_data (11543 records)
+  # is self-contained: it holds every prompt in the corpus, reasoning records
+  # included, with their <think> blocks stripped out.  clover_ctl_think_data
+  # (752) is the same reasoning records WITH their traces, for phase 3 only.
+  #
+  # Naming both here would train those 752 answers twice in this phase.  Naming
+  # only the think file -- or omitting it, as an earlier revision did -- drops
+  # 437 records from this phase, including all 22 rollup_update_transform
+  # examples (19% of the corpus's Rollup updateTransform coverage), demoting
+  # them from 2 epochs at lr 5e-5 / rank 64 to phase 3's much gentler round.
+  # T37 regressed accordingly.  Verify with:
+  #   every prompt in clover_ctl_think_data must also appear in this dataset.
+  #
+  # enable_thinking: false is kept even though this file now has no <think>
+  # blocks at all: it is what puts the empty block in the PROMPT rather than the
+  # response, so the answer trains with no reasoning in the loss region.
+  - dataset: clover_ctl_training_rb1008
+    enable_thinking: null         # mixed: traces trained, answer-only records get the empty block in the prompt
+    eval_dataset: clover_ctl_eval_rb1008
+    # Raised 3200 -> 4096 on 2026-09-27 so no record is truncated. Measured with
+    # the qwen3_8 chat template applied (raw content undercounts by the template
+    # markers, so measure the templated length, not the concatenated fields):
+    #
+    #     phase 1   n=11821   median 344   p95 955   p99 1647   max 3777
+    #
+    # At 3200 three records were silently cut mid-answer. Truncation is not a
+    # neutral loss -- a record cut inside its answer trains the model to stop
+    # there, which is the same mechanism suspected behind unclosed <think> blocks
+    # (findings 3.9), so the corpus should never rely on it.
+    #
+    # 4096 costs almost nothing: with packing: false the collator pads to the
+    # longest sequence IN THE BATCH, not to cutoff_len, and p95 is 955 tokens.
+    # Only those three records get longer. It also matches phase 3, so a record
+    # that fits one phase fits the other.
+    #
+    # Re-measure after any corpus addition. The fix-to-spec records added on
+    # 2026-09-27 are the longest new class (median 1088, max 1348) and still sit
+    # well inside this.
+    cutoff_len:  4096
+    lr_scheduler_type: cosine_with_restarts #cosine_with_min_lr  #linear # #constant_with_warmupa
+    lr_scheduler_kwargs:
+      #min_lr: 5.0e-6
+          num_cycles: 2
+    learning_rate: 5.0e-5
+    num_train_epochs: 2
+    max_samples: 150000
+    per_device_train_batch_size: 2
+    gradient_accumulation_steps: 6
+    per_device_eval_batch_size: 4 #1
+
+    # LoRA dims for SFT
+    lora_rank: 128
+    lora_alpha: 128
+    loraplus_lr_ratio: 2
+
+    # Evaluation during SFT — for observability only, NOT for picking the adapter.
+    eval_strategy: steps
+    eval_steps: 50
+    #
+    # load_best_model_at_end was true until 2026-09-26. Do not turn it back on
+    # without reading this. The eval_loss curve is flat over the back half of the
+    # run, so "best" was being decided by noise, and the SFT dose that reached DPO
+    # swung by 2x between otherwise-identical runs:
+    #
+    #     fix1  checkpoint-1750 of 1924   91% through   eval_loss 0.13478
+    #     fix2  checkpoint-1800 of 1940   93%           0.13638
+    #     fix3  checkpoint-1950 of 1962   99%           0.13906
+    #     fix4  checkpoint-950  of 1968   48%           0.13931   <-- half-trained
+    #
+    # In the fix4 run 16 of 39 evaluated checkpoints sat within 0.002 eval_loss of
+    # the best, and step 950 beat step 1000 by 0.00004. fix4 then posted the worst
+    # validate score measured (0.5538 against fix2's 0.8462), with the half-trained
+    # SFT adapter the leading suspect — a confound larger than most effects this
+    # project has been chasing.
+    #
+    # Section 2.1 of the findings doc already showed eval_loss does not track suite
+    # score. It is also mismatched to what the phases teach: the phase-1 eval set is
+    # 3.9% validate records against 12.6% in training (phase 3 is far worse, see
+    # below). So it is the wrong signal twice over.
+    #
+    # false makes train.py's find_best_checkpoint() fall through to the LAST
+    # checkpoint, which is deterministic and full-dose. Choose a different dose by
+    # editing num_train_epochs, or by exporting a specific checkpoint by hand —
+    # never by letting eval_loss pick.
+    load_best_model_at_end: false
+
+    # create_new_adapter is forced True by the script; listed here for clarity
+    create_new_adapter: true
+
+# =============================================================================
+# DPO phase  (merged on top of common; adapter_name_or_path is set by script)
+# =============================================================================
+dpo:
+  # CTL_LoRA_DPO_data.jsonl has 0/1872 chosen and 0/1872 rejected with <think>
+  # blocks.  With enable_thinking: false the empty block lands in the prompt and
+  # carries no loss; with true it would be prepended to both sides of every pair.
+  enable_thinking: false
+  dataset: clover_dpo_rb1008
+  eval_dataset: clover_dpo_eval_rb1008
+  cutoff_len:  4160
+  learning_rate: 5.0e-6
+  lr_scheduler_type: cosine   # Ensures smooth decay over the shorter step count
+  warmup_ratio: 0.1       
+  num_train_epochs: 1.0
+  max_samples: 150000
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 4
+  per_device_eval_batch_size: 1
+
+  # LoRA dims for DPO
+  lora_rank: 64
+  lora_alpha: 64
+  loraplus_lr_ratio: 1
+
+  # DPO objective
+  pref_beta: 0.1
+  pref_ftx: 0.1
+  pref_loss: sigmoid
+
+  # Evaluation during DPO — observability only; see the SFT section for why
+  # eval_loss no longer selects the adapter. DPO drifted less than SFT (best was
+  # checkpoint-450, 450, 425 of 472 across runs) but the reasoning is the same,
+  # and a deterministic chain matters more than a marginal loss difference.
+  eval_strategy: steps
+  eval_steps: 25
+  save_steps: 25
+  load_best_model_at_end: false
+
+  # To resume DPO from an existing adapter instead of the SFT output,
+  # set this and run with --skip-sft:
+  # adapter_name_or_path: saves/qwen3-clover/2026-05-10-12-00-00_sft
+
+# =============================================================================
+# Phase 3 — thinking SFT, runs AFTER DPO
+#
+# train.py merges the SFT and DPO adapters into the base and starts a fresh LoRA
+# here, then extends the export adapter chain on its own.  Output lands in
+# saves/qwen38-27B/<timestamp>_postsft.
+#
+# The reasoning subset is small (452 records at time of writing), so this is a
+# short, gentle round — a high LR here washes out the DPO alignment that phase 2
+# just installed.
+# =============================================================================
+post_dpo_sft:
+  - dataset: clover_ctl_think_data
+    enable_thinking: true         # the only phase that trains on <think> content
+    eval_dataset: clover_ctl_think_eval_data
+    cutoff_len: 4096
+
+    learning_rate: 1.0e-5
+    num_train_epochs: 3
+    lr_scheduler_type: cosine
+    max_samples: 150000
+    per_device_train_batch_size: 2
+    gradient_accumulation_steps: 6
+    per_device_eval_batch_size: 4
+
+    lora_rank: 32
+    lora_alpha: 32
+    loraplus_lr_ratio: 1
+
+    logging_steps: 5
+    save_steps: 25
+    # 752 reasoning records x 3 epochs / 12 per step = ~188 steps, so the default
+    # save_total_limit of 8 would just barely evict checkpoint-25/50.  Those are
+    # the ones worth keeping: the dose experiments found ~600 samples seen (50
+    # steps at the old 452-record set) better than the full 3 epochs, which
+    # scored worst of the four.  Keep them all and pick with test.py.
+    save_total_limit: 12
+    eval_strategy: steps
+    eval_steps: 25
+    # Observability only. eval_loss is a WORSE selector here than in phase 1: the
+    # phase-3 eval set is 5.0% validate records while phase-3 TRAINING is 41.8%
+    # validate, so the metric barely measures what this phase teaches. Of the 47
+    # multi-defect reviews now in phase-3 training, the eval set contains one.
+    # Selection wandered accordingly — best was checkpoint 175/189, 150/213,
+    # 250/255, 225/264 across runs, i.e. 93%, 70%, 98%, 85% of training.
+    #
+    # false takes the LAST checkpoint, which is deterministic but also the HEAVIEST
+    # dose (3 full epochs). That is a real choice, not a safe default: phase-3 dose
+    # has measured effects, and on the fix3 corpus a lighter dose was much better on
+    # T37 (checkpoint-100 scored 0.97 against checkpoint-250's 0.57). If a lighter
+    # dose is wanted, cut num_train_epochs here so the final checkpoint IS the dose
+    # — do not go back to letting eval_loss choose it.
+    load_best_model_at_end: false
+
+# =============================================================================
+# Export phase  (merged into a minimal export config by the script)
+# =============================================================================
+export:
+  export_size: 5            # Shard size in GB
+  export_device: auto       # cpu or auto
+  export_legacy_format: false
+
+  # Override the auto-generated export path if you want a fixed location:
+  # Name each run's export distinctly -- the eval configs and the findings table
+  # reference these by name, and a generic path would overwrite the previous run.
+  export_dir: /home/pavlisd/exports/qwen38_rb1008r128_sftdpo/
