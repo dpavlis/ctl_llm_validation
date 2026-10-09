@@ -47,8 +47,9 @@ judge:
   #   responses        — always /v1/responses.
   api: auto
   # Official OpenAI API — kept here for quick swap-back, see prior comparison run.
-  model: gpt-6-sol #gpt-5.4
-  api_key: ${OPENAI_API_KEY}
+  model: gpt-6.1-sol  # local provider (was gpt-6-sol, 2026-10-09)
+  base_url: http://127.0.0.1:9001/v1
+  api_key: local  # local provider needs no key
     #base_url: null           # null = official OpenAI API
   max_completion_tokens: 8192   # cap on the judge's response length per call (includes hidden reasoning tokens)
   # Reasoning effort for OpenAI reasoning-tier models. One of:
@@ -97,9 +98,9 @@ judge:
 # of --tweak — see review_judge.check_numeric_claim().
 tweak_llm:
   provider: openai
-  model: gpt-6-sol #gpt-5.4
-  api_key: ${OPENAI_API_KEY}
-  base_url: null
+  model: gpt-6.1-sol  # local provider (was gpt-6-sol, 2026-10-09)
+  api_key: local  # local provider needs no key
+  base_url: http://127.0.0.1:9001/v1
   # See the judge section's `api` comment. auto | chat_completions | responses.
   api: auto
     #model: Qwen3-Coder-Next

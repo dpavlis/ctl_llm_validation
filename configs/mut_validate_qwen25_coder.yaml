@@ -27,8 +27,9 @@ judge:
     #base_url: http://virt-ai:3000/v1
   max_retries: 2           # retries on an unparseable review response
   # Official OpenAI API — kept here for quick swap-back, see prior comparison run.
-  model: gpt-6-sol #gpt-5.4
-  api_key: ${OPENAI_API_KEY}
+  model: gpt-6.1-sol  # local provider (was gpt-6-sol, 2026-10-09)
+  base_url: http://127.0.0.1:9001/v1
+  api_key: local  # local provider needs no key
     #base_url: null           # null = official OpenAI API
   reasoning_effort: medium
   # Confirmed via real runs: at reasoning_effort=medium, gpt-5.4 can spend
@@ -53,14 +54,14 @@ tweak_llm:
     #model: Qwen3-Coder-Next
     #api_key: not-needed
     #base_url: http://virt-ai:3000/v1
-  model: gpt-6-sol #gpt-5.4
-  api_key: ${OPENAI_API_KEY}
+  model: gpt-6.1-sol  # local provider (was gpt-6-sol, 2026-10-09)
+  api_key: local  # local provider needs no key
   # tweak_llm's own default base_url (in mut_validate.py's DEFAULT_CONFIG) is
   # the LOCAL vLLM server, unlike "judge" whose default is already null —
   # commenting this out here (like above) would silently keep sending
   # gpt-5.4 requests to the local server instead of the real OpenAI API.
   # Must be set explicitly to null when swapping tweak_llm to an OpenAI model.
-  base_url: null
+  base_url: http://127.0.0.1:9001/v1
   max_retries: 2
   reasoning_effort: medium
   max_completion_tokens: 8192

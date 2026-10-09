@@ -110,9 +110,10 @@ judge:
 
   # Uncomment to use OpenAI as judge:
   provider: openai
-  model: gpt-6-sol #gpt-5.4
+  model: gpt-6.1-sol  # local provider (was gpt-6-sol, 2026-10-09)
+  base_url: http://127.0.0.1:9001/v1
   reasoning_effort: medium
-  api_key: ${OPENAI_API_KEY}
+  api_key: local  # local provider needs no key
  
 
   # Optional base_url override for self-hosted OpenAI-compatible judge endpoint:

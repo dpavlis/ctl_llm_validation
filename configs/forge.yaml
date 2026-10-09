@@ -40,10 +40,10 @@ generation:
 
 judge:
   provider: openai
-  model: gpt-6-sol #gpt-5.4
+  model: gpt-6.1-sol  # local provider (was gpt-6-sol, 2026-10-09)
   reasoning_effort: medium
-  api_key: ${OPENAI_API_KEY}
-  base_url: null                # for openai-compatible endpoints
+  api_key: local  # local provider needs no key
+  base_url: http://127.0.0.1:9001/v1
   # Leave temperature unset for models that only accept the default.
   # temperature: 1.0
   # OpenAI reasoning control (alias: effort).
@@ -82,12 +82,13 @@ clover:
 
 setup_llm:
   provider: openai
-  model: gpt-6-sol #gpt-5.4
+  model: gpt-6.1-sol  # local provider (was gpt-6-sol, 2026-10-09)
+  base_url: http://127.0.0.1:9001/v1
   reasoning_effort: medium
   # auto: chat first, /v1/responses once chat refuses function tools (gpt-6-sol does);
   # chat_completions | responses pin the endpoint.
   api: auto
-  api_key: ${OPENAI_API_KEY}
+  api_key: local  # local provider needs no key
   cache: true                   # cache setup bundle per example_id in state DB
 
 oracle:
