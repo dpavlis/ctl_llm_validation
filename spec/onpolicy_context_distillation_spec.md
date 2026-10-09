@@ -32,8 +32,18 @@ thinking-off validate WRONG.
 **Models.** One set of weights, two roles:
 - **student** π_θ = rb1006 + a new LoRA (trainable), with the **plain** system prompt;
 - **teacher** π_T = rb1006 with the LoRA **disabled** (peft `disable_adapter()`), with the **rule**
-  system prompt: `configs/eval_rb1006_rulectx3_on.yaml`, the rule plus the Java/C# contrast for
-  generate, validate and fix.
+  system prompt: `configs/eval_rb1006_rulev2_on.yaml` / `_off.yaml`, the rule plus the Java/C#
+  contrast for generate, validate and fix, **scoped to declared variables**.
+  - The first version (`eval_rb1006_rulectx3_on.yaml` / `ruleall_*`) said "a variable declared
+    without an initializer… never null" with no scope.
+  - On the suite (2026-10-09) the model carried it over to Rollup accumulator fields: T22 says a
+    nullable accumulator field starts at 0.
+  - It also missed the main bug more often: T14 and T38 fell from 1.00 to 0.20, with more "No
+    issues found".
+  - Validate thinking-off fell 0.886 → 0.731, with WRONG 5.2% → 8.5%.
+  - rulev2 adds: "This covers declared variables only: record fields (input, output, Rollup
+    accumulator) follow their metadata, so a nullable field without a default value is null until
+    assigned." A teacher with v1 would have distilled the T22 error.
 
 Base weights: the merged export `/home/pavlisd/exports/qwen38_rb1006_sftdpo`, so the teacher is
 exactly the rb1006 that was measured. One 27B copy in bf16 (about 54 GB) serves both roles on one
@@ -137,6 +147,39 @@ Gate 2 is the one every earlier method failed. **Do not proceed to gate 3 on gat
     launch).
 - **Services.** The CloverDX server (port 8083) and the local judge (`127.0.0.1:9001`) must be
   up. Launch via `#!/bin/bash -l` + `setsid nohup` scripts.
+
+## Step 0 results (2026-10-09)
+
+**Implementation:** `opcd.py` (prepare / smoke / train / export), config `configs/opcd_c1.yaml`,
+outputs in `data/opcd/<run>/`.
+
+**Prompts.** Prompts are tokenized through test.py's own `LocalMUTClient` path, with the model
+load stubbed.
+- The rule appears in the teacher prompts only: +120 tokens.
+- The user turn and the generation tail are identical for both roles.
+- Validate gets the thinking-off tail.
+
+**Smoke test** (HF, 4 samples, 5 steps at lr 5e-5):
+- Per-token KL falls from 0.0195 to 0.0133. Values stay finite.
+- Peak memory is 57 GB. A step takes 6 s for 4.8k tokens.
+- The most-penalized tokens sit on the declaration passage: "`venueId` is not initialized at
+  module level without an explicit…", A = −9.8. So the signal is localized, not spread out.
+
+**vLLM sampling works.**
+- vLLM 0.23 (`~/vllm-venv`) serves `Qwen3_5ForConditionalGeneration` with LoRA. Per-token
+  log-probs match HF to about 0.001 nat/token on the same sample.
+- The adapter needs its keys renamed `model.layers.N` → `model.language_model.layers.N`.
+  `VllmSampler.publish` does this each round and hot-loads the result.
+- Throughput: one round (32 prompts × 2) takes 2.5 min, against about 50 min with HF generate.
+- Server: `logs/evals/opcd_vllm_serve.sh` (port 3011, `VLLM_ALLOW_RUNTIME_LORA_UPDATING=True`).
+- The trainer (HF) runs on a second GPU.
+
+**Changed from the plan above:**
+- **16 rounds:** one pass over the target prompts, since a round now takes about 8 min.
+- **Completion cap 6,144 new tokens, cutoff 8,192 total.** A truncated sample is still a valid
+  on-policy prefix.
+- **Export** merges the adapter into the base with peft (`opcd.py export`). It writes a text-only
+  `Qwen3_5ForCausalLM`, not a LlamaFactory export.
 
 ## Steps and cost
 

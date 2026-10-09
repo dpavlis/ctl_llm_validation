@@ -1,0 +1,45 @@
+# On-policy context distillation, run c1 -- spec/onpolicy_context_distillation_spec.md.
+# student: rb1006 + LoRA, plain system prompt; teacher: rb1006 (adapter disabled), rulev2 system prompt
+# (declaration rule scoped to declared variables; record / accumulator fields follow metadata).
+run: c1
+base_model: /home/pavlisd/exports/qwen38_rb1006_sftdpo
+student: {"on": configs/eval_rb1006_on.yaml, "off": configs/eval_rb1006_off.yaml}
+teacher: {"on": configs/eval_rb1006_rulev2_on.yaml, "off": configs/eval_rb1006_rulev2_off.yaml}
+rule_marker: "Declaration defaults in CTL2"
+# Rule-in-prompt suite runs (2026-10-09): with thinking OFF the rule primes the reviewer onto declarations and it misses
+# unrelated bugs (validate OFF 0.895 -> 0.788 with rulev2; T14 "ISSUES: none"); with thinking ON validate holds (0.747 vs
+# 0.774 on 12 tests). So the rule teacher only scores thinking-ON samples; thinking-OFF validate is trained on replay
+# prompts against rb1006 itself (plain prompt, adapter off): an on-policy reverse-KL anchor that resists drift.
+modes: {generate: "on", fix: "on", validate: "on"}    # target / hard / probe prompts
+replay_modes: {validate: "off"}                       # replay validate: thinking off, the mode that regressed before
+replay_teacher: plain                                 # replay prompts: teacher = rb1006 with the PLAIN prompt
+
+prompts:
+  target:
+    - {run: dpodef1, split: train}       # 206: belief-prone fix / validate prompts
+    - {run: dpodef3b_plain}               # 53: declaration-contrast prompts
+  hard: data/opcd/hard_cases.jsonl        # 40 new T40/T42-shaped prompts (step 1); used when present
+  probe: {run: dpodef1, split: probe}     # 50, held out
+  replay_share: 0.4                       # of every round's prompts
+  replay_task_mix: {generate: 0.4, validate: 0.35, fix: 0.25}
+
+lora: {r: 32, alpha: 32, dropout: 0.0, target: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]}
+
+train:
+  seed: 0
+  rounds: 16                  # one pass over the ~300 target + hard prompts at 19 per round; a round takes ~8 min with vLLM sampling
+  prompts_per_round: 32
+  k: 2
+  steps_per_round: 2          # optimizer steps per sampled batch (keeps it on-policy)
+  lr: 1.0e-5
+  warmup_steps: 5
+  grad_clip: 1.0
+  adv_clip: null              # e.g. 10 if single tokens dominate
+  max_new_tokens: 6144        # sampling cap; truncated samples are still valid prefixes
+  cutoff: 8192                # prompt + completion; longer samples are skipped
+  logits_chunk: 1024
+
+probe: {n: 20, k: 2, every: 2}    # cheap belief-scan probe on held-out prompts (round 0 = rb1006)
+
+# Student sampling on a vLLM server (same base weights, the round's adapter hot-loaded); omit to sample with HF generate.
+sampler: {url: "http://127.0.0.1:3011", served_model: rb1006, concurrency: 32}
