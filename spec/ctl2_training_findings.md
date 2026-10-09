@@ -7,7 +7,14 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-09-28 with reasoning effort (§3.15 — the knob is weak; thinking off still
+Last updated 2026-10-09 with the declaration-default belief work (§3.16: answer-only data,
+thinking traces and offline DPO did not move it on T40/T42; the rule in the system prompt does,
+0/20) and the literature on overriding pretrained priors (§3.17). The judge is now local
+gpt-6.1-sol (§4.6). Sections §1–§3.15 were measured with gpt-5.6-terra, and the 2026-09-29 to
+2026-10-05 work (self-distillation, DPO rounds, rb1003–rb1005) is in the run memory notes, not
+yet in this document.
+
+Earlier update, 2026-09-28, with reasoning effort (§3.15 — the knob is weak; thinking off still
 wins validate, effort does not move fix), the model×mode 2×2 and the 0917 baseline correction (§3.14 —
 **0917's validate 0.8034 does not reproduce; it is 0.6918/0.8164 at n=5**), why phase 3
 hurts (§3.13 — the authored traces replaced the
@@ -969,6 +976,169 @@ good as `medium` and ~25% less thinking. Never `xhigh`: ~80% more time for nothi
 built-in `low` setting is the first thing to try before any training-based compression, but
 it buys little here. A real reduction would still need RL.
 
+### 3.16 The declaration-default belief: a pretrained prior that training would not move
+
+> **Added 2026-10-09.** Covers rb1006–rb1008, the fixpilot1007 pilot, dpodef1/dpodef2 and the
+> system-prompt rule test. Eval snapshot `results/eval_snapshot_20261003`. Judge gpt-6-sol until
+> 2026-10-08, local gpt-6.1-sol from 2026-10-09 (§4.6). The belief rates below were re-measured
+> under both judges and agree.
+
+**The belief.** In CTL2 a variable declared without an initializer starts at its type default:
+- `integer`, `long`, `decimal` 0; `number` 0.0;
+- `boolean` false;
+- `string` `""`;
+- `date` the epoch;
+- lists and maps empty;
+- only `variant`, `byte` and `cbyte` are null.
+
+The model insists, in its chain of thought, that `date prevShip;` "defaults to null". It then
+"fixes" correct code. On the fix benchmarks this is T40.FP1 (`date lastOrderDate;`, a list) and
+T42.FP6 (`date prevShip;`). They fired in **20/20** runs, thinking on, for every model from base
+to rb1008. The pattern matches Java/C# *field* semantics exactly, where a `Date`, `String` or
+`List` field is null and an `int` is 0. Nobody ever trained it on a wrong CTL2 example. It is a
+prior carried over from Java and C#, not a knowledge gap.
+
+**What was tried, and what it did to T40/T42 (thinking on, n=20):**
+
+| attempt | data | T40.FP1 / T42.FP6 | side effects |
+|---|---|---|---|
+| rb1006 | 120 answer-only fix-explained records, the declaration a *silent* trap in 69 | 20/20, 20/20 | none: fix 0.70 → **0.863**, validate WRONG 4.4% |
+| rb1007 | + 80 answer-only fix-defaults records that *name* the declaration ("Left unchanged: …") | 20/20, 20/20 | new `roundHalfUp()` hallucination (T43 0.95 → 0.78) |
+| rb1008 | + 184 of rb1006's own correct fix *thinking traces* ×2 (incl. 30 repairs), ~10% of tokens | 20/20, 20/20 | **validate OFF WRONG 13–15%** (from 3.5%) |
+| dpodef1 | thinking-on DPO on rb1006, 92 pairs: rejected = own belief trace, chosen = minimal gpt-6-sol repair | not run: check set 22% → 21% | — |
+| dpodef2a | context-distillation DPO, 48 own-voice pairs, lr 5e-6, 2 epochs | not run: check set 22% → 23.5% | — |
+| dpodef2b | same 48 pairs, lr 2e-5, 3 epochs | **19/20, 20/20** (check set 22% → **7%**) | **validate OFF WRONG 3.2% → 11.1%** |
+| **rule in the system prompt** (no training) | rb1006 + the rule in the fix system prompt | **0/20, 0/20**; T42 PASS 20/20 | being measured on the full suite |
+
+The **check set** is 50 held-out prompts with tempting declarations, 4 samples each, run through
+the full self-distill filter. Belief = the belief scan or a judge false-claim about a declaration
+default (`data/self_distill/dpodef2/probe_compare2.py`).
+
+**Findings:**
+1. **Answer-only data does not reach the thinking.** rb1006 states the belief in 48% of its
+   thinking on the very fix-defaults prompts it was trained on, whose reference answers say the
+   opposite (pilot fixpilot1007).
+2. **Correct thinking traces did not either, and cost validate.** rb1008's 184 traces were about
+   10% of training tokens, several per prompt on the defaults set. The belief stayed. Thinking-off
+   validate WRONG tripled: the errors were real content errors, at unchanged answer length.
+3. **Offline DPO on repaired traces learns the pairs, not the behaviour.** dpodef1 reached 100%
+   pair accuracy, but the repaired "chosen" texts were far less likely under the model (logp −560
+   vs −95). The belief fell only 71% → 65% on the training prompts themselves.
+4. **The model applies the rule perfectly when it is stated.** That makes context distillation
+   possible: rb1006 sampled *with* the rule had 5.3% belief on the 71 prompts where it otherwise
+   had 71.5%. dpodef2 trained on those own-voice answers under the plain prompt.
+5. **Moving the belief by DPO needs a strong update, and the strong update does damage.** At lr
+   5e-6 dpodef2 did nothing. At 2e-5 it cut the check set to 7%, but almost entirely on the easier
+   prompts: fix-explained 12/60 → 0/60, validate 7/32 → 1/32, while fix-defaults only halved
+   (24 → 12 of 60). The benchmark cases did not move. On T42 its thinking still says "`prevShip` is
+   initialized to null (default for `date`)". Thinking-off validate WRONG rose 3.2% → 11.1%, the
+   same pattern as rb1008.
+6. **The hard case is a declared date compared on the first record next to real nullable fields.**
+   The model reasons about nulls correctly for the real fields and then extends the same treatment
+   to the declaration. Every method that worked on easier prompts failed there.
+
+**Practical rule, until a training method passes T40/T42 without side effects:** state the
+declaration rule in the system prompt. Configs:
+- `configs/eval_rb1006_rule_on.yaml`: the rule in the fix prompt;
+- `configs/eval_rb1006_ruleall_{on,off}.yaml`: the rule and a Java/C# contrast in all prompts.
+
+The full-suite check of the latter was queued on 2026-10-09.
+
+**Data produced along the way, still useful:**
+- `CTL_LoRA_fix_defaults_explained.json` (80);
+- `CTL_LoRA_declaration_defaults_contrast.json` (55; CTL2 against Java/C#/JS/Python);
+- the declaration-defaults audit of the corpus (24 records corrected);
+- about 1,000 rule-prompted rb1006 samples (runs `dpodef2`, `dpodef3*`);
+- the plain belief samples (`dpodef1`, `dpodef1x`, `dpodef3a_plain`, `dpodef3b_plain`).
+
+The last two are the material for on-policy context distillation or GRPO.
+
+### 3.17 What the literature says about overriding a pretrained prior
+
+> **Added 2026-10-09** from a literature scan. Citations were checked for existence. Details
+> marked *(secondary)* were read in summaries, not the paper.
+
+**The failure mode is documented.**
+- **Sliding back to familiar semantics.** Wu et al. 2024, *Reasoning or Reciting?*
+  ([2307.02477](https://arxiv.org/abs/2307.02477)): "Python with 1-based indexing", stated in the
+  prompt, keeps sliding back to normal Python. Miceli-Barone et al. 2023
+  ([2305.15507](https://arxiv.org/abs/2305.15507)): with swapped built-ins, larger models fail more.
+- **Java and C# specifically.** Moumoula et al. 2025
+  ([2503.13620](https://arxiv.org/abs/2503.13620)): models drift systematically between similar
+  languages, Java ↔ C# explicitly.
+- **Old habits over documented changes.** Wang et al. 2024
+  ([2406.09834](https://arxiv.org/abs/2406.09834)): deprecated APIs appear in 25–38% of
+  completions. CodeUpdateArena ([2407.06249](https://arxiv.org/abs/2407.06249)) and ReCode
+  ([2506.20495](https://arxiv.org/abs/2506.20495)): updated docs in the prompt do not reliably help
+  open code models.
+- **Why fine-tuning struggles.** Gekhman et al. 2024
+  ([2405.05904](https://arxiv.org/abs/2405.05904)): fine-tuning learns facts that contradict the
+  model's knowledge slowly and generalises them poorly.
+
+**Why our attempts behaved as they did.**
+- **Thinking-trace SFT (§3.16 finding 2).** Long-CoT SFT learns the *structure* of traces more
+  than their content. Training on traces with wrong answers cost only 3.2% (Li et al. 2025,
+  [2502.07374](https://arxiv.org/abs/2502.07374)).
+- **Offline DPO (finding 3).** It makes a policy good at classifying pairs without improving what
+  it generates (Tang et al. 2024, [2405.08448](https://arxiv.org/abs/2405.08448)). An NLL term on
+  the chosen answer is reported as crucial for reasoning (Pang et al. 2024, IRPO,
+  [2404.19733](https://arxiv.org/abs/2404.19733)).
+- **The side effects (finding 5).** Forgetting tracks the KL divergence from the base model
+  (Shenfeld et al., RL's Razor, [2509.04259](https://arxiv.org/abs/2509.04259)). A strong
+  off-policy update drifts far.
+- **Knowledge editing** (ROME/MEMIT/AlphaEdit). Edits do not carry over to the facts they imply,
+  and an in-context baseline beat them (RippleEdits, [2307.12976](https://arxiv.org/abs/2307.12976)).
+  Edited facts are not used inside the chain of thought (ReCoE,
+  [2401.17585](https://arxiv.org/abs/2401.17585); CRANE,
+  [2606.09033](https://arxiv.org/abs/2606.09033): edits pass under teacher forcing but drop to as
+  low as 0% once the reasoning chain is checked). **Unlearning** is undone by about 10 unrelated
+  fine-tuning examples ([2409.18025](https://arxiv.org/abs/2409.18025)). Neither fits.
+
+**What has tested support, ranked for this case:**
+1. **The rule in context.** It beat weight updates in several controlled comparisons (RippleEdits;
+   Ovadia et al. 2024, [2312.05934](https://arxiv.org/abs/2312.05934)). Confirmed here: 0/20.
+2. **On-policy context distillation.**
+   - **Method:** the student, without the rule, samples its own answers. The same model *with* the
+     rule supplies per-token targets, iterated over a few rounds.
+   - **Evidence:** Askell et al. 2021 ([2112.00861](https://arxiv.org/abs/2112.00861)); Snell et
+     al. 2022 ([2209.15189](https://arxiv.org/abs/2209.15189)); Padmanabhan et al. 2023
+     ([2306.09306](https://arxiv.org/abs/2306.09306)), where updates propagated to inferences
+     better than fine-tuning or editors, with little damage; SDFT, Shenfeld et al. 2026
+     ([2601.19897](https://arxiv.org/abs/2601.19897)), which beat SFT and reduced forgetting
+     (reverse-KL loss *(secondary)*); the Thinking Machines blog "On-Policy Distillation".
+   - **Relation to our work:** dpodef2 was an offline, whole-sequence approximation of this.
+   - **Spec:** `spec/onpolicy_context_distillation_spec.md`.
+3. **RL with a checkable reward.**
+   - **ReCode:** GRPO on about 2k API-migration examples generalised to unseen tasks and hurt
+     general coding less than SFT.
+   - **SFT vs RL:** SFT memorises, RL generalises (Chu et al. 2025,
+     [2501.17161](https://arxiv.org/abs/2501.17161)).
+   - **What RL can amplify:** it only reweights behaviour already present (Yue et al. 2025,
+     [2504.13837](https://arxiv.org/abs/2504.13837)). That is fine here, since most samples are
+     already correct.
+   - **Status:** `spec/grpo_rl_idea.md`, parked.
+4. **Train the consequences, not just the rule.** Paraphrase the rule many ways and spell out its
+   implications: `== null` on a declared date is always false; `isnull()` there is dead code; "not
+   a bug" in reviews.
+   - Without paraphrase augmentation, stored facts were extracted at about 0% (Allen-Zhu & Li,
+     [2309.14316](https://arxiv.org/abs/2309.14316)).
+   - Fine-tuning on the model's own in-context inferences closes the gap to in-context learning
+     (Lampinen et al. 2025, [2505.00661](https://arxiv.org/abs/2505.00661)).
+   - Synthetic continued pretraining scales log-linearly (EntiGraph,
+     [2409.07431](https://arxiv.org/abs/2409.07431)).
+   - Training "A is B" does not teach "B is A" (reversal curse,
+     [2309.12288](https://arxiv.org/abs/2309.12288)).
+5. **Regression control.** Mix in about 30% replay of general and own-task data. Then run a short
+   on-policy distillation pass toward the *original* model on unrelated prompts. In the Thinking
+   Machines experiment this recovered instruction-following, 79% → 83%.
+6. **LoRA.** It learns less and forgets less than full fine-tuning (Biderman et al. 2024,
+   [2405.09673](https://arxiv.org/abs/2405.09673)). Target all linear layers including MLP, which
+   we already do. Whether this matters for overriding a belief is untested.
+
+**Gap:** no published study corrects a misconception inside text-only long chain-of-thought. The
+nearest evidence (CRANE, multimodal) says reasoning chains resist weight edits, consistent with
+§3.16.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number
@@ -1112,6 +1282,40 @@ identically, 19/19. An earlier claim that the judge enumerated findings inconsis
 based on a `difflib.quick_ratio` screen, which is an upper bound — two responses 98% similar
 differed in exactly the token under test.
 
+### 4.6 Judge history — compare only under one judge
+
+| period | judge |
+|---|---|
+| until 2026-09-29 | gpt-5.6-terra (the tables in §1–§3.15) |
+| 2026-09-30 – 2026-10-08 | gpt-6-sol / medium, OpenAI API |
+| **from 2026-10-09** | **gpt-6.1-sol / medium, local OpenAI-compatible provider** (`base_url: http://127.0.0.1:9001/v1`, `api_key: local`; commit `f80edcf`) |
+
+On the local provider, the model name `gpt-6` is actually served by **gpt-5.5**. `gpt-6.1-sol`
+is served as itself, and unknown names are rejected.
+
+**gpt-6-sol and gpt-6.1-sol agree on the belief rate,** checked on the same 200 stored check-set
+samples: rb1006 22.0% vs 22.0%, dpodef1 21.0% vs 21.5%. gpt-6.1-sol accepts slightly fewer
+answers (27.5% vs 30.0%) and flags more real-null overshoot (3 vs 1).
+
+**On suite scores the new judge is stricter on fix.** Same stored rb1006 answers:
+
+| | gpt-6-sol | gpt-6.1-sol |
+|---|---|---|
+| fix, thinking on, n=20 | 0.863 | **0.801** |
+| validate, thinking off, 3 runs | 0.885–0.926 | 0.871 / 0.901 / 0.914 |
+| generate, thinking off | 0.983 | 0.975 |
+| generate, thinking on | — | 0.972 |
+
+Re-judge stored answers before comparing across the switch: `data/rejudge_results.py` for suite results, or the self-distill
+`filter` on copied samples. rb1006's suite results were re-judged as `*_rj61.json`.
+
+The code defaults (`self_distill.JUDGE_DEFAULTS`, `test.py`, `review_judge.py`) still name
+`gpt-6-sol`. They are only fallbacks; every config sets the judge.
+
+The ctl_validate compile check needs the local CloverDX Server (`~/cloverserver/…/bin/startup.sh`,
+port 8083). It does not restart after a reboot, and the self-distill filter then logs "exit 0"
+without judging anything, so check the judged count.
+
 ---
 
 ## 5. Recommended pipeline
@@ -1218,6 +1422,20 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
 ---
 
 ## 6. Open questions, in priority order
+
+> **2026-10-09 — current front (§3.16, §3.17).** Items below predate it.
+>
+> A. **Does the system-prompt rule cost anything elsewhere?** It is queued as a full suite (rule
+>    in all prompts, both modes). If clean, it is the deployable fix for the declaration belief.
+>
+> B. **On-policy context distillation** (`spec/onpolicy_context_distillation_spec.md`): the
+>    method with the best tested record for moving a prior with little forgetting. Gate it on
+>    T40/T42 *and* thinking-off validate WRONG, not on the easy check-set prompts.
+>
+> C. **GRPO with a belief-aware reward** (`spec/grpo_rl_idea.md`), if B fails on T40/T42.
+>
+> D. **Why does thinking-mode training raise thinking-off validate WRONG?** Seen in rb1008 and
+>    dpodef2b. Any method that changes thinking needs replay data and a thinking-off validate gate.
 
 0. **Retrain without phase 3 (§3.12, §3.13).** The 2x2 was run by dropping the phase-3
    adapter from an existing chain, which is not the same as training without it:
