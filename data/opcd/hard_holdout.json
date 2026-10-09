@@ -1,0 +1,15 @@
+{
+ "holdout": [
+  "opcd_hard_03",
+  "opcd_hard_15",
+  "opcd_hard_16",
+  "opcd_hard_23",
+  "opcd_hard_25",
+  "opcd_hard_28",
+  "opcd_hard_29",
+  "opcd_hard_32",
+  "opcd_hard_33",
+  "opcd_hard_38"
+ ],
+ "note": "c2 held-out hard cases: 7 date traps (5 fix, 2 validate), 3 others; contrived epoch-spec prompts 06/08/10/11/12 excluded"
+}

@@ -7,3 +7,6 @@ CTL_LoRA_eval_data.json
 data/dpo/forge_state.db
 ctl_lora_training/
 data/sft_rebuild_*/
+data/opcd/c[0-9]*/
+data/opcd/vllm_check/
+data/opcd/hard_eval/

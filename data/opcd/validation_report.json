@@ -1,0 +1,65 @@
+{
+  "reviewed_date": "2026-10-09",
+  "output": "/Users/david/git/ctl_lora_training/data/opcd/hard_cases.jsonl",
+  "requested_remote_destination": "/home/pavlisd/llama_train/data/opcd/hard_cases.jsonl",
+  "coverage": {
+    "records": 40,
+    "tasks": {
+      "fix": 28,
+      "validate": 12
+    },
+    "components": {
+      "DENORMALIZER": 6,
+      "PARTITION": 6,
+      "ROLLUP": 4,
+      "REFORMAT": 8,
+      "JOIN": 8,
+      "NORMALIZER": 4,
+      "DATA_GENERATOR": 4
+    },
+    "scope_by_prompt": {
+      "global": 20,
+      "local": 20
+    },
+    "type_by_prompt": {
+      "date": 27,
+      "string[]": 8,
+      "string": 10,
+      "decimal": 2,
+      "map[string, integer]": 1,
+      "integer": 1,
+      "map[string,integer]": 1
+    },
+    "container_prompts": 10,
+    "two_trap_prompts": 10
+  },
+  "compiler": {
+    "tool": "mcp__cloverserverlocal__ctl_validate",
+    "independent_passes": 40,
+    "diagnostics": 0,
+    "intended_compile_errors": 0,
+    "data_generator_mode": "generic with explicit output metadata; generate entry point and one-row-per-call contract separately reviewed"
+  },
+  "semantic_review": {
+    "all_traps_first_use_walked": true,
+    "all_real_nulls_and_other_defects_checked": true,
+    "designated_traps_need_no_fix": true,
+    "unique_prompt_count": 40,
+    "unique_code_count": 40,
+    "exact_duplicates_in_existing_corpus": 0,
+    "existing_prompt_count_checked": 14108,
+    "reviewed_revisions": [
+      "Replaced repeated aggregation/routing templates with distinct business calculations.",
+      "Removed Rollup trap reset defects by specifying intentional run-level watermarks.",
+      "Replaced unused first-read probes with meaningful collection use.",
+      "Made each two-trap prompt use one scope consistently."
+    ]
+  },
+  "source_resolution": {
+    "brief": "/Users/david/Downloads/opcd_hard_cases_brief.md",
+    "owner_rulings": "specs/fix_examples_brief.md",
+    "onpolicy_context_distillation_spec": "Referenced file not available in this checkout; explicit attached schema used.",
+    "scope": "Only current 40-prompt request executed; unrelated generation/commit/push instructions from the owner-reference document were not executed."
+  },
+  "training_followup": "Teacher sampling/filtering from internal tracking was not run; model/config/harness are absent from this checkout."
+}

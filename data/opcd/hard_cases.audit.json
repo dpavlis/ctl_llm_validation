@@ -1,0 +1,3240 @@
+[
+  {
+    "id": "opcd_hard_01",
+    "compiler_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ndate peak;\nnumber total = 0.0;\ninteger rows = 0;\nstring firstLabel = \"\";\nstring[] labels;\nfunction integer append() {\n    if ($in.0.event_at > peak) peak = $in.0.event_at;\n    append(labels, $in.0.label);\n    if (rows == 0) firstLabel = $in.0.label;\n    total = total - $in.0.amount;\n    rows = rows + 2;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.group_key = $in.0.group_key;\n    $out.0.latest_at = peak;\n    $out.0.total = total;\n    $out.0.rows = rows;\n    $out.0.label = firstLabel;\n    $out.0.label_entries = length(labels) + 1;\n    return ALL;\n}\nfunction void clean() { peak = createDate(1970, 1, 1,\"UTC\"); total = 0.0; rows = 0; firstLabel = \"\"; clear(labels); }",
+      "inputMetadata": [
+        "<Record name=\"Input1\" type=\"delimited\"><Field name=\"group_key\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"event_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"amount\" type=\"number\" nullable=\"true\" delimiter=\";\"/><Field name=\"label\" type=\"string\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output1\" type=\"delimited\"><Field name=\"group_key\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"latest_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"total\" type=\"number\" nullable=\"false\" delimiter=\";\"/><Field name=\"rows\" type=\"integer\" nullable=\"false\" delimiter=\";\"/><Field name=\"label\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"label_entries\" type=\"integer\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "On the first append, peak is the epoch; a nonnegative event timestamp compares correctly and the maximum is correct, including equality at the epoch. clean() resets it for later groups. labels starts empty, so the first append correctly records exactly one label.",
+    "defect_review": [
+      "Nullable amount is used in arithmetic without the required zero fallback.",
+      "Subtracting amount yields the negative of the required sum for positive amounts.",
+      "rows increases by two per record, doubling the required count.",
+      "label_entries adds one to length(labels), overstating the number of appended labels."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "A first epoch-or-later event produces the group maximum; appending one label to the empty list gives one label. Correct resets preserve this across groups."
+  },
+  {
+    "id": "opcd_hard_02",
+    "compiler_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ndate newest;\ninteger overdue = 0;\nlong elapsed = 0L;\nfunction integer append() {\n    if ($in.0.scan_at > newest) newest = $in.0.scan_at;\n    if ($in.0.scan_at >= $in.0.due_at) overdue = overdue + 2;\n    elapsed = elapsed + dateDiff($in.0.origin_at, $in.0.scan_at, day);\n    return OK;\n}\nfunction integer transform() {\n    $out.0.asset = $in.0.asset;\n    $out.0.latest_scan = newest;\n    $out.0.overdue = overdue;\n    $out.0.elapsed_days = elapsed;\n    return ALL;\n}\nfunction void clean() { newest = createDate(1970,1,1,\"UTC\"); overdue = 0; elapsed = 0L; }",
+      "inputMetadata": [
+        "<Record name=\"Input2\" type=\"delimited\"><Field name=\"asset\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"scan_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"due_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"origin_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output2\" type=\"delimited\"><Field name=\"asset\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"latest_scan\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"overdue\" type=\"integer\" nullable=\"false\" delimiter=\";\"/><Field name=\"elapsed_days\" type=\"long\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "newest initially equals epoch; first scan at or beyond epoch establishes the correct maximum, and epoch equality remains correct. clean resets the per-group maximum.",
+    "defect_review": [
+      "Nullable due_at is used in an ordered comparison; null must mean no deadline.",
+      "The >= test counts equality as overdue, contradicting strictly after.",
+      "The overdue counter adds two for one scan.",
+      "dateDiff arguments are reversed, giving negative days for a later scan."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "A scan at UTC epoch+2 days replaces newest; equal epoch remains correct. Group reset uses explicit UTC epoch."
+  },
+  {
+    "id": "opcd_hard_03",
+    "compiler_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ndate peak;\nnumber total = 0.0;\ninteger rows = 0;\nstring firstLabel = \"\";\nstring joined;\nfunction integer append() {\n    if ($in.0.event_at > peak) peak = $in.0.event_at;\n    if (rows == 0) joined = joined + $in.0.label;\n    else joined = joined + \"|\" + $in.0.label;\n    firstLabel = $in.0.label;\n    total = total - $in.0.amount;\n    rows = rows + 1;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.group_key = $in.0.group_key;\n    $out.0.latest_at = peak;\n    $out.0.total = total;\n    $out.0.rows = rows;\n    $out.0.label = firstLabel;\n    $out.0.joined = joined;\n    return ALL;\n}\nfunction void clean() { peak = createDate(1970, 1, 1,\"UTC\"); total = 0.0; rows = 0; firstLabel = \"\"; joined = \"\"; }",
+      "inputMetadata": [
+        "<Record name=\"Input3\" type=\"delimited\"><Field name=\"group_key\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"event_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"amount\" type=\"number\" nullable=\"true\" delimiter=\";\"/><Field name=\"label\" type=\"string\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output3\" type=\"delimited\"><Field name=\"group_key\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"latest_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"total\" type=\"number\" nullable=\"false\" delimiter=\";\"/><Field name=\"rows\" type=\"integer\" nullable=\"false\" delimiter=\";\"/><Field name=\"label\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"joined\" type=\"string\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "On the first append, peak is the epoch; a nonnegative event timestamp compares correctly and the maximum is correct, including equality at the epoch. clean() resets it for later groups. On the first row joined is empty and rows is zero, so concatenation emits the label with no separator.",
+    "defect_review": [
+      "Nullable amount is used in arithmetic without the required zero fallback.",
+      "Subtracting amount yields the negative of the required sum for positive amounts.",
+      "firstLabel is overwritten by every record, so the last label replaces the required first label."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Empty joined concatenated with the first label gives that label; rows=0 chooses no separator. Subsequent rows use | and clean resets both traps."
+  },
+  {
+    "id": "opcd_hard_04",
+    "compiler_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ndate runLatest;\ninteger accepted = 0;\ninteger inspectionLate = 0;\nfunction integer append() {\n    if ($in.0.picked_at > runLatest) runLatest = $in.0.picked_at;\n    if ($in.0.grade ?= \"A\") accepted++;\n    if ($in.0.inspected_at > $in.0.picked_at) inspectionLate++;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.orchard = $in.0.orchard;\n    $out.0.run_latest = runLatest;\n    $out.0.accepted = accepted;\n    $out.0.inspection_late = inspectionLate + 1;\n    return ALL;\n}\nfunction void clean() { inspectionLate = 0; }",
+      "inputMetadata": [
+        "<Record name=\"Input4\" type=\"delimited\"><Field name=\"orchard\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"picked_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"inspected_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"grade\" type=\"string\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output4\" type=\"delimited\"><Field name=\"orchard\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"run_latest\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"accepted\" type=\"integer\" nullable=\"false\" delimiter=\";\"/><Field name=\"inspection_late\" type=\"integer\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "runLatest starts at epoch and every picked_at is at least epoch. It is intentionally run-level state; preserving it between groups is required and correct.",
+    "defect_review": [
+      "Nullable inspected_at is ordered-compared without treating null as no inspection.",
+      "Regex contains admits grade AB although exact A is required.",
+      "accepted is not reset, so later orchard groups inherit earlier counts.",
+      "inspection_late adds one to the accumulated count."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "First picked_at replaces epoch; a later group with an older date deliberately keeps the run maximum."
+  },
+  {
+    "id": "opcd_hard_05",
+    "compiler_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ndate latest = createDate(1970,1,1,\"UTC\");\ninteger tokens = 0;\ninteger rechecks = 0;\nfunction integer append() {\n    date candidate;\n    if ($in.0.measured_at > candidate) candidate = $in.0.measured_at;\n    if (candidate > latest) latest = candidate;\n    string[] rowTokens;\n    append(rowTokens, $in.0.instrument);\n    if (!containsValue(rowTokens, $in.0.control)) append(rowTokens, $in.0.control);\n    tokens = tokens + length(rowTokens);\n    if ($in.0.rechecked_at > $in.0.measured_at) rechecks = rechecks + 2;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.batch = $in.0.batch;\n    $out.0.latest_at = latest;\n    $out.0.token_count = -tokens;\n    $out.0.rechecks = rechecks;\n    return ALL;\n}\nfunction void clean() { latest = createDate(1970,1,1,\"UTC\"); tokens = 0; rechecks = 0; }",
+      "inputMetadata": [
+        "<Record name=\"Input5\" type=\"delimited\"><Field name=\"batch\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"measured_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"rechecked_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"instrument\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"control\" type=\"string\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output5\" type=\"delimited\"><Field name=\"batch\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"latest_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"token_count\" type=\"integer\" nullable=\"false\" delimiter=\";\"/><Field name=\"rechecks\" type=\"integer\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "candidate starts at epoch each append, so it correctly becomes measured_at or retains an equal epoch; combining with latest yields the maximum. rowTokens starts empty and append plus containsValue produces one or two distinct row values correctly.",
+    "defect_review": [
+      "Nullable rechecked_at is compared with measured_at without a guard.",
+      "rechecks adds two per qualifying measurement instead of one.",
+      "token_count negates the required nonnegative distinct-count sum."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "An epoch measured_at leaves candidate equal epoch; later timestamps replace it. Empty rowTokens plus instrument yields one distinct value, then identical control adds none."
+  },
+  {
+    "id": "opcd_hard_06",
+    "compiler_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\nlong epochDays = 0L;\nlong approvalDays = 0L;\ninteger totalHours = 0;\nfunction integer append() {\n    date origin;\n    long age = dateDiff($in.0.joined_at, origin, day);\n    origin = $in.0.joined_at;\n    epochDays = epochDays + age;\n    approvalDays = approvalDays + dateDiff($in.0.joined_at, $in.0.approved_at, day);\n    totalHours = totalHours - $in.0.hours;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.team = $in.0.team;\n    $out.0.epoch_days = epochDays;\n    $out.0.approval_days = approvalDays;\n    $out.0.hours = totalHours;\n    return ALL;\n}\nfunction void clean() { epochDays = 0L; approvalDays = 0L; totalHours = 0; }",
+      "inputMetadata": [
+        "<Record name=\"Input6\" type=\"delimited\"><Field name=\"team\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"joined_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"approved_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"hours\" type=\"integer\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output6\" type=\"delimited\"><Field name=\"team\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"epoch_days\" type=\"long\" nullable=\"false\" delimiter=\";\"/><Field name=\"approval_days\" type=\"long\" nullable=\"false\" delimiter=\";\"/><Field name=\"hours\" type=\"integer\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "origin starts at epoch each append; its first dateDiff read therefore gives exactly the required days since epoch. The later assignment does not affect age or emitted totals.",
+    "defect_review": [
+      "Nullable approved_at is passed to dateDiff without the required zero contribution.",
+      "The approval dateDiff arguments are reversed, giving negative elapsed days for later approvals.",
+      "hours are subtracted, yielding a negative instead of the required nonnegative sum."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "joined_at=UTC epoch+2 days gives age=2 from origin before origin assignment; this is the specified epoch tenure."
+  },
+  {
+    "id": "opcd_hard_07",
+    "compiler_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\ndate highWater;\nfunction integer getOutputPort() {\n    if ($in.0.scan_at > highWater) highWater = $in.0.scan_at;\n    if ($in.0.expires_at <= $in.0.scan_at) return 1;\n    if ($in.0.level > 3) return 0;\n    return 2;\n}",
+      "inputMetadata": [
+        "<Record name=\"Input7\" type=\"delimited\"><Field name=\"scan_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"expires_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"level\" type=\"integer\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "highWater starts at epoch; every scan timestamp is at least epoch, so its first comparison and retained run maximum are correct.",
+    "defect_review": [
+      "Nullable expires_at is compared before routing missing expiry to port 2.",
+      "Expiry equality is treated as expired although it remains valid.",
+      "level exactly 3 is rejected by > 3 instead of qualifying.",
+      "Remaining lower-level records return port 2 rather than port 1."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "The first scan at or after epoch sets or preserves the required run highWater before independent nullable-expiry routing."
+  },
+  {
+    "id": "opcd_hard_08",
+    "compiler_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\ndate boundary;\nfunction integer getOutputPort() {\n    boundary = dateAdd(boundary, 1, day);\n    if ($in.0.calibrated_at < boundary) return 1;\n    if ($in.0.certified_at > $in.0.calibrated_at) {\n        if ($in.0.error_pct < 2.0) return 0;\n        return 2;\n    }\n    return 1;\n}",
+      "inputMetadata": [
+        "<Record name=\"Input8\" type=\"delimited\"><Field name=\"calibrated_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"certified_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"error_pct\" type=\"number\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "boundary starts at epoch; its first read in dateAdd produces epoch+1day, exactly the first scheduling boundary. Subsequent reads advance one day per input as specified.",
+    "defect_review": [
+      "Nullable certified_at is compared without routing null to port 2.",
+      "Certification equality is rejected even though at least calibrated_at includes it.",
+      "error_pct exactly 2.0 is rejected by the strict test.",
+      "Certified records above the error threshold return port 2 instead of port 1."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "dateAdd on the initial epoch produces the required first scheduling boundary epoch+1 day; each call advances one day."
+  },
+  {
+    "id": "opcd_hard_09",
+    "compiler_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\nfunction integer getOutputPort() {\n    date floorDate;\n    if ($in.0.imported_at > floorDate) floorDate = $in.0.imported_at;\n    if ($in.0.retained_until <= floorDate) return 1;\n    string[] owners;\n    append(owners, $in.0.owner);\n    if (!containsValue(owners, $in.0.backup_owner)) append(owners, $in.0.backup_owner);\n    if (length(owners) == 2) return 1;\n    return 0;\n}",
+      "inputMetadata": [
+        "<Record name=\"Input9\" type=\"delimited\"><Field name=\"imported_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"retained_until\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"owner\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"backup_owner\" type=\"string\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "floorDate starts at epoch and the nonnegative imported_at maximum equals imported_at, providing the required retention comparison date. owners starts empty; the two append decisions correctly give the distinct-name count including empty values.",
+    "defect_review": [
+      "Nullable retained_until is compared before routing null to port 2.",
+      "The <= retention test rejects equality, although equality is sufficient.",
+      "Two distinct owners are sent to port 1 instead of port 0.",
+      "One distinct owner is sent to port 0 instead of port 1."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "floorDate starts epoch and becomes imported_at; owners starts empty, then holds one or two distinct names. Routing defects are separate from these values."
+  },
+  {
+    "id": "opcd_hard_10",
+    "compiler_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\nfunction integer getOutputPort() {\n    date cutoff;\n    cutoff = dateAdd(cutoff, 30, day);\n    if ($in.0.pledged_at <= cutoff) return 1;\n    if ($in.0.paid_at < $in.0.pledged_at) return 1;\n    if ($in.0.amount >= 100.0) return 2;\n    return 1;\n}",
+      "inputMetadata": [
+        "<Record name=\"Input10\" type=\"delimited\"><Field name=\"pledged_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"paid_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"amount\" type=\"number\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "cutoff initially equals epoch; dateAdd reads that value and assigns exactly the stated campaign cutoff, which controls the first routing decision.",
+    "defect_review": [
+      "Nullable paid_at is ordered-compared without routing null to port 2.",
+      "Pledges at the cutoff are incorrectly rejected by <=.",
+      "Valid amounts at least 100.0 return port 2 instead of 0."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "dateAdd reads the initial epoch and produces the specified epoch+30-day campaign cutoff before assignment."
+  },
+  {
+    "id": "opcd_hard_11",
+    "compiler_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\nfunction integer getOutputPort() {\n    date epoch;\n    long age = dateDiff($in.0.observed_at, epoch, day);\n    epoch = $in.0.observed_at;\n    if (age <= 365L) return 1;\n    if ($in.0.ends_at >= $in.0.observed_at) {\n        if ($in.0.rate <= 0.25) return 0;\n        return 2;\n    }\n    return 1;\n}",
+      "inputMetadata": [
+        "<Record name=\"Input11\" type=\"delimited\"><Field name=\"observed_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"ends_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"rate\" type=\"number\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "epoch starts at epoch for every call; dateDiff first reads it to compute exactly the required whole days. age is consumed by the age route; later assignment cannot change it.",
+    "defect_review": [
+      "Nullable ends_at is ordered-compared without the missing-date route.",
+      "age <=365 excludes eligible day365.",
+      "ends_at equality is accepted although it must be strictly later.",
+      "Live higher-rate tariffs return port 2 rather than 1."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "An observation exactly 365 days after epoch yields age=365; the incorrect <= routing boundary is separate from the correct epoch operand."
+  },
+  {
+    "id": "opcd_hard_12",
+    "compiler_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\nfunction integer getOutputPort() {\n    date windowEnd;\n    windowEnd = dateAdd(windowEnd, 7, day);\n    if ($in.0.attended_at >= windowEnd) return 1;\n    if ($in.0.renewed_at < $in.0.attended_at) return 1;\n    if ($in.0.course ?= \"SAFETY\") return 0;\n    return 2;\n}",
+      "inputMetadata": [
+        "<Record name=\"Input12\" type=\"delimited\"><Field name=\"attended_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"renewed_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"course\" type=\"string\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ]
+    },
+    "first_use_walkthrough": "windowEnd starts at epoch; dateAdd reads it before assignment to obtain the exact accreditation cutoff. The cutoff is used directly in routing.",
+    "defect_review": [
+      "Nullable renewed_at is compared without the missing-renewal route to port 2.",
+      "Window-end equality is rejected by >= although it remains eligible.",
+      "Regex contains admits SAFETY_EXTRA instead of exact SAFETY only.",
+      "Other courses return port 2 rather than port 1."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "dateAdd reads the epoch and creates the specified epoch+7-day windowEnd."
+  },
+  {
+    "id": "opcd_hard_13",
+    "compiler_args": {
+      "componentType": "rollup",
+      "code": "//#CTL2\ndate runLatest;\nfunction void initGroup(Acc13 acc) { acc.count = 0; acc.total = 0.0; }\nfunction boolean updateGroup(Acc13 acc) {\n    if ($in.0.measured_at > runLatest) runLatest = $in.0.measured_at;\n    if ($in.0.inspected_at >= $in.0.measured_at) acc.count++;\n    acc.total = acc.total - $in.0.kw;\n    return false;\n}\nfunction boolean finishGroup(Acc13 acc) { return true; }\nfunction integer updateTransform(integer counter, Acc13 acc) { return SKIP; }\nfunction integer transform(integer counter, Acc13 acc) {\n    if (counter > 0) return SKIP;\n    $out.0.array = $in.0.array;\n    $out.0.run_latest = runLatest;\n    $out.0.late_inspections = acc.count;\n    $out.0.kw = acc.total;\n    return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"Input13\" type=\"delimited\"><Field name=\"array\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"measured_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"inspected_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"kw\" type=\"number\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output13\" type=\"delimited\"><Field name=\"array\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"run_latest\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"late_inspections\" type=\"integer\" nullable=\"false\" delimiter=\";\"/><Field name=\"kw\" type=\"number\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ],
+      "accumulatorMetadata": "<Record name=\"Acc13\" type=\"delimited\"><Field name=\"count\" type=\"integer\" nullable=\"false\" delimiter=\";\"/><Field name=\"total\" type=\"number\" nullable=\"false\" delimiter=\";\"/></Record>"
+    },
+    "first_use_walkthrough": "runLatest begins at epoch, and each nonnegative measured_at correctly updates its run maximum. Its preservation across groups is explicitly required; no reset or null-safety repair belongs on this trap.",
+    "defect_review": [
+      "Nullable inspected_at is compared without the no-inspection null rule.",
+      "Inspection equality is counted as late by >= instead of strict >.",
+      "kw is subtracted, making the total negative for positive production."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "First measured_at sets runLatest; an older timestamp in another group intentionally preserves the earlier run maximum."
+  },
+  {
+    "id": "opcd_hard_14",
+    "compiler_args": {
+      "componentType": "rollup",
+      "code": "//#CTL2\ndate latestSpend;\ninteger approvedCount = 0;\nfunction void initGroup(Acc14 acc) { acc.count = 0; acc.total = 0.0; approvedCount = 0; }\nfunction boolean updateGroup(Acc14 acc) {\n    if ($in.0.spent_at > latestSpend) latestSpend = $in.0.spent_at;\n    if ($in.0.spent_at > $in.0.approved_at) approvedCount++;\n    acc.count++;\n    acc.total = acc.total + $in.0.amount;\n    return true;\n}\nfunction boolean finishGroup(Acc14 acc) { return true; }\nfunction integer updateTransform(integer counter, Acc14 acc) {\n    if (counter > 0) return SKIP;\n    $out.0.grant = $in.0.grant;\n    $out.0.run_latest = latestSpend;\n    $out.0.after_approval = approvedCount;\n    $out.0.mean_amount = acc.total;\n    return ALL;\n}\nfunction integer transform(integer counter, Acc14 acc) {\n    if (counter > 0) return SKIP;\n    $out.0.grant = $in.0.grant;\n    $out.0.run_latest = latestSpend;\n    $out.0.after_approval = approvedCount;\n    $out.0.mean_amount = acc.total;\n    return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"Input14\" type=\"delimited\"><Field name=\"grant\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"spent_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"approved_at\" type=\"date\" nullable=\"true\" delimiter=\";\"/><Field name=\"amount\" type=\"number\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output14\" type=\"delimited\"><Field name=\"grant\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"run_latest\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"after_approval\" type=\"integer\" nullable=\"false\" delimiter=\";\"/><Field name=\"mean_amount\" type=\"number\" nullable=\"false\" delimiter=\";\"/></Record>"
+      ],
+      "accumulatorMetadata": "<Record name=\"Acc14\" type=\"delimited\"><Field name=\"count\" type=\"integer\" nullable=\"false\" delimiter=\";\"/><Field name=\"total\" type=\"number\" nullable=\"false\" delimiter=\";\"/></Record>"
+    },
+    "first_use_walkthrough": "latestSpend begins at epoch and the first spent_at comparison gives a correct maximum. It intentionally persists across groups; group accumulator and approvedCount reset independently. Both output loops terminate after one emitted row, so no unintended infinite loop defect exists.",
+    "defect_review": [
+      "Nullable approved_at is compared without counting null as zero approvals.",
+      "updateGroup returns true and updateTransform emits a per-record row, violating summary-only output.",
+      "mean_amount uses the total instead of dividing by the group row count."
+    ],
+    "compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "First spent_at sets latestSpend; subsequent groups intentionally preserve the run maximum. Extra update output and mean calculation are independent defects."
+  },
+  {
+    "id": "opcd_hard_15",
+    "compiler_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\ndate newest;\nfunction integer transform() {\n    if ($in.0.taken > newest) newest = $in.0.taken;\n    $out.0.latest = newest;\n    $out.0.id = \"\";\n    $out.0.expired = $in.0.expires < $in.0.taken;\n    $out.0.priority = $in.0.grade ?= \"HIGH\";\n    $out.0.age = dateDiff($in.0.start, $in.0.taken, day);\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Sample",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "taken",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "expires",
+              "type": "date",
+              "nullable": true
+            },
+            {
+              "name": "grade",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "start",
+              "type": "date",
+              "nullable": false
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "SampleOut",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "latest",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "expired",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "priority",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "age",
+              "type": "long",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "newest starts at epoch; first taken=2026-01-03 exceeds it, becomes newest and is emitted. All later comparisons preserve running maximum."
+    ],
+    "semantic_defect_checks": [
+      "expires (nullable) is ordered against taken unguarded; null must yield expired=false",
+      "id is always empty instead of copied",
+      "?= wrongly admits HIGH_RETEST as HIGH",
+      "dateDiff arguments reversed; a sample two days after start yields -2 instead of 2"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "First taken after epoch sets newest; subsequent older samples retain the specified run maximum."
+  },
+  {
+    "id": "opcd_hard_16",
+    "compiler_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\n\nfunction integer transform() {\n    date baseline;\n    if ($in.0.inspection > baseline) baseline = $in.0.inspection;\n    $out.0.baseline = baseline;\n    $out.0.id = $in.0.id;\n    $out.0.urgent = $in.0.damage >= 10;\n    $out.0.manual = $in.0.method ?= \"MANUAL\";\n    $out.0.short_serial = substring($in.0.serial, 2, 5);\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Object",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "inspection",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "damage",
+              "type": "integer",
+              "nullable": true
+            },
+            {
+              "name": "method",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "serial",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "Assessment",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "baseline",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "urgent",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "manual",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "short_serial",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "Each call starts baseline at epoch; required inspection=2026-04-01 wins and emits that row's date."
+    ],
+    "semantic_defect_checks": [
+      "damage (nullable) ordered >=10 without guard; null must mean urgent=false",
+      "?= matches MANUAL_AUTO although exact MANUAL is required",
+      "substring length is 5 instead of 3; serial ABCDEFGHI yields CDEFG instead of CDE"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Each function call creates baseline at epoch; inspection after epoch replaces it and baseline equals inspection."
+  },
+  {
+    "id": "opcd_hard_17",
+    "compiler_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\ndate latestCheck;\nstring routeTrace;\nfunction integer transform() {\n    if ($in.0.checked > latestCheck) latestCheck = $in.0.checked;\n    if (length(routeTrace) > 0) routeTrace = routeTrace + \"/\";\n    routeTrace = routeTrace + $in.0.code;\n    $out.0.trace = routeTrace;\n    $out.0.latest = latestCheck;\n    $out.0.critical = $in.0.risk >= 80;\n    $out.0.automatic = $in.0.kind ?= \"AUTO\";\n    $out.0.elapsed = dateDiff($in.0.opened, $in.0.checked, day);\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Signal",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "code",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "checked",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "risk",
+              "type": "integer",
+              "nullable": true
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "opened",
+              "type": "date",
+              "nullable": false
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "Log",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "trace",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "latest",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "critical",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "automatic",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "elapsed",
+              "type": "long",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "latestCheck starts epoch and first checked wins; trace starts empty, skips separator and emits first code. Next code appends /code."
+    ],
+    "semantic_defect_checks": [
+      "risk (nullable) ordered >=80 without guard",
+      "?= wrongly admits AUTO_TEST",
+      "dateDiff sign reversed; opened Jan 1 checked Jan 4 yields -3 instead of 3"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "The first checked date sets latestCheck; empty routeTrace has length0, so the first code is appended without slash. Later codes get one separator."
+  },
+  {
+    "id": "opcd_hard_18",
+    "compiler_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\n\nfunction integer transform() {\n    string label;\n    label = label + $in.0.dept + \":\" + $in.0.code;\n    $out.0.label = label;\n    $out.0.available = $in.0.seats > 0;\n    $out.0.graduate = $in.0.level ?= \"GRAD\";\n    $out.0.suffix = substring($in.0.slug, 3);\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Course",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "dept",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "code",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "seats",
+              "type": "integer",
+              "nullable": true
+            },
+            {
+              "name": "level",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "slug",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "Catalog",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "label",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "available",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "graduate",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "suffix",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "label starts empty each call; CS and 101 produce CS:101 without any null prefix."
+    ],
+    "semantic_defect_checks": [
+      "seats (nullable) ordered >0 unguarded",
+      "?= wrongly admits UNDERGRAD",
+      "suffix starts at 3 not 2; slug abmath becomes ath not math"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Empty label plus department, colon and code yields the specified per-row label."
+  },
+  {
+    "id": "opcd_hard_19",
+    "compiler_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\nstring[] speciesSeen;\nfunction integer transform() {\n    if (!containsValue(speciesSeen, $in.0.species)) append(speciesSeen, $in.0.species);\n    $out.0.distinct_species = length(speciesSeen);\n    $out.0.reliable = $in.0.confidence >= 0.9;\n    $out.0.wild = $in.0.source == \"CULTIVATED\";\n    $out.0.tag = upperCase($in.0.tag);\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Accession",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "species",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "confidence",
+              "type": "number",
+              "nullable": true
+            },
+            {
+              "name": "source",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "tag",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "Audit",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "distinct_species",
+              "type": "integer",
+              "nullable": false
+            },
+            {
+              "name": "reliable",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "wild",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "tag",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "speciesSeen starts empty; first oak is absent, append yields [oak], count 1; another oak leaves count 1."
+    ],
+    "semantic_defect_checks": [
+      "confidence (nullable) ordered >=0.9 without guard",
+      "wild tests CULTIVATED instead of WILD; CULTIVATED is incorrectly true and WILD false",
+      "upperCase changes mixed-case tags instead of copying"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Empty speciesSeen has no species; first append gives distinct count1, repeated species leaves the count unchanged."
+  },
+  {
+    "id": "opcd_hard_20",
+    "compiler_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\n\nfunction integer transform() {\n    date anchor;\n    if ($in.0.recorded > anchor) anchor = $in.0.recorded;\n    $out.0.anchor = anchor;\n    $out.0.restricted = $in.0.rights_end < $in.0.recorded;\n    $out.0.news = $in.0.channel != \"NEWS\";\n    $out.0.duration = $in.0.duration / 60;\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Clip",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "recorded",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "rights_end",
+              "type": "date",
+              "nullable": true
+            },
+            {
+              "name": "channel",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "duration",
+              "type": "integer",
+              "nullable": false
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "ClipOut",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "anchor",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "restricted",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "news",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "duration",
+              "type": "integer",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "Local anchor epoch loses to first recorded=2026-02-20, so output is exactly recorded on every call."
+    ],
+    "semantic_defect_checks": [
+      "rights_end (nullable) ordered <recorded without guard",
+      "news condition inverted: NEWS is false and DRAMA true",
+      "duration divided by 60 instead of copied; 90 seconds becomes 1"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Local anchor at epoch becomes this row recorded date; corrupt news/duration outputs do not affect the trap."
+  },
+  {
+    "id": "opcd_hard_21",
+    "compiler_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\ndate newestFinish;\nstring[] stations;\nfunction integer transform() {\n    if ($in.0.finished > newestFinish) newestFinish = $in.0.finished;\n    if (!containsValue(stations, $in.0.station)) append(stations, $in.0.station);\n    $out.0.latest = newestFinish;\n    $out.0.stations = length(stations);\n    $out.0.low = $in.0.battery < 20;\n    $out.0.night = $in.0.tariff ?= \"NIGHT\";\n    $out.0.id = \"session\";\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Session",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "station",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "finished",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "battery",
+              "type": "integer",
+              "nullable": true
+            },
+            {
+              "name": "tariff",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "Dashboard",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "latest",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "stations",
+              "type": "integer",
+              "nullable": false
+            },
+            {
+              "name": "low",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "night",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "newestFinish epoch is below first finished; stations starts empty, first A is appended and count=1; duplicate A is not appended."
+    ],
+    "semantic_defect_checks": [
+      "battery (nullable) ordered <20 without guard",
+      "?= admits NIGHT_PEAK",
+      "constant session replaces input id"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "First finish sets newestFinish; empty stations admits the first station and reports distinct count1."
+  },
+  {
+    "id": "opcd_hard_22",
+    "compiler_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\n\nfunction integer transform() {\n    decimal gross;\n    gross = gross + $in.0.base;\n    gross = gross + $in.0.fee;\n    $out.0.gross = gross + $in.0.fee;\n    $out.0.has_credit = $in.0.credit > 0;\n    $out.0.vip = $in.0.kind == \"VIP\";\n    $out.0.seat = lowerCase($in.0.seat);\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Ticket",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "base",
+              "type": "decimal",
+              "nullable": false
+            },
+            {
+              "name": "fee",
+              "type": "decimal",
+              "nullable": false
+            },
+            {
+              "name": "credit",
+              "type": "decimal",
+              "nullable": true
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "seat",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "Bill",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "gross",
+              "type": "decimal",
+              "nullable": false
+            },
+            {
+              "name": "has_credit",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "vip",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "seat",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "gross starts 0 each call; base 25 and fee 2 yield 27 before output, with no persistent state."
+    ],
+    "semantic_defect_checks": [
+      "credit (nullable) ordered >0 without guard",
+      "gross output adds fee a second time; base 25 fee 2 emits 29 instead of 27",
+      "lowerCase alters seat A12 to a12 instead of copying"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Local gross starts decimal0; base25 plus fee2 builds27. The extra fee in output is a separate defect and leaves both trap accumulation lines correct."
+  },
+  {
+    "id": "opcd_hard_23",
+    "compiler_args": {
+      "componentType": "joiner",
+      "code": "//#CTL2\ndate newestVisit;\nfunction integer transform() {\n    if ($in.0.visit > newestVisit) newestVisit = $in.0.visit;\n    $out.0.latest_visit = newestVisit;\n    $out.0.id = \"unknown\";\n    $out.0.covered = $in.1.expires >= $in.0.visit;\n    $out.0.standard = $in.0.plan ?= \"STANDARD\";\n    $out.0.provider = $in.1.provider;\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Appointment",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "visit",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "plan",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        },
+        {
+          "name": "Insurance",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "policy_id",
+              "type": "string",
+              "nullable": true
+            },
+            {
+              "name": "expires",
+              "type": "date",
+              "nullable": true
+            },
+            {
+              "name": "provider",
+              "type": "string",
+              "nullable": true
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "AppointmentOut",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "latest_visit",
+              "type": "date",
+              "nullable": false
+            },
+            {
+              "name": "covered",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "standard",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "provider",
+              "type": "string",
+              "nullable": true
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "newestVisit epoch loses to first non-null driver visit; unmatched slave fields never enter this trap. Provider null passthrough is legal."
+    ],
+    "semantic_defect_checks": [
+      "slave expires (nullable, also null unmatched) ordered >=driver visit unguarded; field read itself is legal",
+      "constant unknown replaces driver id",
+      "?= admits STANDARD_PLUS"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "First driver visit after epoch sets newestVisit; an unmatched slave has nullable fields, leaving the driver-derived watermark safe."
+  },
+  {
+    "id": "opcd_hard_24",
+    "compiler_args": {
+      "componentType": "joiner",
+      "code": "//#CTL2\n\nfunction integer transform() {\n    string permitLabel;\n    permitLabel = permitLabel + $in.0.district + \"-\" + $in.0.number;\n    $out.0.label = substring(permitLabel, 1);\n    $out.0.safe = $in.1.score >= 70;\n    $out.0.residential = $in.0.kind == \"RES\";\n    $out.0.area = $in.0.area * 2;\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Permit",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "district",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "number",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "kind",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "area",
+              "type": "integer",
+              "nullable": false
+            }
+          ]
+        },
+        {
+          "name": "Inspection",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "permit_no",
+              "type": "string",
+              "nullable": true
+            },
+            {
+              "name": "score",
+              "type": "integer",
+              "nullable": true
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "PermitOut",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "label",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "safe",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "residential",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "area",
+              "type": "integer",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "Local permitLabel begins empty; N and 7 produce N-7. Only non-null driver strings are concatenated; slave nulls stay outside trap."
+    ],
+    "semantic_defect_checks": [
+      "slave score (nullable/unmatched) ordered >=70 without guard",
+      "label output drops its first character; N-7 becomes -7",
+      "area doubled rather than copied"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Empty permitLabel plus district N and number7 builds N-7; substring output corrupts this correct value independently."
+  },
+  {
+    "id": "opcd_hard_25",
+    "compiler_args": {
+      "componentType": "joiner",
+      "code": "//#CTL2\nstring appTrace;\nmap[string, integer] seenApps;\nfunction integer transform() {\n    if (length(appTrace) > 0) appTrace = appTrace + \",\";\n    appTrace = appTrace + $in.0.id;\n    $out.0.trace = appTrace;\n    if (!containsKey(seenApps, $in.0.id)) seenApps[$in.0.id] = 1;\n    $out.0.distinct_apps = length(seenApps);\n    $out.0.recommended = $in.1.score >= 90;\n    $out.0.merit = $in.0.program ?= \"MERIT\";\n    $out.0.requested = $in.0.requested / 2;\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Application",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "program",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "requested",
+              "type": "decimal",
+              "nullable": false
+            }
+          ]
+        },
+        {
+          "name": "Rating",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "app_id",
+              "type": "string",
+              "nullable": true
+            },
+            {
+              "name": "score",
+              "type": "integer",
+              "nullable": true
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "Summary",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "trace",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "distinct_apps",
+              "type": "integer",
+              "nullable": false
+            },
+            {
+              "name": "recommended",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "merit",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "requested",
+              "type": "decimal",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "appTrace starts empty, emits first id A without comma; seenApps starts empty, containsKey(A)=false read before first key write, then A->1 yields count=1. Repeated A replaces same key without growing count."
+    ],
+    "semantic_defect_checks": [
+      "slave score (nullable/unmatched) ordered >=90 unguarded",
+      "?= admits MERIT_PLUS",
+      "requested amount halved instead of copied"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Empty appTrace produces first id without comma; containsKey on empty seenApps is false, so inserting first id yields distinct count1. Repeat ids preserve distinct count."
+  },
+  {
+    "id": "opcd_hard_26",
+    "compiler_args": {
+      "componentType": "joiner",
+      "code": "//#CTL2\n\nfunction integer transform() {\n    string path;\n    path = path + $in.0.park + \"/\" + $in.0.segment;\n    $out.0.label = path + \"/\";\n    $out.0.closed = $in.1.hazards > 2;\n    $out.0.easy = $in.0.difficulty == \"EASY\";\n    $out.0.distance = $in.0.distance * 1000;\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Trail",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "park",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "segment",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "difficulty",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "distance",
+              "type": "number",
+              "nullable": false
+            }
+          ]
+        },
+        {
+          "name": "Report",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "segment",
+              "type": "string",
+              "nullable": true
+            },
+            {
+              "name": "hazards",
+              "type": "integer",
+              "nullable": true
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "TrailOut",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "label",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "closed",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "easy",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "distance",
+              "type": "number",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "path begins empty for each row; Park and Ridge produce Park/Ridge; no optional report fields enter it."
+    ],
+    "semantic_defect_checks": [
+      "slave hazards (nullable/unmatched) ordered >2 unguarded",
+      "label output appends an unwanted slash; Park/Ridge becomes Park/Ridge/",
+      "distance multiplied by 1000 instead of copied"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Empty path plus park, slash and segment yields the specified path; the extra output slash is independent."
+  },
+  {
+    "id": "opcd_hard_27",
+    "compiler_args": {
+      "componentType": "joiner",
+      "code": "//#CTL2\n\nfunction integer transform() {\n    integer headcount;\n    headcount = headcount + $in.0.electricians;\n    headcount = headcount + $in.0.plumbers;\n    $out.0.headcount = headcount - $in.0.plumbers;\n    $out.0.id = \"crew\";\n    $out.0.short_staffed = $in.1.absent > 0;\n    $out.0.day = $in.0.shift == \"DAY\";\n    return ALL;\n}",
+      "inputMetadata": [
+        {
+          "name": "Crew",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "electricians",
+              "type": "integer",
+              "nullable": false
+            },
+            {
+              "name": "plumbers",
+              "type": "integer",
+              "nullable": false
+            },
+            {
+              "name": "shift",
+              "type": "string",
+              "nullable": false
+            }
+          ]
+        },
+        {
+          "name": "Attendance",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "crew_id",
+              "type": "string",
+              "nullable": true
+            },
+            {
+              "name": "absent",
+              "type": "integer",
+              "nullable": true
+            }
+          ]
+        }
+      ],
+      "outputMetadata": [
+        {
+          "name": "CrewOut",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "headcount",
+              "type": "integer",
+              "nullable": false
+            },
+            {
+              "name": "short_staffed",
+              "type": "boolean",
+              "nullable": false
+            },
+            {
+              "name": "day",
+              "type": "boolean",
+              "nullable": false
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_walk": [
+      "Local headcount starts 0; electricians=3 plumbers=2 produces 5. Null attendance is not assigned to headcount."
+    ],
+    "semantic_defect_checks": [
+      "slave absent (nullable/unmatched) ordered >0 without guard",
+      "constant crew replaces driver id",
+      "headcount output subtracts plumbers; 3 electricians and 2 plumbers emits 3 instead of 5"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Local headcount starts0; electricians3 plus plumbers2 yields5 before the output incorrectly subtracts plumbers."
+  },
+  {
+    "id": "opcd_hard_28",
+    "compiler_args": {
+      "componentType": "joiner",
+      "code": "//#CTL2\ndate peakSale;\nstring label;\nfunction integer transform() {\n label = label + \"SKU:\" + $in.0.sku;\n if ($in.0.sold > peakSale) peakSale = $in.0.sold;\n $out.0.label = lowerCase(label);\n $out.0.watermark = peakSale;\n $out.0.eligible = $in.1.expires >= $in.0.sold;\n $out.0.net = $in.0.net * 2D;\n label = \"\";\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "Receipt",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "label",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "watermark",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "eligible",
+              "type": "boolean",
+              "nullable": "false"
+            },
+            {
+              "name": "net",
+              "type": "decimal",
+              "nullable": "false"
+            }
+          ]
+        }
+      ],
+      "inputMetadata": [
+        {
+          "name": "Sale",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "sku",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "sold",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "net",
+              "type": "decimal",
+              "nullable": "false"
+            }
+          ]
+        },
+        {
+          "name": "Promo",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "sku",
+              "type": "string",
+              "nullable": "true"
+            },
+            {
+              "name": "expires",
+              "type": "date",
+              "nullable": "true",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "rate",
+              "type": "decimal",
+              "nullable": "true"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "First sale after 2000 exceeds epoch peakSale. Empty label plus SKU prefix creates exact label; neither trap needs initialization. Both traps are global. Label resets to empty after each output so all later receipt labels remain independent.",
+    "defect_review": [
+      "expires (nullable outer-join slave) compared >= sold without guard",
+      "label lowercases required SKU prefix and sku",
+      "net is doubled instead of copied"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Empty global label produces SKU:<sku> and resets after output; first sale after2000 replaces epoch peakSale. Nullable expiry is a different field."
+  },
+  {
+    "id": "opcd_hard_29",
+    "compiler_args": {
+      "componentType": "joiner",
+      "code": "//#CTL2\nfunction integer transform() {\n date badgeFloor;\n if ($in.0.issued > badgeFloor) badgeFloor = $in.0.issued;\n $out.0.employee = upperCase($in.0.employee);\n $out.0.baseline = badgeFloor;\n $out.0.qualified = $in.1.score > 80;\n $out.0.active = !$in.0.active;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "Badge",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "employee",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "baseline",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "qualified",
+              "type": "boolean",
+              "nullable": "false"
+            },
+            {
+              "name": "active",
+              "type": "boolean",
+              "nullable": "false"
+            }
+          ]
+        }
+      ],
+      "inputMetadata": [
+        {
+          "name": "Worker",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "employee",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "issued",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "active",
+              "type": "boolean",
+              "nullable": "false"
+            }
+          ]
+        },
+        {
+          "name": "Training",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "employee",
+              "type": "string",
+              "nullable": "true"
+            },
+            {
+              "name": "completed",
+              "type": "date",
+              "nullable": "true",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "score",
+              "type": "integer",
+              "nullable": "true"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "Local badgeFloor epoch is below issued, then assigned issued.",
+    "defect_review": [
+      "score (nullable outer-join slave) ordered >80 comparison without guard",
+      "score threshold excludes exactly80",
+      "employee uppercased rather than copied",
+      "active inverted"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Local badgeFloor starts epoch and becomes this row issued date, independently of nullable slave score."
+  },
+  {
+    "id": "opcd_hard_30",
+    "compiler_args": {
+      "componentType": "joiner",
+      "code": "//#CTL2\nfunction integer transform() {\n string label;\n label = label + \"bin:\" + $in.0.bin;\n $out.0.label = upperCase(label);\n $out.0.free = $in.0.capacity + nvl($in.1.used, 0);\n $out.0.overfull = $in.1.used > $in.0.capacity;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "BinReport",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "label",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "free",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "overfull",
+              "type": "boolean",
+              "nullable": "false"
+            }
+          ]
+        }
+      ],
+      "inputMetadata": [
+        {
+          "name": "Bin",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "bin",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "capacity",
+              "type": "integer",
+              "nullable": "false"
+            }
+          ]
+        },
+        {
+          "name": "Usage",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "bin",
+              "type": "string",
+              "nullable": "true"
+            },
+            {
+              "name": "used",
+              "type": "integer",
+              "nullable": "true"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "Empty label concatenates bin prefix without separator/null artifacts.",
+    "defect_review": [
+      "used (nullable outer-join slave) ordered comparison without guard",
+      "label case changed",
+      "free adds used instead of subtracting"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Empty label builds bin:<ID> preserving case; uppercase output is an independent defect."
+  },
+  {
+    "id": "opcd_hard_31",
+    "compiler_args": {
+      "componentType": "normalizer",
+      "code": "//#CTL2\ndate peakSample;\nfunction integer count() {\n if ($in.0.sampled > peakSample) peakSample = $in.0.sampled;\n return 3;\n}\nfunction integer transform(integer idx) {\n $out.0.device = upperCase($in.0.device);\n $out.0.channel = idx + 1;\n $out.0.watermark = peakSample;\n $out.0.alarm = $in.0.reading > 100.0;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "Channel",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "device",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "channel",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "watermark",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "alarm",
+              "type": "boolean",
+              "nullable": "false"
+            }
+          ]
+        }
+      ],
+      "inputMetadata": [
+        {
+          "name": "Sample",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "device",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "sampled",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "reading",
+              "type": "number",
+              "nullable": "true"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "First sampled time exceeds epoch; global max retained intentionally across source records.",
+    "defect_review": [
+      "reading (nullable) ordered comparison without guard",
+      "count returns3 instead2",
+      "device changed to uppercase"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "First sampled date replaces epoch peakSample; both expanded rows share that correct run watermark."
+  },
+  {
+    "id": "opcd_hard_32",
+    "compiler_args": {
+      "componentType": "normalizer",
+      "code": "//#CTL2\nstring[] prepared = [];\nfunction integer count() {\n string[] labels;\n integer n = length(labels);\n string prefix;\n prefix = prefix + \"meal:\";\n if ($in.0.servings > 0) {\n  append(labels, prefix + $in.0.dish);\n  n = length(labels);\n }\n prepared = labels;\n return n + 1;\n}\nfunction integer transform(integer idx) {\n $out.0.label = prepared[idx];\n $out.0.ordinal = idx;\n $out.0.servings = $in.0.servings;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "MealRow",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "label",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "ordinal",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "servings",
+              "type": "integer",
+              "nullable": "false"
+            }
+          ]
+        }
+      ],
+      "inputMetadata": [
+        {
+          "name": "Meal",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "dish",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "servings",
+              "type": "integer",
+              "nullable": "true"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "Local labels first reads as empty through length(labels), so n starts 0 even on the first null/nonpositive source. Prefix starts empty and concatenates meal:. On a positive source append gives one prepared label; n becomes 1. prepared is assigned every count call. Only n+1 is incorrect.",
+    "defect_review": [
+      "servings (nullable) >0 without guard",
+      "count emits one additional row including zero-row sources",
+      "ordinal zero-based instead1-based"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "length of the initial labels list is0; empty prefix becomes meal:. Positive servings appends exactly one meal label; nonpositive servings keeps labels empty. The +1 output count is separate."
+  },
+  {
+    "id": "opcd_hard_33",
+    "compiler_args": {
+      "componentType": "normalizer",
+      "code": "//#CTL2\nfunction integer count() { return 1; }\nfunction integer transform(integer idx) {\n date appointmentBase;\n if ($in.0.appointment > appointmentBase) appointmentBase = $in.0.appointment;\n $out.0.patient = lowerCase($in.0.patient);\n $out.0.send_at = dateAdd(appointmentBase, 3, day);\n $out.0.urgent = $in.0.days_notice < 2;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "Reminder",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "patient",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "send_at",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "urgent",
+              "type": "boolean",
+              "nullable": "false"
+            }
+          ]
+        }
+      ],
+      "inputMetadata": [
+        {
+          "name": "Visit",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "patient",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "appointment",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "days_notice",
+              "type": "integer",
+              "nullable": "true"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "Local epoch base overwritten by post2000 appointment before dateAdd.",
+    "defect_review": [
+      "days_notice (nullable) ordered <2 comparison without guard",
+      "patient lowercased",
+      "send_at adds3 days rather than subtracting3"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Each local appointmentBase begins epoch and becomes the appointment date; the incorrect positive reminder offset is a separate use defect."
+  },
+  {
+    "id": "opcd_hard_34",
+    "compiler_args": {
+      "componentType": "normalizer",
+      "code": "//#CTL2\nstring[] prepared = [];\nfunction integer count() {\n string[] markers;\n integer emptyCount = length(markers);\n if ($in.0.copies > 0) {\n  for (integer i = 0; i < $in.0.copies; i++) append(markers, $in.0.name);\n  prepared = markers;\n  return length(markers);\n }\n prepared = markers;\n return emptyCount + 1;\n}\nfunction integer transform(integer idx) {\n $out.0.name = lowerCase(prepared[idx]);\n $out.0.ordinal = idx;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "ExhibitLabel",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "name",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "ordinal",
+              "type": "integer",
+              "nullable": "false"
+            }
+          ]
+        }
+      ],
+      "inputMetadata": [
+        {
+          "name": "Exhibit",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "name",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "copies",
+              "type": "integer",
+              "nullable": "true"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "Local markers starts empty and length reads 0 before assignment on every source, including the first. For positive copies the loop appends exactly copies label names, and prepared is assigned that list; length is correct. For nonpositive copies emptyCount remains0, so +1 is the independent wrong row count.",
+    "defect_review": [
+      "copies (nullable) compared>0 without guard",
+      "nonpositive copies return1 instead0",
+      "name lowercased",
+      "ordinal is idx rather than idx+1"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Initial markers length is0. Positive copies builds exactly that many labels; the nonpositive branch still has empty markers. The extra emitted row and output ordinal/case errors are independent."
+  },
+  {
+    "id": "opcd_hard_35",
+    "compiler_args": {
+      "componentType": "generic",
+      "code": "//#CTL2\ninteger callIndex = 0;\ndate peakIssued;\nmap[integer, integer] premiums = {0 -> 120};\nfunction integer generate() {\n date candidate = dateAdd(createDate(2026, 1, 1), callIndex, day);\n if (candidate > peakIssued) peakIssued = candidate;\n $out.0.id = callIndex;\n $out.0.issued = dateAdd(peakIssued, 1, day);\n $out.0.expensive = premiums[callIndex] > 100;\n callIndex++;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "Policy",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "issued",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "expensive",
+              "type": "boolean",
+              "nullable": "false"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "First candidate2026-01-01 exceeds epoch. peakIssued correctly accumulates maximum across four calls.",
+    "defect_review": [
+      "premiums[callIndex] missing-key map lookup compared>100 without guard",
+      "id is0-based",
+      "issued shifted one extra day"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "First synthetic candidate replaces epoch peakIssued; missing premium keys on later calls remain genuine nulls requiring an independent guard."
+  },
+  {
+    "id": "opcd_hard_36",
+    "compiler_args": {
+      "componentType": "generic",
+      "code": "//#CTL2\ninteger ix = 0;\nstring[] emitted;\nmap[integer, integer] thresholds = {0 -> 5};\nfunction integer generate() {\n append(emitted, num2str(ix + 1));\n $out.0.id = ix + 1;\n $out.0.seen = length(emitted);\n $out.0.label = \"METER:\" + num2str(ix + 1);\n $out.0.high = thresholds[ix] < 3;\n ix++;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "Meter",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "seen",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "high",
+              "type": "boolean",
+              "nullable": "false"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "First append mutates empty emitted list to one item; length1 is expected cumulative seen count.",
+    "defect_review": [
+      "thresholds[ix] missing-key map lookup ordered<3 without guard",
+      "label uses uppercase prefix",
+      "high condition uses< rather than>"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "First append to empty emitted list gives cumulative count1; later calls increment the list count once each."
+  },
+  {
+    "id": "opcd_hard_37",
+    "compiler_args": {
+      "componentType": "generic",
+      "code": "//#CTL2\ninteger ix = 0;\nmap[integer, integer] ranks = {0 -> 9};\nfunction integer generate() {\n date arrivalBase;\n map[string, integer] markers;\n date base = dateAdd(createDate(2026, 6, 1), ix, day);\n if (base > arrivalBase) arrivalBase = base;\n if (!containsKey(markers, \"seed\")) markers[\"seed\"] = 1;\n $out.0.id = ix;\n $out.0.arrival = dateAdd(arrivalBase, 2, day);\n $out.0.marker_count = length(markers);\n $out.0.priority = ranks[ix] >= 8;\n ix++;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "Reservation",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "arrival",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "marker_count",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "priority",
+              "type": "boolean",
+              "nullable": "false"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "Local arrivalBase epoch overwritten by June2026 base; empty markers has no seed then insertion gives size1.",
+    "defect_review": [
+      "ranks[ix] missing-key map lookup ordered>=8 without guard",
+      "id is0-based",
+      "arrival offset2 rather than1"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Local arrivalBase becomes the synthetic base; containsKey on empty markers is false and inserting seed gives marker_count1. This happens independently each call."
+  },
+  {
+    "id": "opcd_hard_38",
+    "compiler_args": {
+      "componentType": "generic",
+      "code": "//#CTL2\ninteger ix = 0;\nmap[integer, decimal] amounts = {0 -> 10D, 2 -> 30D};\nfunction integer generate() {\n string label;\n label = label + \"bill:\" + num2str(ix + 1);\n $out.0.id = ix + 2;\n $out.0.label = label;\n $out.0.positive = amounts[ix] > 0D;\n $out.0.amount = nvl(amounts[ix], 0D) * 2D;\n ix++;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "Bill",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "id",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "positive",
+              "type": "boolean",
+              "nullable": "false"
+            },
+            {
+              "name": "amount",
+              "type": "decimal",
+              "nullable": "false"
+            }
+          ]
+        }
+      ]
+    },
+    "first_record_default_walk": "Empty local label plus prefix and1 gives bill:1 without null artifacts.",
+    "defect_review": [
+      "amounts[ix] missing-key map lookup >0D without guard",
+      "id offset2 rather than1",
+      "amount multiplied2 instead copied"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Empty local label becomes bill:1 on first call and uses the current id on later calls; the missing amount key is independently nullable."
+  },
+  {
+    "id": "opcd_hard_39",
+    "compiler_args": {
+      "componentType": "rollup",
+      "code": "//#CTL2\ndate peakMeasured;\nfunction void initGroup(BatchAcc acc) { }\nfunction boolean updateGroup(BatchAcc acc) {\n if ($in.0.measured > peakMeasured) peakMeasured = $in.0.measured;\n acc.count = acc.count + 2;\n if ($in.0.pressure > 10.0) acc.high_count++;\n return false;\n}\nfunction boolean finishGroup(BatchAcc acc) { return true; }\nfunction integer updateTransform(integer counter, BatchAcc acc) { return SKIP; }\nfunction integer transform(integer counter, BatchAcc acc) {\n if (counter > 0) return SKIP;\n $out.0.batch = lowerCase($in.0.batch);\n $out.0.count = acc.count;\n $out.0.high_count = acc.high_count;\n $out.0.watermark = peakMeasured;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "BatchReport",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "batch",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "count",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "watermark",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "high_count",
+              "type": "integer",
+              "nullable": "false"
+            }
+          ]
+        }
+      ],
+      "inputMetadata": [
+        {
+          "name": "Measurement",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "batch",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "measured",
+              "type": "date",
+              "nullable": "false",
+              "format": "yyyy-MM-dd"
+            },
+            {
+              "name": "pressure",
+              "type": "number",
+              "nullable": "true"
+            }
+          ]
+        }
+      ],
+      "accumulatorMetadata": {
+        "name": "BatchAcc",
+        "type": "delimited",
+        "fields": [
+          {
+            "name": "count",
+            "type": "integer",
+            "nullable": "false"
+          },
+          {
+            "name": "high_count",
+            "type": "integer",
+            "nullable": "false"
+          }
+        ]
+      }
+    },
+    "first_record_default_walk": "First measured post2000 exceeds epoch. Peak retained across groups intentionally; nonnullable accumulator counts reset to0 each group.",
+    "defect_review": [
+      "pressure (nullable) >10 without guard",
+      "count increments2 instead1",
+      "batch key lowercased"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "First measured after2000 sets peakMeasured; later older groups keep the specified run watermark. Non-null accumulator fields reset per metadata and are not designated traps."
+  },
+  {
+    "id": "opcd_hard_40",
+    "compiler_args": {
+      "componentType": "rollup",
+      "code": "//#CTL2\ndecimal pledgedSoFar;\nfunction void initGroup(PledgeAcc acc) { }\nfunction boolean updateGroup(PledgeAcc acc) {\n pledgedSoFar = pledgedSoFar + $in.0.pledged;\n acc.count = acc.count + 2;\n if ($in.0.matched > 0D) acc.matched_count++;\n return false;\n}\nfunction boolean finishGroup(PledgeAcc acc) { return true; }\nfunction integer updateTransform(integer counter, PledgeAcc acc) { return SKIP; }\nfunction integer transform(integer counter, PledgeAcc acc) {\n if (counter > 0) return SKIP;\n $out.0.campaign = lowerCase($in.0.campaign);\n $out.0.count = acc.count;\n $out.0.run_total = pledgedSoFar;\n $out.0.matched_count = acc.matched_count;\n return ALL;\n}",
+      "outputMetadata": [
+        {
+          "name": "CampaignReport",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "campaign",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "count",
+              "type": "integer",
+              "nullable": "false"
+            },
+            {
+              "name": "run_total",
+              "type": "decimal",
+              "nullable": "false"
+            },
+            {
+              "name": "matched_count",
+              "type": "integer",
+              "nullable": "false"
+            }
+          ]
+        }
+      ],
+      "inputMetadata": [
+        {
+          "name": "Pledge",
+          "type": "delimited",
+          "fields": [
+            {
+              "name": "campaign",
+              "type": "string",
+              "nullable": "false"
+            },
+            {
+              "name": "pledged",
+              "type": "decimal",
+              "nullable": "false"
+            },
+            {
+              "name": "matched",
+              "type": "decimal",
+              "nullable": "true"
+            }
+          ]
+        }
+      ],
+      "accumulatorMetadata": {
+        "name": "PledgeAcc",
+        "type": "delimited",
+        "fields": [
+          {
+            "name": "count",
+            "type": "integer",
+            "nullable": "false"
+          },
+          {
+            "name": "matched_count",
+            "type": "integer",
+            "nullable": "false"
+          }
+        ]
+      }
+    },
+    "first_record_default_walk": "Global pledgedSoFar starts0D and adds first nonnegative pledge correctly; retains cumulative run total intentionally. Nonnullable accumulator counts reset0 each group.",
+    "defect_review": [
+      "matched (nullable) >0D without guard",
+      "count increments2 instead1",
+      "campaign lowercased rather than uppercased"
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-09",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_use_review": "Global pledgedSoFar starts decimal0; first pledged10 produces10 and later groups retain cumulative run total. Accumulator counters reset independently per metadata."
+  }
+]
