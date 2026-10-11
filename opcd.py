@@ -21,6 +21,7 @@ import argparse
 import json
 import math
 import random
+import re
 import shutil
 import sys
 import time
@@ -61,35 +62,44 @@ def cmd_prepare(cfg: dict) -> None:
     out = cfg["_out"]
     out.mkdir(parents=True, exist_ok=True)
     pc = cfg["prompts"]
-    sets: dict[str, list[dict]] = {"target": [], "hard": [], "probe": [], "replay": []}
+    sets: dict[str, list[dict]] = {"target": [], "hard": [], "contrast": [], "probe": [], "replay": []}
     for s in pc["target"]:
         sets["target"] += read_prompts(s)
-    if pc.get("hard") and Path(pc["hard"]).exists():
-        held = set(json.load(open(pc["hard_holdout"]))["holdout"]) if pc.get("hard_holdout") else set()
-        for h in sd.read_jsonl(Path(pc["hard"])):  # agent-authored (spec/opcd_hard_cases_brief.md)
+    hard_files = pc.get("hard") or []
+    hard_files = [hard_files] if isinstance(hard_files, str) else hard_files
+    held = set(json.load(open(pc["hard_holdout"]))["holdout"]) if pc.get("hard_holdout") else set()
+    for hf in hard_files:  # a path, or {file: path, weight: n} (drawn n times as often)
+        weight = hf.get("weight", 1) if isinstance(hf, dict) else pc.get("hard_weight", 1)
+        hf = hf["file"] if isinstance(hf, dict) else hf
+        if not Path(hf).exists():
+            raise SystemExit(f"hard-case file missing: {hf}")
+        for h in sd.read_jsonl(Path(hf)):  # agent-authored (spec/opcd_hard_cases_brief.md, _cases2_brief.md)
             if h["id"] in held:
                 continue  # measured with data/opcd/eval_hard_cases.py --holdout, never trained
             h.setdefault("prompt_id", sd.make_prompt_id(h["user"]))
             if h["task_type"] == "validate":
                 h["user"], _ = sd.with_validate_format(h["user"])
             h.setdefault("record_id", h.get("id"))
+            h["weight"] = weight
             sets["hard"].append(h)
+    if pc.get("contrast"):  # corpus prompts where something really IS null (data/opcd/select_contrast.py)
+        sets["contrast"] = sd.read_jsonl(Path(pc["contrast"]))
     sets["probe"] = read_prompts(pc["probe"])
-    used = {p["prompt_id"] for k in ("target", "hard", "probe") for p in sets[k]}
-    assert not ({p["prompt_id"] for p in sets["probe"]} & {p["prompt_id"] for p in sets["target"] + sets["hard"]}), \
+    used = {p["prompt_id"] for k in ("target", "hard", "contrast", "probe") for p in sets[k]}
+    assert not ({p["prompt_id"] for p in sets["probe"]} & {p["prompt_id"] for k in ("target", "hard", "contrast") for p in sets[k]}), \
         "probe prompts overlap the training prompts"
 
     excluded, _ = sd.load_exclusion_set()
     pool, _ = sd.build_pool(excluded)
     pool = [p for p in pool if p["prompt_id"] not in used]
-    n_train = len(sets["target"]) + len(sets["hard"])
+    n_train = len(sets["target"]) + len(sets["hard"]) + len(sets["contrast"])
     n_replay = math.ceil(n_train * pc["replay_share"] / (1 - pc["replay_share"]))
     rng = random.Random(cfg["train"]["seed"])
     for task, share in pc["replay_task_mix"].items():
         cand = [p for p in pool if p["task_type"] == task]
         sets["replay"] += rng.sample(cand, min(len(cand), round(n_replay * share)))
 
-    keep = ("prompt_id", "task_type", "component", "source_file", "record_id", "user")
+    keep = ("prompt_id", "task_type", "component", "source_file", "record_id", "user", "weight")
     rows = [{**{k: p.get(k) for k in keep}, "set": name} for name, ps in sets.items() for p in ps]
     seen, dedup = set(), []
     for r in rows:  # a prompt in two training sets is trained once
@@ -142,18 +152,37 @@ class Roles:
                     raise SystemExit(f"rule found in the STUDENT {task}/{mode} system prompt")
                 if marker not in te:
                     raise SystemExit(f"rule missing from the TEACHER {task}/{mode} system prompt")
+        # Extra named teachers (cfg.teachers: {name: {mode: eval config, marker: text}}), e.g. the accumulator-only
+        # note for thinking-off validate. Only the configured modes are loaded; the marker must be in every prompt.
+        for name, tcfg in (cfg.get("teachers") or {}).items():
+            for mode in ("on", "off"):
+                if mode not in tcfg:
+                    continue
+                c, m = prompt_tokenizer(tcfg[mode])
+                if bool(m.get("enable_thinking")) != (mode == "on"):
+                    raise SystemExit(f"{tcfg[mode]}: enable_thinking does not match mode {mode}")
+                self.clients[name, mode], self.mut[name, mode] = c, m
+                for task in ("validate", "fix"):
+                    if tcfg["marker"] not in self.system(name, mode, task):
+                        raise SystemExit(f"teacher {name}: marker missing from the {task}/{mode} system prompt")
         self.base_paths = {str(Path(m["model_path"]).resolve()) for m in self.mut.values()}
 
     def mode(self, p: dict) -> str:
-        """Thinking mode for a prompt: `modes` by task, `replay_modes` overriding it for replay prompts."""
-        if p.get("set") == "replay" and p["task_type"] in (self.cfg.get("replay_modes") or {}):
-            return self.cfg["replay_modes"][p["task_type"]]
-        return self.cfg["modes"][p["task_type"]]
+        """Thinking mode for a prompt: `modes` by task, overridden per set by `set_modes`
+        (`replay_modes` is the older spelling of set_modes.replay)."""
+        sm = dict(self.cfg.get("set_modes") or {})
+        sm.setdefault("replay", self.cfg.get("replay_modes") or {})
+        return (sm.get(p.get("set")) or {}).get(p["task_type"]) or self.cfg["modes"][p["task_type"]]
 
     def teacher_role(self, p: dict) -> str:
         """Replay prompts with replay_teacher: plain are scored by rb1006 under the PLAIN prompt
         (adapter off): an on-policy reverse-KL anchor back to rb1006, not a rule signal."""
-        return "student" if p.get("set") == "replay" and self.cfg.get("replay_teacher") == "plain" else "teacher"
+        st = dict(self.cfg.get("set_teacher") or {})
+        if self.cfg.get("replay_teacher"):
+            st.setdefault("replay", self.cfg["replay_teacher"])
+        t = st.get(p.get("set"), "rule")
+        t = t.get(p["task_type"], "rule") if isinstance(t, dict) else t
+        return {"plain": "student", "rule": "teacher"}.get(t, t)
 
     def system(self, role: str, mode: str, task: str) -> str:
         return sd.sampling_for(self.mut[role, mode], task)["system_prompt"]
@@ -328,9 +357,16 @@ def completion_logps(model, prompt_ids: list[int], comp_ids: list[int], grad: bo
     return torch.cat(parts)
 
 
+# A sample that attributes a declaration-default rule to its (plain) system prompt or "the rules":
+# the teacher, which has the rule, would reward that citation, so such samples are scored against
+# plain rb1006 instead (train.quote_guard).
+CITE = re.compile(r"(system prompt|the prompt|the rules?|the instructions?)[^.\n]{0,60}(says?|states?|notes?|tells?|:)"
+                  r"[^\n]{0,200}?(epoch|default|uninitiali|declared|1970)", re.I)
+
+
 def teacher_logps(model, roles: Roles, smp: dict, chunk: int):
     import torch
-    ids = roles.ids(roles.teacher_role(smp), smp)
+    ids = roles.ids(smp.get("teacher_override") or roles.teacher_role(smp), smp)
     model.eval()
     with torch.no_grad(), model.disable_adapter():
         return completion_logps(model, ids, smp["completion_ids"], grad=False, chunk=chunk).cpu()
@@ -409,6 +445,7 @@ def scan(smp: dict) -> dict:
 def summarize(smps: list[dict]) -> dict:
     out = {}
     for name, sel in (("all", smps), ("target", [s for s in smps if s["set"] in ("target", "hard")]),
+                      ("hard", [s for s in smps if s["set"] == "hard"]), ("contrast", [s for s in smps if s["set"] == "contrast"]),
                       ("replay", [s for s in smps if s["set"] == "replay"]),
                       ("replay_validate_off", [s for s in smps if s["set"] == "replay" and s["mode"] == "off"])):
         if not sel:
@@ -419,6 +456,7 @@ def summarize(smps: list[dict]) -> dict:
             "kl_per_token": round(sum(s["kl_mean"] * len(s["completion_ids"]) for s in sel if "kl_mean" in s) / max(tok, 1), 4),
             "belief_rate": round(sum(s["belief"] for s in sel) / len(sel), 3),
             "quote_rate": round(sum(s["quotes_rule"] for s in sel) / len(sel), 3),
+            "cite_guarded": sum(bool(s.get("teacher_override")) for s in sel),
             "unclosed_think": sum(not s["think_closed"] for s in sel),
             "hit_cap": sum(s["hit_cap"] for s in sel),
             "median_tokens": sorted(len(s["completion_ids"]) for s in sel)[len(sel) // 2],
@@ -441,6 +479,8 @@ def score_and_train(trainer: Trainer, smps: list[dict], steps: int) -> list[dict
         if len(s["prompt_ids"]) + len(s["completion_ids"]) > tc["cutoff"]:
             s["skipped"] = "cutoff"
             continue
+        if tc.get("quote_guard") and roles.teacher_role(s) != "student" and CITE.search(s["raw"]):
+            s["teacher_override"] = "student"
         s["r"] = teacher_logps(model, roles, s, tc["logits_chunk"])
         keep.append(s)
     random.Random(trainer.step).shuffle(keep)
@@ -472,8 +512,9 @@ def round_prompts(cfg: dict, prompts: list[dict], rnd: int) -> list[dict]:
     n_rep = round(n * cfg["prompts"]["replay_share"])
     out = []
     hw = int(cfg["prompts"].get("hard_weight", 1))
-    for off, names, cnt in ((0, ("target", "hard"), n - n_rep), (500, ("replay",), n_rep)):
-        pool = [p for p in prompts if p["set"] in names for _ in range(hw if p["set"] == "hard" else 1)]
+    for off, names, cnt in ((0, ("target", "hard", "contrast"), n - n_rep), (500, ("replay",), n_rep)):
+        pool = [p for p in prompts if p["set"] in names
+                for _ in range(int(p.get("weight") or (hw if p["set"] == "hard" else 1)))]
         start = rnd * cnt
         for j in range(start, start + cnt):
             ep, pos = divmod(j, len(pool))
@@ -490,9 +531,12 @@ def cmd_train(cfg: dict, args) -> None:
     roles = Roles(cfg)
     done = sorted(int(d.name.split("_")[1]) for d in out.glob("round_*") if (d / "metrics.json").exists())
     last = done[-1] if done else None
-    model = load_model(cfg, out / f"round_{last:03d}" / "adapter" if last is not None else None)
+    init = Path(cfg["init_adapter"]) if cfg.get("init_adapter") else None  # continue from another run's adapter
+    model = load_model(cfg, out / f"round_{last:03d}" / "adapter" if last is not None else init)
     trainer = Trainer(cfg, roles, model)
     sampler = VllmSampler(cfg, roles) if (cfg.get("sampler") or {}).get("url") else HfSampler(model, roles)
+    if last is None and init is not None:
+        sampler.publish(init, f"{cfg['run']}_init")
     if last is not None:
         trainer.load_state(out / f"round_{last:03d}")
         sampler.publish(out / f"round_{last:03d}" / "adapter", f"{cfg['run']}_r{last:03d}")

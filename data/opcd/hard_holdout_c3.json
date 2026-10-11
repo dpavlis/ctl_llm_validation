@@ -1,0 +1,19 @@
+{
+ "holdout": [
+  "opcd_hard_03",
+  "opcd_hard_15",
+  "opcd_hard_16",
+  "opcd_hard_23",
+  "opcd_hard_25",
+  "opcd_hard_28",
+  "opcd_hard_29",
+  "opcd_hard_32",
+  "opcd_hard_33",
+  "opcd_hard_38",
+  "opcd_hard2_01",
+  "opcd_hard2_05",
+  "opcd_hard2_06",
+  "opcd_hard2_09"
+ ],
+ "note": "c3 holdout: the 10 set-1 prompts held out since c2, plus 4 set-2 fix prompts (2 prev-record: Partition, Denormalizer; 1 min tracker; 1 max tracker)"
+}
