@@ -7,7 +7,7 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-10-12 with on-policy context distillation, runs c1–c8 (§3.18: the declaration belief is
+Last updated 2026-10-12 with on-policy context distillation, runs c1–c8 (§3.19: the declaration belief is
 removed, T40 0/20 and T42 about 4–6/20; c4 is the best balance; accumulator training helps thinking-on
 answers and hurts thinking-off T22), and evaluation on vLLM with a corrected noise floor (§4.7: a full
 suite in 9 min; rb1006 thinking-off validate WRONG is 7.5% ± 1.3%, not 4.5%).
@@ -15,9 +15,9 @@ suite in 9 min; rb1006 thinking-off validate WRONG is 7.5% ± 1.3%, not 4.5%).
 Earlier update, 2026-10-09, with the declaration-default belief work (§3.16: answer-only data,
 thinking traces and offline DPO did not move it on T40/T42; the rule in the system prompt does,
 0/20) and the literature on overriding pretrained priors (§3.17). The judge is now local
-gpt-6.1-sol (§4.6). Sections §1–§3.15 were measured with gpt-5.6-terra, and the 2026-09-29 to
-2026-10-05 work (self-distillation, DPO rounds, rb1003–rb1005) is in the run memory notes, not
-yet in this document.
+gpt-6.1-sol (§4.6). Sections §1–§3.15 were measured with gpt-5.6-terra. The 2026-09-29 to 2026-10-05
+work (self-distillation, DPO rounds, rb1003–rb1005) is in §3.18, added 2026-10-12, and the owner
+rulings on CTL2 semantics are in §7.
 
 Earlier update, 2026-09-28, with reasoning effort (§3.15 — the knob is weak; thinking off still
 wins validate, effort does not move fix), the model×mode 2×2 and the 0917 baseline correction (§3.14 —
@@ -1059,12 +1059,12 @@ declaration rule in the system prompt. Configs:
 
   The model focuses on declarations and nulls and misses unrelated bugs. T14 answers "ISSUES: none" and
   misses the wrong Partition entry point (1.00 → 0.40). This rules out a prompt-based teacher for
-  thinking-off samples in §3.18.
+  thinking-off samples in §3.19.
 - **Rule v1 also over-applied** "declared → never null" to Rollup accumulator fields (T22). v2 adds the
   scope: declared variables only, record fields follow metadata. v3 adds "metadata fields are nullable
   unless marked `nullable="false"`".
 
-(The 4.5% WRONG baseline used in this section and in §3.18 until 2026-10-11 came from 3 HF reps and
+(The 4.5% WRONG baseline used in this section and in §3.19 until 2026-10-11 came from 3 HF reps and
 was low; see §4.7.)
 
 **Data produced along the way, still useful:**
@@ -1162,7 +1162,116 @@ The last two are the material for on-policy context distillation or GRPO.
 nearest evidence (CRANE, multimodal) says reasoning chains resist weight edits, consistent with
 §3.16.
 
-### 3.18 On-policy context distillation removes the declaration belief (runs c1–c8)
+### 3.18 2026-09-29 – 10-05: self-distillation, two DPO rounds, and the recipe retrains (rb1003–rb1005)
+
+> **Added 2026-10-12** from the run notes. Chronologically this sits between §3.15 and §3.16.
+> Judge gpt-6-sol unless stated. Snapshots `results/eval_snapshot_20261001` and `_20261003`.
+> The base is `qwen38_fix6_sftdpo` (fix6 without phase 3, §3.12).
+
+#### Self-distillation (sd1): own traces as the thinking data, a small fix gain
+
+Pipeline: `self_distill.py` (`spec/self_distillation_spec.md`). It runs select → sample (k=4) → filter
+→ assemble. The filter has five steps:
+- format;
+- library (unknown functions);
+- compile through the CloverDX MCP;
+- the reference judge;
+- a second **claims pass** that audits the trace and the answer for uncorrected false CTL2 claims.
+
+**Pilots:**
+- Validate prompts without an output layout answered in prose (43/60). They now get
+  `VALIDATE_FORMAT_INSTRUCTION`.
+- The claims pass removed 21 of 111 judge-accepted samples.
+- Acceptance by group:
+  - fix-to-spec 18/28;
+  - fix_this_code 5/28;
+  - validate with ≥ 3 findings: 0/20, so excluded;
+  - generate on lifecycle components 28/48, other components 4/24.
+- Accepted generate traces were 4–14% shorter than rejected ones for the same prompt: a mild
+  short-trace bias.
+
+**Full run (full1):** 374 prompts → 213 records (fix 80, validate 69, generate 65) after a trace audit
+removed one with a false claim ("`dateAdd` mutates the date"). Dataset `clover_ctl_selfdistill_data`.
+
+**sd1** is that set trained as phase 3 on the base, 2 epochs (`configs/qwen38_selfdistill.yaml`).
+- **Fix, thinking on, n=20:** 0.739 → **0.7915** (+0.0525, 95% CI [+0.010, +0.095], p ≈ 0.01).
+  The gain is on T39 and T43 (fewer false claims: T43 traps 15 → 5). T40 is flat.
+- **Thinking-off generate, validate and fix** all within 0.01 of base.
+- **Validate thinking on** stays below thinking off (0.81 vs 0.86).
+- **Style unchanged;** fix thinking is 19% shorter than the teacher's.
+- The n=5 "T40 gain" was noise.
+
+**What did not help:**
+
+| attempt | result |
+|---|---|
+| sd1a: + 11 authored, "Qwen-styled" traces | null. Authored-trace NLL under the teacher is 1.77 per token against 0.13 for its own traces; at this dose they are not learned. One authored trace (treasoniae_292) taught the null-list belief and must never be trained. |
+| sd2: second generation, sd1 ep2 as teacher, 518 records | generate 0.982, validate 0.780, fix n=20 **0.684** (vs 0.711) |
+| sd2b: sd2 rebalanced to thirds, fix ×2 | fix 0.6705 (−0.041, p = 0.05); dilution is not the cause |
+
+**Conclusion:** sd1 ep2 was the incumbent then. No generation-3 self-distillation: scaling own traces
+past about 200 bought nothing and cost fix.
+
+#### DPO round 1 and targeted repairs: no measurable effect
+
+| run | data | result |
+|---|---|---|
+| dpo1 on base | 187 same-prompt accepted/rejected self-distill pairs (≤ 3000 tokens) | generate 0.975 vs 0.985; validate 0.792 vs 0.792; fix n=20 0.681 vs 0.704 |
+| dpo1full | 209 pairs at 5248 tokens (ZeRO-3) | fix 0.687 (p = 0.48) |
+| dpo1 on sd1 ep2 | — | generate 0.990 → 0.979 on a repeat: the first "gain" was noise |
+| dporep | 88 agent-repaired pairs (`spec/dpo_targeted_repairs_spec.md`), lr 5e-6, 2 epochs | fix 0.673 (p = 0.19); validate 4 runs 0.769–0.861 (base 0.768–0.792) |
+
+Reward accuracy reached 1.0 fast in every DPO run; the model learns to separate the pairs, not to
+change its behaviour (as in §3.16 and §3.17). These runs set the noise rules then: **one n=5 validate
+run swings ±0.05.** §4.7 later found the WRONG rate noisier still.
+
+**Chunked DPO log-probs:** `dpo_logps_chunk_size` in `~/LlamaFactory` (local commit 83fda7c8). The
+LM head is applied in checkpointed chunks, so the 248k-vocabulary logits are never materialised. That
+fits 7.7k-token pairs on one GPU (75.9 GB peak at chunk 1024); without it, runs OOMed at 4.2k. The
+log-probs are bit-identical. Set it whenever DPO pairs are long.
+
+#### The recipe retrains: rb1003–rb1005
+
+Goal: retrain on the corpus corrected for the owner rulings (§7), the 72 belief records and 32 belief
+DPO pairs.
+
+| run | recipe | answer-less runs | fix n=20 (on) | notes |
+|---|---|---|---|---|
+| base (fix6) | thinking-off SFT → DPO | 0/215 | 0.698 | — |
+| rb1003 | same recipe, corrected data | **20–25/215** | — | non-thinking SFT erodes thinking: on short tasks the model answers inside `<think>` and stops without `</think>`. DPO partly repairs it. |
+| rb1003 + sd1 phase 3 | repair attempt | 14–17/215 | 0.6625 | validate worse (WRONG 16–21%); not a fix |
+| ctrl1004 | base recipe, old data, new LlamaFactory | 5/215 | 0.678 | the environment adds ~2.5% fragility (or luck); the corrected data multiplied it |
+| rb1004 | mixed-thinking SFT (`enable_thinking: null`) with the 1077 authored traces | 0 | **0.526** | median fix thinking 207 words (base 1120): short authored traces teach shallow thinking |
+| **rb1005** | mixed-thinking SFT with **own self-distilled traces** ×2 (464), DPO 1,953 pairs | **0** | 0.719 | thinking length kept (1297 words); T41 0.99 (infix `in` belief learned); generate on 0.988 / off 0.972 |
+
+**Lessons:**
+- Whatever thinking data is in the SFT sets the model's reasoning length and style. Use the model's
+  own long traces for the thinking share (as the Qwen3 recipe does), never authored short ones.
+- Non-thinking SFT is the fragile part of the old recipe. Check the answer-less rate before reading
+  any score.
+- **Route by task** (base, snapshot 1003, `results/*base*`):
+
+  | | thinking on | thinking off |
+  |---|---|---|
+  | generate | 0.984 | 0.982 |
+  | validate | 0.806 (WRONG 9.3%) | **0.859** (4.7%) |
+  | fix n=20 | **0.698** | 0.508 (p < 0.001) |
+
+  Use thinking off for validate, thinking on for fix, either for generate.
+- rb1003's T38 collapse (1.00 → 0.00, thinking off) belonged to that one training run. ctrl1004 and
+  rb1004 pass it 10/10 on the same data.
+
+rb1005's recipe, with 120 fix-explained records added, became **rb1006** (§3.16), the base for all
+later work.
+
+**Data conventions from this period:**
+- The 1077 authored traces in `sft_training_data/CTL_LoRAT_*.json` are renamed
+  `orig_reasoning_content`. They are kept for reference only and never trained or converted.
+- Self-distilled traces use `reasoning_content`.
+- `~/LlamaFactory/data/dataset_info.json` carries git `skip-worktree`, so dataset registrations don't
+  show in `git status`.
+
+### 3.19 On-policy context distillation removes the declaration belief (runs c1–c8)
 
 > **Added 2026-10-12.** Method: `spec/onpolicy_context_distillation_spec.md`, implementation `opcd.py`,
 > configs `configs/opcd_c1…c8.yaml`, hard-case sets and the eval script in `data/opcd/`.
@@ -1472,7 +1581,7 @@ concurrent requests.
 - **WRONG 7.5% ± 1.3%**, range 5.9–9.8%.
 
 The 4.5% baseline used as the WRONG ≤ 5% gate came from 3 HF reps (3.2%, 6.5%, 3.9%) and was low.
-Several thinking-off "regressions" in §3.18 (c3 8.4%, c4 7.4%) were mostly that.
+Several thinking-off "regressions" in §3.19 (c3 8.4%, c4 7.4%) were mostly that.
 
 Other single-run figures are also noisy:
 - T42 at n20 gave 12/20 on HF and 4/20 on vLLM for the same model (c4).
@@ -1587,6 +1696,14 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
 - `reasoning_effort: medium` must match between the training and eval configs.
 - `test.py` needs `OPENAI_API_KEY` from `~/.bash_profile` — login-shell only. Source it
   explicitly in non-interactive shells or every judge call 401s.
+- **causal-conv1d** in `~/venv` is a source build patched to sm_120 only. No wheel exists for torch
+  2.11, and the stock `setup.py` ignores `TORCH_CUDA_ARCH_LIST`. A torch upgrade breaks it; rebuild the
+  same way. The gain is small (about 7% faster prefill), and the "fast path is not available" warning
+  is misleading.
+- **The CloverDX server** (ctl_validate MCP, port 8083) does not restart after a reboot: run
+  `~/cloverserver/…/bin/startup.sh`.
+- **Launch long jobs** through `#!/bin/bash -l` scripts with `setsid nohup`. The tool shell lacks
+  `OPENAI_API_KEY` and wandb.
 - `llamafactory-cli` lives in `~/venv/bin` and is **not** on the default PATH; `train.py`
   invokes it by bare name, so export the path first or the SFT phase dies instantly with
   `FileNotFoundError`.
@@ -1595,7 +1712,7 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
 
 ## 6. Open questions, in priority order
 
-> **2026-10-12 — current front (§3.18, §4.7).**
+> **2026-10-12 — current front (§3.19, §4.7).**
 >
 > A. **Ship decision:** c4 (best balance) or c7 (best fix and generate, −0.026 thinking-off validate).
 >    Both remove the declaration belief. Confirm T42 with 2 × n20 on vLLM before deciding.
@@ -1615,7 +1732,7 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
 > **2026-10-09 front, now resolved:**
 > - A: the rule in the system prompt helps with thinking on and primes thinking-off review, so it is
 >   not shippable as is (§3.16).
-> - B: on-policy context distillation works (§3.18).
+> - B: on-policy context distillation works (§3.19).
 > - D: thinking-off WRONG regressions were partly baseline noise (§4.7).
 >
 > Items below predate both.
@@ -1683,3 +1800,32 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
    not regressions — they need targeted examples (`spec/reasoning_traces_spec.md`).
 3. **`prev3phase` has no export** — the "before" point for §3.1. Its adapters survive at
    `2026-09-18-23-46-45`; rebuildable in ~1h if that row is wanted in the table.
+
+---
+
+## 7. Owner rulings and compiler-verified CTL2 facts
+
+These settle what the judge, the corpus and the suite rubrics treat as correct. Where a ruling
+changed a rubric or reference, that is noted. Rulings are from the project owner; "compiler" means
+checked with ctl_validate on CloverDX Server.
+
+| date | topic | ruling |
+|---|---|---|
+| 2026-10-02 | `STOP` | returning `STOP` aborts the component. In DataGenerator `generate()` it is an ERROR, not normal termination. |
+| 2026-10-02 | Denormalizer `transform()` | may read `$in.0`, which is the group's last input record; reading the group key there is valid |
+| 2026-10-02 | `*OnError` callbacks | valid optional hooks, but they must log. A silent `SKIP` is tolerated; a silent `OK` is a defect. |
+| 2026-10-02 | unassigned output field | a never-assigned **non-nullable** field is emitted as its type's zero value (`""`, `0`), never null; a nullable one is null |
+| 2026-10-03 | Rollup `transform()` | may read `$in.0` (e.g. the group key); no saved copy needed. Contracts saying "only in updateGroup" are stale. |
+| 2026-10-03 | Denormalizer `append()` writing `$out.0` | benign, no effect; not a runtime error (suite T2 rationale fixed) |
+| 2026-10-06 | Rollup accumulator | reset from its metadata **before each group**: no default → null if nullable, zero value if not; a metadata default is applied. Omitted nullability means nullable. Live-tested; in `ctl2-basics.md`; T41.B2 depends on it. |
+| — | Rollup lifecycle | all five functions (`initGroup`, `updateGroup`, `finishGroup`, `updateTransform`, `transform`) are mandatory; omitting `finishGroup` means the group emits nothing |
+| — | Rollup groups | always have ≥ 1 record, so a divide-by-zero guard on the count is a false positive |
+| — | declarations | declared variables start at their type default; only `variant`, `byte`, `cbyte` start null (§3.16) |
+| — | review severity | **WARNING** = data-dependent runtime risk (a nullable field that may be null). **ERROR** = compile failure, certain runtime failure, or a violation of a stated requirement. |
+| — | validate | precision over recall: a correct but incomplete review beats one with misclassified findings; rank models on WRONG, not on the suite score |
+| — | objective | generate is the primary objective; validate gains must not cost generate |
+| compiler, 2026-10-05 | object notation | `list.length()`, `str.isEmpty()`, `x.in(list)` are valid. `list.contains/indexOf/size`, `.equals`, `equals(a,b)` and an infix `in` are compile errors. |
+| compiler | `++` / `--` | work on any writable l-value, including accumulator and internal record fields; only input fields are read-only |
+| compiler | conditional fail `a : b : null` | valid in both `//#CTL2` and `//#CTL2:COMPILE` (T5.B5 retired) |
+| compiler, 2026-09-29 | writing `$out.1` on an unconnected port | compile error ("Cannot write to output port '1'"), not dead code; two Rollup references were held out for it |
+| compiler | EXT_FILTER | `FILTER_EXPR` needs the `//#CTL2` header; `job_validate` ignores params |
