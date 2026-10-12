@@ -7,7 +7,12 @@ gpt-5.6-terra judge.
 no presence or repetition penalty. That uniformity is new, and it overturned several
 conclusions drawn from earlier measurements. See §4.
 
-Last updated 2026-10-09 with the declaration-default belief work (§3.16: answer-only data,
+Last updated 2026-10-12 with on-policy context distillation, runs c1–c8 (§3.18: the declaration belief is
+removed, T40 0/20 and T42 about 4–6/20; c4 is the best balance; accumulator training helps thinking-on
+answers and hurts thinking-off T22), and evaluation on vLLM with a corrected noise floor (§4.7: a full
+suite in 9 min; rb1006 thinking-off validate WRONG is 7.5% ± 1.3%, not 4.5%).
+
+Earlier update, 2026-10-09, with the declaration-default belief work (§3.16: answer-only data,
 thinking traces and offline DPO did not move it on T40/T42; the rule in the system prompt does,
 0/20) and the literature on overriding pretrained priors (§3.17). The judge is now local
 gpt-6.1-sol (§4.6). Sections §1–§3.15 were measured with gpt-5.6-terra, and the 2026-09-29 to
@@ -1008,7 +1013,7 @@ prior carried over from Java and C#, not a knowledge gap.
 | dpodef1 | thinking-on DPO on rb1006, 92 pairs: rejected = own belief trace, chosen = minimal gpt-6-sol repair | not run: check set 22% → 21% | — |
 | dpodef2a | context-distillation DPO, 48 own-voice pairs, lr 5e-6, 2 epochs | not run: check set 22% → 23.5% | — |
 | dpodef2b | same 48 pairs, lr 2e-5, 3 epochs | **19/20, 20/20** (check set 22% → **7%**) | **validate OFF WRONG 3.2% → 11.1%** |
-| **rule in the system prompt** (no training) | rb1006 + the rule in the fix system prompt | **0/20, 0/20**; T42 PASS 20/20 | being measured on the full suite |
+| **rule in the system prompt** (no training) | rb1006 + the rule in the fix system prompt | **0/20, 0/20**; T42 PASS 20/20 | thinking on: none; **thinking off: validate 0.895 → 0.75–0.79** (see below) |
 
 The **check set** is 50 held-out prompts with tempting declarations, 4 samples each, run through
 the full self-distill filter. Belief = the belief scan or a judge false-claim about a declaration
@@ -1042,7 +1047,25 @@ declaration rule in the system prompt. Configs:
 - `configs/eval_rb1006_rule_on.yaml`: the rule in the fix prompt;
 - `configs/eval_rb1006_ruleall_{on,off}.yaml`: the rule and a Java/C# contrast in all prompts.
 
-The full-suite check of the latter was queued on 2026-10-09.
+**Result of the full-suite check (2026-10-09), and why the rule cannot simply be shipped:**
+- **Thinking on, the rule works:** T40/T42 false fix 0/20, fix 0.892 against 0.801, generate 0.980,
+  validate 0.767 against 0.791 (within noise).
+- **Thinking off, any rule text in the system prompt primes the reviewer:**
+
+  | validate, thinking off | rb1006 | + rule v1 | + rule v2 | + 3-line accumulator note |
+  |---|---|---|---|---|
+  | score | 0.895 | 0.753 | 0.788 | 0.709 |
+  | MISSED | 2.8% | 9.2% | 10.3% | 13.9% |
+
+  The model focuses on declarations and nulls and misses unrelated bugs. T14 answers "ISSUES: none" and
+  misses the wrong Partition entry point (1.00 → 0.40). This rules out a prompt-based teacher for
+  thinking-off samples in §3.18.
+- **Rule v1 also over-applied** "declared → never null" to Rollup accumulator fields (T22). v2 adds the
+  scope: declared variables only, record fields follow metadata. v3 adds "metadata fields are nullable
+  unless marked `nullable="false"`".
+
+(The 4.5% WRONG baseline used in this section and in §3.18 until 2026-10-11 came from 3 HF reps and
+was low; see §4.7.)
 
 **Data produced along the way, still useful:**
 - `CTL_LoRA_fix_defaults_explained.json` (80);
@@ -1138,6 +1161,108 @@ The last two are the material for on-policy context distillation or GRPO.
 **Gap:** no published study corrects a misconception inside text-only long chain-of-thought. The
 nearest evidence (CRANE, multimodal) says reasoning chains resist weight edits, consistent with
 §3.16.
+
+### 3.18 On-policy context distillation removes the declaration belief (runs c1–c8)
+
+> **Added 2026-10-12.** Method: `spec/onpolicy_context_distillation_spec.md`, implementation `opcd.py`,
+> configs `configs/opcd_c1…c8.yaml`, hard-case sets and the eval script in `data/opcd/`.
+> Judge gpt-6.1-sol. Numbers marked *vLLM* are from the vLLM path (§4.7).
+
+**Method.**
+- **Student:** rb1006 + a rank-32 LoRA, with the plain system prompt, sampling its own answers.
+  Sampling runs on a vLLM server with the round's adapter hot-loaded: 2.5 min per round, against
+  50 min with HF.
+- **Teacher:** the same weights with the adapter disabled, and the rule in the system prompt.
+- **Loss:** per-token reverse KL on the student's sampled tokens. The advantage is
+  `A_t = log π_teacher − log π_student`, and the loss is `L = −Σ A_t log π_student / n_tokens`.
+- **Schedule:** 32 prompts × 2 samples per round, 2 optimizer steps per round, lr 1e-5 (c1) or
+  2e-5 (c2 onward).
+- **Replay prompts (40% of each batch)** are scored by plain rb1006: an on-policy anchor back to
+  rb1006. Replay validate runs thinking off.
+- **A prompt-based teacher never scores thinking-off samples** (§3.16, priming).
+- **Rule-citation guard:** a student sample that credits a declaration rule to "the system prompt"
+  is scored against plain rb1006 instead. The student had started to cite a rule it never saw, in
+  6–10% of answers.
+
+**Hard-case sets** (agent-written prompts only; the teacher supplies the targets):
+
+| set | prompts | shape | plain rb1006 | rule teacher |
+|---|---|---|---|---|
+| 1 `hard_cases.jsonl` | 40 | declared trap next to real nullable inputs | 78% belief | 0% |
+| 2 `hard_cases2.jsonl` | 15 | T40/T42-shaped date traps: previous-record, latest, earliest | 88% | 0% (claims null) |
+| 3 `hard_cases3.jsonl` | 20 A + 20 B | A: generate with a first-record sentinel; B: Rollup accumulator nullability | A 0%; B 27–60% wrong | v3: B 12–65% wrong; **v4: 0%** |
+
+Measure with `data/opcd/eval_hard_cases.py`. It judges each trap: "claims null" for sets 1–2, a
+bare-declaration sentinel for 3A, the accumulator start value for 3B. Don't use the regex probe; it
+stayed flat while the belief fell.
+
+**Runs.** Each run continues the previous one's adapter unless marked fresh:
+
+| run | change | T40 / T42 false fix (n20) | key result |
+|---|---|---|---|
+| c1 | pilot, lr 1e-5, 16 rounds | not measured | set 1 belief 78% → 49% held-out; dates 100% → 73% |
+| c2 | lr 2e-5, + set 1 (30 trained, 10 held out) | 9 / 15 → 6 / 17 at round 39 | set 1 held-out 0%; first method to move T40/T42 |
+| c3 | + set 2 ×3, 55 contrast prompts, citation guard | 5 / 9 | set 2 held-out 1/16 |
+| c4 | rule v3 teacher; contrast validate thinking on | 3 / 12 (HF), **0 / 4 (vLLM)** | set 2 0/36; fix ON 0.85 |
+| c5 | rule v4 (+ the per-group accumulator reset) on everything | 7 / 15 | belief partly back (set 2 previous-record 9/36): interference |
+| c6 | rule v4 on Rollup prompts only (`component_teacher`) | 2 / 15 (vLLM) | set 2 0/36; set 3B improved |
+| c7 | **fresh** adapter, all data at once, 40 rounds | 0 / 6 (vLLM) | ≈ c6: chaining runs is not a problem |
+| c8 | c6 + top-k soft cross-entropy on Rollup (spec option B) | 0 / 6 (vLLM) | no gain over c6 |
+
+**Same conditions, all on vLLM** (thinking on: full suite n5; thinking off: validate 9 reps × n5):
+
+| model | generate ON | validate ON | fix ON | validate OFF (WRONG) | T22 OFF WRONG / 45 | set 3B wrong (default / non-null / nullable) |
+|---|---|---|---|---|---|---|
+| rb1006 | 0.963 | 0.786 | 0.760 | 0.886 (7.5%) | 19 | 6 / 12 / 11 |
+| **c4** | 0.965 | 0.791 | 0.848 | **0.877 (8.2%)** | 28 | 11 / 8 / 10 |
+| c6 | 0.973 | 0.794 | 0.842 | 0.864 (8.5%) | 38 | 2 / 1 / 5 |
+| c7 | 0.974 | 0.778 | **0.876** | 0.860 (9.5%) | 42 | 4 / 1 / 4 |
+| c8 | 0.974 | 0.744 | 0.864 | 0.869 (8.3%) | 37 | 2 / 1 / 8 |
+
+**Findings:**
+1. **OPCD removes the declaration belief where four earlier methods failed** (§3.16):
+   - T40 0/20, T42 roughly 4–6/20;
+   - held-out hard cases 0%;
+   - fix +0.09 over rb1006;
+   - generate unchanged.
+
+   The per-token signal is local. The tokens it penalizes most are the belief itself ("is not
+   initialized at module level without an explicit…", A = −9.8).
+2. **It works where the student states the belief, not where it omits a fact.** The declaration
+   belief is something the student writes, so the teacher can correct it token by token. The
+   accumulator fact is mostly an omission: the student fails to mention that an unmarked field starts
+   null. KL to the accumulator teacher stayed around 0.02 over 16 rounds (c6). The top-k loss, meant
+   for exactly this, did not help (c8).
+3. **The accumulator fact goes opposite ways with thinking on and thinking off.** Every run that trained
+   on it improves set 3B with thinking on. But thinking-off T22 gets worse: 19 → 37–42 of 45, mostly
+   "the accumulator field starts at 0" or "keeps the previous group's value".
+4. **One teacher for both facts interferes** (c5): "accumulator fields can be null" relaxes "declared
+   variables are never null". Splitting teachers by component (c6) avoids that.
+5. **Every added rule sentence costs thinking-on validate a little:** v3 0.801, v4 0.742, v5 0.764,
+   rb1006 0.791. The format slips too: v4 dropped severity labels on T26. Keep teacher prompts short.
+6. **There is no path dependence:** c7, one fresh adapter, matches the chained c6.
+7. **Two facts from the teacher checks, both now in the corpus reference:**
+   - metadata fields are nullable unless marked `nullable="false"`;
+   - the Rollup accumulator is reset from metadata before every group.
+
+   Plain rb1006 gets both wrong. The second one, the reset, is a third belief: that values carry over
+   between groups.
+
+**Recommendation: c4** (adapter `data/opcd/c4/round_015/adapter`, gitignored; config
+`configs/opcd_c4.yaml`).
+- It removes the declaration belief, keeps fix +0.09, and holds generate.
+- It has the smallest thinking-off cost: 0.877 against 0.886, within about 1 sd.
+- **c7 is the alternative if fix matters more:** fix 0.876 and the best generate, at −0.026 thinking-off
+  validate.
+- **Handle the accumulator fact outside OPCD,** for example thinking-on review for Rollup, or
+  thinking-off DPO from c6's correct thinking-on answers. Don't keep adding it to this adapter.
+
+**Practical notes:**
+- The c1–c8 adapters are in `data/opcd/c*/round_*/adapter`.
+- An adapter is merged for HF with `opcd.py export`, or served directly on vLLM; the
+  `adapter_vllm` copy has the renamed keys.
+- `scripts/opcd_run.sh RUN TRAIN_GPU LAST_ROUND` trains and evaluates one run end to end in about
+  2.5 h (16 rounds) plus 30 min of evaluation.
 
 ---
 
@@ -1312,6 +1437,53 @@ Re-judge stored answers before comparing across the switch: `data/rejudge_result
 The code defaults (`self_distill.JUDGE_DEFAULTS`, `test.py`, `review_judge.py`) still name
 `gpt-6-sol`. They are only fallbacks; every config sets the judge.
 
+### 4.7 Evaluating on vLLM, and the real noise floor
+
+> **Added 2026-10-12.**
+
+**`test.py` has a vLLM mode** (`mut.mode: vllm`, `vllm_url`, `vllm_model`, `run_label`) and
+`--workers N`.
+- The prompt is built by `test.py`'s own tokenizer path (LlamaFactory `qwen3_8` template, thinking
+  flag, `reasoning_effort`) and sent as token ids to `/v1/completions`. vLLM's chat template never
+  applies.
+- `vllm_model` selects the base model or a LoRA adapter hot-loaded by name, so no export is needed.
+- Server: `scripts/vllm_eval_serve.sh` (port 3012). Configs: `configs/eval_rb1006_vllm_{on,off}.yaml`,
+  `configs/eval_vllm_opcd*`.
+
+**Speed, at 32 workers:**
+
+| run | HF | vLLM |
+|---|---|---|
+| full suite, thinking on (215 runs) | 3.9 h | **9 min** |
+| full suite, thinking off | 1.5 h | 3 min |
+| validate thinking-off rep | 20 min | < 1 min |
+
+HF ran one generation at a time at about 21 tokens/s; vLLM sustains about 470 tokens/s at 32
+concurrent requests.
+
+**Parity with HF on rb1006:**
+- Per-token log-probs agree to about 0.001.
+- Generate, validate and fix agree within noise.
+- T40/T42 agree, and the median thinking length is the same (295 vs 292 words).
+- Only the sampling RNG differs.
+
+**The noise floor was underestimated.** Validate thinking off for rb1006, 9 vLLM reps:
+- score 0.886 ± 0.012;
+- **WRONG 7.5% ± 1.3%**, range 5.9–9.8%.
+
+The 4.5% baseline used as the WRONG ≤ 5% gate came from 3 HF reps (3.2%, 6.5%, 3.9%) and was low.
+Several thinking-off "regressions" in §3.18 (c3 8.4%, c4 7.4%) were mostly that.
+
+Other single-run figures are also noisy:
+- T42 at n20 gave 12/20 on HF and 4/20 on vLLM for the same model (c4).
+- T33 gave 0.93 on HF and 0.73 on vLLM for rb1006.
+
+**Rules:**
+- Thinking-off validate: 9 reps (9 min on vLLM).
+- T40/T42: at least 2 × n20 before a gate decision.
+- Compare models only on the same path, HF or vLLM.
+- Re-judge judge parse failures, which score 0 (`data/rejudge_results.py --only-failed`).
+
 The ctl_validate compile check needs the local CloverDX Server (`~/cloverserver/…/bin/startup.sh`,
 port 8083). It does not restart after a reboot, and the self-distill filter then logs "exit 0"
 without judging anything, so check the judged count.
@@ -1423,7 +1595,30 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
 
 ## 6. Open questions, in priority order
 
-> **2026-10-09 — current front (§3.16, §3.17).** Items below predate it.
+> **2026-10-12 — current front (§3.18, §4.7).**
+>
+> A. **Ship decision:** c4 (best balance) or c7 (best fix and generate, −0.026 thinking-off validate).
+>    Both remove the declaration belief. Confirm T42 with 2 × n20 on vLLM before deciding.
+>
+> B. **The Rollup accumulator facts** (nullable unless marked; reset before each group): OPCD improves them
+>    with thinking on and worsens thinking-off T22. Options:
+>    - thinking-off DPO built from c6's correct thinking-on Rollup answers;
+>    - thinking-on review for Rollup code at inference;
+>    - corpus records that state both facts, trained in a normal SFT round.
+>
+> C. **Retrain rb1006 with the c4 adapter's behaviour folded in** (or merge c4) before any next corpus
+>    round, so new SFT data does not undo it.
+>
+> D. **GRPO** (`spec/grpo_rl_idea.md`) remains the fallback if B needs an on-policy method that can
+>    reward a missing finding.
+>
+> **2026-10-09 front, now resolved:**
+> - A: the rule in the system prompt helps with thinking on and primes thinking-off review, so it is
+>   not shippable as is (§3.16).
+> - B: on-policy context distillation works (§3.18).
+> - D: thinking-off WRONG regressions were partly baseline noise (§4.7).
+>
+> Items below predate both.
 >
 > A. **Does the system-prompt rule cost anything elsewhere?** It is queued as a full suite (rule
 >    in all prompts, both modes). If clean, it is the deployable fix for the declaration belief.
