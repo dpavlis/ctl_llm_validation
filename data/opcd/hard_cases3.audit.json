@@ -1,0 +1,1067 @@
+[
+  {
+    "id": "opcd_hard3_01",
+    "domain": "3D-print extrusion job setup",
+    "scenario": "summarizes a 3D-print extrusion job while preserving its opening extruder configuration.",
+    "manual_walkthrough": "First extruder0/feed rate8000/material_um10 is captured because captured=false; second extruder12/feed rate9000/material_umnull leaves opening extruder0/feed rate8000 and totals10. clean resets captured and materialTotal, so next job captures its own first segment. The 10000*65535 total fits long.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "cb966341a4f83eba4fa4459ec90cfe880943ef4a40229c6367c6b0ad0e839374",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "8b85c2f342503b999ec2f6bce5e38f5d36adc013e910d4fc180fafac3223f4c2",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_02",
+    "domain": "legal document revision trails",
+    "scenario": "summarizes legal-document revision trails and distinguishes backward revision steps from the opening version.",
+    "manual_walkthrough": "Revisions0,3,2 capture opening0, close2 and count exactly one backward step. seen starts0; the first row never compares with priorRevision. Empty note is counted, null is not. After clean seen0 ensures a new document overwrites both opening and predecessor on its first row.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "d20e7ba7a7ece41b99a894b1df67f2edb4113cf2a4d98eccc53b1c8436fc6e86",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "a37d48cb23e9c63c9fb3b21c324486a4dc0d9d30d684cf13438783d935d59dd3",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_03",
+    "domain": "audiobook chapter speaker cues",
+    "scenario": "builds a chapter-level audiobook speaker-change summary from cue rows.",
+    "manual_walkthrough": "Narrators empty,Ada,Ada give initial empty, finalAda and one change. haveCue=false captures the empty first value and becomes true, preventing replacement by Ada. The first row avoids any predecessor comparison. spoken total is at most6000000000 and fits long; changes stays below10000.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "a1a0e377c7bf6e043edbdc27cc2eaef5f0056034bca2f69a8160a861e697f903",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "9c21c4a1593054344639c7f4497f3de76435e8e212882aba8f2d842546e8a3cc",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_04",
+    "domain": "historical rainfall episode reconstruction",
+    "scenario": "summarizes reconstructed rainfall episodes by their observed opening and closing times.",
+    "manual_walkthrough": "An opening1901 date is captured even though it predates the declared epoch; a subsequent1901+500ms date gives duration500. A first timestamp equal to epoch is also captured and retained. Single-row duration is 0. Group reset clears started, causing the next episode to capture its own opening; range bounds keep milliseconds far below long limits.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "f0c1f408067d2f1430220f82029e26fa70d1525945cb8c5c42f980e7643a9399",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "ec4c25cb960be2ec59aeca1d7294d25afbdf7e794835da55c55e3f7490ed1ffe",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_05",
+    "domain": "firewall policy review snapshots",
+    "scenario": "summarizes firewall policy reviews while preserving the tags present at the opening review.",
+    "manual_walkthrough": "First tags empty and second tags[allow,allow] must output opening_tags empty, tag_observations2. captured becomes true even though no append occurred for the first list, so later nonempty tags do not replace the snapshot. foreach copies first elements into separate storage. New-list resets detach emitted lists rather than clearing their storage.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "0e9294a685c4946004435ad6d4b05b646cdf16e13d61c2778c3a504d9f8faaa9",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "b604b984df272dfe8736c482bc83af55cc6df0654d2704195d957a6d75729db7",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_06",
+    "domain": "chess analysis variation evaluation",
+    "scenario": "reports the opening evaluation and largest adjacent evaluation swing of each chess variation.",
+    "manual_walkthrough": "Evaluations0,-30,40 capture opening0, close40 and maxswing70. A one-position evaluation9000 has no comparison with defaultprior0 and correctly reports swing0. Bounds restrict differences to20000, avoiding abs/integer overflow. clean restores havePositionfalse and swing0.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "eca9c0d00e9c56f59527ad3b5ffc3a4455ec7911b0180c528e44416fe66ad2a6",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "890a65cb0626ba4782b059f5f5d0f1aee3203eb4e99fa3bd18bae494c88b26c7",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_07",
+    "domain": "tennis service-game summaries",
+    "scenario": "reports the opening server and subsequent server changes across tennis service games in each set.",
+    "manual_walkthrough": "For server IDs0,12,12, accumulator games resets0, so openingServer0 is captured, then one change is counted. New group games0 overwrites openingServer/previousServer on its first game even though globals still hold older values. Non-nullable acc counters start0; points_played stays <=1000000. Summary counter0 emits once and counter1 SKIP stops.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "0160b998d8c5795233678a1502191c849201c9b971a041f8b3e52243f74f2c3a",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "5d644377009834131850ab552c3e4a2d0654f6ba6148a838bff3146dd1969b6e",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_08",
+    "domain": "textile dye-bath timing",
+    "scenario": "emits intervals between consecutive dye-bath dips and a final batch timing summary.",
+    "manual_walkthrough": "First dip1951 emits no interval and sets previousDip to1951 despite epoch default. Second dip+250ms emits port 0 interval250. Final port 1 summary dips2/span250. A new batch resets acc.dips0, suppresses its first interval and overwrites prior date; equal timestamp intervals0 are retained. Both loops emit once then SKIP.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "2f71ed16728ce51aa3ae6cfa3a3910b6d7bfcaae9c1b72daa9f5486e0a1455f3",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "62814ece1b4a9fb8957a8cc7c232116dc2a15430886254ea991c689dbdb8ea1a",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_09",
+    "domain": "electronic music chord-region snapshots",
+    "scenario": "summarizes chord regions while preserving each region's opening note voicing.",
+    "manual_walkthrough": "Opening notes [] followed by [60,60,67] then [] gives opening_notes=[] and matching_frames=2. acc.frames increments even for the first empty list, so later notes do not replace the snapshot. Matching first checks list length, then every ordered element. For first notes[60,60,67], a later[60,67,60] does not match despite equal pitch membership. initGroup creates independent openingNotes storage and accumulator resets matches/frames/ticks. Frame count and matching count stay<=1000; ticks<=96000000.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "cf178fe9ea931ac2a06b831c28b73fa41839a99fb5465197fc897202fbc928e9",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "cc573603590c5b36e0d928b7f90cf88d1f133f5cc9f5e699bdc28e6f8838594e",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_10",
+    "domain": "genealogical lineage import roots",
+    "scenario": "emits root-to-member associations after the opening node of each imported lineage.",
+    "manual_walkthrough": "Lineage nodes0,8,9 capture root0 on first row and suppress it; later rows emit0→8 and0→9. The zero root is retained because acc.nodes now exceeds0. New-group nodes0 reset causes replacement with its own root. finishGroupfalse suppresses final transform, and updateTransform counters0/1 produce exactly one row each. All five mandatory functions exist.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "40d2a4b5bbe20569ef9c8b5afb96bd675b93d1acb509efb388c97ebcf2038b5c",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "e5886f5de5c61f4d305293b8860b04b3dea84d2a1fd631238b427a09fbff61ec",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_11",
+    "domain": "Space optics",
+    "scenario": "anchors a star-camera exposure stream to the timestamp of its first exposure.",
+    "walkthrough": "First exposure1960-01-01 overwrites date default under haveOrigin=false and emits offset0. Second1959-12-31 retains1960origin and emits negativeoffset; no ordering assumption or nullsentinel. Emptyinput produces no rows.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "7ba20300072d9acbf11c5928468e21341b5ba225ee8fe6a425a04ed8cfeba7a7",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "009877023fbab3db16488caea85307a3f307da585af773c8db588ebba99b735f",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": []
+    }
+  },
+  {
+    "id": "opcd_hard3_12",
+    "domain": "Patent registry",
+    "scenario": "compares every patent filing title with the first filing title in the arrival stream.",
+    "walkthrough": "First titleempty is deliberately captured; secondTitleLens must keep first_titleempty and same_titlefalse. Integer ordinal default0 increments1. Thirdempty same_titletrue. No resetting runstate perrow.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "124530ee05c8f2df1c005df2bffb2bcd05fa6c291019f4362eca1100dce1a3b1",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "4ab2d992f9bc4d9e4b0c0a2ebc333147fd5fe137c43a11e40c83f62cb7637f1c",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": []
+    }
+  },
+  {
+    "id": "opcd_hard3_13",
+    "domain": "Seismology",
+    "scenario": "reports event identifiers relative to the first seismic event identifier in a run.",
+    "walkthrough": "First id17 produces origin17 relative0; second5 produces relative-12. Firstid0 is also retained, so later17 doesnot replace origin0. Range guarantees subtraction doesnot overflow.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "ba6b81224471d2c098b5c5d9a6ef9fd3c826a723b796f53cf7786c294f765556",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "fcc6fb163ca83fae53cfa1f8477464a738739540e44ddff6cd8b8622dfecbb48",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": []
+    }
+  },
+  {
+    "id": "opcd_hard3_14",
+    "domain": "Animation rendering",
+    "scenario": "checks each animation rendering job against the tags supplied by the first job.",
+    "walkthrough": "First emptylist baseline size0 outside0. Second[a,a] retains emptybaseline and outside2. If first[a,a], baseline_size2 and firstoutside0. Record-list assignment is a deepcopy per CTLreference, so nextinput doesnot mutate baseline.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "104b9923c72f6370427e2cb5d8bdf8086d90e023e39e958692d90da1d4c85b8e",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "2ad9e69e8e8992a566c193f6f965df3eab86fae889bf5e6897777509b5f0eef9",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": []
+    }
+  },
+  {
+    "id": "opcd_hard3_15",
+    "domain": "Volcano monitoring",
+    "scenario": "routes volcanic tremor observations by their timestamp relative to the preceding observation.",
+    "walkthrough": "First1960timestamp routes0 despite precedingdate defaultepoch. Second1959 routes1 and stores1959. Third1960 routes2, demonstrating immediatepredecessor ratherthan runningmaximum. Onlyinput access; zero-basedroutes.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "73f9a3bb4f0e54f8bd50c946570569f588fcfb20862a2dc5b8d7b85f17b12913",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "242688724bd1c9af5c4aeda8bb820dd2d0ae301e1a790e1539bad192d70cf0ea",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": []
+    }
+  },
+  {
+    "id": "opcd_hard3_16",
+    "domain": "Textile weaving",
+    "scenario": "routes loom tension settings according to tension jumps from the preceding input setting.",
+    "walkthrough": "Firsttension0 routes0; second10 routes2 at boundary10; third21 routes1 forjump11; fourth20 routes2 forjump1. Everyrow updates previous, loomchangesdo notreset. Difference in-100..100 avoids overflow.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "20f475e895a515c7165997d43d208c411f2cb78fcc5eeca232212ec29595b181",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "0a956f0c42d73f1832ba9a2b7e3b885c62d71fbcbb50587c3f094c5e12d374d0",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": []
+    }
+  },
+  {
+    "id": "opcd_hard3_17",
+    "domain": "Recycling sorting",
+    "scenario": "routes recycling classifications according to whether they repeat the previous arrival.",
+    "walkthrough": "Firstemptyroutes2; nextemptyroutes0; Glassroutes1; glassroutes1 becausecases differ. Barestring emptydefault does not represent a realpriorrecord.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "f86c2b63e8b2ebcb75a78e71b8b7d2e48d3c0711fabf52aea922ed7d19eaa03c",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "9429ce1a8e59ab2e7cbf02a0a9fdd11f1c598bddc0bf7cae75249195056aa568",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": []
+    }
+  },
+  {
+    "id": "opcd_hard3_18",
+    "domain": "Forestry cartography",
+    "scenario": "anchors aerial-map tile identifiers to the first driver tile with a matched elevation key while attaching optional elevation readings.",
+    "walkthrough": "Driver17unmatched emits nullorigin,nulloffset,nullmetres. Nextdriver0matched with nullmetres establishesorigin0offset0; next9unmatched retainsorigin0offset9; later5matched doesnotreplaceorigin0. Capturedependsconcretenonnullkey, notnullmeasurement; longdifference bounded.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "54ab17d8271b33c392ee538f92421b1fea0ab63e2022cfb807f81fbf0b4d903f",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "3ee02a35cf1e3ffc714d3515da2d59cda64806daa7d1a2f53232a8b319b76f76",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": []
+    }
+  },
+  {
+    "id": "opcd_hard3_19",
+    "domain": "Radio communications",
+    "scenario": "reports gaps between successive contacts with a matched operator and adds its callsign.",
+    "walkthrough": "Firstunmatched1950 givesnullhistoryfields without changingstate; firstmatched1960(nullcallsign) givesnullhistoryfields and stores1960; interveningunmatched2020doesnotadvancehistory; nextmatched1959emits previous1960 andnegativeelapsed, emptycallsignpreserved. Flagfirstmatchedprevents epochfromreachinggap.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "c43374808a7d62f606356ed8a1f837edbf90d8f4310427c9d86c500c4868392e",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "3ecd6615dfa12e221943a2e454ff03271e85505d107f2efca3a492a4dc58098b",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": []
+    }
+  },
+  {
+    "id": "opcd_hard3_20",
+    "domain": "Software build provenance",
+    "scenario": "marks digest changes between adjacent driver builds while adding optional provenance notes.",
+    "walkthrough": "Firstemptydigest unmatched emits changedfalse count0 and nullnote. Secondemptydigest matches previous emitsfalse; thirdabc emitstrue count1; fourthempty unmatched emitstrue count2. Matches nevercontrolhistoryupdate; countbound preventsintegeroverflow.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "aa56e604e4195c33b172834a54a8a638d4dc2d3406c4fffdd8b85fdfecb3d8b6",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "d54248bc9c7acdb7acd09f7a4d2da8d69ebecbb937f4c76b30b69c4f58dd7a53",
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": []
+    }
+  },
+  {
+    "id": "opcd_hard3_21",
+    "domain": "Harbor dredging permits",
+    "metadata_representation": "prose_unmarked",
+    "first_record_walkthrough": [
+      "Accumulator Acc21.dredged resets from metadata at each new group: initial value null. The first explicit arithmetic/comparison cannot safely use this null; corrected initGroup supplies 0.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required."
+    ],
+    "manual_defects": [
+      "Acc21.dredged starts null in every group and its first explicit arithmetic update is a real defect requiring an initial group baseline.",
+      "Required finishGroup callback is absent; final-phase contract is incomplete.",
+      "The final metric is negated instead of emitted unchanged."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "ced0b77055044a33ebca4a5856232496be0d1a1e565f50e5ccf5aaeb3a93106b",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "5ba20fe26210fc56d34326d9f0b5843d25eb24731a6b45d1b2a1b91b0ec90cbb",
+    "original_compile_result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) finishGroup() are missing!"
+        }
+      ]
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_22",
+    "domain": "Video transcoding segments",
+    "metadata_representation": "xml_unmarked",
+    "first_record_walkthrough": [
+      "Accumulator Acc22.frames resets from metadata at each new group: initial value null. The first explicit arithmetic/comparison cannot safely use this null; corrected initGroup supplies 0L.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "Declared runTrace starts empty; length is 0 so no separator is added before the first token."
+    ],
+    "manual_defects": [
+      "Acc22.frames starts null in every group and its first explicit arithmetic update is a real defect requiring an initial group baseline.",
+      "updateGroup returns false and suppresses the required per-record output phase.",
+      "updateTransform returns output port 1 although progress records must go to port 0; its assignments populate port 0.",
+      "The output group key is lowercased although case-preserving copying is required."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "f1224d6ed7cd441eeb95ba3477aae59bfff2838f5a7e181f0c8c3132d7261519",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "2a368970c0b5f67629053028f18715741e4043f361afbfd466f828c8963e5c88",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_23",
+    "domain": "Enzyme reaction efficiency chains",
+    "metadata_representation": "xml_true",
+    "first_record_walkthrough": [
+      "Accumulator Acc23.efficiency resets from metadata at each new group: initial value null. The first explicit arithmetic/comparison cannot safely use this null; corrected initGroup supplies 1D.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required."
+    ],
+    "manual_defects": [
+      "Acc23.efficiency starts null in every group and its first explicit arithmetic update is a real defect requiring an initial group baseline.",
+      "finishGroup returns false and suppresses the required group-final summary phase.",
+      "The output group key is uppercased although case-preserving copying is required."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "0dfe454023a454748d12898e78b157598946543c06fe97d29cd23296bd536cbe",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "de39f90ed4642fe65bc328081e51efe45154b414e59d8dda47192c994a9143c7",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_24",
+    "domain": "Avalanche sensor burst maxima",
+    "metadata_representation": "prose_unmarked",
+    "first_record_walkthrough": [
+      "Accumulator Acc24.peak resets from metadata at each new group: initial value null. The first explicit arithmetic/comparison cannot safely use this null; corrected initGroup supplies 0.0.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "Declared runTokens starts empty; first append is valid and length becomes 1."
+    ],
+    "manual_defects": [
+      "Acc24.peak starts null in every group and its first ordered comparison is a real defect requiring an initial group baseline.",
+      "updateGroup returns true and updateTransform emits progress rows although only final summaries are allowed.",
+      "transform returns ALL without a counter stop; ALL emits and continues, so the final loop never terminates."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "229ba7adf8eaf97333bd4c6c7bd720915a281bf08d5b118d612c8c1fb7bbbccc",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "9eea68c40e66304914ae792492c8ecbe765bc6ba1e8c22290ff17171603e6871",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_25",
+    "domain": "Census interview rounds",
+    "metadata_representation": "xml_unmarked",
+    "first_record_walkthrough": [
+      "Accumulator Acc25.interviews resets from metadata at each new group: initial value null. The first explicit arithmetic/comparison cannot safely use this null; corrected initGroup supplies 0.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required."
+    ],
+    "manual_defects": [
+      "Acc25.interviews starts null in every group and its first explicit arithmetic update is a real defect requiring an initial group baseline.",
+      "finishGroup returns true and transform emits an unwanted final summary although only per-record progress outputs are required.",
+      "updateGroup returns false and suppresses the required per-record output phase."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "715db6e81068ae9e0623dba00b6905ae199cd969fbb71321324e6733fb0a4b1f",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "53c30f9d0067c4ab1a235172ab6c7a25fe8f26a123ed2daff4e109a3a0d3c7a0",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_26",
+    "domain": "Seawater desalination production",
+    "metadata_representation": "xml_true",
+    "first_record_walkthrough": [
+      "Accumulator Acc26.litres resets from metadata at each new group: initial value null. The first explicit arithmetic/comparison cannot safely use this null; corrected initGroup supplies 0.0.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "Declared runTrace starts empty; length is 0 so no separator is added before the first token."
+    ],
+    "manual_defects": [
+      "Acc26.litres starts null in every group and its first explicit arithmetic update is a real defect requiring an initial group baseline.",
+      "Required updateTransform callback is absent, even though updates are intentionally suppressed.",
+      "transform stops immediately with SKIP for counter 0, discarding the required final summary."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "60fb61727f955628353f2e1d345816387cc7e44d693909ceffe41f378f3ca3a8",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "b45d63fe530e27931138c10206d2a2f1c22bd4c3b89fa52f2d4c86c4e27741f8",
+    "original_compile_result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) updateTransform() are missing!"
+        }
+      ]
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_27",
+    "domain": "Turbine vibration inspection sets",
+    "metadata_representation": "xml_false",
+    "first_record_walkthrough": [
+      "Accumulator Acc27.checks resets from metadata at each new group: initial value 0. The original first field update has a valid numeric baseline; no null guard or zero initializer is required.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required."
+    ],
+    "manual_defects": [
+      "updateGroup declares boolean but returns integer 1; the return type is invalid.",
+      "The output group key is lowercased although case-preserving copying is required."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "b944ee29986d0ee142cf768c7f6632133db9fd021a014b0e993a54638dd77dd9",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "da929814b82be420e72c1241cb9b1cbbf839b533968269ed60bc749159d47d94",
+    "original_compile_result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "compile",
+          "line": 8,
+          "column": 5,
+          "endLine": 8,
+          "endColumn": 12,
+          "message": "Can't convert from 'integer' to 'boolean'"
+        }
+      ]
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_28",
+    "domain": "Stadium spectator gate totals",
+    "metadata_representation": "xml_false",
+    "first_record_walkthrough": [
+      "Accumulator Acc28.spectators resets from metadata at each new group: initial value 0. The original first field update has a valid numeric baseline; no null guard or zero initializer is required.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "Declared runTokens starts empty; first append is valid and length becomes 1."
+    ],
+    "manual_defects": [
+      "Required initGroup callback is absent; this is a lifecycle-contract defect separate from the non-nullable field start value.",
+      "transform writes the summary on port 1 but returns port 0, violating summary routing and emitting the wrong output record.",
+      "The output group key is uppercased although case-preserving copying is required."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "fc45a72d932358f357b0271df556cfe59622ad53743e025ec705f80e2a800b60",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "e991ab128339c38c107710dd01700926ad84b52d8983ae5690df06e217d73a25",
+    "original_compile_result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) initGroup() are missing!"
+        }
+      ]
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_29",
+    "domain": "Diamond cutting waste averages",
+    "metadata_representation": "xml_false",
+    "first_record_walkthrough": [
+      "Accumulator Acc29.waste_total resets from metadata at each new group: initial value 0. The original first field update has a valid numeric baseline; no null guard or zero initializer is required.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "Non-nullable waste_total and samples both reset to 0; first update makes samples=1 and adds the first waste_mass to waste_total. Output mean_waste=round(waste_total/1,2) equals that input. Later sums are exact at two fractional digits under precision16, and the mean is rounded only at output."
+    ],
+    "manual_defects": [
+      "transform stops only after counter 1, emitting two group-final rows instead of one.",
+      "The output group key is lowercased although case-preserving copying is required."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "5b47a82c9b14fb700a2aea4c8d02058e2969dc822d47b3f88792d535bb59d998",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "673a3d1dbbacf05c7618422fc2722b163d523d810a89ea87e3f335cf3ce36061",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_30",
+    "domain": "Auction escrow deposit books",
+    "metadata_representation": "xml_false_default",
+    "first_record_walkthrough": [
+      "Accumulator Acc30.deposits resets from metadata at each new group: initial value 50. The original first field update has a valid numeric baseline; no null guard or zero initializer is required.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "Declared runTrace starts empty; length is 0 so no separator is added before the first token."
+    ],
+    "manual_defects": [
+      "updateGroup returns false and suppresses the required per-record output phase.",
+      "transform stops immediately with SKIP for counter 0, discarding the required final summary.",
+      "Progress output negates the current accumulator value instead of showing it unchanged."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "84698c15d2d5ff437f66e24bd48c864d0dac2ff3484f9716ea620c0e02d889ef",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "5583a6cf296682f01185cfbd26277ffe20343b5cb3139fbd975fafad0ee31d9e",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_31",
+    "domain": "Cafeteria recipe allergen signatures",
+    "metadata_representation": "xml_false_default",
+    "first_record_walkthrough": [
+      "Accumulator Acc31.allergens resets from metadata at each new group: initial value 200. The original first field update has a valid numeric baseline; no null guard or zero initializer is required.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "For a first ingredient mask of 0, bitOr(200,0)=200 retains the required staple allergen signature; replacing the metadata default with 0 would lose it."
+    ],
+    "manual_defects": [
+      "Required finishGroup callback is absent; final-phase contract is incomplete.",
+      "The output group key is uppercased although case-preserving copying is required."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "8ca40a871afd4846e672f1baefc6d0e75bcc55da6c51d98e207c422150335eee",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "dc2d86754ca43f8c9c2aba97abd223f6e65b6410e5ab1ec206a48793b892b1b6",
+    "original_compile_result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) finishGroup() are missing!"
+        }
+      ]
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_32",
+    "domain": "Coral reef biomass calibration",
+    "metadata_representation": "xml_false_default",
+    "first_record_walkthrough": [
+      "Accumulator Acc32.biomass resets from metadata at each new group: initial value 0.5. The original first field update has a valid numeric baseline; no null guard or zero initializer is required.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "Declared runTokens starts empty; first append is valid and length becomes 1."
+    ],
+    "manual_defects": [
+      "transform returns STOP after writing fields; STOP aborts the component instead of emitting a normal summary.",
+      "Final biomass subtracts 0.5, discarding the calibration baseline explicitly required in the output."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "1fbc5699247c5f3340a4c9708afb679b45079c47206657afebdd5349a78e9114",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "6e51cd274d9f25f6d88283cb44d4617b147bd199aca5cf0246bb3a7dae4116fd",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_33",
+    "domain": "Differential backup storage deltas",
+    "metadata_representation": "xml_true",
+    "first_record_walkthrough": [
+      "Accumulator Acc33.net_bytes resets from metadata at each new group: initial value null. The first explicit arithmetic/comparison cannot safely use this null; corrected initGroup supplies 0L.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "After zero initialization, added=10 and deleted=3 yields net_bytes=7; a later deletion-only row can reduce the total below zero without overflow under the stated input/run bounds."
+    ],
+    "manual_defects": [
+      "Acc33.net_bytes starts null in every group and its first explicit arithmetic update is a real defect requiring an initial group baseline.",
+      "updateTransform stops only after counter 1 and emits two progress rows per input instead of one.",
+      "The final metric is negated instead of emitted unchanged."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "088c79857622391abdc7885dee299a244a6ff2b9746d7a1509030ab56e19c04b",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "70f8e3f6a835218c89d3d93d9bf957a5ad9a8278d60422e2de4cfd66e542a6dc",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_34",
+    "domain": "Pottery kiln minimum heat readings",
+    "metadata_representation": "xml_unmarked",
+    "first_record_walkthrough": [
+      "Accumulator Acc34.heat_floor resets from metadata at each new group: initial value null. The first explicit arithmetic/comparison cannot safely use this null; corrected initGroup supplies 1001.0.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "Declared runTrace starts empty; length is 0 so no separator is added before the first token."
+    ],
+    "manual_defects": [
+      "Acc34.heat_floor starts null in every group and its first ordered comparison is a real defect requiring an initial group baseline.",
+      "updateGroup returns true and updateTransform emits progress rows although only final summaries are allowed.",
+      "The final metric is negated instead of emitted unchanged."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "a9803ac115318449315ac974cec98e7023a949f225727f14b75d9f11d1b92440",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "e5f0de078547040ccc0a3c9fd87d1ce08ee5298e3d7fa893b1dc8af01552b24a",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_35",
+    "domain": "River gauging interval-volume integration",
+    "metadata_representation": "prose_unmarked",
+    "first_record_walkthrough": [
+      "Accumulator Acc35.volume resets from metadata at each new group: initial value null. The first explicit arithmetic/comparison cannot safely use this null; corrected initGroup supplies 0.0.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "After zero initialization, flow=2 and interval_seconds=3 contributes 6 water-volume units; averaging or summing flow alone would not satisfy the integration requirement."
+    ],
+    "manual_defects": [
+      "Acc35.volume starts null in every group and its first explicit arithmetic update is a real defect requiring an initial group baseline.",
+      "transform stops only after counter 1, emitting two group-final rows instead of one.",
+      "The output group key is lowercased although case-preserving copying is required."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "4085f339f361a2c003c38ef09797877d3f3954827bff1cc375b1f374276aae8c",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "97daeedd57872c44803595e612aa8547925e4c7aefd645f1c4f8f8df69369bcc",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_36",
+    "domain": "Parachute inspection acceptance",
+    "metadata_representation": "xml_true",
+    "first_record_walkthrough": [
+      "Accumulator Acc36.accepted resets from metadata at each new group: initial value null. The first explicit arithmetic/comparison cannot safely use this null; corrected initGroup supplies 0.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "Declared runTokens starts empty; first append is valid and length becomes 1."
+    ],
+    "manual_defects": [
+      "Acc36.accepted starts null in every group and its first explicit arithmetic update is a real defect requiring an initial group baseline.",
+      "finishGroup returns true and transform emits an unwanted final summary although only per-record progress outputs are required.",
+      "updateTransform returns STOP; it aborts the component instead of emitting a normal progress row."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "7c81f44819cbd08921f916f8198856e35cbb6a7a9d91bc24a6cb0288710bfd01",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "d44f1f1074020019977c21c88876db8c7f935c940043e831880ec36a67610cd3",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_37",
+    "domain": "Snowmaking reservoir drawdown",
+    "metadata_representation": "xml_false",
+    "first_record_walkthrough": [
+      "Accumulator Acc37.withdrawn resets from metadata at each new group: initial value 0. The original first field update has a valid numeric baseline; no null guard or zero initializer is required.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required."
+    ],
+    "manual_defects": [
+      "Required updateTransform callback is absent, even though updates are intentionally suppressed.",
+      "Final withdrawn adds one unit that was never present in the reservoir withdrawals."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "a74de0a364b8ada9230f90e09f33947300a3030bd6fd21c45a6ba3a7ddc126a3",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "02d7f29e36af8c20d5fa5d1b4e1b1115f34043d6fba8c1961610ab1452b22356",
+    "original_compile_result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) updateTransform() are missing!"
+        }
+      ]
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_38",
+    "domain": "Solar sail panel tolerance stack-up",
+    "metadata_representation": "xml_false",
+    "first_record_walkthrough": [
+      "Accumulator Acc38.sum_sq resets from metadata at each new group: initial value 0. The original first field update has a valid numeric baseline; no null guard or zero initializer is required.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "For a first panel deviation 3, accumulator sum_sq becomes 9 from zero, and emitted sqrt(9)=3 is the required root-sum-square tolerance.",
+      "Declared runTrace starts empty; length is 0 so no separator is added before the first token."
+    ],
+    "manual_defects": [
+      "transform stops immediately with SKIP for counter 0, discarding the required final summary.",
+      "The output group key is lowercased although case-preserving copying is required."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "060759511524d68a2af418f9d288446eb41f424b483f1e16b65b0b8454821643",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "ced5f0ebbefdc847f484dc35b20583caa5e2c2b2c3365d77ee81625b87918fd2",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_39",
+    "domain": "Plasmid synthesis length budgeting",
+    "metadata_representation": "xml_false_default",
+    "first_record_walkthrough": [
+      "Accumulator Acc39.bases resets from metadata at each new group: initial value 20. The original first field update has a valid numeric baseline; no null guard or zero initializer is required.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required."
+    ],
+    "manual_defects": [
+      "updateTransform stops only after counter 1 and emits two progress rows per input instead of one.",
+      "transform returns STOP after writing fields; STOP aborts the component instead of emitting a normal summary."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "6f03f4b2bc5cac36c7829609952dd8da47099ee9d33d052c86329be99ef3f2ef",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "2a0a357b0e86590c3876789b2d5e1e7ac3ff8541d3e3354b8fd8a987874057d9",
+    "original_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  },
+  {
+    "id": "opcd_hard3_40",
+    "domain": "Hydrogen electrolyzer startup credits",
+    "metadata_representation": "xml_false_default",
+    "first_record_walkthrough": [
+      "Accumulator Acc40.credits resets from metadata at each new group: initial value 1.5. The original first field update has a valid numeric baseline; no null guard or zero initializer is required.",
+      "Declared global processed starts 0; processed = processed + 1 reads that value before assigning 1. It continues over all groups as required.",
+      "Declared runTokens starts empty; first append is valid and length becomes 1."
+    ],
+    "manual_defects": [
+      "Required finishGroup callback is absent; final-phase contract is incomplete.",
+      "transform writes the summary on port 1 but returns port 0, violating summary routing and emitting the wrong output record.",
+      "The output group key is uppercased although case-preserving copying is required."
+    ],
+    "reference_changes": "Initialize nullable accumulator baseline only; repair the listed lifecycle/output defects; preserve the declared global defaults and non-nullable/default accumulator baselines.",
+    "reviewed_date": "2026-10-11",
+    "reference_code_sha256": "ed7874e62ee7ef500f388ea758b1f6d0452fa259e029940c3a59d1136168d64e",
+    "reference_compile_result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "prompt_sha256": "45da4603c1c7f7a3e96eb44bff98be0b0e9c5c22c4ecfd037820387a8d74f55b",
+    "original_compile_result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) finishGroup() are missing!"
+        }
+      ]
+    },
+    "second_review": {
+      "independent_semantics": "PASS",
+      "metadata_identity": "PASS",
+      "remaining_findings": [],
+      "configuration_fix": "Explicit group key, ascending group-key input order and component sorted-order mode, with the specified row order retained within each group."
+    }
+  }
+]

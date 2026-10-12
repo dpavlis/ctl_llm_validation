@@ -1,0 +1,1935 @@
+{
+  "reviewed_date": "2026-10-11",
+  "brief": "/Users/david/Downloads/opcd_hard_cases3_brief.md",
+  "output": "/Users/david/git/ctl_lora_training/data/opcd/hard_cases3.jsonl",
+  "output_sha256": "9172617ca398b81d670ef90257224777b585cf37ad659d83b93dfbb7cc4204df",
+  "records": 40,
+  "coverage": {
+    "parts": {
+      "A": 20,
+      "B": 20
+    },
+    "part_a_components": {
+      "DENORMALIZER": 6,
+      "ROLLUP": 4,
+      "REFORMAT": 4,
+      "PARTITION": 3,
+      "JOIN": 3
+    },
+    "part_a_sentinel_types": {
+      "long": 5,
+      "integer": 3,
+      "string": 4,
+      "date": 5,
+      "string[]": 2,
+      "integer[]": 1
+    },
+    "part_b_tasks": {
+      "validate": 12,
+      "fix": 8
+    },
+    "part_b_kinds": {
+      "acc_nullable_uninit": 10,
+      "acc_nonnullable_uninit": 5,
+      "acc_metadata_default": 5
+    },
+    "part_b_accumulator_representations": {
+      "prose_unmarked": 3,
+      "xml_unmarked": 3,
+      "xml_true": 4,
+      "xml_false": 5,
+      "xml_false_default": 5
+    },
+    "part_b_other_defect_counts": {
+      "2": 16,
+      "3": 4
+    },
+    "part_b_global_trap_counts": {
+      "1": 10,
+      "2": 10
+    }
+  },
+  "compiler_validation": {
+    "tool": "CloverDX Server ctl_validate",
+    "fresh_parent_checks_from_prompt_metadata": 60,
+    "part_a_references_pass": 20,
+    "part_b_corrected_references_pass": 20,
+    "part_b_originals_pass": 13,
+    "part_b_originals_expected_single_error": 7,
+    "unexpected_diagnostics": 0,
+    "limits": "Compilation checks syntax, types and required entry functions; business behavior, reset values, bounds and defect censuses were reviewed separately. No graph runtime tests or teacher sampling were performed."
+  },
+  "independent_review": {
+    "subagents": 3,
+    "reviews": {
+      "review_a_groups": {
+        "reviewed_date": "2026-10-11",
+        "reviewer": "expand_generate",
+        "source": "/Users/david/git/ctl_lora_training/data/opcd/hard_cases3.jsonl",
+        "overall": "PASS",
+        "findings": [],
+        "coverage": "All ten source prompts and reference transforms reviewed independently; XML metadata checked against reference port/accumulator names.",
+        "checks": [
+          "First values use boolean flags or zero-reset counters; valid zero numeric IDs, empty strings/lists and pre-epoch dates never substitute for seen-state.",
+          "Denormalizer cleanup resets flags and aggregates; retained captured values are overwritten on first input of each nonempty next group.",
+          "All five Rollup functions are present; updateGroup suppresses first-record outputs where required; output loops terminate with SKIP after exactly one row.",
+          "07 SetAcc nonnullable games starts0 each group; first server captured before comparison; total points bounded1000000.",
+          "09 ordered-list matching checks length then each corresponding element; duplicates/order matter and an empty opening rest remains an empty snapshot.",
+          "01 extrusion opening values captured once; maximum total material655350000 fits long.",
+          "All aggregates/counts and millisecond differences remain within types under stated bounds."
+        ]
+      },
+      "review_a_stream": {
+        "scope": "Independent review of A-stream IDs11–20 plus A09 matching loop",
+        "reviewed_date": "2026-10-11",
+        "findings": [],
+        "records": [
+          {
+            "id": "opcd_hard3_11",
+            "status": "PASS",
+            "metadata_and_reference_identity_checked": true,
+            "independent_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "semantic_walkthrough": "First timestamp 1901-01-01 becomes origin and offset0; a later arrival with earlier timestamp has a negative offset. All dates fit a 200-year signed-millisecond span.",
+            "sentinel_check": "Reference uses an explicit boolean capture/presence flag, not the bare declared value as a null/empty/epoch/zero sentinel.",
+            "duplicate_review": "Scenario and required output differ from old batches and A-groups; shared first-record technique is the intended lesson."
+          },
+          {
+            "id": "opcd_hard3_12",
+            "status": "PASS",
+            "metadata_and_reference_identity_checked": true,
+            "independent_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "semantic_walkthrough": "First title empty captures it and increments ordinal to1; later nonempty title does not replace it. Exact title matching and ordinal<=1000000 hold.",
+            "sentinel_check": "Reference uses an explicit boolean capture/presence flag, not the bare declared value as a null/empty/epoch/zero sentinel.",
+            "duplicate_review": "Scenario and required output differ from old batches and A-groups; shared first-record technique is the intended lesson."
+          },
+          {
+            "id": "opcd_hard3_13",
+            "status": "PASS",
+            "metadata_and_reference_identity_checked": true,
+            "independent_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "semantic_walkthrough": "First ID0 captures0; laterID7 produces relative7, and firstID7/laterID0 produces-7. Explicit ID bounds prevent overflow.",
+            "sentinel_check": "Reference uses an explicit boolean capture/presence flag, not the bare declared value as a null/empty/epoch/zero sentinel.",
+            "duplicate_review": "Scenario and required output differ from old batches and A-groups; shared first-record technique is the intended lesson."
+          },
+          {
+            "id": "opcd_hard3_14",
+            "status": "PASS",
+            "metadata_and_reference_identity_checked": true,
+            "independent_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "semantic_walkthrough": "First tags empty creates an empty baseline and outside0; later[a,a] counts outside2. First[a,a] baseline length2 preserves duplicates. CTL assignment deep-copies lists (ctl2-basics.md:283), so input-record reuse cannot overwrite the baseline.",
+            "sentinel_check": "Reference uses an explicit boolean capture/presence flag, not the bare declared value as a null/empty/epoch/zero sentinel.",
+            "duplicate_review": "Scenario and required output differ from old batches and A-groups; shared first-record technique is the intended lesson."
+          },
+          {
+            "id": "opcd_hard3_15",
+            "status": "PASS",
+            "metadata_and_reference_identity_checked": true,
+            "independent_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "semantic_walkthrough": "First date beforeepoch routes0 without comparing it with the default; later earlier timestamp routes1, equality/later2, and every row updates predecessor.",
+            "sentinel_check": "Reference uses an explicit boolean capture/presence flag, not the bare declared value as a null/empty/epoch/zero sentinel.",
+            "duplicate_review": "Scenario and required output differ from old batches and A-groups; shared first-record technique is the intended lesson."
+          },
+          {
+            "id": "opcd_hard3_16",
+            "status": "PASS",
+            "metadata_and_reference_identity_checked": true,
+            "independent_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "semantic_walkthrough": "First tension0 or100 always routes0; later difference exactly10 routes2 and11 routes1. Tension0..100 guarantees subtraction/abs safety.",
+            "sentinel_check": "Reference uses an explicit boolean capture/presence flag, not the bare declared value as a null/empty/epoch/zero sentinel.",
+            "duplicate_review": "Scenario and required output differ from old batches and A-groups; shared first-record technique is the intended lesson."
+          },
+          {
+            "id": "opcd_hard3_17",
+            "status": "PASS",
+            "metadata_and_reference_identity_checked": true,
+            "independent_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "semantic_walkthrough": "First classification empty routes2; second empty routes0. A change in case routes1 and every input advances history.",
+            "sentinel_check": "Reference uses an explicit boolean capture/presence flag, not the bare declared value as a null/empty/epoch/zero sentinel.",
+            "duplicate_review": "Scenario and required output differ from old batches and A-groups; shared first-record technique is the intended lesson."
+          },
+          {
+            "id": "opcd_hard3_18",
+            "status": "PASS",
+            "metadata_and_reference_identity_checked": true,
+            "independent_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "semantic_walkthrough": "Before first matching slave key, nullable origin/offset staynull. A match with driverID0 captures0 even if metres isnull; later unmatched driverID4 retains origin0/offset4 while metres isnull. Slave-key matching is field-based and permitted by supplied join cardinality.",
+            "sentinel_check": "Reference uses an explicit boolean capture/presence flag, not the bare declared value as a null/empty/epoch/zero sentinel.",
+            "duplicate_review": "Scenario and required output differ from old batches and A-groups; shared first-record technique is the intended lesson."
+          },
+          {
+            "id": "opcd_hard3_19",
+            "status": "PASS",
+            "metadata_and_reference_identity_checked": true,
+            "independent_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "semantic_walkthrough": "Unmatched rows emit null history fields and do not advance predecessor. First matched date beforeepoch emits null gap; matched null callsign still sets history. Later matched row calculates signedmillisecond gap from precedingmatcheddate; nvl preserves nonnull emptycallsign.",
+            "sentinel_check": "Reference uses an explicit boolean capture/presence flag, not the bare declared value as a null/empty/epoch/zero sentinel.",
+            "duplicate_review": "Scenario and required output differ from old batches and A-groups; shared first-record technique is the intended lesson."
+          },
+          {
+            "id": "opcd_hard3_20",
+            "status": "PASS",
+            "metadata_and_reference_identity_checked": true,
+            "independent_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "semantic_walkthrough": "First emptydigest emits changedfalse/count0. A later unmatched build with digestx counts a change and advances predecessor. Nullable note copies matched null or unmatched null correctly; changes cannot exceed1000000.",
+            "sentinel_check": "Reference uses an explicit boolean capture/presence flag, not the bare declared value as a null/empty/epoch/zero sentinel.",
+            "duplicate_review": "Scenario and required output differ from old batches and A-groups; shared first-record technique is the intended lesson."
+          }
+        ],
+        "additional_a09_review": {
+          "status": "PASS",
+          "checks": [
+            "frames<=1000 and notes list length<=16 bound the ordered matching loop.",
+            "Length is compared before indexing, so no out-of-bounds reads occur.",
+            "Every ordered pitch is compared, preserving duplicate/order semantics.",
+            "The first frame is included as a match, including an empty opening list.",
+            "acc.frames increments on empty opening lists, preventing later replacement."
+          ]
+        }
+      },
+      "review_b": {
+        "reviewed_date": "2026-10-11",
+        "reviewer": "expand_generate",
+        "source": "/Users/david/git/ctl_lora_training/data/opcd/hard_cases3.jsonl",
+        "audit_source": "/Users/david/git/ctl_lora_training/data/opcd/hard_cases3.audit.json",
+        "overall": "PASS",
+        "findings": [],
+        "resolved_findings": [
+          {
+            "ids": [
+              "opcd_hard3_23"
+            ],
+            "issue": "Multiplicative decimal accumulator precision could change the mathematical result without an explicit rounding rule.",
+            "resolution": "The final source requires rounding after EACH factor, uses round(...,2), and declares precision16/scale2. Factors0..1 keep every intermediate value representable."
+          },
+          {
+            "ids": [
+              "opcd_hard3_29"
+            ],
+            "issue": "Storing and reusing a rounded online mean could bias the final mean.",
+            "resolution": "The final reference stores exact two-decimal waste_total plus integer samples, then rounds their quotient once at emission. Both nonnullable fields start at0; samples is positive before division."
+          },
+          {
+            "ids": [
+              "opcd_hard3_33",
+              "opcd_hard3_35"
+            ],
+            "issue": "Earlier variants repeated simple sum/lifecycle patterns.",
+            "resolution": "Final33 uses signed differential additions-minus-deletions and duplicate progress/negated final defects;35 integrates flow times interval with duplicate final/case defects. These now have distinct aggregation requirements."
+          }
+        ],
+        "coverage": {
+          "records": 20,
+          "task_types": {
+            "validate": 12,
+            "fix": 8
+          },
+          "kinds": {
+            "acc_nullable_uninit": 10,
+            "acc_nonnullable_uninit": 5,
+            "acc_metadata_default": 5
+          },
+          "reference_compiles": {
+            "PASS": 20
+          },
+          "original_compiles": {
+            "PASS": 13,
+            "FAIL": 7
+          }
+        },
+        "checks": [
+          "Read all original prompt CTL, business requirements, metadata, and corrected reference CTL; checked prompt code against the compiler_args code.",
+          "Input and output XML in prompts match exact compiler port metadata. Three prose accumulator examples intentionally omit nullability/default, matching nullable accumulator XML in compiler arguments.",
+          "Nullable/unmarked accumulator arithmetic or ordered comparison reads the per-group metadata null baseline; reference initGroup supplies the business identity only for those fields.",
+          "All five nonnullable variants preserve their valid zero baseline. All five metadata-default variants preserve their business baseline. References do not add unnecessary initialization or null guards to these fields.",
+          "Each declared global is read before first assignment using its correct0/empty-string/empty-list default, and persists across groups as required.",
+          "All references provide the five required Rollup callbacks. Output loops terminate through SKIP; STOP in original32/36/39 is correctly treated as aborting the component.",
+          "Each prompt has exactly2 or3 independent other_defects. Single compiler errors are limited to intended missing callbacks or the integer-to-boolean mismatch; corrected references compile without errors.",
+          "All inputs are bounded and nonempty groups contain at least one record. Numeric totals, products, min/max identities, divisions, sequence lengths and squared sums remain within stated type/metadata limits.",
+          "String trace separator logic is sound because tokens are nonempty and exclude|. Lists preserve duplicate token entries as required.",
+          "Final references honor port routing, progress/final multiplicity, case-preserving group keys, group reset and run-state lifetime.",
+          "Final enzyme rounding and diamond mean accumulation are explicit and avoid hidden metadata-rounding behavior. Reviewed signed backup deltas and weighted river volume separately from sum templates."
+        ],
+        "authority": [
+          "/Users/david/Downloads/opcd_hard_cases3_brief.md",
+          "/Users/david/ctl2-basics.md",
+          "specs/fix_examples_brief.md",
+          "/Users/david/.codex/skills/ctl2-training-example-validator/SKILL.md"
+        ]
+      }
+    },
+    "remaining_correctness_findings": [],
+    "exact_duplicate_prompts": 0,
+    "substantive_duplicate_scenarios_after_revision": [],
+    "revisions": [
+      "Separated overlapping first-origin join and Reformat tasks: join 18 captures the first matched key; join 19 compares only matched contacts.",
+      "Changed 12 to patent filing titles, 01 to 3D-print setup, and 07 to tennis service games to improve domain separation and realism.",
+      "Changed 09 to ordered opening-voicing matches and 16 to threshold tension jumps to reduce repeated scenario patterns.",
+      "Changed 33 to signed differential backup deltas and 35 to interval-volume integration; varied their output-loop defects.",
+      "Bounded input cardinality and numeric values to prevent unintended overflow and nonfinite calculations.",
+      "Resolved 23 product precision with explicit stepwise rounding and 29 mean precision by accumulating an exact total and rounding once at emission."
+    ]
+  },
+  "authority_checks": [
+    "New brief and skill component contracts distinguish nullable record fields from bare variable defaults.",
+    "Local engine DataFieldMetadata defaults nullable to true; IntegerDataField/StringDataField reset non-nullable fields to metadata defaults or type zero values.",
+    "Local Rollup implementation resets its group accumulator and stops output loops only on SKIP; ALL emits and continues.",
+    "Metadata-default examples explicitly use nullable=false so the reset behavior is unambiguous.",
+    "CTL2 reference confirms deep-copy assignment for lists, maps, records and dates."
+  ],
+  "output_conventions": {
+    "schema": "Exact Part A/Part B shapes from the new brief; reviewed_date is in the audit, not added to training records.",
+    "answers_in_dataset": false,
+    "reference_answers": "Private temporary validation material, excluded from all delivered files.",
+    "linux_output_path": "Unavailable on this macOS workspace; saved alongside rounds 1 and 2.",
+    "internal_tracking_section": "Explicitly outside the brief; holdout selection, evaluator changes, teacher sampling and training were not performed."
+  },
+  "second_review": {
+    "reviewed_date": "2026-10-11",
+    "status": "PASS",
+    "independent_subagent_reviews": {
+      "a": {
+        "reviewer": "maps_joins independent Part A review",
+        "status": "PASS",
+        "dataset": "/Users/david/git/ctl_lora_training/data/opcd/hard_cases3.jsonl",
+        "brief": "/Users/david/Downloads/opcd_hard_cases3_brief.md",
+        "already_repaired": "Independently inspected final01..10 specs: all grouped component key/sort settings and stable within-group order are explicit; reference code and metadata unchanged.",
+        "metadata_check": "All compiler input/output/accumulator Record and Field attributes match prompt XML exactly. Partition compiler has only input metadata; displayed output metadata is identical input pass-through as required.",
+        "schema_check": "All20 exact Part A schema, generation-only prompts, numbered specs, no candidate answer or pitfall hint.",
+        "component_counts": {
+          "DENORMALIZER": 6,
+          "ROLLUP": 4,
+          "REFORMAT": 4,
+          "PARTITION": 3,
+          "JOIN": 3
+        },
+        "scenario_review": "All concrete jobs distinct.05 group policy opening tags plus distinct reviewers differs from14 run baseline membership counts;13 first-all-event origin differs from18 first-matched-tile origin;03 cue narrator changes differs from07 tennis server histories. Required sentinel mechanisms are shared intentionally. No cold-chain or exception-code scenario.",
+        "authorities": [
+          "round3 brief accumulator reset rule overrides stale ctl2-basics general record nullability statements",
+          "ctl2-basics:283 defines assignment = as deep copy for lists/maps/records/dates",
+          "Rollup accumulator reset counter controls first record in07,08,10 without separately resetting data globals"
+        ],
+        "records": [
+          {
+            "id": "opcd_hard3_01",
+            "status": "PASS",
+            "semantic_walk": "First extruder 0/feed 1 followed by different values retains opening 0/1; null material adds zero; next group overwrites openings after clean flag reset. Max total 655350000 fits long.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_02",
+            "status": "PASS",
+            "semantic_walk": "Revisions 0,2,1,1 gives opening 0,closing1,backward1; empty note counts and null does not. clean resets count-driven first-record state.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_03",
+            "status": "PASS",
+            "semantic_walk": "First narrator empty then Alice then Alice yields opening empty,last Alice,one change. Ten thousand600000ms rows need long6e9; code uses long.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_04",
+            "status": "PASS",
+            "semantic_walk": "Single observation in1900 gives actual dates,duration0; equal timestamps0; dates through2100 produce long-safe millisecond differences. clean clears flag and sum.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_05",
+            "status": "PASS",
+            "semantic_walk": "Empty first tags then [x,x] stays empty; tag_observations2; repeat reviewer counts once. Explicit copy and clean prevent crossgroup list state.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_06",
+            "status": "PASS",
+            "semantic_walk": "Evaluations0,-10000,10000 give opening0,last10000,maxswing20000; firstposition no comparison. Differences stay safe integer bounds.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_07",
+            "status": "PASS",
+            "semantic_walk": "Server0,1,0 yields opening0,changes2; next set overwrites both globals because reset acc.games0. Maximum points1e6 fits integer.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_08",
+            "status": "PASS",
+            "semantic_walk": "First1950 timestamp emits no interval; equal next emits0; next group singleton emits summary span0 only. Reset dips counter avoids first epoch/crossgroup comparison.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_09",
+            "status": "PASS",
+            "semantic_walk": "First[] then [60] then[] gives opening[],matches2; [60,60] and [60] differ by length. Snapshotreset; max ticks96000000 fitslong.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_10",
+            "status": "PASS",
+            "semantic_walk": "Root0 then member2 emits only root0/member2; singleton emitsnone; next lineage rootoverwrite is driven by reset acc.nodes.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_11",
+            "status": "PASS",
+            "semantic_walk": "First date1900 gives offset0; first2000 followed1900 gives negative millisecond difference; origin remains captured. All date differences1900..2100 fit long.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_12",
+            "status": "PASS",
+            "semantic_walk": "First title empty and second nonempty preserves empty firsttitle; ordinals1,2 and sameflags true,false;1e6integerbounds.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_13",
+            "status": "PASS",
+            "semantic_walk": "First event0 then10 then3 preservesorigin0; first100 then3 givesrelative-97; boundedlongdifferences; amplitudecopied.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_14",
+            "status": "PASS",
+            "semantic_walk": "First[] then[x,x] givesbaseline_size0,outside2; first[x,x] then[x,y,y] givesbaseline_size2,outside2. CTL = deepcopies list so inputreusecannotmutate snapshot.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_15",
+            "status": "PASS",
+            "semantic_walk": "Firstdate1900 routes0; thenearlierdate routes1; equal routes2; everyrouteadvancesprev and stationchangesdo not reset run.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_16",
+            "status": "PASS",
+            "semantic_walk": "Tensions0,10,21,11 route0,2,1,2; strict>10; prevupdatesregardlessroute; boundsabsdifference<=100.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_17",
+            "status": "PASS",
+            "semantic_walk": "Classifications empty,empty,A,a route2,0,1,1; case-sensitive; predecessoradvanced everyrow.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_18",
+            "status": "PASS",
+            "semantic_walk": "Unmatchedtile9 first leavesorigin/offsetnull; matchedtile0 withnullmetres setsorigin0; unmatchedtile3 afterwards retainsorigin0/offset3. Matchbasedslavekey notmeasurement.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_19",
+            "status": "PASS",
+            "semantic_walk": "Unmatched first doesnotadvancehistory; matched1900 emitsnullgap; unmatchedlater ignored; matchedearlier/latertime diffagainstpreviousmatched only. Emptycallsignretained/nullUNASSIGNED.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_20",
+            "status": "PASS",
+            "semantic_walk": "Digestemptyfirst emitschangedfalse,count0; unmatcheddigestA thenmatcheddigestA emits true/false,count1/1. Unmatchedrows advancehistory; maxcount999999 fitsint.",
+            "fresh_compiler_result": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          }
+        ],
+        "resolved_findings": [
+          {
+            "ids": [
+              "opcd_hard3_01",
+              "opcd_hard3_02",
+              "opcd_hard3_03",
+              "opcd_hard3_04",
+              "opcd_hard3_05",
+              "opcd_hard3_06"
+            ],
+            "severity": "configuration ambiguity",
+            "description": "Contiguous groups alone do not guarantee Denormalizer default auto-direction order. A,C,B contiguous keys can fail component direction check.",
+            "recommendation": "Specify ascending group keys with explicit key configuration, or configure order=ignore.",
+            "source": "/Users/david/git/clover-7-6/cloverdx/cloveretl.component/src/org/jetel/component/Denormalizer.java:304,632",
+            "resolution": "Parent added explicit Denormalizer group key, order=asc and ascending input group keys with stable within-group order; independently inspected final01..06 specs."
+          }
+        ],
+        "findings": []
+      },
+      "b": {
+        "reviewer": "groups_routes; fresh independent Part B review",
+        "file": "data/opcd/hard_cases3.jsonl",
+        "scope": "opcd_hard3_21..40",
+        "status": "PASS_AFTER_GROUP_CONFIGURATION_CLARIFICATION",
+        "findings": [
+          {
+            "status": "resolved",
+            "ids": "all Part B Rollups (21..40)",
+            "issue": "Contiguous group keys did not establish the ascending key order required by sorted Rollup operation. Unsorted mode also changes final emission timing and invalidates run_seen expectations.",
+            "witness": "Contiguous groups A,C,B satisfy the old text but violate ascending sorted input.",
+            "resolution": "Parent added explicit group key, inputSorted=true, ascending key order preserving stated within-group order; verified present in current prompts."
+          }
+        ],
+        "checks": {
+          "kind_counts": "10 nullable/unmarked, 5 non-nullable, 5 metadata-default",
+          "task_counts": "12 validate, 8 fix",
+          "metadata": "All input/output XML and XML accumulator field attributes semantically match private compiler args; prose accumulator nullability derives from new brief. Original code fences exactly match original compiler arguments.",
+          "globals": "Every bare global processed begins0 and increments exactly once per source record; runTrace begins empty and delimiter condition avoids leading separators; runTokens begins empty and appends all tokens, preserving duplicates. No global reset across groups is required.",
+          "defect_census": "Every record contains exactly its 2 or3 other defects, independently of accumulator question. No hidden additional defect found.",
+          "bounds": "<=1000 inputs, input values<=1000; simple totals<=1e6, integration/squared totals<=1e9, DNA length<=1000020. Integer/long and decimal16/scale2 bounds are safe. Nonempty groups ensure average divisor>=1. number inputs finite and bounded; no derived infinity/NaN.",
+          "reference_behavior": "All repaired references reviewed against full specifications and lifecycle contracts; compiler results alone were not used as semantic proof."
+        },
+        "records": [
+          {
+            "id": "opcd_hard3_21",
+            "status": "PASS",
+            "start_value_witness": "dredged=null; first positive cubic_metres triggers nullable addition.",
+            "reference_walkthrough": "Initialize dredged to 0; final-only sum.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"init\",\"message\":\"Required function(s) finishGroup() are missing!\"}]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "FAIL",
+                "problems": [
+                  {
+                    "severity": "ERROR",
+                    "stage": "init",
+                    "message": "Required function(s) finishGroup() are missing!"
+                  }
+                ]
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_22",
+            "status": "PASS",
+            "start_value_witness": "frames=null; first frames contribution triggers nullable addition.",
+            "reference_walkthrough": "Initialize frames to 0L; emit one progress port0 and one final port1.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_23",
+            "status": "PASS",
+            "start_value_witness": "efficiency=null, including first factor=0; multiplication needs initialization.",
+            "reference_walkthrough": "Initialize to 1D; factor 0..1 and round after every multiplication.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_24",
+            "status": "PASS",
+            "start_value_witness": "peak=null; first positive intensity does not establish a sound maximum.",
+            "reference_walkthrough": "Initialize to 0.0 given all intensities >=0; final-only maximum.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_25",
+            "status": "PASS",
+            "start_value_witness": "interviews=null; first +1 is unsafe.",
+            "reference_walkthrough": "Initialize 0; count all inputs and emit progress only.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_26",
+            "status": "PASS",
+            "start_value_witness": "litres=null; even zero contribution requires initialized accumulator.",
+            "reference_walkthrough": "Initialize 0.0; final-only sum.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"init\",\"message\":\"Required function(s) updateTransform() are missing!\"}]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "FAIL",
+                "problems": [
+                  {
+                    "severity": "ERROR",
+                    "stage": "init",
+                    "message": "Required function(s) updateTransform() are missing!"
+                  }
+                ]
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_27",
+            "status": "PASS",
+            "start_value_witness": "checks=0 from nullable=false; first +1 gives1.",
+            "reference_walkthrough": "Keep default zero; repair boolean return and key copying.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":8,\"column\":5,\"endLine\":8,\"endColumn\":12,\"message\":\"Can't convert from 'integer' to 'boolean'\"}]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "FAIL",
+                "problems": [
+                  {
+                    "severity": "ERROR",
+                    "stage": "compile",
+                    "line": 8,
+                    "column": 5,
+                    "endLine": 8,
+                    "endColumn": 12,
+                    "message": "Can't convert from 'integer' to 'boolean'"
+                  }
+                ]
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_28",
+            "status": "PASS",
+            "start_value_witness": "spectators=0L despite missing initGroup function.",
+            "reference_walkthrough": "Add required empty initGroup; preserve zero baseline; correct key/ports.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"init\",\"message\":\"Required function(s) initGroup() are missing!\"}]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "FAIL",
+                "problems": [
+                  {
+                    "severity": "ERROR",
+                    "stage": "init",
+                    "message": "Required function(s) initGroup() are missing!"
+                  }
+                ]
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_29",
+            "status": "PASS",
+            "start_value_witness": "waste_total=0D and samples=0; update increments samples before output so divisor positive.",
+            "reference_walkthrough": "Mean is round(total/samples,2) once at emission, exactly as specified; nonempty group prevents zero division.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_30",
+            "status": "PASS",
+            "start_value_witness": "deposits=50D; first zero deposit must retain50.",
+            "reference_walkthrough": "Keep metadata default50; correct both output phases and progress sign.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_31",
+            "status": "PASS",
+            "start_value_witness": "allergens=200; mask0 retains200, mask1 produces201.",
+            "reference_walkthrough": "Preserve default200 and bitOr; add lifecycle function and correct key.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"init\",\"message\":\"Required function(s) finishGroup() are missing!\"}]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "FAIL",
+                "problems": [
+                  {
+                    "severity": "ERROR",
+                    "stage": "init",
+                    "message": "Required function(s) finishGroup() are missing!"
+                  }
+                ]
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_32",
+            "status": "PASS",
+            "start_value_witness": "biomass=0.5; mass0 must output0.5.",
+            "reference_walkthrough": "Preserve default and output unchanged; normal port return.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_33",
+            "status": "PASS",
+            "start_value_witness": "net_bytes=null; first added0-deleted1 must eventually give-1, not null.",
+            "reference_walkthrough": "Initialize 0L; signed net allowed; progress once and unchanged final sign.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_34",
+            "status": "PASS",
+            "start_value_witness": "heat_floor=null; a valid first temperature0 must become0.",
+            "reference_walkthrough": "Initialize1001.0 above maximum input1000; every nonempty group acquires actual minimum.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_35",
+            "status": "PASS",
+            "start_value_witness": "volume=null; zero flow or interval does not make nullable accumulator safe.",
+            "reference_walkthrough": "Initialize0.0; sum flow*seconds and emit exactly once.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_36",
+            "status": "PASS",
+            "start_value_witness": "accepted=null; adding ternary0 for first false still uses nullable arithmetic.",
+            "reference_walkthrough": "Initialize0; emit one progress even for false, suppress finals.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_37",
+            "status": "PASS",
+            "start_value_witness": "withdrawn=0D; no null defect.",
+            "reference_walkthrough": "Keep default zero; add updateTransform and remove extra unit.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"init\",\"message\":\"Required function(s) updateTransform() are missing!\"}]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "FAIL",
+                "problems": [
+                  {
+                    "severity": "ERROR",
+                    "stage": "init",
+                    "message": "Required function(s) updateTransform() are missing!"
+                  }
+                ]
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_38",
+            "status": "PASS",
+            "start_value_witness": "sum_sq=0.0; no null defect; nonnegative squares keep sqrt defined.",
+            "reference_walkthrough": "Keep default zero; root-sum-square output follows explicit spec despite output field name sum_sq.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_39",
+            "status": "PASS",
+            "start_value_witness": "bases=20; one sequence A contributes1 giving21.",
+            "reference_walkthrough": "Keep backbone metadata default; one progress and correct final port.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          },
+          {
+            "id": "opcd_hard3_40",
+            "status": "PASS",
+            "start_value_witness": "credits=1.5D; credit0 must retain1.5.",
+            "reference_walkthrough": "Keep default; final-only port1, preserve key, add lifecycle function.",
+            "other_defects": "Exact 2–3 listed defects confirmed independently from source",
+            "metadata_identity": "PASS",
+            "fresh_original_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"init\",\"message\":\"Required function(s) finishGroup() are missing!\"}]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "FAIL",
+                "problems": [
+                  {
+                    "severity": "ERROR",
+                    "stage": "init",
+                    "message": "Required function(s) finishGroup() are missing!"
+                  }
+                ]
+              },
+              "isError": false
+            },
+            "fresh_reference_compile": {
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+                }
+              ],
+              "structuredContent": {
+                "overall": "PASS",
+                "problems": []
+              },
+              "isError": false
+            }
+          }
+        ]
+      },
+      "novelty": {
+        "reviewed_date": "2026-10-11",
+        "reviewer": "expand_generate",
+        "scope": "Fresh batch-wide schema, novelty, sentinel/private-reference alignment and leakage review",
+        "overall": "PASS",
+        "findings": [],
+        "sources": [
+          "data/opcd/hard_cases3.jsonl",
+          "data/opcd/hard_cases.jsonl",
+          "data/opcd/hard_cases2.jsonl",
+          "/Users/david/Downloads/opcd_hard_cases3_brief.md",
+          "/private/tmp/opcd_hard3_private_references_20261011.json"
+        ],
+        "dataset_sha256": "d203239f45354b8fd2eb12c8a417a1d576a43337e5f095a21087887870791bcc",
+        "counts": {
+          "records": 40,
+          "parts": {
+            "A": 20,
+            "B": 20
+          },
+          "tasks": {
+            "generate": 20,
+            "validate": 12,
+            "fix": 8
+          },
+          "part_a_components": {
+            "DENORMALIZER": 6,
+            "ROLLUP": 4,
+            "REFORMAT": 4,
+            "PARTITION": 3,
+            "JOIN": 3
+          },
+          "kinds": {
+            "gen_first_record_sentinel": 20,
+            "acc_nullable_uninit": 10,
+            "acc_nonnullable_uninit": 5,
+            "acc_metadata_default": 5
+          },
+          "sentinel_types": {
+            "long": 5,
+            "integer": 3,
+            "string": 4,
+            "date": 5,
+            "string[]": 2,
+            "integer[]": 1
+          },
+          "part_b_global_variable_counts": {
+            "1": 10,
+            "2": 10
+          },
+          "part_b_accumulator_forms": {
+            "prose_unmarked": 3,
+            "xml_unmarked": 3,
+            "xml_nullable_true": 4,
+            "xml_nullable_false_without_default": 5,
+            "xml_explicit_metadata_default": 5
+          }
+        },
+        "checks": [
+          "IDs are unique and ordered01..40. Exact top-level keys match brief PartA and PartB schema; task/component/kind allocations match requested40.",
+          "All20 PartA prompts start Write the complete CTL2 and contain input/output XML, numbered business specifications, no CTL candidate or sentinel-pitfall hint.",
+          "All20 sentinel names/types match actual bare declarations in the private reference. Defaults agree with authoritative declared-type defaults: numeric0, empty string, empty list, UTC/GMT epoch. Expected one-sentence strategy matches actual flag/counter/reset behavior.",
+          "All20 first-row/capture requirements need first-record awareness; first valid values can equal zero/empty/epoch, so testing the value itself as presence is unsafe. All references use separate flags/counters and overwrite captured state correctly at new group starts.",
+          "PartB contains12 validate and8 fix,20 Rollup,10 nullable/unmarked,5 nonnullable and5 metadata-default cases. Accumulator representation varies across prose,unmarked XML,true/false XML anddefault XML.",
+          "Every PartB contains1 or2 bare declared globals, accurately listed with global scope and a first_use substring found in source. Exactly10 have one and10 have two. Each contains2 or3 other_defects.",
+          "PartB compile_result strings parse and agree with compile_expected;13PASS and7intendedFAIL. Acc_fields list actual accumulator fields, including both waste_total and samples for29.",
+          "No assistant answers, corrected references, reference_code, compiler args, private-reference paths or audit objects appear in delivered records. Only brief-permitted expected/sentinel/other_defects/compile fields expose answer-oriented metadata outside user prompts.",
+          "No exact prompts duplicate one another or either prior dataset. Compared all prior business scenarios, not merely strings: no cold-chain exception scenario and no earlier-domain reuse detected.",
+          "Common first-capture/previous-row patterns are intentional requested typed contrasts, not renamed complete tasks:04span vs08per-record interval output;11first timestamp offset vs19matched-only adjacent gaps;13first ID difference vs18match-conditioned anchor;05review tag snapshot vs09ordered MIDI matching vs14membership differences.",
+          "PartB repeated sum/count identities provide the requested metadata-nullability contrast. Distinct domains and state/output requirements remain;23product with stepwise rounding,29single-emission mean,31bitmask union,33signed deltas,34minimum,35weighted integration and38root-sum-square materially diversify the set."
+        ],
+        "part_a_sentinel_review": [
+          {
+            "id": "opcd_hard3_01",
+            "sentinel": {
+              "name": "openingExtruder",
+              "type": "long",
+              "default": "0"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture first extruder and feed, later rows may differ.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_02",
+            "sentinel": {
+              "name": "openingRevision",
+              "type": "integer",
+              "default": "0"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture opening revision and suppress predecessor comparison on first revision.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_03",
+            "sentinel": {
+              "name": "initialNarrator",
+              "type": "string",
+              "default": "\"\""
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture opening narrator including empty value, suppress first change.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_04",
+            "sentinel": {
+              "name": "openedAt",
+              "type": "date",
+              "default": "1970-01-01 00:00:00 GMT"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture actual first observation, including epoch/preepoch, calculate first-to-last span.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_05",
+            "sentinel": {
+              "name": "openingTags",
+              "type": "string[]",
+              "default": "[]"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture ordered first tags list even when empty; later rows cannot replace it.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_06",
+            "sentinel": {
+              "name": "openingEvaluation",
+              "type": "integer",
+              "default": "0"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture opening signed evaluation and suppress first absolute swing.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_07",
+            "sentinel": {
+              "name": "openingServer",
+              "type": "long",
+              "default": "0"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture first server including0; group games count distinguishes first record.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_08",
+            "sentinel": {
+              "name": "previousDip",
+              "type": "date",
+              "default": "1970-01-01 00:00:00 GMT"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Suppress interval output on first dip and capture first timestamp for span.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_09",
+            "sentinel": {
+              "name": "openingNotes",
+              "type": "integer[]",
+              "default": "[]"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture ordered first MIDI list including empty rest; count exact baseline matches.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_10",
+            "sentinel": {
+              "name": "rootId",
+              "type": "long",
+              "default": "0"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture first root including0 and suppress first association.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_11",
+            "sentinel": {
+              "name": "firstExposure",
+              "type": "date",
+              "default": "1970-01-01 00:00:00 GMT"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture first exposure once for signed offsets, including epoch/preepoch.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_12",
+            "sentinel": {
+              "name": "firstTitle",
+              "type": "string",
+              "default": "\"\""
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture first title including empty and retain it for later equality.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_13",
+            "sentinel": {
+              "name": "firstEvent",
+              "type": "long",
+              "default": "0"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture first ID including0 and preserve it for signed relative IDs.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_14",
+            "sentinel": {
+              "name": "baselineTags",
+              "type": "string[]",
+              "default": "[]"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture first list including empty for later membership baseline.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_15",
+            "sentinel": {
+              "name": "previousObservation",
+              "type": "date",
+              "default": "1970-01-01 00:00:00 GMT"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "First row has dedicated route and no predecessor; later rows compare date.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_16",
+            "sentinel": {
+              "name": "previousTension",
+              "type": "integer",
+              "default": "0"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "First row has dedicated route and no predecessor; later rows compare numeric jump.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_17",
+            "sentinel": {
+              "name": "previousClassification",
+              "type": "string",
+              "default": "\"\""
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "First row has dedicated route and no predecessor; later rows compare class string.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_18",
+            "sentinel": {
+              "name": "firstTile",
+              "type": "long",
+              "default": "0"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "Capture first MATCHED tile including0; unmatched rows before first match have no anchor.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_19",
+            "sentinel": {
+              "name": "previousMatchedContact",
+              "type": "date",
+              "default": "1970-01-01 00:00:00 GMT"
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "First matched contact has no predecessor; unmatched rows never advance history.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          },
+          {
+            "id": "opcd_hard3_20",
+            "sentinel": {
+              "name": "previousDigest",
+              "type": "string",
+              "default": "\"\""
+            },
+            "reference_declaration_matches": true,
+            "first_record_necessity": "First driver changed=false; later drivers compare immediately previous digest, including empty.",
+            "expected_matches_reference": true,
+            "reference_pass": true
+          }
+        ],
+        "remaining_issues": []
+      }
+    },
+    "fresh_parent_compiler_calls": 60,
+    "references_pass": 40,
+    "originals_pass": 13,
+    "originals_single_expected_error": 7,
+    "unexpected_diagnostics": 0,
+    "metadata_extracted_from_current_prompts": true,
+    "schema_and_coverage": "PASS",
+    "remaining_findings": [],
+    "issues_fixed": [
+      {
+        "ids": [
+          "opcd_hard3_07",
+          "opcd_hard3_08",
+          "opcd_hard3_09",
+          "opcd_hard3_10",
+          "opcd_hard3_21",
+          "opcd_hard3_22",
+          "opcd_hard3_23",
+          "opcd_hard3_24",
+          "opcd_hard3_25",
+          "opcd_hard3_26",
+          "opcd_hard3_27",
+          "opcd_hard3_28",
+          "opcd_hard3_29",
+          "opcd_hard3_30",
+          "opcd_hard3_31",
+          "opcd_hard3_32",
+          "opcd_hard3_33",
+          "opcd_hard3_34",
+          "opcd_hard3_35",
+          "opcd_hard3_36",
+          "opcd_hard3_37",
+          "opcd_hard3_38",
+          "opcd_hard3_39",
+          "opcd_hard3_40"
+        ],
+        "issue": "Contiguous groups did not specify the global sorting and component grouping configuration required for these stateful references.",
+        "fix": "Specify the actual group key, inputSorted=true and ascending group-key order, retaining input row order within each group."
+      },
+      {
+        "ids": [
+          "opcd_hard3_01",
+          "opcd_hard3_02",
+          "opcd_hard3_03",
+          "opcd_hard3_04",
+          "opcd_hard3_05",
+          "opcd_hard3_06"
+        ],
+        "issue": "Automatic group-key ordering can reject otherwise contiguous groups whose key direction changes.",
+        "fix": "Specify the actual group key, order=asc and ascending group-key order, retaining input row order within each group."
+      }
+    ],
+    "minor_edit": "Corrected including0 to including 0 in ID13 expected text.",
+    "compiler_limit": "Standalone compilation plus independent manual semantic review; no end-to-end graph runtime execution."
+  }
+}

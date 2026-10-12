@@ -839,13 +839,87 @@ class APIMUTClient:
                 yield delta
 
 
+class VllmMUTClient(LocalMUTClient):
+    """The local model served by vLLM (mut.mode: vllm). The prompt is built exactly as LocalMUTClient
+    builds it (same tokenizer, LlamaFactory template, enable_thinking, reasoning_effort) and sent to
+    /v1/completions as token ids, so vLLM's own chat template never applies. Per-token log-probs
+    match HF to ~1e-3 nats (checked 2026-10-09); only the sampling RNG differs.
+
+    mut.vllm_url    server, default http://127.0.0.1:3012
+    mut.vllm_model  served model or LoRA adapter name (adapters hot-loaded with /v1/load_lora_adapter)
+    model_path is still read, for the tokenizer and the results file name. Thread-safe, so the suite
+    can run with --workers N."""
+
+    def __init__(self, cfg: dict, timeout: int):
+        super().__init__(cfg)
+        self._url = str(cfg.get("vllm_url") or "http://127.0.0.1:3012").rstrip("/")
+        self._served = cfg.get("vllm_model")
+        self._timeout = max(timeout, 1800)
+
+    def _load(self):
+        if self._tok is not None:
+            return
+        import transformers
+
+        class _NoModel:
+            def eval(self):
+                return self
+
+        orig = transformers.AutoModelForCausalLM.from_pretrained
+        transformers.AutoModelForCausalLM.from_pretrained = lambda *a, **k: _NoModel()
+        try:
+            super()._load()  # tokenizer + chat template exactly as for local mode; the model load is stubbed
+        finally:
+            transformers.AutoModelForCausalLM.from_pretrained = orig
+        self._model = None
+        import requests
+        data = requests.get(f"{self._url}/v1/models", timeout=30).json()["data"]
+        models = [m["id"] for m in data]
+        self._max_len = int(data[0].get("max_model_len") or 0) or None
+        if not self._served:
+            self._served = models[0]
+        if self._served not in models:
+            raise RuntimeError(f"vLLM at {self._url} does not serve {self._served!r} (serves {models})")
+        _print(f"  vLLM MUT: {self._url} model [cyan]{self._served}[/cyan]")
+
+    def generate(self, system_prompt: str, user_message: str, temperature: float, top_p: float = 1.0,
+                 top_k: int = 50, repetition_penalty: float = 1.0) -> str:
+        import requests
+
+        self._load()
+        tok = self._tokenize_messages([{"role": "system", "content": system_prompt},
+                                       {"role": "user", "content": user_message}])
+        tok = tok.input_ids if hasattr(tok, "input_ids") else tok
+        ids = [int(x) for x in (tok[0] if hasattr(tok, "dim") and tok.dim() == 2 else tok)]
+        stops = [i for i in (self._tok.eos_token_id, self._tok.convert_tokens_to_ids("<|im_end|>"))
+                 if i is not None and i != self._tok.unk_token_id]
+        max_new = int(self._cfg.get("max_new_tokens", 2048))
+        if self._max_len:  # the server's context bounds prompt + completion
+            max_new = min(max_new, self._max_len - len(ids))
+        do_sample = temperature > 0.0
+        r = requests.post(f"{self._url}/v1/completions", timeout=self._timeout, json={
+            "model": self._served, "prompt": ids, "max_tokens": max_new, "n": 1,
+            "temperature": temperature if do_sample else 0.0, "top_p": top_p if do_sample else 1.0,
+            "top_k": top_k if do_sample else -1, "repetition_penalty": repetition_penalty,
+            "stop_token_ids": sorted(set(stops)), "return_token_ids": True, "skip_special_tokens": False})
+        if r.status_code != 200:
+            raise RuntimeError(f"vLLM {r.status_code}: {r.text[:300]}")
+        c = r.json()["choices"][0]
+        out = [t for t in c["token_ids"] if t not in stops]
+        self.last_new_tokens = len(c["token_ids"])
+        self.last_hit_cap = c["finish_reason"] == "length"
+        return self._tok.decode(out, skip_special_tokens=True)
+
+
 def make_mut_client(cfg: dict, timeout: int):
     mode = cfg.get("mode", "local")
     if mode == "local":
         return LocalMUTClient(cfg)
     if mode == "api":
         return APIMUTClient(cfg, timeout=timeout)
-    raise ValueError(f"Unknown mut.mode: {mode!r}. Expected 'local' or 'api'.")
+    if mode == "vllm":
+        return VllmMUTClient(cfg, timeout=timeout)
+    raise ValueError(f"Unknown mut.mode: {mode!r}. Expected 'local', 'api' or 'vllm'.")
 
 
 # ---------------------------------------------------------------------------
@@ -1657,8 +1731,8 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug
     judge_client = make_judge_client(judge_cfg)
 
     # Safe model name for output file names
-    if mut_cfg.get("mode") == "local":
-        raw_name = Path(mut_cfg.get("model_path", "unknown")).name
+    if mut_cfg.get("mode") in ("local", "vllm"):
+        raw_name = mut_cfg.get("run_label") or Path(mut_cfg.get("model_path", "unknown")).name
     else:
         raw_name = mut_cfg.get("model") or "unknown"
     model_name = re.sub(r"[^\w\-.]", "_", raw_name)
@@ -1673,19 +1747,40 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug
 
     all_results: list[dict] = []
 
-    for test in tests:
-        test_id = test["test_id"]
-        comp = test.get("component", "") or ""
-        comp_str = f" [{comp}]" if comp else ""
-        _print(f"\n[bold yellow]▶ {test_id}[/bold yellow] {test.get('type', '?')}{comp_str}")
+    workers = int(cfg.get("workers") or 1)
+    if workers > 1 and mut_cfg.get("mode") == "local":
+        _print("[yellow]--workers ignored: the local MUT client runs one generation at a time[/yellow]")
+        workers = 1
+    if workers > 1:
+        # (test, run) pairs in parallel (vllm / api MUT); results keep the sequential order.
+        from concurrent.futures import ThreadPoolExecutor
+        jobs = [(test, run_i) for test in tests for run_i in range(1, runs_per_test + 1)]
+        _print(f"[dim]{len(jobs)} runs on {workers} workers[/dim]")
 
-        for run_i in range(1, runs_per_test + 1):
-            result = run_single_test(
-                test, mut_client, judge_client,
-                judge_system_prompt,
-                timeout, mut_cfg, run_index=run_i, debug=debug,
-            )
-            all_results.append(result)
+        def _job(j):
+            test, run_i = j
+            res = run_single_test(test, mut_client, judge_client, judge_system_prompt,
+                                  timeout, mut_cfg, run_index=run_i, debug=debug)
+            _print(f"[bold yellow]▶ {test['test_id']}[/bold yellow] run {run_i} {test.get('type', '?')}: "
+                   f"{(res.get('judge_result') or {}).get('verdict')} {res.get('numeric_score')}")
+            return res
+
+        with ThreadPoolExecutor(workers) as ex:
+            all_results.extend(ex.map(_job, jobs))
+    else:
+        for test in tests:
+            test_id = test["test_id"]
+            comp = test.get("component", "") or ""
+            comp_str = f" [{comp}]" if comp else ""
+            _print(f"\n[bold yellow]▶ {test_id}[/bold yellow] {test.get('type', '?')}{comp_str}")
+
+            for run_i in range(1, runs_per_test + 1):
+                result = run_single_test(
+                    test, mut_client, judge_client,
+                    judge_system_prompt,
+                    timeout, mut_cfg, run_index=run_i, debug=debug,
+                )
+                all_results.append(result)
 
     # Suite-level averages — derived from each result's recorded type, not hardcoded ID sets
     generate_ids = {r["test_id"] for r in all_results if r.get("test_type") == "generate"}
@@ -2274,6 +2369,8 @@ eval_config.yaml schema:
                              help="Skip the LLM-written failure analysis (the default; kept for compatibility).")
     parser.add_argument("--no-log", action="store_true",
                         help="Skip writing eval results to the shared run log.")
+    parser.add_argument("--workers", "-w", type=int, metavar="N",
+                        help="Run N (test, run) pairs concurrently (mut.mode vllm or api); default 1.")
     parser.add_argument("--debug", action="store_true",
                         help="Print full MUT messages (system + user) for each test to console.")
 
@@ -2315,6 +2412,8 @@ eval_config.yaml schema:
         cfg["test_type_filter"] = "fix"
     if args.runs:
         cfg["runs_per_test"] = args.runs
+    if args.workers:
+        cfg["workers"] = args.workers
     if args.output_dir:
         cfg["output_dir"] = args.output_dir
     if args.suite_file:

@@ -1,0 +1,26 @@
+{
+ "holdout": [
+  "opcd_hard_03",
+  "opcd_hard_15",
+  "opcd_hard_16",
+  "opcd_hard_23",
+  "opcd_hard_25",
+  "opcd_hard_28",
+  "opcd_hard_29",
+  "opcd_hard_32",
+  "opcd_hard_33",
+  "opcd_hard_38",
+  "opcd_hard2_01",
+  "opcd_hard2_05",
+  "opcd_hard2_06",
+  "opcd_hard2_09",
+  "opcd_hard3_02",
+  "opcd_hard3_03",
+  "opcd_hard3_19",
+  "opcd_hard3_23",
+  "opcd_hard3_29",
+  "opcd_hard3_32",
+  "opcd_hard3_34"
+ ],
+ "note": "c5 holdout: c3's 14 + 7 set-3 prompts (3 part A generate; part B: 2 nullable, 1 non-nullable, 1 metadata default)"
+}

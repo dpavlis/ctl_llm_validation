@@ -1,0 +1,67 @@
+# On-policy context distillation, run c8 = c6 with spec option B (top-k soft cross-entropy) on the Rollup / accumulator-teacher samples -- spec/onpolicy_context_distillation_spec.md.
+# student: rb1006 + LoRA, plain system prompt; teacher: rb1006 (adapter disabled), rulev3 system prompt; Rollup prompts: rulev4.
+run: c8
+init_adapter: data/opcd/c4/round_015/adapter   # c4: T40 3/20, T42 12/20, set-2 prev 0/36, val OFF WRONG 7.4%
+# c5 (rulev4 = rulev3 + accumulator reset, on everything): val OFF WRONG 5.0% but T40 7, T42 15, set-2 prev 9/36 -> interference.
+base_model: /home/pavlisd/exports/qwen38_rb1006_sftdpo
+student: {"on": configs/eval_rb1006_on.yaml, "off": configs/eval_rb1006_off.yaml}
+teacher: {"on": configs/eval_rb1006_rulev3_on.yaml, "off": configs/eval_rb1006_rulev3_off.yaml}   # rulev3: + "fields are nullable unless marked nullable=\"false\""
+rule_marker: "Declaration defaults in CTL2"
+# Rule-in-prompt suite runs (2026-10-09): with thinking OFF the rule primes the reviewer onto declarations and it misses
+# unrelated bugs (validate OFF 0.895 -> 0.788 with rulev2; T14 "ISSUES: none"); with thinking ON validate holds (0.747 vs
+# 0.774 on 12 tests). So the rule teacher only scores thinking-ON samples; thinking-OFF validate is trained on replay
+# prompts against rb1006 itself (plain prompt, adapter off): an on-policy reverse-KL anchor that resists drift.
+modes: {generate: "on", fix: "on", validate: "on"}    # target / hard / probe prompts
+# c2 overshot in thinking-off validate (T22: "nullable accumulator field starts at 0"; WRONG 4.5% -> 7.8%), so contrast
+# validate prompts also run thinking-off against plain rb1006; contrast fix/generate get the rule teacher (rulev2 says
+# record / accumulator fields follow metadata).
+# c3: plain rb1006 as the thinking-off contrast teacher did not fix T22 (WRONG 8 -> 14): rb1006 itself is unreliable there.
+# An accumulator-only note in the thinking-OFF prompt failed its teacher check (validate OFF 0.895 -> 0.709, T22 0.84 -> 0.07):
+# any extra system-prompt text primes thinking-off review. So c4 teaches the contrast with thinking ON under the rule teacher
+# (the c2 overshoot itself transferred from thinking-on training to thinking-off answers); thinking-off stays replay-anchored.
+set_modes: {replay: {validate: "off"}}
+set_teacher: {replay: plain}
+# Rollup prompts (thinking on, non-replay) are scored by rulev4 (rulev3 + the per-group accumulator reset); everything else by
+# rulev3 as in c4. rulev4 is 0/80 wrong on set-3 Part B; its general validate cost (0.742 vs 0.801) now touches Rollup samples only.
+component_teacher: {ROLLUP: acc}
+teachers:
+  acc: {"on": configs/eval_rb1006_rulev4_on.yaml, marker: "A Rollup accumulator is reset from its metadata before each group"}
+
+prompts:
+  target:
+    - {run: dpodef1, split: train}       # 206: belief-prone fix / validate prompts
+    - {run: dpodef3b_plain}               # 53: declaration-contrast prompts
+  hard:
+    - {file: data/opcd/hard_cases.jsonl, weight: 1}    # set 1 (corrected 2026-10-10); saturated at 0% belief
+    - {file: data/opcd/hard_cases2.jsonl, weight: 2}   # set 2: previous-record dates (T42 shape)
+    - {file: data/opcd/hard_cases3.jsonl, weight_by_part: {A: 1, B: 3}}   # B: Rollup accumulator nullability (T22); A: generate, no signal
+  hard_holdout: data/opcd/hard_holdout_c5.json        # c3's 14 + 7 set-3 prompts, never trained
+  contrast: data/opcd/contrast_prompts.jsonl          # 60 corpus prompts where something really IS null (accumulators, concat, lookups)
+  probe: {run: dpodef1, split: probe}     # 50, held out
+  replay_share: 0.4                       # of every round's prompts
+  replay_task_mix: {generate: 0.4, validate: 0.35, fix: 0.25}
+
+lora: {r: 32, alpha: 32, dropout: 0.0, target: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]}
+
+train:
+  seed: 0
+  rounds: 16
+  prompts_per_round: 32
+  k: 2
+  steps_per_round: 2          # optimizer steps per sampled batch (keeps it on-policy)
+  lr: 2.0e-5                  # c1 used 1e-5: hard-case belief 78% -> 49%, dates 100% -> 73%
+  warmup_steps: 5
+  grad_clip: 1.0
+  adv_clip: null              # e.g. 10 if single tokens dominate
+  loss_by_teacher: {acc: topk}   # c6: KL to the accumulator teacher stayed ~0.02 for 16 rounds (omissions); rl only lowers written tokens
+  topk_k: 64
+  topk_weight: 1.0
+  quote_guard: true           # samples citing a rule from the (plain) prompt are scored by plain rb1006 (c2 r39: 6-10%)
+  max_new_tokens: 6144        # sampling cap; truncated samples are still valid prefixes
+  cutoff: 8192                # prompt + completion; longer samples are skipped
+  logits_chunk: 1024
+
+probe: {n: 20, k: 2, every: 4}    # regex probe (weak metric; the hard-case holdout is the real one)
+
+# Student sampling on a vLLM server (same base weights, the round's adapter hot-loaded); omit to sample with HF generate.
+sampler: {url: "http://127.0.0.1:3011", served_model: rb1006, concurrency: 32}

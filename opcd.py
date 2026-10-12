@@ -70,6 +70,7 @@ def cmd_prepare(cfg: dict) -> None:
     held = set(json.load(open(pc["hard_holdout"]))["holdout"]) if pc.get("hard_holdout") else set()
     for hf in hard_files:  # a path, or {file: path, weight: n} (drawn n times as often)
         weight = hf.get("weight", 1) if isinstance(hf, dict) else pc.get("hard_weight", 1)
+        weight_map = hf.get("weight_by_part") if isinstance(hf, dict) else None  # {part: weight}, e.g. set 3 A/B
         hf = hf["file"] if isinstance(hf, dict) else hf
         if not Path(hf).exists():
             raise SystemExit(f"hard-case file missing: {hf}")
@@ -80,7 +81,7 @@ def cmd_prepare(cfg: dict) -> None:
             if h["task_type"] == "validate":
                 h["user"], _ = sd.with_validate_format(h["user"])
             h.setdefault("record_id", h.get("id"))
-            h["weight"] = weight
+            h["weight"] = (weight_map or {}).get(h.get("part"), weight)
             sets["hard"].append(h)
     if pc.get("contrast"):  # corpus prompts where something really IS null (data/opcd/select_contrast.py)
         sets["contrast"] = sd.read_jsonl(Path(pc["contrast"]))
@@ -182,7 +183,14 @@ class Roles:
             st.setdefault("replay", self.cfg["replay_teacher"])
         t = st.get(p.get("set"), "rule")
         t = t.get(p["task_type"], "rule") if isinstance(t, dict) else t
-        return {"plain": "student", "rule": "teacher"}.get(t, t)
+        role = {"plain": "student", "rule": "teacher"}.get(t, t)
+        # component_teacher: {COMPONENT: name} swaps the rule teacher for a named one on that component's
+        # thinking-on samples (c6: the accumulator teacher on Rollup prompts only, so its extra fact does not
+        # dilute the declaration signal elsewhere). Replay and plain-teacher samples are never swapped.
+        ct = (self.cfg.get("component_teacher") or {}).get(p.get("component"))
+        if ct and role == "teacher" and self.mode(p) == "on":
+            role = ct
+        return role
 
     def system(self, role: str, mode: str, task: str) -> str:
         return sd.sampling_for(self.mut[role, mode], task)["system_prompt"]
@@ -234,7 +242,8 @@ def make_sample(roles: Roles, p: dict, i: int, comp: list[int], hit_cap: bool, g
     mode = roles.mode(p)
     raw = roles.tok.decode(comp, skip_special_tokens=True)
     thinking, answer = split_thinking(raw, thinking_enabled=(mode == "on"))
-    return {"prompt_id": p["prompt_id"], "set": p["set"], "task_type": task, "mode": mode, "sample_idx": i,
+    return {"prompt_id": p["prompt_id"], "set": p["set"], "task_type": task, "component": p.get("component"),
+            "mode": mode, "sample_idx": i,
             "teacher": roles.teacher_role(p),
             "completion_ids": comp, "raw": raw, "thinking": thinking, "answer": answer,
             "think_closed": mode == "off" or "</think>" in raw, "hit_cap": hit_cap,
@@ -335,6 +344,44 @@ def _chunk_logp(h, tgt, w):
     return F.linear(h, w).float().log_softmax(-1).gather(-1, tgt[:, None])[:, 0]
 
 
+def _chunk_topk(h, tgt, w, k: int):
+    """Teacher side of the top-k loss: sampled-token log-prob plus the k most likely tokens and their log-probs."""
+    import torch.nn.functional as F
+    lp = F.linear(h, w).float().log_softmax(-1)
+    top = lp.topk(k, dim=-1)
+    return lp.gather(-1, tgt[:, None])[:, 0], top.values, top.indices
+
+
+def _chunk_at(h, tgt, idx, w):
+    """Student side of the top-k loss: sampled-token log-prob plus log-probs at the teacher's top-k token ids."""
+    import torch.nn.functional as F
+    lp = F.linear(h, w).float().log_softmax(-1)
+    return lp.gather(-1, tgt[:, None])[:, 0], lp.gather(-1, idx)
+
+
+def completion_dist(model, prompt_ids: list[int], comp_ids: list[int], grad: bool, chunk: int,
+                    k: int | None = None, idx=None):
+    """completion_logps plus, per position, either the top-k distribution (k, teacher) or the log-probs
+    at given token ids (idx [T, k], student). Returns (lp, topk_values, topk_indices) or (lp, lp_at_idx)."""
+    import torch
+    from torch.utils.checkpoint import checkpoint
+
+    base = model.get_base_model()
+    ids = torch.tensor([prompt_ids + comp_ids], device=model.device)
+    h = base.model(input_ids=ids, use_cache=False).last_hidden_state[0]
+    P, T = len(prompt_ids), len(comp_ids)
+    h, tgt, w = h[P - 1:P - 1 + T], ids[0, P:P + T], base.lm_head.weight
+    outs = []
+    for i in range(0, T, chunk):
+        if k is not None:
+            outs.append(_chunk_topk(h[i:i + chunk], tgt[i:i + chunk], w, k))
+        elif grad:
+            outs.append(checkpoint(_chunk_at, h[i:i + chunk], tgt[i:i + chunk], idx[i:i + chunk], w, use_reentrant=False))
+        else:
+            outs.append(_chunk_at(h[i:i + chunk], tgt[i:i + chunk], idx[i:i + chunk], w))
+    return tuple(torch.cat(x) for x in zip(*outs))
+
+
 def completion_logps(model, prompt_ids: list[int], comp_ids: list[int], grad: bool, chunk: int):
     """log p(comp_ids[t] | prompt, comp_ids[:t]) for every completion token. The vocabulary
     (248k) is projected in chunks; with grad each chunk is recomputed in backward."""
@@ -364,11 +411,24 @@ CITE = re.compile(r"(system prompt|the prompt|the rules?|the instructions?)[^.\n
                   r"[^\n]{0,200}?(epoch|default|uninitiali|declared|1970)", re.I)
 
 
-def teacher_logps(model, roles: Roles, smp: dict, chunk: int):
+def loss_mode(cfg: dict, roles: Roles, smp: dict) -> str:
+    """"rl" (per-token reverse-KL policy gradient on the sampled tokens) or "topk" (spec option B: soft cross-entropy
+    against the teacher's top-k distribution at every on-policy position), chosen per teacher (train.loss_by_teacher).
+    topk pulls toward what the teacher would have written instead, so it can teach omissions (c5/c6: the student
+    leaves out the null-accumulator finding; rl only lowers the token it did write)."""
+    role = smp.get("teacher_override") or roles.teacher_role(smp)
+    return (cfg["train"].get("loss_by_teacher") or {}).get(role, "rl")
+
+
+def teacher_logps(model, roles: Roles, smp: dict, chunk: int, k: int | None = None):
     import torch
     ids = roles.ids(smp.get("teacher_override") or roles.teacher_role(smp), smp)
     model.eval()
     with torch.no_grad(), model.disable_adapter():
+        if k:
+            lp, tv, ti = completion_dist(model, ids, smp["completion_ids"], grad=False, chunk=chunk, k=k)
+            smp["r_topk_lp"], smp["r_topk_idx"] = tv.to(torch.float16).cpu(), ti.to(torch.int32).cpu()
+            return lp.cpu()
         return completion_logps(model, ids, smp["completion_ids"], grad=False, chunk=chunk).cpu()
 
 
@@ -405,12 +465,20 @@ class Trainer:
         n_tok = sum(len(s["completion_ids"]) for s in smps)
         stats = []
         for s in smps:
-            lp = completion_logps(self.model, s["prompt_ids"], s["completion_ids"], grad=True, chunk=tc["logits_chunk"])
+            if "r_topk_idx" in s:  # option B: soft cross-entropy against the teacher's top-k at each position
+                idx = s["r_topk_idx"].to(self.model.device, torch.long)
+                lp, lpk = completion_dist(self.model, s["prompt_ids"], s["completion_ids"], grad=True,
+                                          chunk=tc["logits_chunk"], idx=idx)
+                pt = s["r_topk_lp"].to(lp.device, torch.float32).exp()
+                loss = -tc.get("topk_weight", 1.0) * (pt * lpk).sum() / n_tok
+                lp = lp.detach()
+            else:
+                lp = completion_logps(self.model, s["prompt_ids"], s["completion_ids"], grad=True, chunk=tc["logits_chunk"])
+                adv = (s["r"].to(lp.device) - lp.detach())
+                if tc.get("adv_clip"):
+                    adv = adv.clamp(-tc["adv_clip"], tc["adv_clip"])
+                loss = -(adv * lp).sum() / n_tok
             r = s["r"].to(lp.device)
-            adv = (r - lp.detach())
-            if tc.get("adv_clip"):
-                adv = adv.clamp(-tc["adv_clip"], tc["adv_clip"])
-            loss = -(adv * lp).sum() / n_tok
             loss.backward()
             kl = (lp.detach() - r).cpu()  # per-token sample estimate of KL(student || teacher)
             s["kl_mean"] = round(float(kl.mean()), 4)
@@ -465,7 +533,7 @@ def summarize(smps: list[dict]) -> dict:
 
 
 def write_samples(path: Path, smps: list[dict]) -> None:
-    drop = ("completion_ids", "prompt_ids", "r", "user")
+    drop = ("completion_ids", "prompt_ids", "r", "user", "r_topk_lp", "r_topk_idx")
     path.write_text("".join(json.dumps({k: v for k, v in s.items() if k not in drop}, ensure_ascii=False) + "\n"
                             for s in smps))
 
@@ -481,7 +549,9 @@ def score_and_train(trainer: Trainer, smps: list[dict], steps: int) -> list[dict
             continue
         if tc.get("quote_guard") and roles.teacher_role(s) != "student" and CITE.search(s["raw"]):
             s["teacher_override"] = "student"
-        s["r"] = teacher_logps(model, roles, s, tc["logits_chunk"])
+        s["r"] = teacher_logps(model, roles, s, tc["logits_chunk"],
+                               k=tc.get("topk_k", 64) if loss_mode(cfg, roles, s) == "topk" else None)
+        s["loss"] = loss_mode(cfg, roles, s)
         keep.append(s)
     random.Random(trainer.step).shuffle(keep)
     logs = []
@@ -597,6 +667,8 @@ def cmd_smoke(cfg: dict, args) -> None:
                   f"rule present: {cfg['rule_marker'] in txt}; tail: {txt[-80:]!r}")
     model = load_model(cfg)
     tc = dict(cfg["train"]); tc["lr"] = args.lr or tc["lr"]
+    if args.loss == "topk":
+        tc["loss_by_teacher"] = {"teacher": "topk"}
     cfg = {**cfg, "train": tc}
     trainer = Trainer(cfg, roles, model)
     smps = []
@@ -607,7 +679,8 @@ def cmd_smoke(cfg: dict, args) -> None:
                   f"think_closed {s['think_closed']}, belief {s['belief']}", flush=True)
     for s in smps:
         s["prompt_ids"] = roles.ids("student", s)
-        s["r"] = teacher_logps(model, roles, s, tc["logits_chunk"])
+        s["r"] = teacher_logps(model, roles, s, tc["logits_chunk"],
+                               k=tc.get("topk_k", 64) if loss_mode(cfg, roles, s) == "topk" else None)
     hist = []
     for i in range(args.steps):
         t0 = time.monotonic()
@@ -653,6 +726,7 @@ def main() -> None:
     ap.add_argument("--steps", type=int, default=4, help="smoke: optimizer steps on the same batch")
     ap.add_argument("--lr", type=float, help="smoke: override the learning rate")
     ap.add_argument("--max-new", type=int, help="smoke: max new tokens per sample")
+    ap.add_argument("--loss", choices=("rl", "topk"), default="rl", help="smoke: loss for the teacher samples")
     ap.add_argument("--round", type=int, help="export: round number")
     ap.add_argument("--adapter", help="export: adapter dir (instead of --round)")
     ap.add_argument("--out", help="export: output dir")

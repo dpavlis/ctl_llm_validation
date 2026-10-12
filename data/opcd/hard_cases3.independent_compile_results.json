@@ -1,0 +1,588 @@
+[
+  {
+    "id": "opcd_hard3_01",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "cb966341a4f83eba4fa4459ec90cfe880943ef4a40229c6367c6b0ad0e839374"
+  },
+  {
+    "id": "opcd_hard3_02",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "d20e7ba7a7ece41b99a894b1df67f2edb4113cf2a4d98eccc53b1c8436fc6e86"
+  },
+  {
+    "id": "opcd_hard3_03",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "a1a0e377c7bf6e043edbdc27cc2eaef5f0056034bca2f69a8160a861e697f903"
+  },
+  {
+    "id": "opcd_hard3_04",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "f0c1f408067d2f1430220f82029e26fa70d1525945cb8c5c42f980e7643a9399"
+  },
+  {
+    "id": "opcd_hard3_05",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "0e9294a685c4946004435ad6d4b05b646cdf16e13d61c2778c3a504d9f8faaa9"
+  },
+  {
+    "id": "opcd_hard3_06",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "eca9c0d00e9c56f59527ad3b5ffc3a4455ec7911b0180c528e44416fe66ad2a6"
+  },
+  {
+    "id": "opcd_hard3_07",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "0160b998d8c5795233678a1502191c849201c9b971a041f8b3e52243f74f2c3a"
+  },
+  {
+    "id": "opcd_hard3_08",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "2f71ed16728ce51aa3ae6cfa3a3910b6d7bfcaae9c1b72daa9f5486e0a1455f3"
+  },
+  {
+    "id": "opcd_hard3_09",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "cf178fe9ea931ac2a06b831c28b73fa41839a99fb5465197fc897202fbc928e9"
+  },
+  {
+    "id": "opcd_hard3_10",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "40d2a4b5bbe20569ef9c8b5afb96bd675b93d1acb509efb388c97ebcf2038b5c"
+  },
+  {
+    "id": "opcd_hard3_11",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "7ba20300072d9acbf11c5928468e21341b5ba225ee8fe6a425a04ed8cfeba7a7"
+  },
+  {
+    "id": "opcd_hard3_12",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "124530ee05c8f2df1c005df2bffb2bcd05fa6c291019f4362eca1100dce1a3b1"
+  },
+  {
+    "id": "opcd_hard3_13",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "ba6b81224471d2c098b5c5d9a6ef9fd3c826a723b796f53cf7786c294f765556"
+  },
+  {
+    "id": "opcd_hard3_14",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "104b9923c72f6370427e2cb5d8bdf8086d90e023e39e958692d90da1d4c85b8e"
+  },
+  {
+    "id": "opcd_hard3_15",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "73f9a3bb4f0e54f8bd50c946570569f588fcfb20862a2dc5b8d7b85f17b12913"
+  },
+  {
+    "id": "opcd_hard3_16",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "20f475e895a515c7165997d43d208c411f2cb78fcc5eeca232212ec29595b181"
+  },
+  {
+    "id": "opcd_hard3_17",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "f86c2b63e8b2ebcb75a78e71b8b7d2e48d3c0711fabf52aea922ed7d19eaa03c"
+  },
+  {
+    "id": "opcd_hard3_18",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "54ab17d8271b33c392ee538f92421b1fea0ab63e2022cfb807f81fbf0b4d903f"
+  },
+  {
+    "id": "opcd_hard3_19",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "c43374808a7d62f606356ed8a1f837edbf90d8f4310427c9d86c500c4868392e"
+  },
+  {
+    "id": "opcd_hard3_20",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "aa56e604e4195c33b172834a54a8a638d4dc2d3406c4fffdd8b85fdfecb3d8b6"
+  },
+  {
+    "id": "opcd_hard3_21",
+    "phase": "original",
+    "result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) finishGroup() are missing!"
+        }
+      ]
+    },
+    "code_sha256": "f1c400974ccdf41b079373aaf6ce3ac6c0d77a06111430431162ab7b1098dfc0"
+  },
+  {
+    "id": "opcd_hard3_21",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "ced0b77055044a33ebca4a5856232496be0d1a1e565f50e5ccf5aaeb3a93106b"
+  },
+  {
+    "id": "opcd_hard3_22",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "c6d1413eec85c746ff428e3ddeccc8548e5dfb2050467c78a49ce33eb1afc882"
+  },
+  {
+    "id": "opcd_hard3_22",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "f1224d6ed7cd441eeb95ba3477aae59bfff2838f5a7e181f0c8c3132d7261519"
+  },
+  {
+    "id": "opcd_hard3_23",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "b4f97f3b42e96b8c2ede15ba35def4c0496029d4b0d8be289c54f1394a1f4bcb"
+  },
+  {
+    "id": "opcd_hard3_23",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "0dfe454023a454748d12898e78b157598946543c06fe97d29cd23296bd536cbe"
+  },
+  {
+    "id": "opcd_hard3_24",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "843a640fb90772660c092be5f6b60498c65c7911bb3e5929ee8a8b6ca136d6e9"
+  },
+  {
+    "id": "opcd_hard3_24",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "229ba7adf8eaf97333bd4c6c7bd720915a281bf08d5b118d612c8c1fb7bbbccc"
+  },
+  {
+    "id": "opcd_hard3_25",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "26889413bb3bb0f4427b79811678e6dde8671a814a6379899f64aeac3cc78fa5"
+  },
+  {
+    "id": "opcd_hard3_25",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "715db6e81068ae9e0623dba00b6905ae199cd969fbb71321324e6733fb0a4b1f"
+  },
+  {
+    "id": "opcd_hard3_26",
+    "phase": "original",
+    "result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) updateTransform() are missing!"
+        }
+      ]
+    },
+    "code_sha256": "46ab254e0583b68a1b3eeb7f57ea4ae70dfe312bf5af1408906f2436643755b8"
+  },
+  {
+    "id": "opcd_hard3_26",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "60fb61727f955628353f2e1d345816387cc7e44d693909ceffe41f378f3ca3a8"
+  },
+  {
+    "id": "opcd_hard3_27",
+    "phase": "original",
+    "result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "compile",
+          "line": 8,
+          "column": 5,
+          "endLine": 8,
+          "endColumn": 12,
+          "message": "Can't convert from 'integer' to 'boolean'"
+        }
+      ]
+    },
+    "code_sha256": "754631fc1111dd41ae6cebf7daf75ae7ddcf63f5ba4a36b971f67de1e40a56c9"
+  },
+  {
+    "id": "opcd_hard3_27",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "b944ee29986d0ee142cf768c7f6632133db9fd021a014b0e993a54638dd77dd9"
+  },
+  {
+    "id": "opcd_hard3_28",
+    "phase": "original",
+    "result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) initGroup() are missing!"
+        }
+      ]
+    },
+    "code_sha256": "0b34b8ecd680627eaab29a3936dcca748f239144ca496663908c02c763bf8698"
+  },
+  {
+    "id": "opcd_hard3_28",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "fc45a72d932358f357b0271df556cfe59622ad53743e025ec705f80e2a800b60"
+  },
+  {
+    "id": "opcd_hard3_29",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "51b51dbe15db00133217fde2ce0a1c9801ded30306bb7ed6265f2e8a4dbb183a"
+  },
+  {
+    "id": "opcd_hard3_29",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "5b47a82c9b14fb700a2aea4c8d02058e2969dc822d47b3f88792d535bb59d998"
+  },
+  {
+    "id": "opcd_hard3_30",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "f08c44ea7d86eb00bc1b4ae10eb6fb88689e4c8324eacfb4c21e34a938f073b0"
+  },
+  {
+    "id": "opcd_hard3_30",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "84698c15d2d5ff437f66e24bd48c864d0dac2ff3484f9716ea620c0e02d889ef"
+  },
+  {
+    "id": "opcd_hard3_31",
+    "phase": "original",
+    "result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) finishGroup() are missing!"
+        }
+      ]
+    },
+    "code_sha256": "6f8503d9db1bce4c6863c5c57cbb178abec4586bfecc1b8e1cd6849637b36f21"
+  },
+  {
+    "id": "opcd_hard3_31",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "8ca40a871afd4846e672f1baefc6d0e75bcc55da6c51d98e207c422150335eee"
+  },
+  {
+    "id": "opcd_hard3_32",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "640f0fe1a1c8da3bd49257609f1af6b38467dab22707984750b2332b6ca0fc54"
+  },
+  {
+    "id": "opcd_hard3_32",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "1fbc5699247c5f3340a4c9708afb679b45079c47206657afebdd5349a78e9114"
+  },
+  {
+    "id": "opcd_hard3_33",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "d922917832b3123e9b7e7344adbf3ea06220b8646ca291cef4b62a414d54aa2c"
+  },
+  {
+    "id": "opcd_hard3_33",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "088c79857622391abdc7885dee299a244a6ff2b9746d7a1509030ab56e19c04b"
+  },
+  {
+    "id": "opcd_hard3_34",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "a8eabc75ccf455e2e561004eb73f73d60fb6374be432ab433cbe4ed4f953af41"
+  },
+  {
+    "id": "opcd_hard3_34",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "a9803ac115318449315ac974cec98e7023a949f225727f14b75d9f11d1b92440"
+  },
+  {
+    "id": "opcd_hard3_35",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "b33c24174fe4e7e065f62505f00146a6b880325ef453c11632bfa82a6d2449f7"
+  },
+  {
+    "id": "opcd_hard3_35",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "4085f339f361a2c003c38ef09797877d3f3954827bff1cc375b1f374276aae8c"
+  },
+  {
+    "id": "opcd_hard3_36",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "5ce7b62f8faa39b0b55628d3ebb6b51a271cd6ba33abad54caa6059adb0ef061"
+  },
+  {
+    "id": "opcd_hard3_36",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "7c81f44819cbd08921f916f8198856e35cbb6a7a9d91bc24a6cb0288710bfd01"
+  },
+  {
+    "id": "opcd_hard3_37",
+    "phase": "original",
+    "result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) updateTransform() are missing!"
+        }
+      ]
+    },
+    "code_sha256": "0c4d1003c7e880c639b978c4f33a4e9884a4e2f1fbdf10de183f510668cbca67"
+  },
+  {
+    "id": "opcd_hard3_37",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "a74de0a364b8ada9230f90e09f33947300a3030bd6fd21c45a6ba3a7ddc126a3"
+  },
+  {
+    "id": "opcd_hard3_38",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "e15faf94a4c35ff6ccefdc261a7ecb1bb089a4828f30eb86b4b8f4f2ee26a039"
+  },
+  {
+    "id": "opcd_hard3_38",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "060759511524d68a2af418f9d288446eb41f424b483f1e16b65b0b8454821643"
+  },
+  {
+    "id": "opcd_hard3_39",
+    "phase": "original",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "80a790d68add6847be144f4ac0aa3c2efd86672cc11253dc9448363ea7af50b2"
+  },
+  {
+    "id": "opcd_hard3_39",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "6f03f4b2bc5cac36c7829609952dd8da47099ee9d33d052c86329be99ef3f2ef"
+  },
+  {
+    "id": "opcd_hard3_40",
+    "phase": "original",
+    "result": {
+      "overall": "FAIL",
+      "problems": [
+        {
+          "severity": "ERROR",
+          "stage": "init",
+          "message": "Required function(s) finishGroup() are missing!"
+        }
+      ]
+    },
+    "code_sha256": "84ef148c7f26aba8c7429c4b35b718bda4c53db6ccded5a7fd92d7a77f9afad9"
+  },
+  {
+    "id": "opcd_hard3_40",
+    "phase": "reference",
+    "result": {
+      "overall": "PASS",
+      "problems": []
+    },
+    "code_sha256": "ed7874e62ee7ef500f388ea758b1f6d0452fa259e029940c3a59d1136168d64e"
+  }
+]
