@@ -7,6 +7,7 @@ SFT  = every record in ctl_lora_training/sft_training_data/*.json (answer-only; 
        data/self_distill/sd_stale.json and traces over 4096 tokens under the qwen3_8 template).
 DPO  = every ctl_lora_training/sft_training_data/CTL_LoRA_DPO_*.jsonl pair.
 Eval = ctl_lora_training/sft_eval_data copies. Writes build_report.json (corpus commit, counts, drops).
+The trace inputs data/self_distill/{full1,gen2full}/selfdistill_*_train.json are committed.
 Register the four files in ~/LlamaFactory/data/dataset_info.json (it carries git skip-worktree) and copy
 them into ~/LlamaFactory/data/. Needs ~/LlamaFactory/src on PYTHONPATH (llamafactory imports).
 """

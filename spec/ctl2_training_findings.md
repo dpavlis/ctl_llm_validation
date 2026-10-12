@@ -1634,8 +1634,8 @@ cd ~/llama_train && PYTHONPATH=~/LlamaFactory/src ~/venv/bin/python data/build_s
 **DPO:** all `CTL_LoRA_DPO_*.jsonl` pairs (1,953).
 
 **Prerequisites:**
-- The trace inputs, `data/self_distill/{full1,gen2full}/selfdistill_*_train.json`, are on disk only.
-  They are not in git.
+- The trace inputs, `data/self_distill/{full1,gen2full}/selfdistill_*_train.json` (4.2 MB), are in git,
+  so the build can run on another machine.
 - Register the files in `~/LlamaFactory/data/dataset_info.json` and copy them to
   `~/LlamaFactory/data/`. The JSON carries git `skip-worktree`.
 - Run the pre-flight (§5.1) first.
