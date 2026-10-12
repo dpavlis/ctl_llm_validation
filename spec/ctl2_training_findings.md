@@ -1,11 +1,17 @@
 # CTL2 fine-tuning — findings and recommended pipeline
 
-Qwen3.8-27B + LoRA, evaluated on `resources/ctl2_test_suite_v4.json` (38 tests) with a
-gpt-5.6-terra judge.
+Qwen3.8-27B + LoRA on the CTL2 test suite (`ctl2_test_suite_v4.json`). Sampling is the same
+everywhere: T=0.4, top_p 0.95, top_k 20, no presence or repetition penalty (§4.2). Suite, judge and
+sample counts changed over time, so check which era a number comes from:
 
-**Every number is a mean of 3 runs at one sampling config** — T=0.4, top_p 0.95, top_k 20,
-no presence or repetition penalty. That uniformity is new, and it overturned several
-conclusions drawn from earlier measurements. See §4.
+| sections | suite | judge | samples |
+|---|---|---|---|
+| §1–§3.15 | 38 tests (v4); 40 from `fix3` on (T39/T40, the `fix` type) | gpt-5.6-terra | mean of 3 runs |
+| §3.18 (09-29 – 10-05) | 43 tests (5 fix tests: T39–T43), frozen snapshots `results/eval_snapshot_20261001` / `_20261003` | gpt-6-sol | n=5 per test; fix n=20 |
+| §3.16, §3.19 (from 10-06) | snapshot `_20261003` | gpt-6-sol, then gpt-6.1-sol from 10-09 (§4.6) | n=5; fix and T40/T42 n=20; thinking-off validate 9 reps from §4.7 |
+
+**The current recipe is in §5:** rb1006 plus OPCD c4. The three-phase pipeline that sections §1–§3.15
+optimise is retired.
 
 Last updated 2026-10-12 with on-policy context distillation, runs c1–c8 (§3.19: the declaration belief is
 removed, T40 0/20 and T42 about 4–6/20; c4 is the best balance; accumulator training helps thinking-on
@@ -1320,13 +1326,17 @@ stayed flat while the belief fell.
 
 **Same conditions, all on vLLM** (thinking on: full suite n5; thinking off: validate 9 reps × n5):
 
-| model | generate ON | validate ON | fix ON | validate OFF (WRONG) | T22 OFF WRONG / 45 | set 3B wrong (default / non-null / nullable) |
+| model | generate ON | validate ON (WRONG) | fix ON | validate OFF (WRONG) | T22 OFF WRONG / 45 | set 3B wrong (default / non-null / nullable) |
 |---|---|---|---|---|---|---|
-| rb1006 | 0.963 | 0.786 | 0.760 | 0.886 (7.5%) | 19 | 6 / 12 / 11 |
-| **c4** | 0.965 | 0.791 | 0.848 | **0.877 (8.2%)** | 28 | 11 / 8 / 10 |
-| c6 | 0.973 | 0.794 | 0.842 | 0.864 (8.5%) | 38 | 2 / 1 / 5 |
-| c7 | 0.974 | 0.778 | **0.876** | 0.860 (9.5%) | 42 | 4 / 1 / 4 |
-| c8 | 0.974 | 0.744 | 0.864 | 0.869 (8.3%) | 37 | 2 / 1 / 8 |
+| rb1006 | 0.963 | 0.786 (14.9%) | 0.760 | 0.886 (7.5%) | 19 | 6 / 12 / 11 |
+| **c4** | 0.965 | 0.791 (19.5%) | 0.848 | **0.877 (8.2%)** | 28 | 11 / 8 / 10 |
+| c5 | 0.980* | 0.775* (17.2%*) | 0.842* | 0.881 (7.4%) | 34 | 6 / 4 / 8 |
+| c6 | 0.973 | 0.794 (16.9%) | 0.842 | 0.864 (8.5%) | 38 | 2 / 1 / 5 |
+| c7 | 0.974 | 0.778 (16.2%) | **0.876** | 0.860 (9.5%) | 42 | 4 / 1 / 4 |
+| c8 | 0.974 | 0.744 (21.4%) | 0.864 | 0.869 (8.3%) | 37 | 2 / 1 / 8 |
+
+\* c5's thinking-on row is from HF, not vLLM (its vLLM thinking-on suite was not run); its T40/T42 n20 was
+7/15 on HF.
 
 **Findings:**
 1. **OPCD removes the declaration belief where four earlier methods failed** (§3.16):
@@ -1347,10 +1357,14 @@ stayed flat while the belief fell.
    "the accumulator field starts at 0" or "keeps the previous group's value".
 4. **One teacher for both facts interferes** (c5): "accumulator fields can be null" relaxes "declared
    variables are never null". Splitting teachers by component (c6) avoids that.
-5. **Every added rule sentence costs thinking-on validate a little:** v3 0.801, v4 0.742, v5 0.764,
+5. **Thinking-on validate WRONG rose in every OPCD run:** rb1006 14.9% → 16.2–21.4% (c4 19.5%, c8 21.4%).
+   The validate score mostly held (0.744–0.794 against 0.786). This is the one thinking-on regression. Thinking-on is not the deployed mode for validate (§3.18,
+   route by task), but a thinking-on validate deployment would need it fixed. A single n5 run; repeat it
+   before acting on it.
+6. **Every added rule sentence costs thinking-on validate a little:** v3 0.801, v4 0.742, v5 0.764,
    rb1006 0.791. The format slips too: v4 dropped severity labels on T26. Keep teacher prompts short.
-6. **There is no path dependence:** c7, one fresh adapter, matches the chained c6.
-7. **Two facts from the teacher checks, both now in the corpus reference:**
+7. **There is no path dependence:** c7, one fresh adapter, matches the chained c6.
+8. **Two facts from the teacher checks, both now in the corpus reference:**
    - metadata fields are nullable unless marked `nullable="false"`;
    - the Rollup accumulator is reset from metadata before every group.
 
@@ -1601,90 +1615,145 @@ without judging anything, so check the judged count.
 
 ## 5. Recommended pipeline
 
-`configs/qwen38.yaml` encodes this. One invocation:
+> **Rewritten 2026-10-12.** The current model is **rb1006 + the OPCD c4 adapter** (§3.16, §3.19). The
+> three-phase recipe this section described until then is retired; it is kept at the end of this
+> section for the record.
+
+### Step 1 — build the training data
 
 ```bash
-source ~/venv/bin/activate        # llamafactory-cli must be on PATH
-python train.py configs/qwen38.yaml
+cd ~/llama_train && PYTHONPATH=~/LlamaFactory/src ~/venv/bin/python data/build_sft_rebuild.py rb1006 data/sft_rebuild_20261006
 ```
 
-**Phase 1 — SFT, no thinking.** `dataset: clover_ctl_trainign_data` — **one dataset, not
-both.** `enable_thinking: false`, cutoff_len 3200, lr 5e-5, 2 epochs, bs 2 × accum 6,
-rank 64 / alpha 64 / loraplus 2.
+`data/build_sft_rebuild.py` (header: the exact composition) writes four files and a `build_report.json`.
 
-> Naming `clover_ctl_think_data` here as well — as this section said until 2026-09-24 —
-> trains every reasoning answer twice in phase 1. That dataset is a strict subset: since the
-> 2026-09-21 rebuild `clover_ctl_trainign_data` already holds every reasoning prompt with its
-> `<think>` block stripped, verified each run by the pre-flight (§5.1). §3.1's finding still
-> holds — those records must be in phase 1 — but they get there through the one dataset now.
+**SFT:**
+- every answer-only record in `ctl_lora_training/sft_training_data/` (12,059 at corpus `a4d8274`);
+- plus the model's own self-distilled thinking traces, **each twice** (464 kept; §3.18).
 
-**Phase 2 — DPO, no thinking.** `enable_thinking: false` (pairs carry no `<think>`), lr 5e-6,
-1 epoch, bs 1 × accum 4, pref_beta 0.1 / pref_ftx 0.1. Runs **between** the SFT phases: its
-pairs contain no reasoning, so it belongs while the model is still a non-thinking model.
+**DPO:** all `CTL_LoRA_DPO_*.jsonl` pairs (1,953).
 
-**Phase 3 — SFT on reasoning, thinking on.** `dataset: clover_ctl_think_data`,
-`enable_thinking: true`, lr 1e-5, rank 32, 3 epochs, bs 2 × accum 6 — **effective batch 12
-on one GPU**, the same as phases 1 and 2.
+**Prerequisites:**
+- The trace inputs, `data/self_distill/{full1,gen2full}/selfdistill_*_train.json`, are on disk only.
+  They are not in git.
+- Register the files in `~/LlamaFactory/data/dataset_info.json` and copy them to
+  `~/LlamaFactory/data/`. The JSON carries git `skip-worktree`.
+- Run the pre-flight (§5.1) first.
 
-> An earlier revision of this line said to keep phase 3 at ≥24 samples/step and to double
-> `gradient_accumulation_steps` on a single GPU. **Do not.** That came from the p1fix /
-> sftdpo / ckpt100 experiments, which ran at 24/step; every model since — 0917, fix1, fix2,
-> the best three measured — ran at 12/step on one GPU. Doubling accum also halves the step
-> count, which changes the phase-3 dose, a variable §3.6 closed. With `world_size=1` the
-> effective batch is just `per_device × accum`, so `configs/qwen38.yaml` needs no edit to
-> run on one GPU.
+### Step 2 — SFT + DPO (rb1006)
 
-> **Do not skip phase 3 and then evaluate in thinking mode.** It is the only phase that
-> trains the model to emit `</think>`; without it 12% of runs answer inside the thinking
-> channel and score 0 (§3.4). `--skip-post-sft` is for experiments that will be evaluated
-> with `enable_thinking: false`.
+```bash
+cd ~/LlamaFactory && CUDA_VISIBLE_DEVICES=0 ~/venv/bin/python ~/llama_train/train.py ~/llama_train/configs/qwen38_rb1006.yaml --skip-post-sft
+```
 
-**Evaluate** with `configs/eval_T04_*.yaml` at `--runs 3` minimum.
+**SFT, mixed thinking:**
+- `enable_thinking: null`: the traces are trained, and answer-only records get the empty
+  thinking block;
+- cutoff 4096, lr 5e-5 (cosine with 2 restarts), 2 epochs;
+- batch 2 × accum 6;
+- rank 64 / alpha 64, loraplus 2.
+
+**DPO, thinking off:**
+- lr 5e-6, 1 epoch, batch 1 × accum 4;
+- pref_beta 0.1, pref_ftx 0.1.
+
+The config exports to `export_dir`. **Always pass `--skip-post-sft`.** The config still carries the
+retired phase-3 block (`post_dpo_sft`); without the flag it would run.
+
+### Step 3 — on-policy context distillation (c4)
+
+Run it from the rb1006 export. The teacher is the same weights with the rule v3 prompt
+(`configs/eval_rb1006_rulev3_{on,off}.yaml`); the prompt sets are in `data/opcd/`.
+
+```bash
+scripts/opcd_run.sh <run> <train GPU> <last round>
+```
+
+`scripts/opcd_run.sh` needs:
+- the sampler, `logs/evals/opcd_vllm_serve.sh`, on port 3011;
+- the eval server, `scripts/vllm_eval_serve.sh`, on port 3012.
+
+There are two ways to get the c4 adapter:
+- **Reproduce c4 exactly:** chain `configs/opcd_c2.yaml` → `opcd_c3` → `opcd_c4`. Each config's
+  `init_adapter` names the previous run's final round.
+- **One run, tested equivalent** (§3.19, finding 7): a fresh-adapter config like `opcd_c7.yaml`.
+  c7 itself also has the rule v4 teacher on Rollup prompts. That gave the best fix score, at −0.026
+  thinking-off validate.
+
+`opcd.py export --round N` merges an adapter into a full model for HF. vLLM serves the adapter
+directly.
+
+### Step 4 — evaluate
+
+- Use the vLLM path (§4.7): `test.py` `mut.mode: vllm`, `--workers 32`.
+- Thinking-on full suite n5, thinking-off full suite n5, and **thinking-off validate 9 reps**.
+- T40/T42 at n20, at least twice before a gate decision.
+- The hard-case sets: `data/opcd/eval_hard_cases.py`.
+- Compare only within one path (HF or vLLM) and one judge (§4.6).
+
+**Deploy routed by task:**
+
+| task | thinking |
+|---|---|
+| validate | off |
+| fix | on |
+| generate | either |
+
+### The retired three-phase recipe (§1–§3.15), for the record
+
+Phase 1 was SFT with thinking off on `clover_ctl_trainign_data`. Phase 2 was DPO with thinking off.
+Phase 3 was SFT with thinking on, on the **authored** reasoning traces (`clover_ctl_think_data`), via
+`configs/qwen38.yaml`.
+
+It was retired for three reasons:
+- **Phase 3 costs accuracy on every axis** (§3.12). The authored traces replaced the model's own
+  reasoning style (§3.13).
+- **Without phase 3, thinking-off SFT erodes the `</think>` boundary** (§3.4, §3.18 rb1003).
+- **Mixed-thinking SFT with the model's own traces** keeps thinking intact without a phase 3
+  (rb1005/rb1006).
+
+The old guidance "do not skip phase 3" applied only within that recipe. Don't use
+`configs/qwen38.yaml` for new models.
 
 ### 5.1 Corpus pre-flight — run before every training run
 
 Two hours of GPU time is worth two minutes of checking. This caught 35 conflicting-answer
 prompts on 2026-09-24, the same class of defect that cost 0.027 suite in §2 at 115 prompts.
 
+> **Rewritten 2026-10-12 for the current build** (`data/build_sft_rebuild.py`, one mixed SFT file). The
+> checks for the retired phase-1 and think files are gone with that recipe.
+
 ```python
-import json, collections, re, os
-D = os.path.expanduser('~/LlamaFactory/data')
+import json, collections, re
+TAG, D = 'rb1006', 'data/sft_rebuild_20261006'          # what build_sft_rebuild.py wrote
 THINK = re.compile(r'^<think>\n.*?\n</think>\n\n', re.S)
 user = lambda e: next(m['content'] for m in e['messages'] if m['role']=='user').strip()
 raw  = lambda e: ''.join(m.get('content','') for m in e['messages'] if m['role']=='assistant')
 bare = lambda e: THINK.sub('', raw(e)).strip()
 
-T  = json.load(open(f'{D}/CTL_LoRA_training_data.json'))
-TH = json.load(open(f'{D}/CTL_LoRA_training_data_think.json'))
-E  = json.load(open(f'{D}/CTL_LoRA_eval_data.json'))
-EH = json.load(open(f'{D}/CTL_LoRA_eval_data_think.json'))
-print('phase-1', len(T), ' think', len(TH))
+T  = json.load(open(f'{D}/CTL_LoRA_training_data_{TAG}.json'))
+E  = json.load(open(f'{D}/CTL_LoRA_eval_data_{TAG}.json'))
+sd = [e for e in T if str(e.get('source_file', '')).startswith('self_distill')]   # own traces (x2)
+an = [e for e in T if e not in sd]                                                 # answer-only corpus
+print('answer-only', len(an), ' traces', len(sd))
 
-tu = collections.defaultdict(list)
-for e in T: tu[user(e)].append(bare(e))
-thg = collections.defaultdict(list)
-for e in TH: thg[user(e)].append(bare(e))
-
-print('phase-1 prompts with conflicting answers (want 0):',
-      sum(1 for a in tu.values() if len(set(a)) > 1))
-print('duplicate prompts  phase-1/think (want 0/0):',
-      sum(1 for a in tu.values() if len(a) > 1), '/', sum(1 for a in thg.values() if len(a) > 1))
-print('think prompts absent from phase 1 (want 0):', sum(1 for p in thg if p not in tu))
-print('think answers not matching phase 1 (want 0):',
-      sum(1 for e in TH if user(e) in tu and bare(e) not in tu[user(e)]))
-for nm, ev, tr in [('phase-1', E, T), ('think', EH, TH)]:
-    trp = {user(e) for e in tr}
-    print(f'eval contamination {nm} (want 0):', sum(1 for e in ev if user(e) in trp))
-print('bad thought-word spelling (want 0):',
-      sum(1 for e in TH if not ('<think>\n' in raw(e) and '\n</think>\n\n' in raw(e))))
-print('unmerged reasoning_content (want 0):',
-      sum(1 for e in TH for m in e['messages'] if 'reasoning_content' in m))
-print('phase-1 records carrying <think> (want 0):', sum(1 for e in T if '<think>' in raw(e)))
+tu = collections.defaultdict(set)
+for e in an: tu[user(e)].add(bare(e))
+print('answer-only prompts with conflicting answers (want 0):', sum(1 for a in tu.values() if len(a) > 1))
+print('answer-only records carrying <think> (want 0):', sum(1 for e in an if '<think>' in raw(e)))
+print('traces without a closed think block (want 0):',
+      sum(1 for e in sd if not THINK.match(raw(e))))
+print('traces worded differently from the corpus answer (info; rb1006: 624 of 928):',
+      sum(1 for e in sd if user(e) in tu and bare(e) not in tu[user(e)]))
+trp = {user(e) for e in T}
+print('eval contamination (want 0):', sum(1 for e in E if user(e) in trp))
+print('orig_reasoning_content leaked (want 0):',
+      sum(1 for e in T for m in e['messages'] if 'orig_reasoning_content' in m or 'reasoning_content' in m))
 ```
 
-**Compare answers with the `<think>` block stripped.** `CTL_LoRA_training_data_think.json` is
-the post-`convert_think.py` file, so its `content` still carries the tags; comparing raw
-against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
+A trace answer that differs from the corpus answer for the same prompt is not automatically wrong.
+Traces are the model's own accepted answers, so their wording differs. But a different *verdict* or
+fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 0.027).
 
 ### Operational notes
 
@@ -1749,23 +1818,14 @@ against phase 1 reports all ~1000 records as mismatched when nothing is wrong.
 > D. **Why does thinking-mode training raise thinking-off validate WRONG?** Seen in rb1008 and
 >    dpodef2b. Any method that changes thinking needs replay data and a thinking-off validate gate.
 
-0. **Retrain without phase 3 (§3.12, §3.13).** The 2x2 was run by dropping the phase-3
-   adapter from an existing chain, which is not the same as training without it:
-   phase 1 and DPO were unchanged, so this shows phase 3 subtracts, not that a
-   two-phase pipeline is optimal. Confirm with a run configured as SFT+DPO only —
-   `configs/qwen38.yaml` still defines `post_dpo_sft`, so this needs a config change,
-   not just a flag at eval time. The same run is the first to train the amended
-   fix-to-spec answers (item 1).
-1. **Fix-to-spec records — amended, not yet trained (§3.10, §3.11).** The 24 records
-   now carry already-correct affirmations and minimal-repair corrections
-   (`ctl_lora_training` commit `83c0136`); no model has been trained on them yet.
-   Reasoning was withdrawn from that brief (§3.13), so they matter through their
-   answers in phase 1 only. Measure on T39/T40 after item 0.
-1a. **Self-distilled reasoning, if reasoning training is wanted at all (§3.13).**
-   Thinking helps fix-to-spec (+0.21) even untrained. Whether training the think
-   channel on the model's *own* correct traces helps further is untested;
-   `spec/self_distillation_spec.md` drafts the experiment. Do it after item 0, so
-   there is a clean two-phase baseline to compare against.
+0. ~~**Retrain without phase 3 (§3.12, §3.13).**~~ **Done (§3.18):** rb1003–rb1005 trained the two-phase
+   recipe (SFT + DPO, no phase 3), and rb1005/rb1006 is now the recipe (§5). Thinking survives only
+   when the SFT's thinking share is the model's own traces.
+1. ~~**Fix-to-spec records — amended, not yet trained (§3.10, §3.11).**~~ **Done:** trained from rb1003
+   on. rb1006 added 120 fix-to-spec explained records; fix n=20 went 0.70 → 0.863 under gpt-6-sol,
+   0.801 under gpt-6.1-sol (§3.16).
+1a. ~~**Self-distilled reasoning (§3.13).**~~ **Done (§3.18):** sd1 gave fix +0.05 as phase 3; scaling
+   it (sd2/sd2b) cost fix. The own traces are now the thinking share of the SFT (rb1005, ×2).
 2. **Per-finding explanation budget — the lever that replaced phase-3 dose.**
    The corpus teaches 19 words per issue line and shrinks to 17.4 on 5-bug
    records, below the ~25 threshold where factual errors start (§3.8). It has
