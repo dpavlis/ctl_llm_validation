@@ -562,13 +562,13 @@ Compares two inputs **sorted** on the Join key (`$a_key=$b_key;…`): input 0 = 
 | Output port | Records | Produced by |
 |---|---|---|
 | 0 | key only in A | the component, unchanged (input-0 metadata) |
-| 1 | key in both A and B | the CTL `transform()` (port-1 metadata) |
+| 1 | key in both A and B | the CTL `transform()` (its own metadata) |
 | 2 | key only in B | the component, unchanged (input-1 metadata) |
 
 - `transform()` uses the joiner template and sees **matched pairs only**: `$in.0` is the A record, `$in.1` the B record. A-only and B-only records never reach CTL, so INSERT / DELETE need no code.
-- The transform writes **`$out.1`** — CTL `$out.N` follows the component's output port numbers. `$out.0` / `$out.2` are pass-through ports and are not written.
-- **The return value never selects a port** (unlike §8.1): any non-`SKIP` value (`OK`, `1`, `ALL`) emits the record on port 1; `SKIP` drops it. Ports 0 and 2 are unaffected by it.
-- Defaults: *Equal NULL* = true (null key values match each other); *Allow key duplicates* = true (duplicate keys give the Cartesian product of pairs).
+- **The transform writes `$out.0`**, and the component sends that record out on **port 1** (the port reserved for matches). CTL has only this one output record: writing `$out.1` or `$out.2` fails when the component initialises. Ports 0 and 2 are pass-through and are never written from CTL. Only `transform()` (and `transformOnError`) is called; functions such as `transformLeftOnly()` are never invoked.
+- **The return value never selects a port** (unlike §8.1): `OK`, `0`, `1` or `ALL` emit the record on port 1; `SKIP` drops it; `STOP` makes the component fail. Ports 0 and 2 are unaffected by it.
+- Defaults: *Equal NULL* = true (null key values match each other); *Allow key duplicates* = true (duplicate keys give the Cartesian product of pairs, A-major).
 
 ```ctl
 //#CTL2
@@ -576,9 +576,9 @@ function integer transform() {
     if ($in.0.status == $in.1.status && $in.0.amount == $in.1.amount) {
         return SKIP;              // unchanged pair: drop it
     }
-    $out.1.* = $in.1.*;
-    $out.1.cdc_action = "UPDATE";
-    return ALL;                   // OK or 1 would emit it on port 1 as well
+    $out.0.* = $in.1.*;          // goes out on port 1
+    $out.0.cdc_action = "UPDATE";
+    return ALL;                   // OK, 0 or 1 emit it on port 1 as well
 }
 ```
 
@@ -756,7 +756,7 @@ Metadata defines the structure of records flowing between components. Fields in 
 | | `date str2date(string, string pattern, string locale, boolean strict)` | |
 | | `date str2date(string, string pattern, string locale, string timeZone)` | |
 | | `date str2date(string, string pattern, string locale, string timeZone, boolean strict)` | |
-| `str2decimal` | `decimal str2decimal(string)` | null → null. |
+| `str2decimal` | `decimal str2decimal(string)` | null → null; `""` throws (§13.3). |
 | | `decimal str2decimal(string, string format)` | Numeric format pattern; null/`""` = default locale format. |
 | | `decimal str2decimal(string, string format, string locale)` | locale: see Locale; default locale if omitted. |
 | `str2double` | `number str2double(string)` | |
@@ -970,7 +970,7 @@ Date format patterns: Java SimpleDateFormat — `yyyy`, `MM`, `dd`, `HH`, `mm`, 
 | | `integer randomInteger(integer min, integer max)` | |
 | `randomLong` | `long randomLong()` | |
 | | `long randomLong(long min, long max)` | |
-| `round` | `long round(number)`, `decimal round(decimal)` | Half-up. |
+| `round` | `long round(number)`, `decimal round(decimal)` | Half-up, i.e. halves away from zero for negatives too (`round(-2.505D, 2) = -2.51`, §13.3). |
 | | `T round(T, integer precision)` | Negative precision rounds before decimal. **Generic**: `T` is bound to the type of the value argument actually passed (e.g. `round(numberVar, 2)` returns `number`, not `decimal`) — see **2.1.2** before assuming a mismatch with the assignment target. |
 | `roundHalfToEven` | `decimal roundHalfToEven(decimal)` | Banker's rounding. |
 | | `decimal roundHalfToEven(decimal, integer precision)` | |
@@ -1334,6 +1334,26 @@ In `replace(str, regex, repl)` and `split(str, regex)`: pattern is always regex.
 23. **Map literal uses `->` not `:`**: `{ "k" -> v }` — NOT `{ "k" : v }` (JSON/Python style INVALID, won't compile). Key-by-key assignment after declaration uses `=`: `m["k"] = v`.
 
 ---
+
+### 13.3 Runtime behaviour verified on the server (live runs, 2026-10-13)
+
+Facts settled by running graphs on CloverDX Server 7.4 (run ids in `data/suite_v5/validation_report.json`). They decide whether code works at runtime, not only whether it compiles.
+
+| Topic | Verified behaviour |
+|---|---|
+| Empty string to number | `str2decimal("")` **throws** (it does not return null). Guard blank text before converting, or use the conditional-fail form `str2decimal(s) : null`. `str2decimal` also accepts forms a business grammar may forbid (e.g. exponents), so check the shape first when the spec restricts it. |
+| Strict dates | `isDate(s, "yyyy-MM-dd", "en.US", "UTC", true)` is false for `2025-02-30` and for `2025-1-1`; strict `str2date` with the same arguments **throws** on both. Whether strict parsing rejects trailing characters (`2026-01-01x`) is not verified: use an explicit whole-string shape check (`s ~= "[0-9]{4}-[0-9]{2}-[0-9]{2}"`) when the spec requires the exact shape. |
+| Host time zone | Date functions without a time-zone argument (`str2date`, `date2str`, `createDate`, `getMonth`, `getYear`, …) use the server's default zone, not UTC. For UTC business dates pass `"UTC"` explicitly, e.g. `getMonth(d, "UTC")`, `createDate(2026, 1, 1, "UTC")`. |
+| Rollup emit loop | `updateTransform(counter, …)` and `transform(counter, …)` are called repeatedly with `counter` = 0, 1, 2, … until they return `SKIP`. To emit one record, return `SKIP` when `counter > 0` (see §8.7). |
+| Denormalizer reset | Resetting the group state at the end of `transform()` gives the same result as resetting it in `clean()`. |
+| Normalizer | It has exactly one output port. `count()` returning 0 emits nothing for that input record; returning `SKIP` from `transform(idx)` drops only that child. |
+| DataGenerator | With `recordsNumber = 0`, `generate()` is never called. The configured record count ends generation; `generate()` returns `OK` / `ALL` on every call. |
+| ExtMergeJoin full outer | Matched pairs and one-sided records all go through `transform()` and out on output 0; the fields of the absent side read as null. Optional output 1 carries unjoined master records unchanged. |
+| Lookup duplicates | Iterating several records for one key (`get(...)` then `next()`) needs the lookup table's `keyDuplicates=true`; `get(...)` returns null on a miss. |
+| Rounding | `round(decimal, n)` rounds halves away from zero: `round(2.505D, 2) = 2.51`, `round(-2.505D, 2) = -2.51`. |
+| Graph parameters | `RUN_ID` is reserved by the server (it is replaced by the numeric execution id); use another name for business run ids. |
+| Strings | `length()` counts UTF-16 code units (`length("A😀") = 3`). `sort()` on a string list is case-sensitive, by UTF-16 code unit (upper case before lower case). |
+| DataIntersection | See §8.9: `$out.0`, emitted on port 1; `STOP` fails the component. |
 
 ## 14. Validation Checklist
 

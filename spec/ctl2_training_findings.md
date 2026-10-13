@@ -9,11 +9,17 @@ sample counts changed over time, so check which era a number comes from:
 | §1–§3.15 | 38 tests (v4); 40 from `fix3` on (T39/T40, the `fix` type) | gpt-5.6-terra | mean of 3 runs |
 | §3.18 (09-29 – 10-05) | 43 tests (5 fix tests: T39–T43), frozen snapshots `results/eval_snapshot_20261001` / `_20261003` | gpt-6-sol | n=5 per test; fix n=20 |
 | §3.16, §3.19 (from 10-06) | snapshot `_20261003` | gpt-6-sol, then gpt-6.1-sol from 10-09 (§4.6) | n=5; fix and T40/T42 n=20; thinking-off validate 9 reps from §4.7 |
+| §3.20 (10-13) | suite v5 = v4 + 30 real-world generate tests T44–T73, scored apart as `generate_rw`; snapshot `_20261013` | gpt-6.1-sol | n=5 on all 30, then n=10 more on 21 discriminating tests (n=15 pooled) |
 
-**The current recipe is in §5:** rb1006 plus OPCD c4. The three-phase pipeline that sections §1–§3.15
+**The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-12 with on-policy context distillation, runs c1–c8 (§3.19: the declaration belief is
+Last updated 2026-10-13 with suite v5 (§3.20: 30 real-world generate tests, every reference run in a real graph; rb1006, c4
+and c7 tie on them within ±0.025 at n=15; shared weak spots are DataIntersection, dictionary state, Rollup per-record
+emit and multi-check validation without thinking), the corrected DataIntersection contract and run-verified runtime facts
+(§7, `ctl2-basics.md` §8.9 and §13.3), and the decision to keep c4.
+
+Earlier update, 2026-10-12, with on-policy context distillation, runs c1–c8 (§3.19: the declaration belief is
 removed, T40 0/20 and T42 about 4–6/20; c4 is the best balance; accumulator training helps thinking-on
 answers and hurts thinking-off T22), and evaluation on vLLM with a corrected noise floor (§4.7: a full
 suite in 9 min; rb1006 thinking-off validate WRONG is 7.5% ± 1.3%, not 4.5%).
@@ -1371,7 +1377,7 @@ stayed flat while the belief fell.
    Plain rb1006 gets both wrong. The second one, the reset, is a third belief: that values carry over
    between groups.
 
-**Recommendation: c4** (adapter `data/opcd/c4/round_015/adapter`, gitignored; config
+**Recommendation: c4 — chosen by the owner on 2026-10-13** (adapter `data/opcd/c4/round_015/adapter`, gitignored; config
 `configs/opcd_c4.yaml`).
 - It removes the declaration belief, keeps fix +0.09, and holds generate.
 - It has the smallest thinking-off cost: 0.877 against 0.886, within about 1 sd.
@@ -1386,6 +1392,63 @@ stayed flat while the belief fell.
   `adapter_vllm` copy has the renamed keys.
 - `scripts/opcd_run.sh RUN TRAIN_GPU LAST_ROUND` trains and evaluates one run end to end in about
   2.5 h (16 rounds) plus 30 min of evaluation.
+
+### 3.20 Suite v5: real-world generate tests — the models tie, and share the same gaps
+
+**Why a new suite part.** The 25 v4 generate tests score 0.96–0.98 for every model since September: they are unit
+tests of one CTL2 feature each, in tidy language. Production tasks have 15–40-field metadata, business-language specs,
+graph context (lookups, sequences, parameters, dictionary, reject ports) and real edge cases. An agent wrote 30 such
+tests (`spec/suite_generate_rw_brief.md`, `data/suite_v5/generate_rw.json`); they are scored apart as `generate_rw`,
+so `generate_score` and `suite_score` stay comparable with v4.
+
+**Round 1 did not measure much.** Its 30 tests were 12 scenarios with renamed fields (75–94% shared 5-grams), and 6 of
+the 12 scored 0.97–1.00 for every model. rb1006 / c4 / c7 at n=5: thinking off 0.925 / 0.926 / 0.915, on 0.952 /
+0.946 / 0.965. Eight references (lookup, sequence, parameters) had never been run.
+
+**Round 2** (`spec/suite_generate_rw2_brief.md`) replaced the clones with distinct scenarios over 8 components
+(max cross-prompt 5-gram Jaccard 0.11) and ran **every reference in a real graph** on CloverDX Server (sandbox
+`MiscExamples/suite_v5`, 8–20 edge-case records each; `data/suite_v5/run_graphs/`). The runs settled runtime
+questions that compile checks miss; they are now `ctl2-basics.md` §13.3. Then, here:
+- **The rubrics were rewritten** (`data/suite_v5/round2/rubric_rewrite_rules.md`): 161 of the agent's 259 required
+  items were the prompt clause copied verbatim, bundling 3–5 edge cases each with boilerplate rationales. Now 344
+  atomic, code-decidable items with every valid CTL2 alternative listed, and 66 forbidden items for runtime defects only.
+- **Prompt fixes:** clauses that gave the trap away were removed (null-testing a declared variable, `STOP`, expected
+  values), and spec gaps closed. T69 had to be reworded: every model with thinking on read "the shared library exports
+  four functions" as already provided and wrote only the caller (0.08 in all three).
+
+**Result** (vLLM, gpt-6.1-sol; the 21 tests that separate anything, n=15 pooled; bootstrap 95% CIs over runs):
+
+| mode | rb1006 | c4 | c7 | c4 − rb1006 | c7 − rb1006 |
+|---|---|---|---|---|---|
+| thinking off | 0.721 | 0.726 | 0.723 | +0.004 [−0.019, +0.029] | +0.001 [−0.023, +0.025] |
+| thinking on | 0.859 | 0.863 | 0.865 | +0.004 [−0.017, +0.024] | +0.006 [−0.015, +0.026] |
+
+All 30 at n=5 (T69 after its fix): off 0.774 / 0.791 / 0.801, on 0.899 / 0.892 / 0.897. **OPCD neither helped nor
+hurt generation.** c7's +0.03 thinking-off lead at n=5 disappeared at n=15: at n=5 a single test's score moves by
+±0.1, so model comparisons on this part need n≥10 on the discriminating tests (`scripts/suite_v5_rw_run.sh`, `TESTS`
+and `RUNS`).
+
+**What it does show is a set of gaps every variant shares** (n=15, thinking off / on, range over the three models):
+
+| test | what it needs | off | on |
+|---|---|---|---|
+| T53, T54 | DataIntersection: CTL writes `$out.0` (sent out on port 1); matched pairs only | 0.37–0.79 | 0.70–0.76 |
+| T73 | dictionary entries as run state, history kept only for accepted rows | 0.52–0.59 | 0.67–0.71 |
+| T44, T46 | multi-check validation to two ports, every failed check listed, no parse exception | 0.39–0.63 | 0.81–0.96 |
+| T60 | SCD type 2 as a Normalizer (CLOSE/OPEN/audit rows, sequence keys) | 0.45–0.54 | 0.88–0.90 |
+| T63 | fiscal-quarter Rollup in UTC on a CET host | 0.54–0.57 | 0.96–0.97 |
+| T57 | Rollup with a per-record emit (`updateTransform`) and a group emit | 0.74–0.85 | 0.59–0.77 |
+| T67 | Partition with state across records | 0.70–0.74 | 0.69–0.79 |
+
+Thinking closes most of the onboarding, SCD and fiscal gaps but not DataIntersection, dictionary, the Rollup
+per-record emit or the stateful Partition. These are corpus gaps, not effects of the OPCD runs.
+
+**Practical notes:**
+- Suite `results/eval_snapshot_20261013/ctl2_test_suite_v5.json` (v4 + T44–T73) with the reference of that date.
+  The v5rw2 baselines above were judged against `resources/` before §8.9 was corrected and §13.3 added; re-judge
+  (`data/rejudge_results.py`) before comparing new runs with them.
+- `test.py` and `rejudge_results.py` report `generate_rw` separately; `self_distill.SUITE_FILES` excludes v5.
+- Results: `results/results_qwen38_v5rw2*` (n=5) and `results_qwen38_v5rw2n10*` (n=10 on the 21 tests).
 
 ---
 
@@ -1689,6 +1752,8 @@ directly.
 - Thinking-on full suite n5, thinking-off full suite n5, and **thinking-off validate 9 reps**.
 - T40/T42 at n20, at least twice before a gate decision.
 - The hard-case sets: `data/opcd/eval_hard_cases.py`.
+- Real-world generate (suite v5, §3.20): `scripts/suite_v5_rw_run.sh ROUND`; for a model comparison, n10 on the
+  21 discriminating tests (`TESTS=… RUNS=10`).
 - Compare only within one path (HF or vLLM) and one judge (§4.6).
 
 **Deploy routed by task:**
@@ -1781,7 +1846,19 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 ## 6. Open questions, in priority order
 
-> **2026-10-12 — current front (§3.19, §4.7).**
+> **2026-10-13 — current front (§3.20).**
+>
+> A. ~~Ship decision c4 or c7~~ **Decided: c4** (owner, 2026-10-13). Generate does not separate them (§3.20).
+>
+> E. **The shared generate gaps** (§3.20): dictionary state, Rollup per-record emit, stateful Partition, SCD as a
+>    Normalizer, multi-check validation without thinking, UTC business calendars. Plan: on-policy context
+>    distillation with the CloverDX component guide and the run-verified facts in the teacher's prompt, on new
+>    run-verified generate prompts (`spec/opcd_generate_gaps_brief.md`). DataIntersection already has dedicated SFT
+>    and DPO training files.
+>
+> B–D below still stand.
+
+> **2026-10-12 front (§3.19, §4.7).**
 >
 > A. **Ship decision:** c4 (best balance) or c7 (best fix and generate, −0.026 thinking-off validate).
 >    Both remove the declaration belief. Confirm T42 with 2 × n20 on vLLM before deciding.
@@ -1889,3 +1966,5 @@ checked with ctl_validate on CloverDX Server.
 | compiler | conditional fail `a : b : null` | valid in both `//#CTL2` and `//#CTL2:COMPILE` (T5.B5 retired) |
 | compiler, 2026-09-29 | writing `$out.1` on an unconnected port | compile error ("Cannot write to output port '1'"), not dead code; two Rollup references were held out for it |
 | compiler | EXT_FILTER | `FILTER_EXPR` needs the `//#CTL2` header; `job_validate` ignores params |
+| 2026-10-13 | DataIntersection | input 0 = A, input 1 = B; output 0 = A only, 1 = matches, 2 = B only. **CTL writes `$out.0`, which the component sends out on port 1** (corrects the 10-12 note that said `$out.1`; writing `$out.1` fails at init). `OK`/`0`/`1`/`ALL` emit, `SKIP` drops, `STOP` fails; ports 0 and 2 are pass-through. Live runs; `ctl2-basics.md` §8.9. |
+| live runs, 2026-10-13 | runtime behaviour | `str2decimal("")` throws; strict `isDate`/`str2date` reject `2025-02-30` and `2025-1-1` (strict `str2date` throws); date functions without a time zone use the host's; the Rollup emit functions repeat until `SKIP`; `round` rounds halves away from zero; full-outer ExtMergeJoin transforms one-sided records on output 0; lookup duplicates need `keyDuplicates=true`; `RUN_ID` is reserved. All in `ctl2-basics.md` §13.3 with run ids. |

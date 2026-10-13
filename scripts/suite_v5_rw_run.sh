@@ -5,7 +5,7 @@
 #   [TESTS=T44,T46 RUNS=10] setsid nohup scripts/suite_v5_rw_run.sh [ROUND] > logs/evals/suite_v5_rw_run.log 2>&1 &
 #   (ROUND tag, default v5rw; TESTS default T44-T73, RUNS default 5)
 cd /home/pavlisd/llama_train
-R=${1:-v5rw}; PY=~/venv/bin/python; L=logs/evals; SUITE=$PWD/resources/ctl2_test_suite_v5.json
+R=${1:-v5rw}; PY=~/venv/bin/python; L=logs/evals; SUITE=$PWD/results/eval_snapshot_20261013/ctl2_test_suite_v5.json
 TESTS=${TESTS:-$(seq -s, -f "T%g" 44 73)}; RUNS=${RUNS:-5}
 for p in 3011 3012; do until curl -sf 127.0.0.1:$p/v1/models >/dev/null; do sleep 10; done
   for a in c4_r015 c7_r039; do r=${a%%_*}; curl -sf -X POST 127.0.0.1:$p/v1/load_lora_adapter -H 'Content-Type: application/json' \
