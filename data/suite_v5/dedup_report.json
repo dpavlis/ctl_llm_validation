@@ -252,7 +252,7 @@
   "missing_inputs": [
     "data/genbench/tasks.jsonl"
   ],
-  "suite_sha256": "992f5421153f46d3c43bf6d14a7ff089f01cb6c5d7fd333a8dcf36fe6d26ac9a",
+  "suite_sha256": "314e0ed33ab4e0bb66423c82e7eba5ab86911c1178a66d2b5ab11ef5ea653fa5",
   "exact_matches": [],
   "max_external_jaccard": 0.024390243902439025,
   "tests": [
@@ -660,12 +660,12 @@
       "test_id": "T69",
       "nearest": {
         "full_prompt": {
-          "jaccard": 0.018309859154929577,
+          "jaccard": 0.018005540166204988,
           "source": "ctl_lora_training/sft_training_data/CTL_LoRA_conversations.json",
           "id": "conversa78_1389"
         },
         "business_prose": {
-          "jaccard": 0.008968609865470852,
+          "jaccard": 0.008733624454148471,
           "source": "ctl_lora_training/sft_training_data/CTL_LoRA_validate_examples.json",
           "id": "validateb8_398"
         }

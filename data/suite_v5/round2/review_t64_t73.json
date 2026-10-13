@@ -956,11 +956,12 @@
       {
         "test_id": "T69",
         "final_reference_sha256": "8b97e0a09e2f14991e22e23185eae4e6c24db4135e0f7d3382b0a5071cce2f01",
-        "final_prompt_sha256": "8b429dab0bcfc0812b167c83aa755c8cdd1e0d91ea9ebe14dffb195ef5999c8d",
+        "final_prompt_sha256": "2256345135fa64e5ccebeddc7d43fceb8328593a47e4f20a448ca2ce406f627a",
         "final_graph_spec_sha256": "64a7221c1b205e3eb0c79f3792fdc91cf4f464a273c01a8feee1ad057377e01d",
         "resolution_checks": {},
         "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
-        "remaining_reference_errors": []
+        "remaining_reference_errors": [],
+        "round2b_prompt_edit": "2026-10-13 round 2b: clause 1 and the intro now say the four functions are written in this component (every model with thinking on read 'the shared library exports' as already provided; 0.08 in all three)."
       },
       {
         "test_id": "T70",

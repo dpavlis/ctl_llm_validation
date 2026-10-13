@@ -48,6 +48,11 @@ PROMPT = [  # (test, old, new); old must occur exactly once
             "is_current is false on CANCELLED and true on UNCHANGED. A missing previous version gives null version fields, "
             "including is_current, on CANCELLED;"),
     ("T66", "at most six integer digits", "one to six integer digits"),
+    # T69: read as "the library exists, write only the consumer" by every model with thinking on (0.08 in all 3)
+    ("T69", "This task supplies their Reformat consumer with raw meter strings;",
+            "This task writes the four functions together with their Reformat consumer, which receives raw meter strings;"),
+    ("T69", "1. The shared library exports exactly four pure functions:",
+            "1. Implement, in this component's CTL, exactly four pure functions that will be shared:"),
 ]
 
 RUBRIC = [  # (item id, old, new) in required/forbidden check text
