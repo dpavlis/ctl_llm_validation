@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T70_one_row" id="6101300070" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+      <GraphParameter name="FIXTURE_ROWS" value="1" />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Order fixtures alternate discounts per customer
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="Out0">
+      <Record name="OrderFixture" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="fixture_key" type="string" nullable="false" />
+        <Field name="fixture_tenant" type="string" nullable="false" />
+        <Field name="fixture_file" type="string" nullable="false" />
+        <Field name="fixture_row" type="long" nullable="false" />
+        <Field name="fixture_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="fixture_team" type="string" nullable="true" />
+        <Field name="fixture_market" type="string" nullable="true" />
+        <Field name="fixture_currency" type="string" nullable="false" />
+        <Field name="fixture_batch" type="string" nullable="false" />
+        <Field name="fixture_note" type="string" nullable="true" />
+        <Field name="fixture_trace" type="string" nullable="true" />
+        <Field name="fixture_unused_archive" type="string" nullable="true" />
+        <Field name="fixture_id" type="long" nullable="false" />
+        <Field name="customer_id" type="long" nullable="false" />
+        <Field name="line_no" type="integer" nullable="false" />
+        <Field name="unit_price" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="quantity" type="integer" nullable="false" />
+        <Field name="line_total" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="customer_total" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="discount_pct" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="event_dt" type="date" nullable="false" format="yyyy-MM-dd" timeZone="UTC" />
+        <Field name="fixture_state" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="fixture_key" type="string" nullable="false" />
+        <Field name="fixture_tenant" type="string" nullable="false" />
+        <Field name="fixture_file" type="string" nullable="false" />
+        <Field name="fixture_row" type="string" nullable="false" />
+        <Field name="fixture_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="fixture_team" type="string" nullable="true" />
+        <Field name="fixture_market" type="string" nullable="true" />
+        <Field name="fixture_currency" type="string" nullable="false" />
+        <Field name="fixture_batch" type="string" nullable="false" />
+        <Field name="fixture_note" type="string" nullable="true" />
+        <Field name="fixture_trace" type="string" nullable="true" />
+        <Field name="fixture_unused_archive" type="string" nullable="true" />
+        <Field name="fixture_id" type="string" nullable="false" />
+        <Field name="customer_id" type="string" nullable="false" />
+        <Field name="line_no" type="string" nullable="false" />
+        <Field name="unit_price" type="string" nullable="false" />
+        <Field name="quantity" type="string" nullable="false" />
+        <Field name="line_total" type="string" nullable="false" />
+        <Field name="customer_total" type="string" nullable="false" />
+        <Field name="discount_pct" type="string" nullable="false" />
+        <Field name="event_dt" type="string" nullable="false" timeZone="UTC" />
+        <Field name="fixture_state" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Test" type="DATA_GENERATOR" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="recordsNumber">${FIXTURE_ROWS}</attr>
+      <attr name="generate">//#CTL2
+integer n=0;decimal subtotal=0D;
+// recordsNumber owns the finite row count, including zero.
+function integer generate(){
+ n++;integer customerIndex=(n-1)/3;
+ $out.0.fixture_id=100000L+n;$out.0.customer_id=1000L+customerIndex;
+ $out.0.line_no=(n-1)%3+1;$out.0.unit_price=12.50D+$out.0.line_no;$out.0.quantity=$out.0.line_no;
+ $out.0.discount_pct=customerIndex%2==0 ? 0D : 10D;
+ $out.0.line_total=round($out.0.unit_price*$out.0.quantity*(100D-$out.0.discount_pct)/100D,2);
+ if($out.0.line_no==1)subtotal=0D;subtotal=subtotal+$out.0.line_total;$out.0.customer_total=subtotal;
+ $out.0.event_dt=dateAdd(createDate(2026,1,1,"UTC"),n-1,day);$out.0.fixture_received=$out.0.event_dt;
+ $out.0.fixture_state=n%2==1 ? "OPEN" : "CLOSED";
+ $out.0.fixture_key="FIX-"+num2str($out.0.fixture_id);$out.0.fixture_trace="CUST-"+num2str($out.0.customer_id);
+ $out.0.fixture_tenant="TEST";$out.0.fixture_file="synthetic";$out.0.fixture_row=n;$out.0.fixture_currency="EUR";$out.0.fixture_batch="FIXTURE";
+ $out.0.fixture_team=null;$out.0.fixture_market=null;$out.0.fixture_note=null;$out.0.fixture_unused_archive=null;return OK;
+}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.fixture_key=$in.0.fixture_key;
+$out.0.fixture_tenant=$in.0.fixture_tenant;
+$out.0.fixture_file=$in.0.fixture_file;
+$out.0.fixture_row=$in.0.fixture_row == null ? null : num2str($in.0.fixture_row);
+$out.0.fixture_received=$in.0.fixture_received == null ? null : date2str($in.0.fixture_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.fixture_team=$in.0.fixture_team;
+$out.0.fixture_market=$in.0.fixture_market;
+$out.0.fixture_currency=$in.0.fixture_currency;
+$out.0.fixture_batch=$in.0.fixture_batch;
+$out.0.fixture_note=$in.0.fixture_note;
+$out.0.fixture_trace=$in.0.fixture_trace;
+$out.0.fixture_unused_archive=$in.0.fixture_unused_archive;
+$out.0.fixture_id=$in.0.fixture_id == null ? null : num2str($in.0.fixture_id);
+$out.0.customer_id=$in.0.customer_id == null ? null : num2str($in.0.customer_id);
+$out.0.line_no=$in.0.line_no == null ? null : num2str($in.0.line_no);
+$out.0.unit_price=$in.0.unit_price == null ? null : num2str($in.0.unit_price,"0.00","en.US");
+$out.0.quantity=$in.0.quantity == null ? null : num2str($in.0.quantity);
+$out.0.line_total=$in.0.line_total == null ? null : num2str($in.0.line_total,"0.00","en.US");
+$out.0.customer_total=$in.0.customer_total == null ? null : num2str($in.0.customer_total,"0.00","en.US");
+$out.0.discount_pct=$in.0.discount_pct == null ? null : num2str($in.0.discount_pct,"0.00","en.US");
+$out.0.event_dt=$in.0.event_dt == null ? null : date2str($in.0.event_dt,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.fixture_state=$in.0.fixture_state;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T70_one_row_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

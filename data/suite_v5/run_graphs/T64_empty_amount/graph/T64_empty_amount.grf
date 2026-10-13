@@ -1,0 +1,190 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T64_empty_amount" id="6101300064" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Basket rows retain optional nested notes
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="BasketEnvelope" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="basket_key" type="string" nullable="false" />
+        <Field name="basket_tenant" type="string" nullable="false" />
+        <Field name="basket_file" type="string" nullable="false" />
+        <Field name="basket_row" type="long" nullable="false" />
+        <Field name="basket_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="basket_team" type="string" nullable="true" />
+        <Field name="basket_market" type="string" nullable="true" />
+        <Field name="basket_currency" type="string" nullable="false" />
+        <Field name="basket_batch" type="string" nullable="false" />
+        <Field name="basket_note" type="string" nullable="true" />
+        <Field name="basket_trace" type="string" nullable="true" />
+        <Field name="basket_unused_archive" type="string" nullable="true" />
+        <Field name="payload_json" type="string" nullable="true" />
+        <Field name="parent_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="business_dt" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="basket_key" type="string" nullable="false" />
+        <Field name="basket_tenant" type="string" nullable="false" />
+        <Field name="basket_file" type="string" nullable="false" />
+        <Field name="basket_row" type="string" nullable="false" />
+        <Field name="basket_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="basket_team" type="string" nullable="true" />
+        <Field name="basket_market" type="string" nullable="true" />
+        <Field name="basket_currency" type="string" nullable="false" />
+        <Field name="basket_batch" type="string" nullable="false" />
+        <Field name="basket_note" type="string" nullable="true" />
+        <Field name="basket_trace" type="string" nullable="true" />
+        <Field name="basket_unused_archive" type="string" nullable="true" />
+        <Field name="payload_json" type="string" nullable="true" />
+        <Field name="parent_value" type="string" nullable="true" />
+        <Field name="business_dt" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="BasketLine" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="basket_key" type="string" nullable="false" />
+        <Field name="basket_tenant" type="string" nullable="false" />
+        <Field name="basket_file" type="string" nullable="false" />
+        <Field name="basket_row" type="long" nullable="false" />
+        <Field name="basket_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="basket_team" type="string" nullable="true" />
+        <Field name="basket_market" type="string" nullable="true" />
+        <Field name="basket_currency" type="string" nullable="false" />
+        <Field name="basket_batch" type="string" nullable="false" />
+        <Field name="basket_note" type="string" nullable="true" />
+        <Field name="basket_trace" type="string" nullable="true" />
+        <Field name="basket_unused_archive" type="string" nullable="true" />
+        <Field name="parent_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="business_dt" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+        <Field name="child_code" type="string" nullable="false" />
+        <Field name="child_note" type="string" nullable="true" />
+        <Field name="ordinal" type="integer" nullable="false" />
+        <Field name="child_amount" type="decimal" nullable="true" length="18" scale="2" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="basket_key" type="string" nullable="false" />
+        <Field name="basket_tenant" type="string" nullable="false" />
+        <Field name="basket_file" type="string" nullable="false" />
+        <Field name="basket_row" type="string" nullable="false" />
+        <Field name="basket_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="basket_team" type="string" nullable="true" />
+        <Field name="basket_market" type="string" nullable="true" />
+        <Field name="basket_currency" type="string" nullable="false" />
+        <Field name="basket_batch" type="string" nullable="false" />
+        <Field name="basket_note" type="string" nullable="true" />
+        <Field name="basket_trace" type="string" nullable="true" />
+        <Field name="basket_unused_archive" type="string" nullable="true" />
+        <Field name="parent_value" type="string" nullable="true" />
+        <Field name="business_dt" type="string" nullable="true" timeZone="UTC" />
+        <Field name="child_code" type="string" nullable="false" />
+        <Field name="child_note" type="string" nullable="true" />
+        <Field name="ordinal" type="string" nullable="false" />
+        <Field name="child_amount" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T64_empty_amount_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.basket_key=$in.0.basket_key;
+$out.0.basket_tenant=$in.0.basket_tenant;
+$out.0.basket_file=$in.0.basket_file;
+$out.0.basket_row=$in.0.basket_row == null ? null : str2long($in.0.basket_row);
+$out.0.basket_received=$in.0.basket_received == null ? null : str2date($in.0.basket_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.basket_team=$in.0.basket_team;
+$out.0.basket_market=$in.0.basket_market;
+$out.0.basket_currency=$in.0.basket_currency;
+$out.0.basket_batch=$in.0.basket_batch;
+$out.0.basket_note=$in.0.basket_note;
+$out.0.basket_trace=$in.0.basket_trace;
+$out.0.basket_unused_archive=$in.0.basket_unused_archive;
+$out.0.payload_json=$in.0.payload_json;
+$out.0.parent_value=$in.0.parent_value == null ? null : str2decimal($in.0.parent_value);
+$out.0.business_dt=$in.0.business_dt == null ? null : str2date($in.0.business_dt,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="NORMALIZER" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="normalize">//#CTL2
+variant children;
+function integer count() {
+ children=null;
+ if (isnull($in.0.payload_json) || trim($in.0.payload_json)=="") return 0;
+ variant root=parseJson($in.0.payload_json);
+ children=containsKey(root,"lines") ? root["lines"] : null;
+ return isnull(children) ? 0 : length(children);
+}
+function integer transform(integer idx) {
+ variant item=children[idx];
+ $out.0.*=$in.0.*;
+ $out.0.child_code=cast(item["sku"],string);$out.0.ordinal=idx+1;
+ variant details=containsKey(item,"details") ? item["details"] : null;
+ $out.0.child_note=null;
+ if (!isnull(details) &amp;&amp; containsKey(details,"note") &amp;&amp; !isnull(details["note"])) $out.0.child_note=cast(details["note"],string);
+ $out.0.child_amount=null;
+ if (containsKey(item,"amount") &amp;&amp; !isnull(item["amount"])) {
+  string text=cast(item["amount"],string);
+  if (!(text ~= "-?[0-9]{1,9}(\\.[0-9]{1,2})?")) raiseError("Invalid child amount shape");
+  $out.0.child_amount=str2decimal(text);
+ }
+ return OK;
+}
+function void clean(){children=null;}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.basket_key=$in.0.basket_key;
+$out.0.basket_tenant=$in.0.basket_tenant;
+$out.0.basket_file=$in.0.basket_file;
+$out.0.basket_row=$in.0.basket_row == null ? null : num2str($in.0.basket_row);
+$out.0.basket_received=$in.0.basket_received == null ? null : date2str($in.0.basket_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.basket_team=$in.0.basket_team;
+$out.0.basket_market=$in.0.basket_market;
+$out.0.basket_currency=$in.0.basket_currency;
+$out.0.basket_batch=$in.0.basket_batch;
+$out.0.basket_note=$in.0.basket_note;
+$out.0.basket_trace=$in.0.basket_trace;
+$out.0.basket_unused_archive=$in.0.basket_unused_archive;
+$out.0.parent_value=$in.0.parent_value == null ? null : num2str($in.0.parent_value,"0.00","en.US");
+$out.0.business_dt=$in.0.business_dt == null ? null : date2str($in.0.business_dt,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.child_code=$in.0.child_code;
+$out.0.child_note=$in.0.child_note;
+$out.0.ordinal=$in.0.ordinal == null ? null : num2str($in.0.ordinal);
+$out.0.child_amount=$in.0.child_amount == null ? null : num2str($in.0.child_amount,"0.00","en.US");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T64_empty_amount_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

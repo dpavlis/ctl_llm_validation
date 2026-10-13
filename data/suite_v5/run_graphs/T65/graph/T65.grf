@@ -1,0 +1,188 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T65" id="6101300065" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Equipment channels are ordered by map key
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="EquipmentEnvelope" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="machine_key" type="string" nullable="false" />
+        <Field name="machine_tenant" type="string" nullable="false" />
+        <Field name="machine_file" type="string" nullable="false" />
+        <Field name="machine_row" type="long" nullable="false" />
+        <Field name="machine_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="machine_team" type="string" nullable="true" />
+        <Field name="machine_market" type="string" nullable="true" />
+        <Field name="machine_currency" type="string" nullable="false" />
+        <Field name="machine_batch" type="string" nullable="false" />
+        <Field name="machine_note" type="string" nullable="true" />
+        <Field name="machine_trace" type="string" nullable="true" />
+        <Field name="machine_unused_archive" type="string" nullable="true" />
+        <Field name="channels_json" type="string" nullable="true" />
+        <Field name="rated_capacity" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="commissioned_on" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="machine_key" type="string" nullable="false" />
+        <Field name="machine_tenant" type="string" nullable="false" />
+        <Field name="machine_file" type="string" nullable="false" />
+        <Field name="machine_row" type="string" nullable="false" />
+        <Field name="machine_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="machine_team" type="string" nullable="true" />
+        <Field name="machine_market" type="string" nullable="true" />
+        <Field name="machine_currency" type="string" nullable="false" />
+        <Field name="machine_batch" type="string" nullable="false" />
+        <Field name="machine_note" type="string" nullable="true" />
+        <Field name="machine_trace" type="string" nullable="true" />
+        <Field name="machine_unused_archive" type="string" nullable="true" />
+        <Field name="channels_json" type="string" nullable="true" />
+        <Field name="rated_capacity" type="string" nullable="true" />
+        <Field name="commissioned_on" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="ChannelObservation" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="machine_key" type="string" nullable="false" />
+        <Field name="machine_tenant" type="string" nullable="false" />
+        <Field name="machine_file" type="string" nullable="false" />
+        <Field name="machine_row" type="long" nullable="false" />
+        <Field name="machine_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="machine_team" type="string" nullable="true" />
+        <Field name="machine_market" type="string" nullable="true" />
+        <Field name="machine_currency" type="string" nullable="false" />
+        <Field name="machine_batch" type="string" nullable="false" />
+        <Field name="machine_note" type="string" nullable="true" />
+        <Field name="machine_trace" type="string" nullable="true" />
+        <Field name="machine_unused_archive" type="string" nullable="true" />
+        <Field name="rated_capacity" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="commissioned_on" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+        <Field name="channel_name" type="string" nullable="false" />
+        <Field name="position" type="integer" nullable="false" />
+        <Field name="reading_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="quality_cd" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="machine_key" type="string" nullable="false" />
+        <Field name="machine_tenant" type="string" nullable="false" />
+        <Field name="machine_file" type="string" nullable="false" />
+        <Field name="machine_row" type="string" nullable="false" />
+        <Field name="machine_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="machine_team" type="string" nullable="true" />
+        <Field name="machine_market" type="string" nullable="true" />
+        <Field name="machine_currency" type="string" nullable="false" />
+        <Field name="machine_batch" type="string" nullable="false" />
+        <Field name="machine_note" type="string" nullable="true" />
+        <Field name="machine_trace" type="string" nullable="true" />
+        <Field name="machine_unused_archive" type="string" nullable="true" />
+        <Field name="rated_capacity" type="string" nullable="true" />
+        <Field name="commissioned_on" type="string" nullable="true" timeZone="UTC" />
+        <Field name="channel_name" type="string" nullable="false" />
+        <Field name="position" type="string" nullable="false" />
+        <Field name="reading_value" type="string" nullable="true" />
+        <Field name="quality_cd" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T65_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.machine_key=$in.0.machine_key;
+$out.0.machine_tenant=$in.0.machine_tenant;
+$out.0.machine_file=$in.0.machine_file;
+$out.0.machine_row=$in.0.machine_row == null ? null : str2long($in.0.machine_row);
+$out.0.machine_received=$in.0.machine_received == null ? null : str2date($in.0.machine_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.machine_team=$in.0.machine_team;
+$out.0.machine_market=$in.0.machine_market;
+$out.0.machine_currency=$in.0.machine_currency;
+$out.0.machine_batch=$in.0.machine_batch;
+$out.0.machine_note=$in.0.machine_note;
+$out.0.machine_trace=$in.0.machine_trace;
+$out.0.machine_unused_archive=$in.0.machine_unused_archive;
+$out.0.channels_json=$in.0.channels_json;
+$out.0.rated_capacity=$in.0.rated_capacity == null ? null : str2decimal($in.0.rated_capacity);
+$out.0.commissioned_on=$in.0.commissioned_on == null ? null : str2date($in.0.commissioned_on,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="NORMALIZER" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="normalize">//#CTL2
+variant channels;
+string[] keys;
+function integer count(){
+ channels=null;clear(keys);
+ if (isnull($in.0.channels_json) || trim($in.0.channels_json)=="") return 0;
+ variant root=parseJson($in.0.channels_json);
+ if (!containsKey(root,"channels") || isnull(root["channels"])) return 0;
+ channels=root["channels"];
+ foreach(variant key:getKeys(channels)) append(keys,cast(key,string));
+ keys=sort(keys);return length(keys);
+}
+function integer transform(integer idx){
+ variant entry=channels[keys[idx]];
+ if (containsKey(entry,"enabled") &amp;&amp; !isnull(entry["enabled"]) &amp;&amp; !cast(entry["enabled"],boolean)) return SKIP;
+ $out.0.*=$in.0.*;$out.0.channel_name=keys[idx];$out.0.position=idx+1;
+ $out.0.reading_value=null;$out.0.quality_cd="MISSING";
+ if (!containsKey(entry,"value") || isnull(entry["value"])) return OK;
+ string raw=trim(cast(entry["value"],string));if(raw=="") return OK;
+ if (!(raw ~= "-?[0-9]{1,6}(\\.[0-9]{1,2})?")) {$out.0.quality_cd="BAD_TEXT";return OK;}
+ $out.0.reading_value=str2decimal(raw);$out.0.quality_cd="GOOD";return OK;
+}
+function void clean(){channels=null;clear(keys);}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.machine_key=$in.0.machine_key;
+$out.0.machine_tenant=$in.0.machine_tenant;
+$out.0.machine_file=$in.0.machine_file;
+$out.0.machine_row=$in.0.machine_row == null ? null : num2str($in.0.machine_row);
+$out.0.machine_received=$in.0.machine_received == null ? null : date2str($in.0.machine_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.machine_team=$in.0.machine_team;
+$out.0.machine_market=$in.0.machine_market;
+$out.0.machine_currency=$in.0.machine_currency;
+$out.0.machine_batch=$in.0.machine_batch;
+$out.0.machine_note=$in.0.machine_note;
+$out.0.machine_trace=$in.0.machine_trace;
+$out.0.machine_unused_archive=$in.0.machine_unused_archive;
+$out.0.rated_capacity=$in.0.rated_capacity == null ? null : num2str($in.0.rated_capacity,"0.00","en.US");
+$out.0.commissioned_on=$in.0.commissioned_on == null ? null : date2str($in.0.commissioned_on,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.channel_name=$in.0.channel_name;
+$out.0.position=$in.0.position == null ? null : num2str($in.0.position);
+$out.0.reading_value=$in.0.reading_value == null ? null : num2str($in.0.reading_value,"0.00","en.US");
+$out.0.quality_cd=$in.0.quality_cd;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T65_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

@@ -1,0 +1,286 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T61" id="6101300061" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Service-region history carried through consecutive events
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="RegionEvent" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="long" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="region_cd" type="string" nullable="true" />
+        <Field name="service_fee" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="effective_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="seed_sk" type="long" nullable="true" />
+        <Field name="seed_from" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="seed_region" type="string" nullable="true" />
+        <Field name="seed_fee" type="decimal" nullable="true" length="18" scale="2" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="string" nullable="false" />
+        <Field name="received_at" type="string" nullable="false" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="string" nullable="true" />
+        <Field name="region_cd" type="string" nullable="true" />
+        <Field name="service_fee" type="string" nullable="true" />
+        <Field name="effective_at" type="string" nullable="false" timeZone="UTC" />
+        <Field name="seed_sk" type="string" nullable="true" />
+        <Field name="seed_from" type="string" nullable="true" timeZone="UTC" />
+        <Field name="seed_region" type="string" nullable="true" />
+        <Field name="seed_fee" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="RegionVersion" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="long" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="region_cd" type="string" nullable="true" />
+        <Field name="service_fee" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="version_sk" type="long" nullable="false" />
+        <Field name="valid_from" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="valid_to" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="is_current" type="boolean" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="string" nullable="false" />
+        <Field name="received_at" type="string" nullable="false" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="string" nullable="true" />
+        <Field name="region_cd" type="string" nullable="true" />
+        <Field name="service_fee" type="string" nullable="true" />
+        <Field name="version_sk" type="string" nullable="false" />
+        <Field name="valid_from" type="string" nullable="false" timeZone="UTC" />
+        <Field name="valid_to" type="string" nullable="true" timeZone="UTC" />
+        <Field name="is_current" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out1">
+      <Record name="RegionVersion" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="long" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="region_cd" type="string" nullable="true" />
+        <Field name="service_fee" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="version_sk" type="long" nullable="false" />
+        <Field name="valid_from" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="valid_to" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="is_current" type="boolean" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut1">
+      <Record name="RawOutput1" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="string" nullable="false" />
+        <Field name="received_at" type="string" nullable="false" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="string" nullable="true" />
+        <Field name="region_cd" type="string" nullable="true" />
+        <Field name="service_fee" type="string" nullable="true" />
+        <Field name="version_sk" type="string" nullable="false" />
+        <Field name="valid_from" type="string" nullable="false" timeZone="UTC" />
+        <Field name="valid_to" type="string" nullable="true" timeZone="UTC" />
+        <Field name="is_current" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Sequence id="GeoKeys" name="GeoKeys" start="3000" step="1" type="PRIMITIVE_SEQUENCE" />
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T61_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.business_ref=$in.0.business_ref;
+$out.0.tenant_cd=$in.0.tenant_cd;
+$out.0.source_file=$in.0.source_file;
+$out.0.source_row=$in.0.source_row == null ? null : str2long($in.0.source_row);
+$out.0.received_at=$in.0.received_at == null ? null : str2date($in.0.received_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.currency_cd=$in.0.currency_cd;
+$out.0.operator_note=$in.0.operator_note;
+$out.0.market_cd=$in.0.market_cd;
+$out.0.owner_team=$in.0.owner_team;
+$out.0.trace_id=$in.0.trace_id;
+$out.0.unused_archive_label=$in.0.unused_archive_label;
+$out.0.context_value=$in.0.context_value == null ? null : str2decimal($in.0.context_value);
+$out.0.region_cd=$in.0.region_cd;
+$out.0.service_fee=$in.0.service_fee == null ? null : str2decimal($in.0.service_fee);
+$out.0.effective_at=$in.0.effective_at == null ? null : str2date($in.0.effective_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.seed_sk=$in.0.seed_sk == null ? null : str2long($in.0.seed_sk);
+$out.0.seed_from=$in.0.seed_from == null ? null : str2date($in.0.seed_from,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.seed_region=$in.0.seed_region;
+$out.0.seed_fee=$in.0.seed_fee == null ? null : str2decimal($in.0.seed_fee);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+string current_business_ref;
+string current_tenant_cd;
+string current_source_file;
+long current_source_row;
+date current_received_at;
+string current_currency_cd;
+string current_operator_note;
+string current_market_cd;
+string current_owner_team;
+string current_trace_id;
+string current_unused_archive_label;
+decimal current_context_value;
+boolean have_key;
+string current_business_key;
+boolean have_version;
+long sk;
+date from_at;
+string region;
+decimal fee;
+function integer transform() {
+ if(!have_key || current_business_key!=$in.0.business_ref) {have_key=true;current_business_key=$in.0.business_ref;have_version=!isnull($in.0.seed_sk);sk=$in.0.seed_sk;from_at=$in.0.seed_from;region=$in.0.seed_region;fee=$in.0.seed_fee;current_business_ref=$in.0.business_ref;current_tenant_cd=$in.0.tenant_cd;current_source_file=$in.0.source_file;current_source_row=$in.0.source_row;current_received_at=$in.0.received_at;current_currency_cd=$in.0.currency_cd;current_operator_note=$in.0.operator_note;current_market_cd=$in.0.market_cd;current_owner_team=$in.0.owner_team;current_trace_id=$in.0.trace_id;current_unused_archive_label=$in.0.unused_archive_label;current_context_value=$in.0.context_value;}
+ boolean changed=$in.0.region_cd!=region || $in.0.service_fee!=fee;
+ if(have_version &amp;&amp; !changed) return SKIP;
+ boolean close=have_version;
+ if(close) {$out.0.business_ref=current_business_ref;$out.0.tenant_cd=current_tenant_cd;$out.0.source_file=current_source_file;$out.0.source_row=current_source_row;$out.0.received_at=current_received_at;$out.0.currency_cd=current_currency_cd;$out.0.operator_note=current_operator_note;$out.0.market_cd=current_market_cd;$out.0.owner_team=current_owner_team;$out.0.trace_id=current_trace_id;$out.0.unused_archive_label=current_unused_archive_label;$out.0.context_value=current_context_value;$out.0.region_cd=region;$out.0.service_fee=fee;$out.0.version_sk=sk;$out.0.valid_from=from_at;$out.0.valid_to=$in.0.effective_at;$out.0.is_current=false;}
+ long next_key=sequence(GeoKeys,long).next();
+ $out.1.*=$in.0.*;$out.1.version_sk=next_key;$out.1.valid_from=$in.0.effective_at;$out.1.valid_to=null;$out.1.is_current=true;
+ current_business_ref=$in.0.business_ref;current_tenant_cd=$in.0.tenant_cd;current_source_file=$in.0.source_file;current_source_row=$in.0.source_row;current_received_at=$in.0.received_at;current_currency_cd=$in.0.currency_cd;current_operator_note=$in.0.operator_note;current_market_cd=$in.0.market_cd;current_owner_team=$in.0.owner_team;current_trace_id=$in.0.trace_id;current_unused_archive_label=$in.0.unused_archive_label;current_context_value=$in.0.context_value;region=$in.0.region_cd;fee=$in.0.service_fee;sk=next_key;from_at=$in.0.effective_at;have_version=true;
+ if(close) return ALL;return 1;
+}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.business_ref=$in.0.business_ref;
+$out.0.tenant_cd=$in.0.tenant_cd;
+$out.0.source_file=$in.0.source_file;
+$out.0.source_row=$in.0.source_row == null ? null : num2str($in.0.source_row);
+$out.0.received_at=$in.0.received_at == null ? null : date2str($in.0.received_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.currency_cd=$in.0.currency_cd;
+$out.0.operator_note=$in.0.operator_note;
+$out.0.market_cd=$in.0.market_cd;
+$out.0.owner_team=$in.0.owner_team;
+$out.0.trace_id=$in.0.trace_id;
+$out.0.unused_archive_label=$in.0.unused_archive_label;
+$out.0.context_value=$in.0.context_value == null ? null : num2str($in.0.context_value,"0.00","en.US");
+$out.0.region_cd=$in.0.region_cd;
+$out.0.service_fee=$in.0.service_fee == null ? null : num2str($in.0.service_fee,"0.00","en.US");
+$out.0.version_sk=$in.0.version_sk == null ? null : num2str($in.0.version_sk);
+$out.0.valid_from=$in.0.valid_from == null ? null : date2str($in.0.valid_from,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.valid_to=$in.0.valid_to == null ? null : date2str($in.0.valid_to,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.is_current=$in.0.is_current == null ? null : ($in.0.is_current ? "true" : "false");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T61_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode1" type="REFORMAT" enabled="enabled" guiName="Encode1" guiX="725" guiY="375">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.business_ref=$in.0.business_ref;
+$out.0.tenant_cd=$in.0.tenant_cd;
+$out.0.source_file=$in.0.source_file;
+$out.0.source_row=$in.0.source_row == null ? null : num2str($in.0.source_row);
+$out.0.received_at=$in.0.received_at == null ? null : date2str($in.0.received_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.currency_cd=$in.0.currency_cd;
+$out.0.operator_note=$in.0.operator_note;
+$out.0.market_cd=$in.0.market_cd;
+$out.0.owner_team=$in.0.owner_team;
+$out.0.trace_id=$in.0.trace_id;
+$out.0.unused_archive_label=$in.0.unused_archive_label;
+$out.0.context_value=$in.0.context_value == null ? null : num2str($in.0.context_value,"0.00","en.US");
+$out.0.region_cd=$in.0.region_cd;
+$out.0.service_fee=$in.0.service_fee == null ? null : num2str($in.0.service_fee,"0.00","en.US");
+$out.0.version_sk=$in.0.version_sk == null ? null : num2str($in.0.version_sk);
+$out.0.valid_from=$in.0.valid_from == null ? null : date2str($in.0.valid_from,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.valid_to=$in.0.valid_to == null ? null : date2str($in.0.valid_to,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.is_current=$in.0.is_current == null ? null : ($in.0.is_current ? "true" : "false");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer1" type="DATA_WRITER" enabled="enabled" guiName="Writer1" guiX="950" guiY="375">
+      <attr name="fileURL">suite_v5/data-out/T61_out_1.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result1" fromNode="Test:1" toNode="Encode1:0" metadata="Out1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written1" fromNode="Encode1:0" toNode="Writer1:0" metadata="RawOut1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

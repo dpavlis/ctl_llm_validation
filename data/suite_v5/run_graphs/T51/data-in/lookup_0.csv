@@ -1,0 +1,8 @@
+batch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-0|__NULL__|1|P|N|Z|2026-01-01 00:00:00|__NULL__|50.00|1.00
+batch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-1|__NULL__|2|P|N|B|2026-02-01 00:00:00|__NULL__|12.50|2.00
+batch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-2|__NULL__|3|P|N|A|2026-02-01 00:00:00|__NULL__|25.00|2.00
+batch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-3|__NULL__|4|P|N|LOW|2026-02-01 00:00:00|__NULL__|75.00|3.00
+batch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-4|__NULL__|5|P|N|BAD|2026-03-01 00:00:00|__NULL__|101.00|0.00
+batch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-5|__NULL__|6|Q|N|ZERO|2026-01-01 00:00:00|__NULL__|0.00|1.00
+batch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-6|__NULL__|7|R|N|NULL|2026-01-01 00:00:00|__NULL__|__NULL__|1.00
+batch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-7|__NULL__|8|S|N|EXP|2026-01-01 00:00:00|2026-01-31 00:00:00|100.00|1.00

@@ -1,0 +1,417 @@
+[
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in",
+      "filename": "T47_input_0.csv",
+      "content": "batch-policy_batch|2026-01-01 00:00:00.000|17.25|opaque-0|__NULL__|1| P1 |bad|true|bad|__NULL__|__NULL__|-2.50|1970-01-01 12:00:00.000|AG17|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__||__NULL__|obsolete-0|batch-old_billing_batch|__NULL__|__NULL__|\nbatch-policy_batch|2026-01-01 00:00:00.000|17.25|opaque-1|__NULL__|2|| M |__NULL__|| N | |__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|obsolete-1|batch-old_billing_batch|__NULL__|__NULL__|__NULL__\nbatch-policy_batch|2026-01-01 00:00:00.000|17.25|opaque-2|__NULL__|3|P1|A|false|__NULL__| A |X@Y|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|obsolete-2|batch-old_billing_batch|__NULL__|__NULL__|__NULL__\nbatch-policy_batch|2026-01-01 00:00:00.000|17.25|opaque-3|__NULL__|4|P2|?|false|m||__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|obsolete-3|batch-old_billing_batch|__NULL__|__NULL__|__NULL__\nbatch-policy_batch|2026-01-01 00:00:00.000|17.25|opaque-4|__NULL__|5|P3|m|false|?|__NULL__||__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|obsolete-4|batch-old_billing_batch|__NULL__|__NULL__|__NULL__\nbatch-policy_batch|2026-01-01 00:00:00.000|17.25|opaque-5|__NULL__|6|P4|__NULL__|true|a|B| B@C |__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|obsolete-5|batch-old_billing_batch|__NULL__|__NULL__|__NULL__\nbatch-policy_batch|2026-01-01 00:00:00.000|17.25|opaque-6|__NULL__|7|P5||false|a|C||__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|obsolete-6|batch-old_billing_batch|__NULL__|__NULL__|__NULL__\nbatch-policy_batch|2026-01-01 00:00:00.000|17.25|opaque-7|__NULL__|8|P1|M|__NULL__|__NULL__| Z |__NULL__|__NULL__|__NULL__|__NULL__|cs|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__||__NULL__|obsolete-7|batch-old_billing_batch|__NULL__|__NULL__|__NULL__\n"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/data-in/T47_input_0.csv' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/data-in/T47_input_0.csv' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph",
+      "filename": "T47.grf",
+      "content": "<?xml version='1.0' encoding='utf-8'?>\n<Graph author=\"Codex\" name=\"T47\" id=\"6101300047\" nature=\"etlGraph\" revision=\"1.0\" guiVersion=\"7.5.0\">\n  <Global>\n    <GraphParameters>\n      <GraphParameterFile fileURL=\"workspace.prm\" />\n      <GraphParameter name=\"PROJECT\" value=\".\" />\n    </GraphParameters>\n    <RichTextNote id=\"Note\" x=\"50\" y=\"25\" width=\"1200\" height=\"100\" backgroundColor=\"FAF6D6\" textColor=\"444444\" fontSize=\"medium\" folded=\"false\">\n      <attr name=\"text\">Policy migration with explicit override precedence\nAcceptance fixture exercises the business rules and preserves every source field for comparison.</attr>\n    </RichTextNote>\n    <Metadata id=\"In0\">\n      <Record name=\"InputT47\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"policy_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"policy_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"policy_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"policy_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"legacy_policy_no\" type=\"string\" nullable=\"false\" />\n        <Field name=\"billing_mode\" type=\"string\" nullable=\"true\" />\n        <Field name=\"suspended\" type=\"boolean\" nullable=\"true\" />\n        <Field name=\"manual_override\" type=\"string\" nullable=\"true\" />\n        <Field name=\"display_nm\" type=\"string\" nullable=\"true\" />\n        <Field name=\"email_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"credit_balance\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"retired_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"policy_agent_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_language_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_tax_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_delivery_addr\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_country_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_currency_label\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_product_family\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_rider_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_claims_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_contract_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_renewal_hint\" type=\"string\" nullable=\"true\" />\n        <Field name=\"old_policy_memo\" type=\"string\" nullable=\"true\" />\n        <Field name=\"old_billing_batch\" type=\"string\" nullable=\"true\" />\n        <Field name=\"old_agent_terminal\" type=\"string\" nullable=\"true\" />\n        <Field name=\"old_rate_table\" type=\"string\" nullable=\"true\" />\n        <Field name=\"old_conversion_tag\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawIn0\">\n      <Record name=\"RawInput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"policy_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"policy_loaded\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"policy_ledger\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"legacy_policy_no\" type=\"string\" nullable=\"false\" />\n        <Field name=\"billing_mode\" type=\"string\" nullable=\"true\" />\n        <Field name=\"suspended\" type=\"string\" nullable=\"true\" />\n        <Field name=\"manual_override\" type=\"string\" nullable=\"true\" />\n        <Field name=\"display_nm\" type=\"string\" nullable=\"true\" />\n        <Field name=\"email_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"credit_balance\" type=\"string\" nullable=\"true\" />\n        <Field name=\"retired_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n        <Field name=\"policy_agent_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_language_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_tax_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_delivery_addr\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_country_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_currency_label\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_product_family\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_rider_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_claims_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_contract_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_renewal_hint\" type=\"string\" nullable=\"true\" />\n        <Field name=\"old_policy_memo\" type=\"string\" nullable=\"true\" />\n        <Field name=\"old_billing_batch\" type=\"string\" nullable=\"true\" />\n        <Field name=\"old_agent_terminal\" type=\"string\" nullable=\"true\" />\n        <Field name=\"old_rate_table\" type=\"string\" nullable=\"true\" />\n        <Field name=\"old_conversion_tag\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out0\">\n      <Record name=\"PolicyDestination\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"policy_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"policy_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"policy_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"policy_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"suspended\" type=\"boolean\" nullable=\"true\" />\n        <Field name=\"display_nm\" type=\"string\" nullable=\"true\" />\n        <Field name=\"email_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"credit_balance\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"retired_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"policy_agent_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_language_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_tax_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_delivery_addr\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_country_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_currency_label\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_product_family\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_rider_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_claims_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_contract_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_renewal_hint\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_number\" type=\"string\" nullable=\"false\" />\n        <Field name=\"mode_cd\" type=\"string\" nullable=\"false\" />\n        <Field name=\"migration_warning\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut0\">\n      <Record name=\"RawOutput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"policy_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"policy_loaded\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"policy_ledger\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"suspended\" type=\"string\" nullable=\"true\" />\n        <Field name=\"display_nm\" type=\"string\" nullable=\"true\" />\n        <Field name=\"email_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"credit_balance\" type=\"string\" nullable=\"true\" />\n        <Field name=\"retired_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n        <Field name=\"policy_agent_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_language_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_tax_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_delivery_addr\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_country_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_currency_label\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_product_family\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_rider_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_claims_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_contract_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_renewal_hint\" type=\"string\" nullable=\"true\" />\n        <Field name=\"policy_number\" type=\"string\" nullable=\"false\" />\n        <Field name=\"mode_cd\" type=\"string\" nullable=\"false\" />\n        <Field name=\"migration_warning\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n  </Global>\n  <Phase number=\"0\">\n    <Node id=\"Reader0\" type=\"DATA_READER\" enabled=\"enabled\" guiName=\"Reader0\" guiX=\"50\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-in/T47_input_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"dataPolicy\">strict</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"parser\">org.jetel.data.parser.DataParser</attr>\n    </Node>\n    <Node id=\"Decode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Decode0\" guiX=\"275\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.policy_batch=$in.0.policy_batch;\n$out.0.policy_loaded=$in.0.policy_loaded == null ? null : str2date($in.0.policy_loaded,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\n$out.0.policy_ledger=$in.0.policy_ledger == null ? null : str2decimal($in.0.policy_ledger);\n$out.0.policy_unused=$in.0.policy_unused;\n$out.0.policy_note=$in.0.policy_note;\n$out.0.policy_row=$in.0.policy_row == null ? null : str2long($in.0.policy_row);\n$out.0.legacy_policy_no=$in.0.legacy_policy_no;\n$out.0.billing_mode=$in.0.billing_mode;\n$out.0.suspended=$in.0.suspended == null ? null : str2bool($in.0.suspended);\n$out.0.manual_override=$in.0.manual_override;\n$out.0.display_nm=$in.0.display_nm;\n$out.0.email_txt=$in.0.email_txt;\n$out.0.credit_balance=$in.0.credit_balance == null ? null : str2decimal($in.0.credit_balance);\n$out.0.retired_at=$in.0.retired_at == null ? null : str2date($in.0.retired_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\n$out.0.policy_agent_ref=$in.0.policy_agent_ref;\n$out.0.policy_language_cd=$in.0.policy_language_cd;\n$out.0.policy_tax_ref=$in.0.policy_tax_ref;\n$out.0.policy_delivery_addr=$in.0.policy_delivery_addr;\n$out.0.policy_country_cd=$in.0.policy_country_cd;\n$out.0.policy_currency_label=$in.0.policy_currency_label;\n$out.0.policy_product_family=$in.0.policy_product_family;\n$out.0.policy_rider_txt=$in.0.policy_rider_txt;\n$out.0.policy_claims_team=$in.0.policy_claims_team;\n$out.0.policy_contract_note=$in.0.policy_contract_note;\n$out.0.policy_renewal_hint=$in.0.policy_renewal_hint;\n$out.0.old_policy_memo=$in.0.old_policy_memo;\n$out.0.old_billing_batch=$in.0.old_billing_batch;\n$out.0.old_agent_terminal=$in.0.old_agent_terminal;\n$out.0.old_rate_table=$in.0.old_rate_table;\n$out.0.old_conversion_tag=$in.0.old_conversion_tag;\nreturn OK;}</attr>\n    </Node>\n    <Edge id=\"Read0\" fromNode=\"Reader0:0\" toNode=\"Decode0:0\" metadata=\"RawIn0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Decoded0\" fromNode=\"Decode0:0\" toNode=\"Test:0\" metadata=\"In0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Test\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Test\" guiX=\"500\" guiY=\"200\">\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"transform\">//#CTL2\nmap[string,string] modes={\"M\"-&gt;\"MONTHLY\",\"A\"-&gt;\"ANNUAL\"};function integer transform(){$out.0.*=$in.0.*;string id=trim($in.0.legacy_policy_no);$out.0.policy_number=id==\"\"?\"UNASSIGNED\":id;string src=upperCase(trim(nvl($in.0.billing_mode,\"\")));string mode=containsKey(modes,src)?modes[src]:\"MANUAL\";string[] warningsList=[];if(src!=\"\"&amp;&amp;!containsKey(modes,src))append(warningsList,\"UNKNOWN_MODE\");if($in.0.manual_override!=null){string o=upperCase(trim($in.0.manual_override));if(o==\"\")mode=\"MANUAL\";else if(containsKey(modes,o))mode=modes[o];else append(warningsList,\"BAD_OVERRIDE\");}if(nvl($in.0.suspended,false))mode=\"HOLD\";$out.0.mode_cd=mode;$out.0.migration_warning=join(\";\",warningsList);string n=trim(nvl($in.0.display_nm,\"\"));$out.0.display_nm=n==\"\"?\"Unnamed\":n;$out.0.email_txt=$in.0.email_txt==null?null:lowerCase(trim($in.0.email_txt));return OK;}</attr>\n    </Node>\n    <Node id=\"Encode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode0\" guiX=\"725\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.policy_batch=$in.0.policy_batch;\n$out.0.policy_loaded=$in.0.policy_loaded == null ? null : date2str($in.0.policy_loaded,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.policy_ledger=$in.0.policy_ledger == null ? null : num2str($in.0.policy_ledger,\"0.00\",\"en.US\");\n$out.0.policy_unused=$in.0.policy_unused;\n$out.0.policy_note=$in.0.policy_note;\n$out.0.policy_row=$in.0.policy_row == null ? null : num2str($in.0.policy_row);\n$out.0.suspended=$in.0.suspended == null ? null : ($in.0.suspended ? \"true\" : \"false\");\n$out.0.display_nm=$in.0.display_nm;\n$out.0.email_txt=$in.0.email_txt;\n$out.0.credit_balance=$in.0.credit_balance == null ? null : num2str($in.0.credit_balance,\"0.00\",\"en.US\");\n$out.0.retired_at=$in.0.retired_at == null ? null : date2str($in.0.retired_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.policy_agent_ref=$in.0.policy_agent_ref;\n$out.0.policy_language_cd=$in.0.policy_language_cd;\n$out.0.policy_tax_ref=$in.0.policy_tax_ref;\n$out.0.policy_delivery_addr=$in.0.policy_delivery_addr;\n$out.0.policy_country_cd=$in.0.policy_country_cd;\n$out.0.policy_currency_label=$in.0.policy_currency_label;\n$out.0.policy_product_family=$in.0.policy_product_family;\n$out.0.policy_rider_txt=$in.0.policy_rider_txt;\n$out.0.policy_claims_team=$in.0.policy_claims_team;\n$out.0.policy_contract_note=$in.0.policy_contract_note;\n$out.0.policy_renewal_hint=$in.0.policy_renewal_hint;\n$out.0.policy_number=$in.0.policy_number;\n$out.0.mode_cd=$in.0.mode_cd;\n$out.0.migration_warning=$in.0.migration_warning;\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer0\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer0\" guiX=\"950\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-out/T47_out_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result0\" fromNode=\"Test:0\" toNode=\"Encode0:0\" metadata=\"Out0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written0\" fromNode=\"Encode0:0\" toNode=\"Writer0:0\" metadata=\"RawOut0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n  </Phase>\n</Graph>"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/graph/T47.grf' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/graph/T47.grf' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_validate",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T47.grf",
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"timedOut\":false,\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "timedOut": false,
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_run",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T47.grf",
+      "params": {}
+    },
+    "payload": {
+      "runId": 17998,
+      "message": "Job started. runId: 17998"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17998,\"message\":\"Job started. runId: 17998\"}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17998,
+        "message": "Job started. runId: 17998"
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_await",
+    "arguments": {
+      "runId": 17998,
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "runId": 17998,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T47.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T12:00:43.184+02:00",
+      "startTime": "2026-10-13T12:00:43.184+02:00",
+      "stopTime": "2026-10-13T12:00:43.202+02:00",
+      "durationMs": 18
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17998,\"sandboxCode\":\"MiscExamples\",\"jobFile\":\"suite_v5/graph/T47.grf\",\"jobType\":\"ETL_GRAPH\",\"status\":\"FINISHED_OK\",\"submitTime\":\"2026-10-13T12:00:43.184+02:00\",\"startTime\":\"2026-10-13T12:00:43.184+02:00\",\"stopTime\":\"2026-10-13T12:00:43.202+02:00\",\"durationMs\":18}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17998,
+        "sandboxCode": "MiscExamples",
+        "jobFile": "suite_v5/graph/T47.grf",
+        "jobType": "ETL_GRAPH",
+        "status": "FINISHED_OK",
+        "submitTime": "2026-10-13T12:00:43.184+02:00",
+        "startTime": "2026-10-13T12:00:43.184+02:00",
+        "stopTime": "2026-10-13T12:00:43.202+02:00",
+        "durationMs": 18
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_tracking",
+    "arguments": {
+      "runId": 17998,
+      "detailed": true
+    },
+    "payload": {
+      "run_id": "17998",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.004,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.002,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1878
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1878
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1582
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1582
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1212
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1212
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1508
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1508
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 64,
+        "total_bytes": 12360
+      }
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"run_id\":\"17998\",\"status\":\"FINISHED_OK\",\"exec_seconds\":0.004,\"phases\":[{\"phase_number\":0,\"exec_seconds\":0.002,\"nodes\":[{\"node_id\":\"Reader0\",\"node_name\":\"Reader0\",\"node_type\":\"DATA_READER\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":8,\"bytes\":1878}]},{\"node_id\":\"Decode0\",\"node_name\":\"Decode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":8,\"bytes\":1878},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":8,\"bytes\":1582}]},{\"node_id\":\"Test\",\"node_name\":\"Test\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":8,\"bytes\":1582},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":8,\"bytes\":1212}]},{\"node_id\":\"Encode0\",\"node_name\":\"Encode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":8,\"bytes\":1212},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":8,\"bytes\":1508}]},{\"node_id\":\"Writer0\",\"node_name\":\"Writer0\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":8,\"bytes\":1508}]}]}],\"summary\":{\"phase_count\":1,\"node_count\":5,\"port_count\":8,\"total_records\":64,\"total_bytes\":12360}}"
+        }
+      ],
+      "structuredContent": {
+        "run_id": "17998",
+        "status": "FINISHED_OK",
+        "exec_seconds": 0.004,
+        "phases": [
+          {
+            "phase_number": 0,
+            "exec_seconds": 0.002,
+            "nodes": [
+              {
+                "node_id": "Reader0",
+                "node_name": "Reader0",
+                "node_type": "DATA_READER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1878
+                  }
+                ]
+              },
+              {
+                "node_id": "Decode0",
+                "node_name": "Decode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1878
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1582
+                  }
+                ]
+              },
+              {
+                "node_id": "Test",
+                "node_name": "Test",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1582
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1212
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode0",
+                "node_name": "Encode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1212
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1508
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer0",
+                "node_name": "Writer0",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1508
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "phase_count": 1,
+          "node_count": 5,
+          "port_count": 8,
+          "total_records": 64,
+          "total_bytes": 12360
+        }
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_log",
+    "arguments": {
+      "runId": 17998
+    },
+    "payload": {
+      "text": "2026-10-13 12:00:43,185 INFO  17998 [boundedElastic-93] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 12:00:43,186 INFO  17998 [boundedElastic-93] Running with CloverDX version 0.0.0.devel\n2026-10-13 12:00:43,186 INFO  17998 [boundedElastic-93] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 12:00:43,188 INFO  17998 [JobStarter_17998] Starting job: MiscExamples/suite_v5/graph/T47.grf\n\t Run ID: \t\t17998\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 12:00:43,191 INFO  17998 [JobExecutor_17998] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 12:00:43,194 INFO  17998 [JobExecutor_17998] Initializing metadata\n2026-10-13 12:00:43,194 INFO  17998 [JobExecutor_17998] Initializing phase 0\n2026-10-13 12:00:43,196 INFO  17998 [JobExecutor_17998] Phase 0 initialized successfully.\n2026-10-13 12:00:43,196 INFO  17998 [WatchDog_17998] Job execution type: ETL_GRAPH\n2026-10-13 12:00:43,197 INFO  17998 [WatchDog_17998] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T47.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T47.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17998\nPROJECT=.\nROOT_RUN_ID=17998\nRUN_ID=17998\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 12:00:43,197 INFO  17998 [WatchDog_17998] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 12:00:43,198 INFO  17998 [WatchDog_17998] Starting up all nodes in phase [0]\n2026-10-13 12:00:43,198 INFO  17998 [WatchDog_17998] Successfully started all nodes in phase!\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Time: 13/10/2026 12:00:43, JVM heap used: 111 MB\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] ---------------------------------------------------------------------------------\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]  (alloc:0MB, cpu:0%)            Out:0              8          1    4000      916\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]  (alloc:0MB, cpu:50%)            In:0              8          1    4000      916\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]                                 Out:0              8          1    4000      772\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Test                     Test                                        FINISHED_OK\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]  (alloc:0MB, cpu:0%)             In:0              8          1    4000      772\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]                                 Out:0              8          1    4000      591\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]  (alloc:0MB, cpu:50%)            In:0              8          1    4000      591\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]                                 Out:0              8          1    4000      736\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]  (alloc:0MB, cpu:50%)            In:0              8          1    4000      736\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] ---------------------------------** End of Log **--------------------------------\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] WatchDog finished - total execution time: 0 sec\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] 0                 FINISHED_OK                        0               111\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] ------------------------------** End of Summary **---------------------------\n2026-10-13 12:00:43,202 INFO  17998 [JobFinalizer_17998] Job finished: MiscExamples/suite_v5/graph/T47.grf\n\t Run ID: \t\t17998\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t18 ms\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "2026-10-13 12:00:43,185 INFO  17998 [boundedElastic-93] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 12:00:43,186 INFO  17998 [boundedElastic-93] Running with CloverDX version 0.0.0.devel\n2026-10-13 12:00:43,186 INFO  17998 [boundedElastic-93] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 12:00:43,188 INFO  17998 [JobStarter_17998] Starting job: MiscExamples/suite_v5/graph/T47.grf\n\t Run ID: \t\t17998\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 12:00:43,191 INFO  17998 [JobExecutor_17998] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 12:00:43,194 INFO  17998 [JobExecutor_17998] Initializing metadata\n2026-10-13 12:00:43,194 INFO  17998 [JobExecutor_17998] Initializing phase 0\n2026-10-13 12:00:43,196 INFO  17998 [JobExecutor_17998] Phase 0 initialized successfully.\n2026-10-13 12:00:43,196 INFO  17998 [WatchDog_17998] Job execution type: ETL_GRAPH\n2026-10-13 12:00:43,197 INFO  17998 [WatchDog_17998] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T47.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T47.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17998\nPROJECT=.\nROOT_RUN_ID=17998\nRUN_ID=17998\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 12:00:43,197 INFO  17998 [WatchDog_17998] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 12:00:43,198 INFO  17998 [WatchDog_17998] Starting up all nodes in phase [0]\n2026-10-13 12:00:43,198 INFO  17998 [WatchDog_17998] Successfully started all nodes in phase!\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Time: 13/10/2026 12:00:43, JVM heap used: 111 MB\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] ---------------------------------------------------------------------------------\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]  (alloc:0MB, cpu:0%)            Out:0              8          1    4000      916\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]  (alloc:0MB, cpu:50%)            In:0              8          1    4000      916\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]                                 Out:0              8          1    4000      772\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Test                     Test                                        FINISHED_OK\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]  (alloc:0MB, cpu:0%)             In:0              8          1    4000      772\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]                                 Out:0              8          1    4000      591\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]  (alloc:0MB, cpu:50%)            In:0              8          1    4000      591\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]                                 Out:0              8          1    4000      736\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998]  (alloc:0MB, cpu:50%)            In:0              8          1    4000      736\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] ---------------------------------** End of Log **--------------------------------\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] WatchDog finished - total execution time: 0 sec\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] 0                 FINISHED_OK                        0               111\n2026-10-13 12:00:43,201 INFO  17998 [WatchDog_17998] ------------------------------** End of Summary **---------------------------\n2026-10-13 12:00:43,202 INFO  17998 [JobFinalizer_17998] Job finished: MiscExamples/suite_v5/graph/T47.grf\n\t Run ID: \t\t17998\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t18 ms\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T47_out_0.csv"
+    },
+    "payload": {
+      "text": "\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-0\"|\"__NULL__\"|\"1\"|\"true\"|\"Unnamed\"|\"__NULL__\"|\"-2.50\"|\"1970-01-01 12:00:00.000\"|\"AG17\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"P1\"|\"HOLD\"|\"UNKNOWN_MODE;BAD_OVERRIDE\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-1\"|\"__NULL__\"|\"2\"|\"__NULL__\"|\"N\"|\"\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"UNASSIGNED\"|\"MANUAL\"|\"\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-2\"|\"__NULL__\"|\"3\"|\"false\"|\"A\"|\"x@y\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"P1\"|\"ANNUAL\"|\"\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-3\"|\"__NULL__\"|\"4\"|\"false\"|\"Unnamed\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"P2\"|\"MONTHLY\"|\"UNKNOWN_MODE\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-4\"|\"__NULL__\"|\"5\"|\"false\"|\"Unnamed\"|\"\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"P3\"|\"MONTHLY\"|\"BAD_OVERRIDE\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-5\"|\"__NULL__\"|\"6\"|\"true\"|\"B\"|\"b@c\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"P4\"|\"HOLD\"|\"\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-6\"|\"__NULL__\"|\"7\"|\"false\"|\"C\"|\"\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"P5\"|\"ANNUAL\"|\"\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-7\"|\"__NULL__\"|\"8\"|\"__NULL__\"|\"Z\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"cs\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"P1\"|\"MONTHLY\"|\"\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-0\"|\"__NULL__\"|\"1\"|\"true\"|\"Unnamed\"|\"__NULL__\"|\"-2.50\"|\"1970-01-01 12:00:00.000\"|\"AG17\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"P1\"|\"HOLD\"|\"UNKNOWN_MODE;BAD_OVERRIDE\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-1\"|\"__NULL__\"|\"2\"|\"__NULL__\"|\"N\"|\"\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"UNASSIGNED\"|\"MANUAL\"|\"\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-2\"|\"__NULL__\"|\"3\"|\"false\"|\"A\"|\"x@y\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"P1\"|\"ANNUAL\"|\"\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-3\"|\"__NULL__\"|\"4\"|\"false\"|\"Unnamed\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"P2\"|\"MONTHLY\"|\"UNKNOWN_MODE\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-4\"|\"__NULL__\"|\"5\"|\"false\"|\"Unnamed\"|\"\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"P3\"|\"MONTHLY\"|\"BAD_OVERRIDE\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-5\"|\"__NULL__\"|\"6\"|\"true\"|\"B\"|\"b@c\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"P4\"|\"HOLD\"|\"\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-6\"|\"__NULL__\"|\"7\"|\"false\"|\"C\"|\"\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"P5\"|\"ANNUAL\"|\"\"\n\"batch-policy_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-7\"|\"__NULL__\"|\"8\"|\"__NULL__\"|\"Z\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"cs\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"P1\"|\"MONTHLY\"|\"\"\n"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

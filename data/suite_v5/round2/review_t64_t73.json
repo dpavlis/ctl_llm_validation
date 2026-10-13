@@ -1,0 +1,1011 @@
+{
+  "reviewer": "independent author of T44-T53",
+  "scope": "T64-T73 round2",
+  "compiler_and_runtime_status": "Root compiles and runs after review; no compilation/runtime pass is asserted here.",
+  "tests": [
+    {
+      "test_id": "T64",
+      "reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+      "prompt_sha256": "63a1ad5543387f719fb63cdce66d48bd607d4e04da2de410922328aa86fd66a4",
+      "rubric_decidability": [
+        {
+          "id": "T64.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T64.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T64.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T64.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T64.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T64.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T64.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T64.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        }
+      ],
+      "forbidden_decidability": "Checks prohibit actual violations of stated data/output obligations; no style-only penalties found.",
+      "independent_derivation": "Replace per-parent variant state. Absent/blank payload or absent/null/empty lines emits no rows. Each child keeps raw SKU and original ordinal. Explicitly reset note/amount to null, distinguish empty notes from missing, validate signed decimal digit/scale limits before parsing, and visibly fail bad present amount. Copy current parent fields; never cache by business key.",
+      "fixture_review": {
+        "input_counts": [
+          8
+        ],
+        "expected_counts": {
+          "0": 4
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Main acceptance oracles agree with independent derivation; T72 all eight digests independently recomputed.",
+        "probes": [
+          "failure_probes"
+        ]
+      },
+      "ctl2_fact_review": "Used operators, conversions, variants, null checks, rounding, date and hash functions match resources/ctl2-basics.md. Normalizer, Partition and Generator entry contracts match retrieved guides. Stateful declared scalars require explicit seen flags; error callbacks log before recovery. Resource bindings and runtime behavior remain root compiler/graph gates.",
+      "findings": [
+        {
+          "severity": "error",
+          "location": "reference child amount parsing / clause5",
+          "finding": "str2decimal(text) validates neither the nine integer digit cap nor the two fractional digit cap. Text 1.234 or 1234567890 is parseable but outside the specified valid amount domain, so reference may accept/round it instead of failing visibly.",
+          "action": "Require full trimmed signed-decimal grammar before conversion and add expected-failure probes for integer overflow and fractional overprecision.",
+          "final_status": "resolved"
+        },
+        {
+          "severity": "warning",
+          "location": "fixture optional child fields",
+          "finding": "Main fixture covers null amount but not missing amount; covers null/details{} but not a valid emitted child with missing details or explicit null note.",
+          "action": "Add children spanning missing amount, missing details and explicit null note without changing output count assumptions.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ]
+    },
+    {
+      "test_id": "T65",
+      "reference_sha256": "8e8df2059233da4eb2f2f064e6d08fc8c6c4a78b844b8ccba37c3732fb961756",
+      "prompt_sha256": "2f8a42b4bec57a808f50a1873a4af365e3e0cca76311143b590c69b9c8ab891f",
+      "rubric_decidability": [
+        {
+          "id": "T65.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T65.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T65.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T65.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T65.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T65.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T65.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T65.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        }
+      ],
+      "forbidden_decidability": "Checks prohibit actual violations of stated data/output obligations; no style-only penalties found.",
+      "independent_derivation": "Replace channels and sorted key list per envelope. Sort exact ASCII keys and keep positions before suppression. Explicit false skips before value parsing. Missing/null/trimmed-empty reading yields MISSING, valid bounded grammar yields GOOD, other nonblank yields BAD_TEXT with null amount. Emit parent context once per enabled entry in sorted order.",
+      "fixture_review": {
+        "input_counts": [
+          8
+        ],
+        "expected_counts": {
+          "0": 7
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Main acceptance oracles agree with independent derivation; T72 all eight digests independently recomputed.",
+        "probes": []
+      },
+      "ctl2_fact_review": "Used operators, conversions, variants, null checks, rounding, date and hash functions match resources/ctl2-basics.md. Normalizer, Partition and Generator entry contracts match retrieved guides. Stateful declared scalars require explicit seen flags; error callbacks log before recovery. Resource bindings and runtime behavior remain root compiler/graph gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "fixture reading missing forms",
+          "finding": "Main fixture tests missing value and empty string but no explicit null value or whitespace-only value.",
+          "action": "Add these channels to exercise all stated missing-value forms.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ]
+    },
+    {
+      "test_id": "T66",
+      "reference_sha256": "76d9ebc3af12cbbd31a20b255c1f51c3e1f5bc0f24b331296461aac7464dc3d4",
+      "prompt_sha256": "6f1e68515c8c8ed9cfd8f1798540f89b9a1aed145194540deffff060814a00e1",
+      "rubric_decidability": [
+        {
+          "id": "T66.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T66.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T66.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T66.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T66.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T66.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T66.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T66.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        }
+      ],
+      "forbidden_decidability": "Checks prohibit actual violations of stated data/output obligations; no style-only penalties found.",
+      "independent_derivation": "Priority tree: exact REVERSED then hold, neither reads lower text. Validate known invoice shape/date, classify old dates before inspecting amount, then validate/default amount and classify >=10000 or positive urgent. Return exactly one unchanged Partition destination; logged unexpected errors route defect5.",
+      "fixture_review": {
+        "input_counts": [
+          12
+        ],
+        "expected_counts": {
+          "0": 1,
+          "1": 1,
+          "2": 1,
+          "3": 2,
+          "4": 3,
+          "5": 4
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Main acceptance oracles agree with independent derivation; T72 all eight digests independently recomputed.",
+        "probes": []
+      },
+      "ctl2_fact_review": "Used operators, conversions, variants, null checks, rounding, date and hash functions match resources/ctl2-basics.md. Normalizer, Partition and Generator entry contracts match retrieved guides. Stateful declared scalars require explicit seen flags; error callbacks log before recovery. Resource bindings and runtime behavior remain root compiler/graph gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "fixture duplicate identifiers",
+          "finding": "All payment_key values are unique although duplicate retention is an explicit clause.",
+          "action": "Reuse one payment_key on records with different priority outcomes.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ]
+    },
+    {
+      "test_id": "T67",
+      "reference_sha256": "2e3b0ee9116fe093ad8f503bf5031fc56cefc326ebf2e4c2c695957058eb34eb",
+      "prompt_sha256": "150a1dc982568e8f90de577936a1268fc578ebbb3e3a1fceaaee99fa7455361d",
+      "rubric_decidability": [
+        {
+          "id": "T67.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T67.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T67.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T67.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T67.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T67.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T67.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T67.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        }
+      ],
+      "forbidden_decidability": "Checks prohibit actual violations of stated data/output obligations; no style-only penalties found.",
+      "independent_derivation": "Reset a seen-valid sentinel per exact contiguous trip. Disabled/faulty rows preserve baseline. Validate bounded temperature, decide gap before absolute/delta alarm against previous valid sample, then advance baseline for all valid outcomes. Preserve duplicate numbers and pass-through original rows.",
+      "fixture_review": {
+        "input_counts": [
+          12
+        ],
+        "expected_counts": {
+          "0": 1,
+          "1": 3,
+          "2": 1,
+          "3": 2,
+          "4": 5
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Main acceptance oracles agree with independent derivation; T72 all eight digests independently recomputed.",
+        "probes": []
+      },
+      "ctl2_fact_review": "Used operators, conversions, variants, null checks, rounding, date and hash functions match resources/ctl2-basics.md. Normalizer, Partition and Generator entry contracts match retrieved guides. Stateful declared scalars require explicit seen flags; error callbacks log before recovery. Resource bindings and runtime behavior remain root compiler/graph gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "reference sample-number subtraction",
+          "finding": "sample_no is unrestricted signed integer metadata. current-prev can overflow for an increasing sequence from a negative integer near minimum to a positive integer near maximum, hiding a gap. This is outside supplied fixture values but allowed by the stated numeric domain.",
+          "action": "Promote before subtraction (e.g. 1L*current-prev) or expressly bound sample numbers to nonnegative supported range.",
+          "final_status": "resolved"
+        },
+        {
+          "severity": "warning",
+          "location": "fixture faulty forms",
+          "finding": "Faulty text and empty input are covered; explicit null and whitespace-only temperature are absent.",
+          "action": "Add those faulty rows and verify they do not advance the baseline.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ]
+    },
+    {
+      "test_id": "T68",
+      "reference_sha256": "00b74ffd9e9147579a49bdaef9b367ed8517c5313c6f73bcb3aa3d308f055638",
+      "prompt_sha256": "34d79ba16c54da4b4ff5d1db571b0bd65f1916d1297acbe3ac0814ae3c2ac32a",
+      "rubric_decidability": [
+        {
+          "id": "T68.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T68.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T68.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T68.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T68.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T68.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T68.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T68.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        }
+      ],
+      "forbidden_decidability": "Checks prohibit actual violations of stated data/output obligations; no style-only penalties found.",
+      "independent_derivation": "Four pure functions implement canonical missing policy, final-only decimal surcharge rounding, null-before-zero budget ratio, UTC code/date token. Wrapper copies input then invokes functions with net amount for budget share. Independently derived first row: 1*(100-99.50)/100-.01=-.005 =>-.01, share=-1%.",
+      "fixture_review": {
+        "input_counts": [
+          8
+        ],
+        "expected_counts": {
+          "0": 8
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Main acceptance oracles agree with independent derivation; T72 all eight digests independently recomputed.",
+        "probes": []
+      },
+      "ctl2_fact_review": "Used operators, conversions, variants, null checks, rounding, date and hash functions match resources/ctl2-basics.md. Normalizer, Partition and Generator entry contracts match retrieved guides. Stateful declared scalars require explicit seen flags; error callbacks log before recovery. Resource bindings and runtime behavior remain root compiler/graph gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "fixture duplicates",
+          "finding": "Source identifiers are all unique; duplicate retention is stated.",
+          "action": "Repeat one identifier on a different monetary tuple.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ]
+    },
+    {
+      "test_id": "T69",
+      "reference_sha256": "8b97e0a09e2f14991e22e23185eae4e6c24db4135e0f7d3382b0a5071cce2f01",
+      "prompt_sha256": "8b429dab0bcfc0812b167c83aa755c8cdd1e0d91ea9ebe14dffb195ef5999c8d",
+      "rubric_decidability": [
+        {
+          "id": "T69.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T69.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T69.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T69.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T69.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T69.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T69.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T69.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        }
+      ],
+      "forbidden_decidability": "Checks prohibit actual violations of stated data/output obligations; no style-only penalties found.",
+      "independent_derivation": "One grammar defines numeric present versus absent/malformed. Delta requires two valid readings. NEW_BAD precedes OLD_BAD, which precedes MISSING, then classify sign of delta. Label uses normalized unit and locale-stable two-digit decimal text. Wrapper leaves all raw fields unchanged.",
+      "fixture_review": {
+        "input_counts": [
+          12
+        ],
+        "expected_counts": {
+          "0": 12
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Main acceptance oracles agree with independent derivation; T72 all eight digests independently recomputed.",
+        "probes": []
+      },
+      "ctl2_fact_review": "Used operators, conversions, variants, null checks, rounding, date and hash functions match resources/ctl2-basics.md. Normalizer, Partition and Generator entry contracts match retrieved guides. Stateful declared scalars require explicit seen flags; error callbacks log before recovery. Resource bindings and runtime behavior remain root compiler/graph gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "fixture duplicates",
+          "finding": "No duplicate source identifier or exact duplicate source row despite explicit duplicate-retention clause.",
+          "action": "Include a repeated source identifier with independent parse/status outcome.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ]
+    },
+    {
+      "test_id": "T70",
+      "reference_sha256": "c9e7584c5543b55d215c15c9ec1ee9d89d032e877b3a0069fe99956ed3f46a24",
+      "prompt_sha256": "c9fd380c4a19cab739b373bf097fadc7728a34f38fc4a23268a1ce85b0aa6072",
+      "rubric_decidability": [
+        {
+          "id": "T70.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T70.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T70.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T70.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T70.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T70.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T70.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T70.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        }
+      ],
+      "forbidden_decidability": "Checks prohibit actual violations of stated data/output obligations; no style-only penalties found.",
+      "independent_derivation": "Configured generator owns population. Global one-based n derives customer triple index and line number; alternate discount by customer index. Calculate rounded decimal line totals, reset subtotal before line1, use UTC daily dates, deterministic keys and explicit null context. Independent subtotals 89.00 then80.10 then42.50 for the incomplete third triple.",
+      "fixture_review": {
+        "input_counts": [],
+        "expected_counts": {
+          "0": 8
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Main acceptance oracles agree with independent derivation; T72 all eight digests independently recomputed.",
+        "probes": []
+      },
+      "ctl2_fact_review": "Used operators, conversions, variants, null checks, rounding, date and hash functions match resources/ctl2-basics.md. Normalizer, Partition and Generator entry contracts match retrieved guides. Stateful declared scalars require explicit seen flags; error callbacks log before recovery. Resource bindings and runtime behavior remain root compiler/graph gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "fixture row-count coverage",
+          "finding": "Only configured count8 is present; required zero-row and one-row run behavior is not represented by per-test parameter probes.",
+          "action": "Attach runs with FIXTURE_ROWS0 and1; root primitive probe alone confirms component semantics but not this full reference fixture.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ]
+    },
+    {
+      "test_id": "T71",
+      "reference_sha256": "2ede2e7b673deb9fb339f56c7823f5fa4650cadc9f9ca9cfd108b7d426e6ca27",
+      "prompt_sha256": "9d83542f433c1c526e6f32ae501f2f0bb2781288326412556fb2670246024a75",
+      "rubric_decidability": [
+        {
+          "id": "T71.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T71.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T71.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T71.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T71.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T71.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T71.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T71.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        }
+      ],
+      "forbidden_decidability": "Checks prohibit actual violations of stated data/output obligations; no style-only penalties found.",
+      "independent_derivation": "Begin storage5, spill0, step0. Per-step cyclic inflow and parity withdrawal have global step4 exception. Clip raw storage before carrying it; accumulate only positive overflow. Independent levels9,1,2,10,7,3,7,0,1 and cumulative spill0,0,0,2,2,2,2,2,2 match fixture.",
+      "fixture_review": {
+        "input_counts": [],
+        "expected_counts": {
+          "0": 9
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Main acceptance oracles agree with independent derivation; T72 all eight digests independently recomputed.",
+        "probes": []
+      },
+      "ctl2_fact_review": "Used operators, conversions, variants, null checks, rounding, date and hash functions match resources/ctl2-basics.md. Normalizer, Partition and Generator entry contracts match retrieved guides. Stateful declared scalars require explicit seen flags; error callbacks log before recovery. Resource bindings and runtime behavior remain root compiler/graph gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "fixture row-count coverage",
+          "finding": "Only configured count9 is present; zero requested steps is stated but not a per-test probe.",
+          "action": "Attach a STEPS0 expected empty output run.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ],
+      "final_rubric_sha256": "a9f20dcee072e59455ddcb45d6ae17b2ed0698a523ba91c95f9512c4f1956d46",
+      "final_specific_note": "Final prompt calls the intermediate an unclipped value/result rather than raw_level; it is not an output field. Reference and fixture are unchanged, and recurrence levels9,1,2,10,7,3,7,0,1 remain correct."
+    },
+    {
+      "test_id": "T72",
+      "reference_sha256": "324997f37f6b805ba389e90a5addb53234bef694659b546555de531a5044d66a",
+      "prompt_sha256": "5a672c6c78cff7ffd25c6f6d6c38504ef6aace565f8a252db57ee505411d37be",
+      "rubric_decidability": [
+        {
+          "id": "T72.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T72.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T72.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T72.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T72.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T72.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T72.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T72.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        }
+      ],
+      "forbidden_decidability": "Checks prohibit actual violations of stated data/output obligations; no style-only penalties found.",
+      "independent_derivation": "Copy raw receipt fields and current run parameters. Mark each exact selected tuple component with null/non-null markers, format decimal/date canonically, frame each marker/value by UTF16 length, concatenate and hash SHA256. Consume exactly one long sequence next per source row. Independently recomputed all eight fixture digests using specification framing and standard SHA256; all match.",
+      "fixture_review": {
+        "input_counts": [
+          8
+        ],
+        "expected_counts": {
+          "0": 8
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Main acceptance oracles agree with independent derivation; T72 all eight digests independently recomputed.",
+        "probes": []
+      },
+      "ctl2_fact_review": "Used operators, conversions, variants, null checks, rounding, date and hash functions match resources/ctl2-basics.md. Normalizer, Partition and Generator entry contracts match retrieved guides. Stateful declared scalars require explicit seen flags; error callbacks log before recovery. Resource bindings and runtime behavior remain root compiler/graph gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "fixture framed Unicode lengths",
+          "finding": "All selected tuple strings are ASCII, so UTF16 code-unit framing cannot be distinguished from code-point or byte-length framing.",
+          "action": "Add a supplementary Unicode character in a selected string and independently authored expected digest.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ]
+    },
+    {
+      "test_id": "T73",
+      "reference_sha256": "1cb954e9b2864dc220e9254fa44b14ea35b925bbcbb4ae4a6a5483f8d4935942",
+      "prompt_sha256": "bf1789702c45d70f01b5ef4475bfba9e37a7e62e25d3cd28005efaffbc2f65aa",
+      "rubric_decidability": [
+        {
+          "id": "T73.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T73.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T73.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T73.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T73.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T73.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T73.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T73.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        },
+        {
+          "id": "T73.9",
+          "clauses": [
+            9
+          ],
+          "status": "decidable from exact numbered business contract and metadata"
+        }
+      ],
+      "forbidden_decidability": "Checks prohibit actual violations of stated data/output obligations; no style-only penalties found.",
+      "independent_derivation": "Initialize accepted count,total,seen flag once/run. Bypass switch/request before any date parsing. Requested enabled rows validate exact timestamp then compare cutoff. Only accepted records advance index,total,previous accepted key. Null amount contributes0; remember empty key as valid history. Independent totals0,0,0,0,-2,-2,-2,-2,-2,1 and accepted indices1,2,3,4 match fixture.",
+      "fixture_review": {
+        "input_counts": [
+          10
+        ],
+        "expected_counts": {
+          "0": 10
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Main acceptance oracles agree with independent derivation; T72 all eight digests independently recomputed.",
+        "probes": [
+          "dictionary_probes"
+        ]
+      },
+      "ctl2_fact_review": "Used operators, conversions, variants, null checks, rounding, date and hash functions match resources/ctl2-basics.md. Normalizer, Partition and Generator entry contracts match retrieved guides. Stateful declared scalars require explicit seen flags; error callbacks log before recovery. Resource bindings and runtime behavior remain root compiler/graph gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "fixture duplicate retention",
+          "finding": "No duplicate claim_key occurs, although empty-key accepted history is correctly exercised.",
+          "action": "Repeat an accepted key on a subsequent row and retain separate index advancement.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ]
+    }
+  ],
+  "final_addendum": {
+    "review_scope": "Final frozen shard with common UTC date metadata",
+    "review_result": "No unresolved reference semantic errors identified on supplied fixtures. Live execution and compiler evidence are owned by root; advisory coverage/wording observations remain explicitly recorded.",
+    "tests": [
+      {
+        "test_id": "T64",
+        "final_reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+        "final_prompt_sha256": "63a1ad5543387f719fb63cdce66d48bd607d4e04da2de410922328aa86fd66a4",
+        "final_graph_spec_sha256": "3f1dce05a0eb7e4b23e8e554c70367eb91962dd46b32dda17f1444c512e67abb",
+        "resolution_checks": {
+          "amount_cap_and_exact_optional_minus_grammar": true
+        },
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": []
+      },
+      {
+        "test_id": "T65",
+        "final_reference_sha256": "8e8df2059233da4eb2f2f064e6d08fc8c6c4a78b844b8ccba37c3732fb961756",
+        "final_prompt_sha256": "1c6bb560dc1959ce22bc8bb382ee6efb5d0eb53ec9949918858343690f17421a",
+        "final_graph_spec_sha256": "80c22c52cde07f2a59ce290da6442e731a6443dacdfc9e12f18b0632a1870af2",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "round2b_prompt_edit": "2026-10-13 round 2b: prompt edited per the round-2 subagent reviews (trap hints removed, spec gaps closed; data/suite_v5/round2/fix_prompts_round2.py); reference unchanged and consistent with the stated behaviour per its recorded run."
+      },
+      {
+        "test_id": "T66",
+        "final_reference_sha256": "76d9ebc3af12cbbd31a20b255c1f51c3e1f5bc0f24b331296461aac7464dc3d4",
+        "final_prompt_sha256": "f2eaefbf21b3de362919d11fc7a483bfc057849ac81c34125dac837ad9462ab6",
+        "final_graph_spec_sha256": "e2c2d5e6333648ac9ff10fa1490a20df5caf3bb0be8e6f25c7b7efcfd67c4ab9",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "round2b_prompt_edit": "2026-10-13 round 2b: prompt edited per the round-2 subagent reviews (trap hints removed, spec gaps closed; data/suite_v5/round2/fix_prompts_round2.py); reference unchanged and consistent with the stated behaviour per its recorded run."
+      },
+      {
+        "test_id": "T67",
+        "final_reference_sha256": "2e3b0ee9116fe093ad8f503bf5031fc56cefc326ebf2e4c2c695957058eb34eb",
+        "final_prompt_sha256": "1b86ac35622b9ae8c605c3f99a50f22e4ec0d7f096902ce4cacc16cb479bb91e",
+        "final_graph_spec_sha256": "45b34f59a8297bf30a4bccc3bd0f8de57da674e7107460be73435eb08feafcf6",
+        "resolution_checks": {
+          "bounded_sample_number_domain": true
+        },
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "round2b_prompt_edit": "2026-10-13 round 2b: prompt edited per the round-2 subagent reviews (trap hints removed, spec gaps closed; data/suite_v5/round2/fix_prompts_round2.py); reference unchanged and consistent with the stated behaviour per its recorded run."
+      },
+      {
+        "test_id": "T68",
+        "final_reference_sha256": "00b74ffd9e9147579a49bdaef9b367ed8517c5313c6f73bcb3aa3d308f055638",
+        "final_prompt_sha256": "bd12e0d984b46d2cf6f84b7c5c2b53fbe0e152d639fe75f18407cfb3febbb636",
+        "final_graph_spec_sha256": "8bb672a00198175eca0a931bdacbab825c91777e9259648c0826aee8fd97f40c",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "round2b_prompt_edit": "2026-10-13 round 2b: prompt edited per the round-2 subagent reviews (trap hints removed, spec gaps closed; data/suite_v5/round2/fix_prompts_round2.py); reference unchanged and consistent with the stated behaviour per its recorded run."
+      },
+      {
+        "test_id": "T69",
+        "final_reference_sha256": "8b97e0a09e2f14991e22e23185eae4e6c24db4135e0f7d3382b0a5071cce2f01",
+        "final_prompt_sha256": "8b429dab0bcfc0812b167c83aa755c8cdd1e0d91ea9ebe14dffb195ef5999c8d",
+        "final_graph_spec_sha256": "64a7221c1b205e3eb0c79f3792fdc91cf4f464a273c01a8feee1ad057377e01d",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": []
+      },
+      {
+        "test_id": "T70",
+        "final_reference_sha256": "c9e7584c5543b55d215c15c9ec1ee9d89d032e877b3a0069fe99956ed3f46a24",
+        "final_prompt_sha256": "688f5a14c7a51632dee411499ea2e1b5cfe65af8d53f0b8f51f90b56982beade",
+        "final_graph_spec_sha256": "2bdf07b4659f160a6478dbaa94fed7503d1e6f51d0b354602e8a9fdbd97bc59a",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "round2b_prompt_edit": "2026-10-13 round 2b: prompt edited per the round-2 subagent reviews (trap hints removed, spec gaps closed; data/suite_v5/round2/fix_prompts_round2.py); reference unchanged and consistent with the stated behaviour per its recorded run."
+      },
+      {
+        "test_id": "T71",
+        "final_reference_sha256": "2ede2e7b673deb9fb339f56c7823f5fa4650cadc9f9ca9cfd108b7d426e6ca27",
+        "final_prompt_sha256": "9aef3ad2eb420d65ee5ea6a3a7c8d214ba622b9d7cf26a68bf2110b8a9598d2d",
+        "final_graph_spec_sha256": "09b869b1365d162830fa178b3af9f07ad064cc14a8127a5a674e8433cad746a2",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "final_rubric_sha256": "a9f20dcee072e59455ddcb45d6ae17b2ed0698a523ba91c95f9512c4f1956d46",
+        "authoritative_source": "data/suite_v5/generate_rw.json after finalization",
+        "round2b_prompt_edit": "2026-10-13 round 2b: prompt edited per the round-2 subagent reviews (trap hints removed, spec gaps closed; data/suite_v5/round2/fix_prompts_round2.py); reference unchanged and consistent with the stated behaviour per its recorded run."
+      },
+      {
+        "test_id": "T72",
+        "final_reference_sha256": "324997f37f6b805ba389e90a5addb53234bef694659b546555de531a5044d66a",
+        "final_prompt_sha256": "5a672c6c78cff7ffd25c6f6d6c38504ef6aace565f8a252db57ee505411d37be",
+        "final_graph_spec_sha256": "fadd49d477b26675dbcafd7940bf114991a8fd2b925a81355a28e1ff94ef4258",
+        "resolution_checks": {
+          "audit_parameter_name_matches_graph": true
+        },
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": []
+      },
+      {
+        "test_id": "T73",
+        "final_reference_sha256": "1cb954e9b2864dc220e9254fa44b14ea35b925bbcbb4ae4a6a5483f8d4935942",
+        "final_prompt_sha256": "779e8ad6ba9a6879934d52453af77d6b2366899876d860b5854c86acd17b1f7b",
+        "final_graph_spec_sha256": "7840a1553dcd01da33aaeaedb0dbf8a24747866dbd6417088e6337fe2aeda693",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "round2b_prompt_edit": "2026-10-13 round 2b: prompt edited per the round-2 subagent reviews (trap hints removed, spec gaps closed; data/suite_v5/round2/fix_prompts_round2.py); reference unchanged and consistent with the stated behaviour per its recorded run."
+      }
+    ],
+    "authoritative_hash_refresh": "T54/T63/T71 refreshed after root finalization; rubric hash records live nonnegative-return and harmless-helper correction."
+  }
+}

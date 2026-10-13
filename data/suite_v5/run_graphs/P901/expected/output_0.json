@@ -1,0 +1,82 @@
+[
+  {
+    "case_id": 1,
+    "raw_date": "2025-02-30",
+    "decimal_threw": true,
+    "decimal_null": false,
+    "is_date": false,
+    "parse_threw": true,
+    "parsed_date": null,
+    "unicode_length": 3
+  },
+  {
+    "case_id": 2,
+    "raw_date": "2025-1-1",
+    "decimal_threw": true,
+    "decimal_null": false,
+    "is_date": false,
+    "parse_threw": true,
+    "parsed_date": null,
+    "unicode_length": 3
+  },
+  {
+    "case_id": 3,
+    "raw_date": "2025-02-30",
+    "decimal_threw": true,
+    "decimal_null": false,
+    "is_date": false,
+    "parse_threw": true,
+    "parsed_date": null,
+    "unicode_length": 3
+  },
+  {
+    "case_id": 4,
+    "raw_date": "2025-1-1",
+    "decimal_threw": true,
+    "decimal_null": false,
+    "is_date": false,
+    "parse_threw": true,
+    "parsed_date": null,
+    "unicode_length": 3
+  },
+  {
+    "case_id": 5,
+    "raw_date": "2025-02-30",
+    "decimal_threw": true,
+    "decimal_null": false,
+    "is_date": false,
+    "parse_threw": true,
+    "parsed_date": null,
+    "unicode_length": 3
+  },
+  {
+    "case_id": 6,
+    "raw_date": "2025-1-1",
+    "decimal_threw": true,
+    "decimal_null": false,
+    "is_date": false,
+    "parse_threw": true,
+    "parsed_date": null,
+    "unicode_length": 3
+  },
+  {
+    "case_id": 7,
+    "raw_date": "2025-02-30",
+    "decimal_threw": true,
+    "decimal_null": false,
+    "is_date": false,
+    "parse_threw": true,
+    "parsed_date": null,
+    "unicode_length": 3
+  },
+  {
+    "case_id": 8,
+    "raw_date": "2025-1-1",
+    "decimal_threw": true,
+    "decimal_null": false,
+    "is_date": false,
+    "parse_threw": true,
+    "parsed_date": null,
+    "unicode_length": 3
+  }
+]

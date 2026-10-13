@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="P902" id="6101300902" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">P902 runtime contract probe
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="Out0">
+      <Record name="ZeroProbe" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="called" type="boolean" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="called" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Test" type="DATA_GENERATOR" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="recordsNumber">0</attr>
+      <attr name="generate">//#CTL2
+function integer generate(){raiseError("ZERO_GENERATOR_CALLED");}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.called=$in.0.called == null ? null : ($in.0.called ? "true" : "false");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/P902_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

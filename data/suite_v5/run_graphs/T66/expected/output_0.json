@@ -1,0 +1,23 @@
+[
+  {
+    "payment_key": "PAYMENT1",
+    "payment_tenant": "ACME",
+    "payment_file": "payment.csv",
+    "payment_row": 1,
+    "payment_received": "2026-01-01 00:00:00",
+    "payment_team": null,
+    "payment_market": "CZ",
+    "payment_currency": "EUR",
+    "payment_batch": "B1",
+    "payment_note": "",
+    "payment_trace": "X1",
+    "payment_unused_archive": "keep:1",
+    "status_cd": "REVERSED",
+    "hold_flag": false,
+    "amount_txt": "BAD",
+    "invoice_day_txt": "BAD",
+    "priority_cd": null,
+    "insured_value": null,
+    "due_at": "2026-01-01"
+  }
+]

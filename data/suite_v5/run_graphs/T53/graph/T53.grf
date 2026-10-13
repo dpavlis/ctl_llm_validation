@@ -1,0 +1,327 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T53" id="6101300053" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Contract snapshot reconciliation with duplicate matched pairs
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="Snapshot" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="contract_batch" type="string" nullable="false" />
+        <Field name="contract_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="contract_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="contract_unused" type="string" nullable="true" />
+        <Field name="contract_note" type="string" nullable="true" />
+        <Field name="contract_row" type="long" nullable="false" />
+        <Field name="contract_ref_no" type="string" nullable="false" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="annual_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="expires_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="customer_label" type="string" nullable="true" />
+        <Field name="sales_channel" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="contract_batch" type="string" nullable="false" />
+        <Field name="contract_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="contract_ledger" type="string" nullable="true" />
+        <Field name="contract_unused" type="string" nullable="true" />
+        <Field name="contract_note" type="string" nullable="true" />
+        <Field name="contract_row" type="string" nullable="false" />
+        <Field name="contract_ref_no" type="string" nullable="false" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="annual_value" type="string" nullable="true" />
+        <Field name="expires_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="customer_label" type="string" nullable="true" />
+        <Field name="sales_channel" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="In1">
+      <Record name="Snapshot" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="contract_batch" type="string" nullable="false" />
+        <Field name="contract_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="contract_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="contract_unused" type="string" nullable="true" />
+        <Field name="contract_note" type="string" nullable="true" />
+        <Field name="contract_row" type="long" nullable="false" />
+        <Field name="contract_ref_no" type="string" nullable="false" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="annual_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="expires_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="customer_label" type="string" nullable="true" />
+        <Field name="sales_channel" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn1">
+      <Record name="RawInput1" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="contract_batch" type="string" nullable="false" />
+        <Field name="contract_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="contract_ledger" type="string" nullable="true" />
+        <Field name="contract_unused" type="string" nullable="true" />
+        <Field name="contract_note" type="string" nullable="true" />
+        <Field name="contract_row" type="string" nullable="false" />
+        <Field name="contract_ref_no" type="string" nullable="false" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="annual_value" type="string" nullable="true" />
+        <Field name="expires_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="customer_label" type="string" nullable="true" />
+        <Field name="sales_channel" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="Snapshot" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="contract_batch" type="string" nullable="false" />
+        <Field name="contract_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="contract_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="contract_unused" type="string" nullable="true" />
+        <Field name="contract_note" type="string" nullable="true" />
+        <Field name="contract_row" type="long" nullable="false" />
+        <Field name="contract_ref_no" type="string" nullable="false" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="annual_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="expires_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="customer_label" type="string" nullable="true" />
+        <Field name="sales_channel" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="contract_batch" type="string" nullable="false" />
+        <Field name="contract_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="contract_ledger" type="string" nullable="true" />
+        <Field name="contract_unused" type="string" nullable="true" />
+        <Field name="contract_note" type="string" nullable="true" />
+        <Field name="contract_row" type="string" nullable="false" />
+        <Field name="contract_ref_no" type="string" nullable="false" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="annual_value" type="string" nullable="true" />
+        <Field name="expires_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="customer_label" type="string" nullable="true" />
+        <Field name="sales_channel" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out1">
+      <Record name="ContractDelta" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="contract_batch" type="string" nullable="false" />
+        <Field name="contract_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="contract_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="contract_unused" type="string" nullable="true" />
+        <Field name="contract_note" type="string" nullable="true" />
+        <Field name="contract_row" type="long" nullable="false" />
+        <Field name="contract_ref_no" type="string" nullable="false" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="annual_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="expires_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="customer_label" type="string" nullable="true" />
+        <Field name="sales_channel" type="string" nullable="true" />
+        <Field name="cdc_action" type="string" nullable="false" />
+        <Field name="changed_fields" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut1">
+      <Record name="RawOutput1" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="contract_batch" type="string" nullable="false" />
+        <Field name="contract_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="contract_ledger" type="string" nullable="true" />
+        <Field name="contract_unused" type="string" nullable="true" />
+        <Field name="contract_note" type="string" nullable="true" />
+        <Field name="contract_row" type="string" nullable="false" />
+        <Field name="contract_ref_no" type="string" nullable="false" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="annual_value" type="string" nullable="true" />
+        <Field name="expires_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="customer_label" type="string" nullable="true" />
+        <Field name="sales_channel" type="string" nullable="true" />
+        <Field name="cdc_action" type="string" nullable="false" />
+        <Field name="changed_fields" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out2">
+      <Record name="Snapshot" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="contract_batch" type="string" nullable="false" />
+        <Field name="contract_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="contract_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="contract_unused" type="string" nullable="true" />
+        <Field name="contract_note" type="string" nullable="true" />
+        <Field name="contract_row" type="long" nullable="false" />
+        <Field name="contract_ref_no" type="string" nullable="false" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="annual_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="expires_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="customer_label" type="string" nullable="true" />
+        <Field name="sales_channel" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut2">
+      <Record name="RawOutput2" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="contract_batch" type="string" nullable="false" />
+        <Field name="contract_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="contract_ledger" type="string" nullable="true" />
+        <Field name="contract_unused" type="string" nullable="true" />
+        <Field name="contract_note" type="string" nullable="true" />
+        <Field name="contract_row" type="string" nullable="false" />
+        <Field name="contract_ref_no" type="string" nullable="false" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="annual_value" type="string" nullable="true" />
+        <Field name="expires_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="customer_label" type="string" nullable="true" />
+        <Field name="sales_channel" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T53_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.contract_batch=$in.0.contract_batch;
+$out.0.contract_loaded=$in.0.contract_loaded == null ? null : str2date($in.0.contract_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.contract_ledger=$in.0.contract_ledger == null ? null : str2decimal($in.0.contract_ledger);
+$out.0.contract_unused=$in.0.contract_unused;
+$out.0.contract_note=$in.0.contract_note;
+$out.0.contract_row=$in.0.contract_row == null ? null : str2long($in.0.contract_row);
+$out.0.contract_ref_no=$in.0.contract_ref_no;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.annual_value=$in.0.annual_value == null ? null : str2decimal($in.0.annual_value);
+$out.0.expires_at=$in.0.expires_at == null ? null : str2date($in.0.expires_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.customer_label=$in.0.customer_label;
+$out.0.sales_channel=$in.0.sales_channel;
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Reader1" type="DATA_READER" enabled="enabled" guiName="Reader1" guiX="50" guiY="375">
+      <attr name="fileURL">suite_v5/data-in/T53_input_1.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode1" type="REFORMAT" enabled="enabled" guiName="Decode1" guiX="275" guiY="375">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.contract_batch=$in.0.contract_batch;
+$out.0.contract_loaded=$in.0.contract_loaded == null ? null : str2date($in.0.contract_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.contract_ledger=$in.0.contract_ledger == null ? null : str2decimal($in.0.contract_ledger);
+$out.0.contract_unused=$in.0.contract_unused;
+$out.0.contract_note=$in.0.contract_note;
+$out.0.contract_row=$in.0.contract_row == null ? null : str2long($in.0.contract_row);
+$out.0.contract_ref_no=$in.0.contract_ref_no;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.annual_value=$in.0.annual_value == null ? null : str2decimal($in.0.annual_value);
+$out.0.expires_at=$in.0.expires_at == null ? null : str2date($in.0.expires_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.customer_label=$in.0.customer_label;
+$out.0.sales_channel=$in.0.sales_channel;
+return OK;}</attr>
+    </Node>
+    <Edge id="Read1" fromNode="Reader1:0" toNode="Decode1:0" metadata="RawIn1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded1" fromNode="Decode1:0" toNode="Test:1" metadata="In1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="DATA_INTERSECTION" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="joinKey">$contract_ref_no=$contract_ref_no</attr>
+      <attr name="equalNULL">true</attr>
+      <attr name="keyDuplicates">true</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+function integer transform(){string[] changes=[];if($in.0.status_cd!=$in.1.status_cd)append(changes,"status_cd");if($in.0.annual_value!=$in.1.annual_value)append(changes,"annual_value");if($in.0.expires_at!=$in.1.expires_at)append(changes,"expires_at");$out.0.*=$in.1.*;$out.0.cdc_action=length(changes)&gt;0?"UPDATE":"UNCHANGED";$out.0.changed_fields=join(",",changes);return OK;}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.contract_batch=$in.0.contract_batch;
+$out.0.contract_loaded=$in.0.contract_loaded == null ? null : date2str($in.0.contract_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.contract_ledger=$in.0.contract_ledger == null ? null : num2str($in.0.contract_ledger,"0.00","en.US");
+$out.0.contract_unused=$in.0.contract_unused;
+$out.0.contract_note=$in.0.contract_note;
+$out.0.contract_row=$in.0.contract_row == null ? null : num2str($in.0.contract_row);
+$out.0.contract_ref_no=$in.0.contract_ref_no;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.annual_value=$in.0.annual_value == null ? null : num2str($in.0.annual_value,"0.00","en.US");
+$out.0.expires_at=$in.0.expires_at == null ? null : date2str($in.0.expires_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.customer_label=$in.0.customer_label;
+$out.0.sales_channel=$in.0.sales_channel;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T53_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode1" type="REFORMAT" enabled="enabled" guiName="Encode1" guiX="725" guiY="375">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.contract_batch=$in.0.contract_batch;
+$out.0.contract_loaded=$in.0.contract_loaded == null ? null : date2str($in.0.contract_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.contract_ledger=$in.0.contract_ledger == null ? null : num2str($in.0.contract_ledger,"0.00","en.US");
+$out.0.contract_unused=$in.0.contract_unused;
+$out.0.contract_note=$in.0.contract_note;
+$out.0.contract_row=$in.0.contract_row == null ? null : num2str($in.0.contract_row);
+$out.0.contract_ref_no=$in.0.contract_ref_no;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.annual_value=$in.0.annual_value == null ? null : num2str($in.0.annual_value,"0.00","en.US");
+$out.0.expires_at=$in.0.expires_at == null ? null : date2str($in.0.expires_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.customer_label=$in.0.customer_label;
+$out.0.sales_channel=$in.0.sales_channel;
+$out.0.cdc_action=$in.0.cdc_action;
+$out.0.changed_fields=$in.0.changed_fields;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer1" type="DATA_WRITER" enabled="enabled" guiName="Writer1" guiX="950" guiY="375">
+      <attr name="fileURL">suite_v5/data-out/T53_out_1.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result1" fromNode="Test:1" toNode="Encode1:0" metadata="Out1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written1" fromNode="Encode1:0" toNode="Writer1:0" metadata="RawOut1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode2" type="REFORMAT" enabled="enabled" guiName="Encode2" guiX="725" guiY="550">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.contract_batch=$in.0.contract_batch;
+$out.0.contract_loaded=$in.0.contract_loaded == null ? null : date2str($in.0.contract_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.contract_ledger=$in.0.contract_ledger == null ? null : num2str($in.0.contract_ledger,"0.00","en.US");
+$out.0.contract_unused=$in.0.contract_unused;
+$out.0.contract_note=$in.0.contract_note;
+$out.0.contract_row=$in.0.contract_row == null ? null : num2str($in.0.contract_row);
+$out.0.contract_ref_no=$in.0.contract_ref_no;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.annual_value=$in.0.annual_value == null ? null : num2str($in.0.annual_value,"0.00","en.US");
+$out.0.expires_at=$in.0.expires_at == null ? null : date2str($in.0.expires_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.customer_label=$in.0.customer_label;
+$out.0.sales_channel=$in.0.sales_channel;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer2" type="DATA_WRITER" enabled="enabled" guiName="Writer2" guiX="950" guiY="550">
+      <attr name="fileURL">suite_v5/data-out/T53_out_2.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result2" fromNode="Test:2" toNode="Encode2:0" metadata="Out2" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written2" fromNode="Encode2:0" toNode="Writer2:0" metadata="RawOut2" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

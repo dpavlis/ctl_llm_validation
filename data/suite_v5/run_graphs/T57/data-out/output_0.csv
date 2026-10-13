@@ -1,0 +1,8 @@
+"A"|"T1"|"feed.csv"|"1"|"2026-01-01 00:00:00.000"|"EUR"|""|"CZ"|"__NULL__"|"r1"|"old-1"|"__NULL__"|"__NULL__"|"5.00"|"false"|"INVALID"|"__NULL__"|"1"
+"A"|"T1"|"feed.csv"|"2"|"2026-01-01 00:00:00.000"|"EUR"|"__NULL__"|"CZ"|"__NULL__"|"r2"|"old-2"|"__NULL__"|"R"|"__NULL__"|"false"|"INELIGIBLE"|"__NULL__"|"2"
+"A"|"T1"|"feed.csv"|"3"|"2026-01-01 00:00:00.000"|"EUR"|""|"CZ"|"__NULL__"|"r3"|"old-3"|"__NULL__"|"R"|"10.00"|"false"|"DUPLICATE"|"__NULL__"|"3"
+"A"|"T1"|"feed.csv"|"4"|"2026-01-01 00:00:00.000"|"EUR"|"__NULL__"|"CZ"|"__NULL__"|"r4"|"old-4"|"__NULL__"|" R "|"2.00"|"false"|"WINNER"|" R "|"4"
+"A"|"T1"|"feed.csv"|"5"|"2026-01-01 00:00:00.000"|"EUR"|""|"CZ"|"__NULL__"|"r5"|"old-5"|"__NULL__"|"X"|"4.00"|"false"|"ELIGIBLE"|" R "|"5"
+"B"|"T1"|"feed.csv"|"6"|"2026-01-01 00:00:00.000"|"EUR"|"__NULL__"|"CZ"|"__NULL__"|"r6"|"old-6"|"__NULL__"|""|"7.00"|"false"|"INVALID"|"__NULL__"|"1"
+"B"|"T1"|"feed.csv"|"7"|"2026-01-01 00:00:00.000"|"EUR"|""|"CZ"|"__NULL__"|"r7"|"old-7"|"__NULL__"|"V"|"7.00"|"true"|"INELIGIBLE"|"__NULL__"|"2"
+"C"|"T1"|"feed.csv"|"8"|"2026-01-01 00:00:00.000"|"EUR"|"__NULL__"|"CZ"|"__NULL__"|"r8"|"old-8"|"__NULL__"|"BAD:DATE"|"1.00"|"false"|"WINNER"|"BAD:DATE"|"1"

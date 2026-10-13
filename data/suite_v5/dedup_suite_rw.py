@@ -18,7 +18,7 @@ def user(r):
  return ''
 def main():
  suite=D/'generate_rw.json';rows=json.loads(suite.read_text());missing=[];sources=[];prior=[]
- paths=[ROOT/'resources/ctl2_test_suite_v4.json']+sorted((ROOT/'ctl_lora_training/sft_training_data').glob('CTL_LoRAT_*.json'))+sorted((ROOT/'data/opcd').glob('hard_cases*.jsonl'))+[ROOT/'data/genbench/tasks.jsonl']
+ paths=[ROOT/'resources/ctl2_test_suite_v4.json']+sorted(set((ROOT/'ctl_lora_training/sft_training_data').glob('CTL_LoRAT_*.json')) | set((ROOT/'ctl_lora_training/sft_training_data').glob('CTL_LoRA_*.json')))+sorted((ROOT/'data/opcd').glob('hard_cases*.jsonl'))+[ROOT/'data/genbench/tasks.jsonl']
  for p in paths:
   if not p.exists():missing.append(str(p.relative_to(ROOT)));continue
   data=[json.loads(l) for l in p.read_text().splitlines() if l.strip()] if p.suffix=='.jsonl' else json.loads(p.read_text())

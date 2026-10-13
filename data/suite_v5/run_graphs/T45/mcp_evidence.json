@@ -1,0 +1,521 @@
+[
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in",
+      "filename": "T45_input_0.csv",
+      "content": "batch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-0|__NULL__|1|E0|17| G |y|2026-04-01|well|Irena|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|cs|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-1|__NULL__|2|E1|17| |Y|2026-04-15|WELL|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|cs|__NULL__|__NULL__||__NULL__\nbatch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-2||3|E2|18|__NULL__|Y|2026-04-30|WELL|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-3|__NULL__|4|E0|64|__NULL__|N|2026-04-10|SENIOR|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-4|__NULL__|5|E1|65|__NULL__| Y |2026-04-30|senior|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__||__NULL__\nbatch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-5|__NULL__|6|E2|1e2|__NULL__|__NULL__|2026-02-30|SENIOR|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-6|__NULL__|7|E0||__NULL__|Y|2026-4-1|WELL|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-7|__NULL__|8|E1|121|G|Y|2026-04-01 00:00:00|WELL|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-8|__NULL__|9|E2|0|__NULL__||2026-05-01|bad|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\n"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/data-in/T45_input_0.csv' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/data-in/T45_input_0.csv' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph",
+      "filename": "T45.grf",
+      "content": "<?xml version='1.0' encoding='utf-8'?>\n<Graph author=\"Codex\" name=\"T45\" id=\"6101300045\" nature=\"etlGraph\" revision=\"1.0\" guiVersion=\"7.5.0\">\n  <Global>\n    <GraphParameters>\n      <GraphParameterFile fileURL=\"workspace.prm\" />\n      <GraphParameter name=\"PROJECT\" value=\".\" />\n    </GraphParameters>\n    <RichTextNote id=\"Note\" x=\"50\" y=\"25\" width=\"1200\" height=\"100\" backgroundColor=\"FAF6D6\" textColor=\"444444\" fontSize=\"medium\" folded=\"false\">\n      <attr name=\"text\">Clinic appointment enrollment gate\nAcceptance fixture exercises the business rules and preserves every source field for comparison.</attr>\n    </RichTextNote>\n    <Metadata id=\"In0\">\n      <Record name=\"InputT45\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"clinic_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"clinic_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"clinic_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"clinic_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"enrollment_id\" type=\"string\" nullable=\"false\" />\n        <Field name=\"age_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"guardian_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"consent_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"visit_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"program_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_patient_name\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_insurer_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_practice_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_residence_city\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_postcode\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_language_pref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_emergency_contact\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_access_needs\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_referral_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_registration_channel\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawIn0\">\n      <Record name=\"RawInput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"clinic_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"clinic_loaded\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"clinic_ledger\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"enrollment_id\" type=\"string\" nullable=\"false\" />\n        <Field name=\"age_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"guardian_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"consent_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"visit_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"program_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_patient_name\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_insurer_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_practice_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_residence_city\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_postcode\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_language_pref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_emergency_contact\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_access_needs\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_referral_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_registration_channel\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out0\">\n      <Record name=\"Appointments\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"clinic_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"clinic_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"clinic_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"clinic_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"enrollment_id\" type=\"string\" nullable=\"false\" />\n        <Field name=\"age_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"guardian_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"consent_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"visit_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"program_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_patient_name\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_insurer_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_practice_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_residence_city\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_postcode\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_language_pref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_emergency_contact\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_access_needs\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_referral_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_registration_channel\" type=\"string\" nullable=\"true\" />\n        <Field name=\"patient_age\" type=\"integer\" nullable=\"false\" />\n        <Field name=\"appointment_day\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"normalized_program\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut0\">\n      <Record name=\"RawOutput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"clinic_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"clinic_loaded\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"clinic_ledger\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"enrollment_id\" type=\"string\" nullable=\"false\" />\n        <Field name=\"age_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"guardian_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"consent_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"visit_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"program_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_patient_name\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_insurer_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_practice_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_residence_city\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_postcode\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_language_pref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_emergency_contact\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_access_needs\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_referral_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_registration_channel\" type=\"string\" nullable=\"true\" />\n        <Field name=\"patient_age\" type=\"string\" nullable=\"false\" />\n        <Field name=\"appointment_day\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"normalized_program\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out1\">\n      <Record name=\"Corrections\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"clinic_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"clinic_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"clinic_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"clinic_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"enrollment_id\" type=\"string\" nullable=\"false\" />\n        <Field name=\"age_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"guardian_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"consent_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"visit_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"program_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_patient_name\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_insurer_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_practice_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_residence_city\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_postcode\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_language_pref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_emergency_contact\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_access_needs\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_referral_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_registration_channel\" type=\"string\" nullable=\"true\" />\n        <Field name=\"correction_codes\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut1\">\n      <Record name=\"RawOutput1\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"clinic_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"clinic_loaded\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"clinic_ledger\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"enrollment_id\" type=\"string\" nullable=\"false\" />\n        <Field name=\"age_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"guardian_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"consent_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"visit_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"program_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_patient_name\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_insurer_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_practice_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_residence_city\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_postcode\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_language_pref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_emergency_contact\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_access_needs\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_referral_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"clinic_registration_channel\" type=\"string\" nullable=\"true\" />\n        <Field name=\"correction_codes\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n  </Global>\n  <Phase number=\"0\">\n    <Node id=\"Reader0\" type=\"DATA_READER\" enabled=\"enabled\" guiName=\"Reader0\" guiX=\"50\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-in/T45_input_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"dataPolicy\">strict</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"parser\">org.jetel.data.parser.DataParser</attr>\n    </Node>\n    <Node id=\"Decode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Decode0\" guiX=\"275\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.clinic_batch=$in.0.clinic_batch;\n$out.0.clinic_loaded=$in.0.clinic_loaded == null ? null : str2date($in.0.clinic_loaded,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\n$out.0.clinic_ledger=$in.0.clinic_ledger == null ? null : str2decimal($in.0.clinic_ledger);\n$out.0.clinic_unused=$in.0.clinic_unused;\n$out.0.clinic_note=$in.0.clinic_note;\n$out.0.clinic_row=$in.0.clinic_row == null ? null : str2long($in.0.clinic_row);\n$out.0.enrollment_id=$in.0.enrollment_id;\n$out.0.age_txt=$in.0.age_txt;\n$out.0.guardian_id=$in.0.guardian_id;\n$out.0.consent_txt=$in.0.consent_txt;\n$out.0.visit_day_txt=$in.0.visit_day_txt;\n$out.0.program_txt=$in.0.program_txt;\n$out.0.clinic_patient_name=$in.0.clinic_patient_name;\n$out.0.clinic_insurer_ref=$in.0.clinic_insurer_ref;\n$out.0.clinic_practice_ref=$in.0.clinic_practice_ref;\n$out.0.clinic_contact_phone=$in.0.clinic_contact_phone;\n$out.0.clinic_residence_city=$in.0.clinic_residence_city;\n$out.0.clinic_postcode=$in.0.clinic_postcode;\n$out.0.clinic_language_pref=$in.0.clinic_language_pref;\n$out.0.clinic_emergency_contact=$in.0.clinic_emergency_contact;\n$out.0.clinic_access_needs=$in.0.clinic_access_needs;\n$out.0.clinic_referral_note=$in.0.clinic_referral_note;\n$out.0.clinic_registration_channel=$in.0.clinic_registration_channel;\nreturn OK;}</attr>\n    </Node>\n    <Edge id=\"Read0\" fromNode=\"Reader0:0\" toNode=\"Decode0:0\" metadata=\"RawIn0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Decoded0\" fromNode=\"Decode0:0\" toNode=\"Test:0\" metadata=\"In0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Test\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Test\" guiX=\"500\" guiY=\"200\">\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){string[] e=[];string a=trim(nvl($in.0.age_txt,\"\"));boolean ageOK=a ~= \"[0-9]{1,3}\";integer age=0;if(ageOK){age=str2integer(a);ageOK=age&lt;=120;}if(!ageOK)append(e,\"AGE\");if(ageOK&amp;&amp;age&lt;18&amp;&amp;trim(nvl($in.0.guardian_id,\"\"))==\"\")append(e,\"GUARDIAN\");if(upperCase(trim(nvl($in.0.consent_txt,\"\")))!=\"Y\")append(e,\"CONSENT\");string d=nvl($in.0.visit_day_txt,\"\");boolean dayOK=d ~= \"[0-9]{4}-[0-9]{2}-[0-9]{2}\";date appointmentDate=1970-01-01;if(dayOK){dayOK=isDate(d,\"yyyy-MM-dd\",\"en.US\",\"UTC\",true);if(dayOK){appointmentDate=str2date(d,\"yyyy-MM-dd\",\"en.US\",\"UTC\",true);dayOK=appointmentDate&gt;=createDate(2026,4,1,\"UTC\")&amp;&amp;appointmentDate&lt;=createDate(2026,4,30,\"UTC\");}}if(!dayOK)append(e,\"VISIT\");string p=upperCase(trim(nvl($in.0.program_txt,\"\")));if(!(p==\"WELL\"||(p==\"SENIOR\"&amp;&amp;ageOK&amp;&amp;age&gt;=65)))append(e,\"PROGRAM\");if(length(e)&gt;0){$out.1.*=$in.0.*;$out.1.correction_codes=join(\",\",e);return 1;}$out.0.*=$in.0.*;$out.0.patient_age=age;$out.0.appointment_day=appointmentDate;$out.0.normalized_program=p;return 0;}</attr>\n    </Node>\n    <Node id=\"Encode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode0\" guiX=\"725\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.clinic_batch=$in.0.clinic_batch;\n$out.0.clinic_loaded=$in.0.clinic_loaded == null ? null : date2str($in.0.clinic_loaded,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.clinic_ledger=$in.0.clinic_ledger == null ? null : num2str($in.0.clinic_ledger,\"0.00\",\"en.US\");\n$out.0.clinic_unused=$in.0.clinic_unused;\n$out.0.clinic_note=$in.0.clinic_note;\n$out.0.clinic_row=$in.0.clinic_row == null ? null : num2str($in.0.clinic_row);\n$out.0.enrollment_id=$in.0.enrollment_id;\n$out.0.age_txt=$in.0.age_txt;\n$out.0.guardian_id=$in.0.guardian_id;\n$out.0.consent_txt=$in.0.consent_txt;\n$out.0.visit_day_txt=$in.0.visit_day_txt;\n$out.0.program_txt=$in.0.program_txt;\n$out.0.clinic_patient_name=$in.0.clinic_patient_name;\n$out.0.clinic_insurer_ref=$in.0.clinic_insurer_ref;\n$out.0.clinic_practice_ref=$in.0.clinic_practice_ref;\n$out.0.clinic_contact_phone=$in.0.clinic_contact_phone;\n$out.0.clinic_residence_city=$in.0.clinic_residence_city;\n$out.0.clinic_postcode=$in.0.clinic_postcode;\n$out.0.clinic_language_pref=$in.0.clinic_language_pref;\n$out.0.clinic_emergency_contact=$in.0.clinic_emergency_contact;\n$out.0.clinic_access_needs=$in.0.clinic_access_needs;\n$out.0.clinic_referral_note=$in.0.clinic_referral_note;\n$out.0.clinic_registration_channel=$in.0.clinic_registration_channel;\n$out.0.patient_age=$in.0.patient_age == null ? null : num2str($in.0.patient_age);\n$out.0.appointment_day=$in.0.appointment_day == null ? null : date2str($in.0.appointment_day,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.normalized_program=$in.0.normalized_program;\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer0\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer0\" guiX=\"950\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-out/T45_out_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result0\" fromNode=\"Test:0\" toNode=\"Encode0:0\" metadata=\"Out0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written0\" fromNode=\"Encode0:0\" toNode=\"Writer0:0\" metadata=\"RawOut0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Encode1\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode1\" guiX=\"725\" guiY=\"375\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.clinic_batch=$in.0.clinic_batch;\n$out.0.clinic_loaded=$in.0.clinic_loaded == null ? null : date2str($in.0.clinic_loaded,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.clinic_ledger=$in.0.clinic_ledger == null ? null : num2str($in.0.clinic_ledger,\"0.00\",\"en.US\");\n$out.0.clinic_unused=$in.0.clinic_unused;\n$out.0.clinic_note=$in.0.clinic_note;\n$out.0.clinic_row=$in.0.clinic_row == null ? null : num2str($in.0.clinic_row);\n$out.0.enrollment_id=$in.0.enrollment_id;\n$out.0.age_txt=$in.0.age_txt;\n$out.0.guardian_id=$in.0.guardian_id;\n$out.0.consent_txt=$in.0.consent_txt;\n$out.0.visit_day_txt=$in.0.visit_day_txt;\n$out.0.program_txt=$in.0.program_txt;\n$out.0.clinic_patient_name=$in.0.clinic_patient_name;\n$out.0.clinic_insurer_ref=$in.0.clinic_insurer_ref;\n$out.0.clinic_practice_ref=$in.0.clinic_practice_ref;\n$out.0.clinic_contact_phone=$in.0.clinic_contact_phone;\n$out.0.clinic_residence_city=$in.0.clinic_residence_city;\n$out.0.clinic_postcode=$in.0.clinic_postcode;\n$out.0.clinic_language_pref=$in.0.clinic_language_pref;\n$out.0.clinic_emergency_contact=$in.0.clinic_emergency_contact;\n$out.0.clinic_access_needs=$in.0.clinic_access_needs;\n$out.0.clinic_referral_note=$in.0.clinic_referral_note;\n$out.0.clinic_registration_channel=$in.0.clinic_registration_channel;\n$out.0.correction_codes=$in.0.correction_codes;\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer1\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer1\" guiX=\"950\" guiY=\"375\">\n      <attr name=\"fileURL\">suite_v5/data-out/T45_out_1.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result1\" fromNode=\"Test:1\" toNode=\"Encode1:0\" metadata=\"Out1\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written1\" fromNode=\"Encode1:0\" toNode=\"Writer1:0\" metadata=\"RawOut1\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n  </Phase>\n</Graph>"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/graph/T45.grf' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/graph/T45.grf' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_validate",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T45.grf",
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"timedOut\":false,\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "timedOut": false,
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_run",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T45.grf",
+      "params": {}
+    },
+    "payload": {
+      "runId": 17996,
+      "message": "Job started. runId: 17996"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17996,\"message\":\"Job started. runId: 17996\"}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17996,
+        "message": "Job started. runId: 17996"
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_await",
+    "arguments": {
+      "runId": 17996,
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "runId": 17996,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T45.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T12:00:33.028+02:00",
+      "startTime": "2026-10-13T12:00:33.028+02:00",
+      "stopTime": "2026-10-13T12:00:33.046+02:00",
+      "durationMs": 18
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17996,\"sandboxCode\":\"MiscExamples\",\"jobFile\":\"suite_v5/graph/T45.grf\",\"jobType\":\"ETL_GRAPH\",\"status\":\"FINISHED_OK\",\"submitTime\":\"2026-10-13T12:00:33.028+02:00\",\"startTime\":\"2026-10-13T12:00:33.028+02:00\",\"stopTime\":\"2026-10-13T12:00:33.046+02:00\",\"durationMs\":18}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17996,
+        "sandboxCode": "MiscExamples",
+        "jobFile": "suite_v5/graph/T45.grf",
+        "jobType": "ETL_GRAPH",
+        "status": "FINISHED_OK",
+        "submitTime": "2026-10-13T12:00:33.028+02:00",
+        "startTime": "2026-10-13T12:00:33.028+02:00",
+        "stopTime": "2026-10-13T12:00:33.046+02:00",
+        "durationMs": 18
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_tracking",
+    "arguments": {
+      "runId": 17996,
+      "detailed": true
+    },
+    "payload": {
+      "run_id": "17996",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.005,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.003,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 9,
+                  "bytes": 1589
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 9,
+                  "bytes": 1589
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 9,
+                  "bytes": 1256
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 9,
+                  "bytes": 1256
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 497
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 1,
+                  "records": 6,
+                  "bytes": 1024
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 497
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 728
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 728
+                }
+              ]
+            },
+            {
+              "node_id": "Encode1",
+              "node_name": "Encode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 6,
+                  "bytes": 1024
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 6,
+                  "bytes": 1246
+                }
+              ]
+            },
+            {
+              "node_id": "Writer1",
+              "node_name": "Writer1",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 6,
+                  "bytes": 1246
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 7,
+        "port_count": 12,
+        "total_records": 72,
+        "total_bytes": 12680
+      }
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"run_id\":\"17996\",\"status\":\"FINISHED_OK\",\"exec_seconds\":0.005,\"phases\":[{\"phase_number\":0,\"exec_seconds\":0.003,\"nodes\":[{\"node_id\":\"Reader0\",\"node_name\":\"Reader0\",\"node_type\":\"DATA_READER\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":9,\"bytes\":1589}]},{\"node_id\":\"Decode0\",\"node_name\":\"Decode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":9,\"bytes\":1589},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":9,\"bytes\":1256}]},{\"node_id\":\"Test\",\"node_name\":\"Test\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":9,\"bytes\":1256},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":3,\"bytes\":497},{\"port_type\":\"OUTPUT\",\"index\":1,\"records\":6,\"bytes\":1024}]},{\"node_id\":\"Encode0\",\"node_name\":\"Encode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":3,\"bytes\":497},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":3,\"bytes\":728}]},{\"node_id\":\"Writer0\",\"node_name\":\"Writer0\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":3,\"bytes\":728}]},{\"node_id\":\"Encode1\",\"node_name\":\"Encode1\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":6,\"bytes\":1024},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":6,\"bytes\":1246}]},{\"node_id\":\"Writer1\",\"node_name\":\"Writer1\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":6,\"bytes\":1246}]}]}],\"summary\":{\"phase_count\":1,\"node_count\":7,\"port_count\":12,\"total_records\":72,\"total_bytes\":12680}}"
+        }
+      ],
+      "structuredContent": {
+        "run_id": "17996",
+        "status": "FINISHED_OK",
+        "exec_seconds": 0.005,
+        "phases": [
+          {
+            "phase_number": 0,
+            "exec_seconds": 0.003,
+            "nodes": [
+              {
+                "node_id": "Reader0",
+                "node_name": "Reader0",
+                "node_type": "DATA_READER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 9,
+                    "bytes": 1589
+                  }
+                ]
+              },
+              {
+                "node_id": "Decode0",
+                "node_name": "Decode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 9,
+                    "bytes": 1589
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 9,
+                    "bytes": 1256
+                  }
+                ]
+              },
+              {
+                "node_id": "Test",
+                "node_name": "Test",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 9,
+                    "bytes": 1256
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 497
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 1,
+                    "records": 6,
+                    "bytes": 1024
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode0",
+                "node_name": "Encode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 497
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 728
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer0",
+                "node_name": "Writer0",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 728
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode1",
+                "node_name": "Encode1",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 6,
+                    "bytes": 1024
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 6,
+                    "bytes": 1246
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer1",
+                "node_name": "Writer1",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 6,
+                    "bytes": 1246
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "phase_count": 1,
+          "node_count": 7,
+          "port_count": 12,
+          "total_records": 72,
+          "total_bytes": 12680
+        }
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_log",
+    "arguments": {
+      "runId": 17996
+    },
+    "payload": {
+      "text": "2026-10-13 12:00:33,029 INFO  17996 [boundedElastic-93] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 12:00:33,029 INFO  17996 [boundedElastic-93] Running with CloverDX version 0.0.0.devel\n2026-10-13 12:00:33,029 INFO  17996 [boundedElastic-93] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 12:00:33,032 INFO  17996 [JobStarter_17996] Starting job: MiscExamples/suite_v5/graph/T45.grf\n\t Run ID: \t\t17996\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 12:00:33,035 INFO  17996 [JobExecutor_17996] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 12:00:33,038 INFO  17996 [JobExecutor_17996] Initializing metadata\n2026-10-13 12:00:33,038 INFO  17996 [JobExecutor_17996] Initializing phase 0\n2026-10-13 12:00:33,040 INFO  17996 [JobExecutor_17996] Phase 0 initialized successfully.\n2026-10-13 12:00:33,040 INFO  17996 [WatchDog_17996] Job execution type: ETL_GRAPH\n2026-10-13 12:00:33,040 INFO  17996 [WatchDog_17996] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T45.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T45.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17996\nPROJECT=.\nROOT_RUN_ID=17996\nRUN_ID=17996\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 12:00:33,040 INFO  17996 [WatchDog_17996] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 12:00:33,041 INFO  17996 [WatchDog_17996] Starting up all nodes in phase [0]\n2026-10-13 12:00:33,042 INFO  17996 [WatchDog_17996] Successfully started all nodes in phase!\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Time: 13/10/2026 12:00:33, JVM heap used: 102 MB\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] ---------------------------------------------------------------------------------\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:0%)            Out:0              9          1    3000      517\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:0%)             In:0              9          1    3000      517\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]                                 Out:0              9          1    3000      408\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Test                     Test                                        FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:33%)            In:0              9          1    3000      408\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]                                 Out:0              3          0    1000      161\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]                                 Out:1              6          1    2000      333\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:0%)             In:0              3          0    1000      161\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]                                 Out:0              3          0    1000      236\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:33%)            In:0              3          0    1000      236\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Encode1                  Encode1                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:0%)             In:0              6          1    2000      333\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]                                 Out:0              6          1    2000      405\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Writer1                  Writer1                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:0%)             In:0              6          1    2000      405\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] ---------------------------------** End of Log **--------------------------------\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] WatchDog finished - total execution time: 0 sec\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] 0                 FINISHED_OK                        0               102\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] ------------------------------** End of Summary **---------------------------\n2026-10-13 12:00:33,046 INFO  17996 [JobFinalizer_17996] Job finished: MiscExamples/suite_v5/graph/T45.grf\n\t Run ID: \t\t17996\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t18 ms\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "2026-10-13 12:00:33,029 INFO  17996 [boundedElastic-93] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 12:00:33,029 INFO  17996 [boundedElastic-93] Running with CloverDX version 0.0.0.devel\n2026-10-13 12:00:33,029 INFO  17996 [boundedElastic-93] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 12:00:33,032 INFO  17996 [JobStarter_17996] Starting job: MiscExamples/suite_v5/graph/T45.grf\n\t Run ID: \t\t17996\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 12:00:33,035 INFO  17996 [JobExecutor_17996] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 12:00:33,038 INFO  17996 [JobExecutor_17996] Initializing metadata\n2026-10-13 12:00:33,038 INFO  17996 [JobExecutor_17996] Initializing phase 0\n2026-10-13 12:00:33,040 INFO  17996 [JobExecutor_17996] Phase 0 initialized successfully.\n2026-10-13 12:00:33,040 INFO  17996 [WatchDog_17996] Job execution type: ETL_GRAPH\n2026-10-13 12:00:33,040 INFO  17996 [WatchDog_17996] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T45.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T45.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17996\nPROJECT=.\nROOT_RUN_ID=17996\nRUN_ID=17996\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 12:00:33,040 INFO  17996 [WatchDog_17996] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 12:00:33,041 INFO  17996 [WatchDog_17996] Starting up all nodes in phase [0]\n2026-10-13 12:00:33,042 INFO  17996 [WatchDog_17996] Successfully started all nodes in phase!\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Time: 13/10/2026 12:00:33, JVM heap used: 102 MB\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] ---------------------------------------------------------------------------------\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:0%)            Out:0              9          1    3000      517\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:0%)             In:0              9          1    3000      517\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]                                 Out:0              9          1    3000      408\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Test                     Test                                        FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:33%)            In:0              9          1    3000      408\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]                                 Out:0              3          0    1000      161\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]                                 Out:1              6          1    2000      333\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:0%)             In:0              3          0    1000      161\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]                                 Out:0              3          0    1000      236\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:33%)            In:0              3          0    1000      236\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Encode1                  Encode1                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:0%)             In:0              6          1    2000      333\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]                                 Out:0              6          1    2000      405\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Writer1                  Writer1                                     FINISHED_OK\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996]  (alloc:0MB, cpu:0%)             In:0              6          1    2000      405\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] ---------------------------------** End of Log **--------------------------------\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] WatchDog finished - total execution time: 0 sec\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] 0                 FINISHED_OK                        0               102\n2026-10-13 12:00:33,045 INFO  17996 [WatchDog_17996] ------------------------------** End of Summary **---------------------------\n2026-10-13 12:00:33,046 INFO  17996 [JobFinalizer_17996] Job finished: MiscExamples/suite_v5/graph/T45.grf\n\t Run ID: \t\t17996\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t18 ms\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T45_out_0.csv"
+    },
+    "payload": {
+      "text": "\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-0\"|\"__NULL__\"|\"1\"|\"E0\"|\"17\"|\" G \"|\"y\"|\"2026-04-01\"|\"well\"|\"Irena\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"cs\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"17\"|\"2026-04-01 00:00:00.000\"|\"WELL\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-2\"|\"\"|\"3\"|\"E2\"|\"18\"|\"__NULL__\"|\"Y\"|\"2026-04-30\"|\"WELL\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"18\"|\"2026-04-30 00:00:00.000\"|\"WELL\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-4\"|\"__NULL__\"|\"5\"|\"E1\"|\"65\"|\"__NULL__\"|\" Y \"|\"2026-04-30\"|\"senior\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"65\"|\"2026-04-30 00:00:00.000\"|\"SENIOR\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-0\"|\"__NULL__\"|\"1\"|\"E0\"|\"17\"|\" G \"|\"y\"|\"2026-04-01\"|\"well\"|\"Irena\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"cs\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"17\"|\"2026-04-01 00:00:00.000\"|\"WELL\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-2\"|\"\"|\"3\"|\"E2\"|\"18\"|\"__NULL__\"|\"Y\"|\"2026-04-30\"|\"WELL\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"18\"|\"2026-04-30 00:00:00.000\"|\"WELL\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-4\"|\"__NULL__\"|\"5\"|\"E1\"|\"65\"|\"__NULL__\"|\" Y \"|\"2026-04-30\"|\"senior\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"65\"|\"2026-04-30 00:00:00.000\"|\"SENIOR\"\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T45_out_1.csv"
+    },
+    "payload": {
+      "text": "\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-1\"|\"__NULL__\"|\"2\"|\"E1\"|\"17\"|\" \"|\"Y\"|\"2026-04-15\"|\"WELL\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"cs\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"GUARDIAN\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-3\"|\"__NULL__\"|\"4\"|\"E0\"|\"64\"|\"__NULL__\"|\"N\"|\"2026-04-10\"|\"SENIOR\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"CONSENT,PROGRAM\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-5\"|\"__NULL__\"|\"6\"|\"E2\"|\"1e2\"|\"__NULL__\"|\"__NULL__\"|\"2026-02-30\"|\"SENIOR\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"AGE,CONSENT,VISIT,PROGRAM\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-6\"|\"__NULL__\"|\"7\"|\"E0\"|\"\"|\"__NULL__\"|\"Y\"|\"2026-4-1\"|\"WELL\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"AGE,VISIT\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-7\"|\"__NULL__\"|\"8\"|\"E1\"|\"121\"|\"G\"|\"Y\"|\"2026-04-01 00:00:00\"|\"WELL\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"AGE,VISIT\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-8\"|\"__NULL__\"|\"9\"|\"E2\"|\"0\"|\"__NULL__\"|\"\"|\"2026-05-01\"|\"bad\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"GUARDIAN,CONSENT,VISIT,PROGRAM\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-1\"|\"__NULL__\"|\"2\"|\"E1\"|\"17\"|\" \"|\"Y\"|\"2026-04-15\"|\"WELL\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"cs\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"GUARDIAN\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-3\"|\"__NULL__\"|\"4\"|\"E0\"|\"64\"|\"__NULL__\"|\"N\"|\"2026-04-10\"|\"SENIOR\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"CONSENT,PROGRAM\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-5\"|\"__NULL__\"|\"6\"|\"E2\"|\"1e2\"|\"__NULL__\"|\"__NULL__\"|\"2026-02-30\"|\"SENIOR\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"AGE,CONSENT,VISIT,PROGRAM\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-6\"|\"__NULL__\"|\"7\"|\"E0\"|\"\"|\"__NULL__\"|\"Y\"|\"2026-4-1\"|\"WELL\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"AGE,VISIT\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-7\"|\"__NULL__\"|\"8\"|\"E1\"|\"121\"|\"G\"|\"Y\"|\"2026-04-01 00:00:00\"|\"WELL\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"AGE,VISIT\"\n\"batch-clinic_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-8\"|\"__NULL__\"|\"9\"|\"E2\"|\"0\"|\"__NULL__\"|\"\"|\"2026-05-01\"|\"bad\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"GUARDIAN,CONSENT,VISIT,PROGRAM\"\n"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

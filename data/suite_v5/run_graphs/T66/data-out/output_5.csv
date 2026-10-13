@@ -1,0 +1,4 @@
+"PAYMENT4"|"ACME"|"payment.csv"|"4"|"2026-01-01 00:00:00.000"|"OPS"|"CZ"|"EUR"|"B1"|"__NULL__"|"X4"|"keep:4"|""|"false"|"10000"|"2025-02-30"|"URGENT"|"__NULL__"|"2026-01-01 00:00:00.000"
+"PAYMENT5"|"ACME"|"payment.csv"|"5"|"2026-01-01 00:00:00.000"|"__NULL__"|"CZ"|"EUR"|"B1"|"__NULL__"|"X5"|"keep:5"|""|"false"|"10000"|"2026-1-1"|"URGENT"|"__NULL__"|"2026-01-01 00:00:00.000"
+"PAYMENT9"|"ACME"|"payment.csv"|"9"|"2026-01-01 00:00:00.000"|"__NULL__"|"CZ"|"EUR"|"B1"|"__NULL__"|"X9"|"keep:9"|" reversed "|"false"|"1000000"|"__NULL__"|"__NULL__"|"__NULL__"|"2026-01-01 00:00:00.000"
+"PAYMENT12"|"ACME"|"payment.csv"|"12"|"2026-01-01 00:00:00.000"|"OPS"|"CZ"|"EUR"|"B1"|"__NULL__"|"X12"|"keep:12"|""|"false"|"bad"|"__NULL__"|"URGENT"|"__NULL__"|"2026-01-01 00:00:00.000"

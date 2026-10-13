@@ -1,0 +1,9 @@
+batch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-0|__NULL__|1|E0|17| G |y|2026-04-01|well|Irena|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|cs|__NULL__|__NULL__|__NULL__|__NULL__
+batch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-1|__NULL__|2|E1|17| |Y|2026-04-15|WELL|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|cs|__NULL__|__NULL__||__NULL__
+batch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-2||3|E2|18|__NULL__|Y|2026-04-30|WELL|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__
+batch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-3|__NULL__|4|E0|64|__NULL__|N|2026-04-10|SENIOR|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__
+batch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-4|__NULL__|5|E1|65|__NULL__| Y |2026-04-30|senior|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__||__NULL__
+batch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-5|__NULL__|6|E2|1e2|__NULL__|__NULL__|2026-02-30|SENIOR|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__
+batch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-6|__NULL__|7|E0||__NULL__|Y|2026-4-1|WELL|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__
+batch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-7|__NULL__|8|E1|121|G|Y|2026-04-01 00:00:00|WELL|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__
+batch-clinic_batch|2026-01-01 00:00:00.000|17.25|opaque-8|__NULL__|9|E2|0|__NULL__||2026-05-01|bad|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__

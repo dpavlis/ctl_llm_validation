@@ -1,0 +1,1 @@
+[{"tool": "knowledge_base_read", "arguments": {"name": "dictionary"}, "save": "dictionary_guide.json"}, {"tool": "knowledge_base_read", "arguments": {"name": "lookup-table"}, "save": "lookup_guide.json"}]

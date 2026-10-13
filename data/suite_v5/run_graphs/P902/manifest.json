@@ -1,0 +1,29 @@
+{
+  "test_id": "P902",
+  "label": "P902",
+  "graph_file": "suite_v5/graph/P902.grf",
+  "reference_sha256": "70fa52226c0f219561035f7e1da3bbe985d562959527cdd90abde385b6f272bc",
+  "graph_sha256": "99d0bbbfa6bf946f64bcd699ecc39779d6b961b06f2200e7e405c8e241c2b881",
+  "files": [
+    {
+      "local": "run_graphs/P902/graph/P902.grf",
+      "remote": "suite_v5/graph/P902.grf",
+      "sha256": "99d0bbbfa6bf946f64bcd699ecc39779d6b961b06f2200e7e405c8e241c2b881"
+    }
+  ],
+  "output_paths": {
+    "0": "suite_v5/data-out/P902_out_0.csv"
+  },
+  "output_metadata": [
+    "<Record name=\"ZeroProbe\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"called\" type=\"boolean\" nullable=\"true\"/>\n</Record>"
+  ],
+  "fixture": {
+    "inputs": [],
+    "expected": {
+      "0": []
+    },
+    "rows_count": 0
+  },
+  "parameters": {},
+  "expected_failure": false
+}

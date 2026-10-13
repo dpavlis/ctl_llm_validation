@@ -1,0 +1,407 @@
+[
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in",
+      "filename": "T64_empty_amount_input_0.csv",
+      "content": "BASKET1|ACME|basket.csv|1|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1||X1|keep:1|\"{\"\"lines\"\":[{\"\"sku\"\":\"\"X\"\",\"\"amount\"\":\"\"\"\"}]}\"|__NULL__|2026-01-01 00:00:00.000\n"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/data-in/T64_empty_amount_input_0.csv' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/data-in/T64_empty_amount_input_0.csv' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph",
+      "filename": "T64_empty_amount.grf",
+      "content": "<?xml version='1.0' encoding='utf-8'?>\n<Graph author=\"Codex\" name=\"T64_empty_amount\" id=\"6101300064\" nature=\"etlGraph\" revision=\"1.0\" guiVersion=\"7.5.0\">\n  <Global>\n    <GraphParameters>\n      <GraphParameterFile fileURL=\"workspace.prm\" />\n      <GraphParameter name=\"PROJECT\" value=\".\" />\n    </GraphParameters>\n    <RichTextNote id=\"Note\" x=\"50\" y=\"25\" width=\"1200\" height=\"100\" backgroundColor=\"FAF6D6\" textColor=\"444444\" fontSize=\"medium\" folded=\"false\">\n      <attr name=\"text\">Basket rows retain optional nested notes\nAcceptance fixture exercises the business rules and preserves every source field for comparison.</attr>\n    </RichTextNote>\n    <Metadata id=\"In0\">\n      <Record name=\"BasketEnvelope\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"basket_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"basket_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"basket_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payload_json\" type=\"string\" nullable=\"true\" />\n        <Field name=\"parent_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"business_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawIn0\">\n      <Record name=\"RawInput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"basket_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"basket_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payload_json\" type=\"string\" nullable=\"true\" />\n        <Field name=\"parent_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"business_dt\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out0\">\n      <Record name=\"BasketLine\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"basket_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"basket_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"basket_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"parent_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"business_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n        <Field name=\"child_code\" type=\"string\" nullable=\"false\" />\n        <Field name=\"child_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"ordinal\" type=\"integer\" nullable=\"false\" />\n        <Field name=\"child_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut0\">\n      <Record name=\"RawOutput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"basket_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"basket_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"parent_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"business_dt\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n        <Field name=\"child_code\" type=\"string\" nullable=\"false\" />\n        <Field name=\"child_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"ordinal\" type=\"string\" nullable=\"false\" />\n        <Field name=\"child_amount\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n  </Global>\n  <Phase number=\"0\">\n    <Node id=\"Reader0\" type=\"DATA_READER\" enabled=\"enabled\" guiName=\"Reader0\" guiX=\"50\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-in/T64_empty_amount_input_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"dataPolicy\">strict</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"parser\">org.jetel.data.parser.DataParser</attr>\n    </Node>\n    <Node id=\"Decode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Decode0\" guiX=\"275\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.basket_key=$in.0.basket_key;\n$out.0.basket_tenant=$in.0.basket_tenant;\n$out.0.basket_file=$in.0.basket_file;\n$out.0.basket_row=$in.0.basket_row == null ? null : str2long($in.0.basket_row);\n$out.0.basket_received=$in.0.basket_received == null ? null : str2date($in.0.basket_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\n$out.0.basket_team=$in.0.basket_team;\n$out.0.basket_market=$in.0.basket_market;\n$out.0.basket_currency=$in.0.basket_currency;\n$out.0.basket_batch=$in.0.basket_batch;\n$out.0.basket_note=$in.0.basket_note;\n$out.0.basket_trace=$in.0.basket_trace;\n$out.0.basket_unused_archive=$in.0.basket_unused_archive;\n$out.0.payload_json=$in.0.payload_json;\n$out.0.parent_value=$in.0.parent_value == null ? null : str2decimal($in.0.parent_value);\n$out.0.business_dt=$in.0.business_dt == null ? null : str2date($in.0.business_dt,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\nreturn OK;}</attr>\n    </Node>\n    <Edge id=\"Read0\" fromNode=\"Reader0:0\" toNode=\"Decode0:0\" metadata=\"RawIn0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Decoded0\" fromNode=\"Decode0:0\" toNode=\"Test:0\" metadata=\"In0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Test\" type=\"NORMALIZER\" enabled=\"enabled\" guiName=\"Test\" guiX=\"500\" guiY=\"200\">\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"normalize\">//#CTL2\nvariant children;\nfunction integer count() {\n children=null;\n if (isnull($in.0.payload_json) || trim($in.0.payload_json)==\"\") return 0;\n variant root=parseJson($in.0.payload_json);\n children=containsKey(root,\"lines\") ? root[\"lines\"] : null;\n return isnull(children) ? 0 : length(children);\n}\nfunction integer transform(integer idx) {\n variant item=children[idx];\n $out.0.*=$in.0.*;\n $out.0.child_code=cast(item[\"sku\"],string);$out.0.ordinal=idx+1;\n variant details=containsKey(item,\"details\") ? item[\"details\"] : null;\n $out.0.child_note=null;\n if (!isnull(details) &amp;&amp; containsKey(details,\"note\") &amp;&amp; !isnull(details[\"note\"])) $out.0.child_note=cast(details[\"note\"],string);\n $out.0.child_amount=null;\n if (containsKey(item,\"amount\") &amp;&amp; !isnull(item[\"amount\"])) {\n  string text=cast(item[\"amount\"],string);\n  if (!(text ~= \"-?[0-9]{1,9}(\\\\.[0-9]{1,2})?\")) raiseError(\"Invalid child amount shape\");\n  $out.0.child_amount=str2decimal(text);\n }\n return OK;\n}\nfunction void clean(){children=null;}\n</attr>\n    </Node>\n    <Node id=\"Encode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode0\" guiX=\"725\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.basket_key=$in.0.basket_key;\n$out.0.basket_tenant=$in.0.basket_tenant;\n$out.0.basket_file=$in.0.basket_file;\n$out.0.basket_row=$in.0.basket_row == null ? null : num2str($in.0.basket_row);\n$out.0.basket_received=$in.0.basket_received == null ? null : date2str($in.0.basket_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.basket_team=$in.0.basket_team;\n$out.0.basket_market=$in.0.basket_market;\n$out.0.basket_currency=$in.0.basket_currency;\n$out.0.basket_batch=$in.0.basket_batch;\n$out.0.basket_note=$in.0.basket_note;\n$out.0.basket_trace=$in.0.basket_trace;\n$out.0.basket_unused_archive=$in.0.basket_unused_archive;\n$out.0.parent_value=$in.0.parent_value == null ? null : num2str($in.0.parent_value,\"0.00\",\"en.US\");\n$out.0.business_dt=$in.0.business_dt == null ? null : date2str($in.0.business_dt,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.child_code=$in.0.child_code;\n$out.0.child_note=$in.0.child_note;\n$out.0.ordinal=$in.0.ordinal == null ? null : num2str($in.0.ordinal);\n$out.0.child_amount=$in.0.child_amount == null ? null : num2str($in.0.child_amount,\"0.00\",\"en.US\");\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer0\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer0\" guiX=\"950\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-out/T64_empty_amount_out_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result0\" fromNode=\"Test:0\" toNode=\"Encode0:0\" metadata=\"Out0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written0\" fromNode=\"Encode0:0\" toNode=\"Writer0:0\" metadata=\"RawOut0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n  </Phase>\n</Graph>"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/graph/T64_empty_amount.grf' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/graph/T64_empty_amount.grf' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_validate",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T64_empty_amount.grf",
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"timedOut\":false,\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "timedOut": false,
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_run",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T64_empty_amount.grf",
+      "params": {}
+    },
+    "payload": {
+      "runId": 17981,
+      "message": "Job started. runId: 17981"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17981,\"message\":\"Job started. runId: 17981\"}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17981,
+        "message": "Job started. runId: 17981"
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_await",
+    "arguments": {
+      "runId": 17981,
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "runId": 17981,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T64_empty_amount.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:54:41.400+02:00",
+      "startTime": "2026-10-13T11:54:41.400+02:00",
+      "stopTime": "2026-10-13T11:54:41.448+02:00",
+      "durationMs": 48,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape",
+        "componentType": "NORMALIZER"
+      }
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17981,\"sandboxCode\":\"MiscExamples\",\"jobFile\":\"suite_v5/graph/T64_empty_amount.grf\",\"jobType\":\"ETL_GRAPH\",\"status\":\"ERROR\",\"submitTime\":\"2026-10-13T11:54:41.400+02:00\",\"startTime\":\"2026-10-13T11:54:41.400+02:00\",\"stopTime\":\"2026-10-13T11:54:41.448+02:00\",\"durationMs\":48,\"error\":{\"componentId\":\"Test\",\"message\":\"Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\\n Message: Normalizer failed!\\n  Interpreter runtime exception on line 20 column 50\\n   Exception raised by user: Invalid child amount shape\",\"componentType\":\"NORMALIZER\"}}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17981,
+        "sandboxCode": "MiscExamples",
+        "jobFile": "suite_v5/graph/T64_empty_amount.grf",
+        "jobType": "ETL_GRAPH",
+        "status": "ERROR",
+        "submitTime": "2026-10-13T11:54:41.400+02:00",
+        "startTime": "2026-10-13T11:54:41.400+02:00",
+        "stopTime": "2026-10-13T11:54:41.448+02:00",
+        "durationMs": 48,
+        "error": {
+          "componentId": "Test",
+          "message": "Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape",
+          "componentType": "NORMALIZER"
+        }
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_tracking",
+    "arguments": {
+      "runId": 17981,
+      "detailed": true
+    },
+    "payload": {
+      "run_id": "17981",
+      "status": "ERROR",
+      "exec_seconds": 0.028,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.027,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 251
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 251
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 185
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "NORMALIZER",
+              "result": "ERROR",
+              "cpu_seconds": 0.002,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 185
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "ABORTED",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 4,
+        "total_bytes": 872
+      }
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"run_id\":\"17981\",\"status\":\"ERROR\",\"exec_seconds\":0.028,\"phases\":[{\"phase_number\":0,\"exec_seconds\":0.027,\"nodes\":[{\"node_id\":\"Reader0\",\"node_name\":\"Reader0\",\"node_type\":\"DATA_READER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":1,\"bytes\":251}]},{\"node_id\":\"Decode0\",\"node_name\":\"Decode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":1,\"bytes\":251},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":1,\"bytes\":185}]},{\"node_id\":\"Test\",\"node_name\":\"Test\",\"node_type\":\"NORMALIZER\",\"result\":\"ERROR\",\"cpu_seconds\":0.002,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":1,\"bytes\":185},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":0,\"bytes\":0}]},{\"node_id\":\"Encode0\",\"node_name\":\"Encode0\",\"node_type\":\"REFORMAT\",\"result\":\"ABORTED\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":0,\"bytes\":0},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":0,\"bytes\":0}]},{\"node_id\":\"Writer0\",\"node_name\":\"Writer0\",\"node_type\":\"DATA_WRITER\",\"result\":\"ABORTED\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":0,\"bytes\":0}]}]}],\"summary\":{\"phase_count\":1,\"node_count\":5,\"port_count\":8,\"total_records\":4,\"total_bytes\":872}}"
+        }
+      ],
+      "structuredContent": {
+        "run_id": "17981",
+        "status": "ERROR",
+        "exec_seconds": 0.028,
+        "phases": [
+          {
+            "phase_number": 0,
+            "exec_seconds": 0.027,
+            "nodes": [
+              {
+                "node_id": "Reader0",
+                "node_name": "Reader0",
+                "node_type": "DATA_READER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 251
+                  }
+                ]
+              },
+              {
+                "node_id": "Decode0",
+                "node_name": "Decode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 251
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 185
+                  }
+                ]
+              },
+              {
+                "node_id": "Test",
+                "node_name": "Test",
+                "node_type": "NORMALIZER",
+                "result": "ERROR",
+                "cpu_seconds": 0.002,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 185
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 0,
+                    "bytes": 0
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode0",
+                "node_name": "Encode0",
+                "node_type": "REFORMAT",
+                "result": "ABORTED",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 0,
+                    "bytes": 0
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 0,
+                    "bytes": 0
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer0",
+                "node_name": "Writer0",
+                "node_type": "DATA_WRITER",
+                "result": "ABORTED",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 0,
+                    "bytes": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "phase_count": 1,
+          "node_count": 5,
+          "port_count": 8,
+          "total_records": 4,
+          "total_bytes": 872
+        }
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_log",
+    "arguments": {
+      "runId": 17981
+    },
+    "payload": {
+      "text": "2026-10-13 11:54:41,402 INFO  17981 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:54:41,402 INFO  17981 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:54:41,402 INFO  17981 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:54:41,408 INFO  17981 [JobStarter_17981] Starting job: MiscExamples/suite_v5/graph/T64_empty_amount.grf\n\t Run ID: \t\t17981\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:54:41,410 INFO  17981 [JobExecutor_17981] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:54:41,414 INFO  17981 [JobExecutor_17981] Initializing metadata\n2026-10-13 11:54:41,414 INFO  17981 [JobExecutor_17981] Initializing phase 0\n2026-10-13 11:54:41,415 INFO  17981 [JobExecutor_17981] Phase 0 initialized successfully.\n2026-10-13 11:54:41,415 INFO  17981 [WatchDog_17981] Job execution type: ETL_GRAPH\n2026-10-13 11:54:41,415 INFO  17981 [WatchDog_17981] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T64_empty_amount.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T64_empty_amount.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17981\nPROJECT=.\nROOT_RUN_ID=17981\nRUN_ID=17981\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:54:41,415 INFO  17981 [WatchDog_17981] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:54:41,417 INFO  17981 [WatchDog_17981] Starting up all nodes in phase [0]\n2026-10-13 11:54:41,417 INFO  17981 [WatchDog_17981] Successfully started all nodes in phase!\n2026-10-13 11:54:41,422 ERROR 17981 [WatchDog_17981] Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape\n2026-10-13 11:54:41,423 ERROR 17981 [WatchDog_17981] Error details:\norg.jetel.exception.JetelRuntimeException: Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n\tat org.jetel.graph.Node.createNodeException(Node.java:685)\n\tat org.jetel.graph.Node.run(Node.java:650)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.TransformException: Message: Normalizer failed!\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformOnError(CTLRecordNormalizeAdapter.java:147)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:234)\n\tat org.jetel.component.Normalizer.execute(Normalizer.java:305)\n\tat org.jetel.graph.Node.run(Node.java:597)\n\t... 3 more\nCaused by: org.jetel.ctl.RaiseErrorException: Interpreter runtime exception on line 20 column 50\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:2279)\n\tat org.jetel.ctl.ASTnode.CLVFRaiseErrorNode.jjtAccept(CLVFRaiseErrorNode.java:48)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3043)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3096)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformImpl(CTLRecordNormalizeAdapter.java:161)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transform(CTLRecordNormalizeAdapter.java:139)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:232)\n\t... 5 more\nCaused by: org.jetel.exception.JetelRuntimeException: Exception raised by user: Invalid child amount shape\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:53)\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:47)\n\tat org.jetel.ctl.RaiseErrorException.<init>(RaiseErrorException.java:58)\n\t... 25 more\n\n2026-10-13 11:54:41,433 INFO  17981 [WatchDog_17981] Interrupted node: Encode0\n2026-10-13 11:54:41,443 INFO  17981 [WatchDog_17981] Interrupted node: Writer0\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] Execution of phase [0] finished with error - elapsed time (sec): 0\n2026-10-13 11:54:41,444 ERROR 17981 [WatchDog_17981] Phase finished with error - stopping job run\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:54:41,445 INFO  17981 [WatchDog_17981] 0                 ERROR                              0               106\n2026-10-13 11:54:41,445 INFO  17981 [WatchDog_17981] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:54:41,449 INFO  17981 [JobFinalizer_17981] Job finished: MiscExamples/suite_v5/graph/T64_empty_amount.grf\n\t Run ID: \t\t17981\n\t Status: \t\tERROR\n\t Duration: \t\t48 ms\n2026-10-13 11:54:41,449 ERROR 17981 [JobFinalizer_17981] \n--------------------------------- Error details ----------------------------------\n  Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n   Message: Normalizer failed!\n    Interpreter runtime exception on line 20 column 50\n     Exception raised by user: Invalid child amount shape\n----------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "2026-10-13 11:54:41,402 INFO  17981 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:54:41,402 INFO  17981 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:54:41,402 INFO  17981 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:54:41,408 INFO  17981 [JobStarter_17981] Starting job: MiscExamples/suite_v5/graph/T64_empty_amount.grf\n\t Run ID: \t\t17981\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:54:41,410 INFO  17981 [JobExecutor_17981] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:54:41,414 INFO  17981 [JobExecutor_17981] Initializing metadata\n2026-10-13 11:54:41,414 INFO  17981 [JobExecutor_17981] Initializing phase 0\n2026-10-13 11:54:41,415 INFO  17981 [JobExecutor_17981] Phase 0 initialized successfully.\n2026-10-13 11:54:41,415 INFO  17981 [WatchDog_17981] Job execution type: ETL_GRAPH\n2026-10-13 11:54:41,415 INFO  17981 [WatchDog_17981] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T64_empty_amount.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T64_empty_amount.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17981\nPROJECT=.\nROOT_RUN_ID=17981\nRUN_ID=17981\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:54:41,415 INFO  17981 [WatchDog_17981] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:54:41,417 INFO  17981 [WatchDog_17981] Starting up all nodes in phase [0]\n2026-10-13 11:54:41,417 INFO  17981 [WatchDog_17981] Successfully started all nodes in phase!\n2026-10-13 11:54:41,422 ERROR 17981 [WatchDog_17981] Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape\n2026-10-13 11:54:41,423 ERROR 17981 [WatchDog_17981] Error details:\norg.jetel.exception.JetelRuntimeException: Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n\tat org.jetel.graph.Node.createNodeException(Node.java:685)\n\tat org.jetel.graph.Node.run(Node.java:650)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.TransformException: Message: Normalizer failed!\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformOnError(CTLRecordNormalizeAdapter.java:147)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:234)\n\tat org.jetel.component.Normalizer.execute(Normalizer.java:305)\n\tat org.jetel.graph.Node.run(Node.java:597)\n\t... 3 more\nCaused by: org.jetel.ctl.RaiseErrorException: Interpreter runtime exception on line 20 column 50\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:2279)\n\tat org.jetel.ctl.ASTnode.CLVFRaiseErrorNode.jjtAccept(CLVFRaiseErrorNode.java:48)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3043)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3096)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformImpl(CTLRecordNormalizeAdapter.java:161)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transform(CTLRecordNormalizeAdapter.java:139)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:232)\n\t... 5 more\nCaused by: org.jetel.exception.JetelRuntimeException: Exception raised by user: Invalid child amount shape\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:53)\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:47)\n\tat org.jetel.ctl.RaiseErrorException.<init>(RaiseErrorException.java:58)\n\t... 25 more\n\n2026-10-13 11:54:41,433 INFO  17981 [WatchDog_17981] Interrupted node: Encode0\n2026-10-13 11:54:41,443 INFO  17981 [WatchDog_17981] Interrupted node: Writer0\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] Execution of phase [0] finished with error - elapsed time (sec): 0\n2026-10-13 11:54:41,444 ERROR 17981 [WatchDog_17981] Phase finished with error - stopping job run\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:54:41,445 INFO  17981 [WatchDog_17981] 0                 ERROR                              0               106\n2026-10-13 11:54:41,445 INFO  17981 [WatchDog_17981] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:54:41,449 INFO  17981 [JobFinalizer_17981] Job finished: MiscExamples/suite_v5/graph/T64_empty_amount.grf\n\t Run ID: \t\t17981\n\t Status: \t\tERROR\n\t Duration: \t\t48 ms\n2026-10-13 11:54:41,449 ERROR 17981 [JobFinalizer_17981] \n--------------------------------- Error details ----------------------------------\n  Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n   Message: Normalizer failed!\n    Interpreter runtime exception on line 20 column 50\n     Exception raised by user: Invalid child amount shape\n----------------------------------------------------------------------------------\n"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

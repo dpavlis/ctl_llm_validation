@@ -1,0 +1,201 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T73" id="6101300073" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Claims audit keeps history only for accepted requests
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="ClaimAuditSource" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="claim_key" type="string" nullable="false" />
+        <Field name="claim_tenant" type="string" nullable="false" />
+        <Field name="claim_file" type="string" nullable="false" />
+        <Field name="claim_row" type="long" nullable="false" />
+        <Field name="claim_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="claim_team" type="string" nullable="true" />
+        <Field name="claim_market" type="string" nullable="true" />
+        <Field name="claim_currency" type="string" nullable="false" />
+        <Field name="claim_batch" type="string" nullable="false" />
+        <Field name="claim_note" type="string" nullable="true" />
+        <Field name="claim_trace" type="string" nullable="true" />
+        <Field name="claim_unused_archive" type="string" nullable="true" />
+        <Field name="audit_requested" type="boolean" nullable="false" />
+        <Field name="submitted_txt" type="string" nullable="true" />
+        <Field name="claimed_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="claim_class" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="claim_key" type="string" nullable="false" />
+        <Field name="claim_tenant" type="string" nullable="false" />
+        <Field name="claim_file" type="string" nullable="false" />
+        <Field name="claim_row" type="string" nullable="false" />
+        <Field name="claim_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="claim_team" type="string" nullable="true" />
+        <Field name="claim_market" type="string" nullable="true" />
+        <Field name="claim_currency" type="string" nullable="false" />
+        <Field name="claim_batch" type="string" nullable="false" />
+        <Field name="claim_note" type="string" nullable="true" />
+        <Field name="claim_trace" type="string" nullable="true" />
+        <Field name="claim_unused_archive" type="string" nullable="true" />
+        <Field name="audit_requested" type="string" nullable="false" />
+        <Field name="submitted_txt" type="string" nullable="true" />
+        <Field name="claimed_amount" type="string" nullable="true" />
+        <Field name="claim_class" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="ClaimAuditDecision" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="claim_key" type="string" nullable="false" />
+        <Field name="claim_tenant" type="string" nullable="false" />
+        <Field name="claim_file" type="string" nullable="false" />
+        <Field name="claim_row" type="long" nullable="false" />
+        <Field name="claim_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="claim_team" type="string" nullable="true" />
+        <Field name="claim_market" type="string" nullable="true" />
+        <Field name="claim_currency" type="string" nullable="false" />
+        <Field name="claim_batch" type="string" nullable="false" />
+        <Field name="claim_note" type="string" nullable="true" />
+        <Field name="claim_trace" type="string" nullable="true" />
+        <Field name="claim_unused_archive" type="string" nullable="true" />
+        <Field name="audit_requested" type="boolean" nullable="false" />
+        <Field name="submitted_txt" type="string" nullable="true" />
+        <Field name="claimed_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="claim_class" type="string" nullable="true" />
+        <Field name="audit_state" type="string" nullable="false" />
+        <Field name="audit_label" type="string" nullable="true" />
+        <Field name="accepted_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="accepted_index" type="long" nullable="false" />
+        <Field name="accepted_running" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="previous_claim_key" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="claim_key" type="string" nullable="false" />
+        <Field name="claim_tenant" type="string" nullable="false" />
+        <Field name="claim_file" type="string" nullable="false" />
+        <Field name="claim_row" type="string" nullable="false" />
+        <Field name="claim_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="claim_team" type="string" nullable="true" />
+        <Field name="claim_market" type="string" nullable="true" />
+        <Field name="claim_currency" type="string" nullable="false" />
+        <Field name="claim_batch" type="string" nullable="false" />
+        <Field name="claim_note" type="string" nullable="true" />
+        <Field name="claim_trace" type="string" nullable="true" />
+        <Field name="claim_unused_archive" type="string" nullable="true" />
+        <Field name="audit_requested" type="string" nullable="false" />
+        <Field name="submitted_txt" type="string" nullable="true" />
+        <Field name="claimed_amount" type="string" nullable="true" />
+        <Field name="claim_class" type="string" nullable="true" />
+        <Field name="audit_state" type="string" nullable="false" />
+        <Field name="audit_label" type="string" nullable="true" />
+        <Field name="accepted_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="accepted_index" type="string" nullable="false" />
+        <Field name="accepted_running" type="string" nullable="false" />
+        <Field name="previous_claim_key" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Dictionary>
+      <Entry name="auditEnabled" type="boolean" input="true" dictval.value="true" />
+      <Entry name="auditLabel" type="string" input="true" dictval.value="CLAIMS-R2" />
+      <Entry name="cutoffText" type="string" input="true" dictval.value="2026-01-01 00:00:00" />
+    </Dictionary>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T73_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.claim_key=$in.0.claim_key;
+$out.0.claim_tenant=$in.0.claim_tenant;
+$out.0.claim_file=$in.0.claim_file;
+$out.0.claim_row=$in.0.claim_row == null ? null : str2long($in.0.claim_row);
+$out.0.claim_received=$in.0.claim_received == null ? null : str2date($in.0.claim_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.claim_team=$in.0.claim_team;
+$out.0.claim_market=$in.0.claim_market;
+$out.0.claim_currency=$in.0.claim_currency;
+$out.0.claim_batch=$in.0.claim_batch;
+$out.0.claim_note=$in.0.claim_note;
+$out.0.claim_trace=$in.0.claim_trace;
+$out.0.claim_unused_archive=$in.0.claim_unused_archive;
+$out.0.audit_requested=$in.0.audit_requested == null ? null : str2bool($in.0.audit_requested);
+$out.0.submitted_txt=$in.0.submitted_txt;
+$out.0.claimed_amount=$in.0.claimed_amount == null ? null : str2decimal($in.0.claimed_amount);
+$out.0.claim_class=$in.0.claim_class;
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+long acceptedCount=0L;decimal total=0D;boolean seenAccepted=false;string previous;
+function integer transform(){
+ $out.0.*=$in.0.*;$out.0.accepted_at=null;$out.0.accepted_index=0L;$out.0.previous_claim_key=null;
+ $out.0.accepted_running=total;$out.0.audit_label=null;
+ if(!dictionary.auditEnabled || !$in.0.audit_requested){$out.0.audit_state="BYPASS";return OK;}
+ $out.0.audit_label=dictionary.auditLabel;
+ string raw=nvl($in.0.submitted_txt,"");
+ if(!(raw ~= "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}") || !isDate(raw,"yyyy-MM-dd HH:mm:ss","en.US","UTC",true)){$out.0.audit_state="BAD_TIME";return OK;}
+ date submitted=str2date(raw,"yyyy-MM-dd HH:mm:ss","en.US","UTC",true);
+ date cutoff=str2date(dictionary.cutoffText,"yyyy-MM-dd HH:mm:ss","en.US","UTC",true);
+ if(submitted&lt;cutoff){$out.0.audit_state="TOO_OLD";return OK;}
+ acceptedCount++;total=total+nvl($in.0.claimed_amount,0D);
+ $out.0.audit_state="ACCEPTED";$out.0.accepted_at=submitted;$out.0.accepted_index=acceptedCount;$out.0.accepted_running=total;
+ if(seenAccepted)$out.0.previous_claim_key=previous;previous=$in.0.claim_key;seenAccepted=true;return OK;
+}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.claim_key=$in.0.claim_key;
+$out.0.claim_tenant=$in.0.claim_tenant;
+$out.0.claim_file=$in.0.claim_file;
+$out.0.claim_row=$in.0.claim_row == null ? null : num2str($in.0.claim_row);
+$out.0.claim_received=$in.0.claim_received == null ? null : date2str($in.0.claim_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.claim_team=$in.0.claim_team;
+$out.0.claim_market=$in.0.claim_market;
+$out.0.claim_currency=$in.0.claim_currency;
+$out.0.claim_batch=$in.0.claim_batch;
+$out.0.claim_note=$in.0.claim_note;
+$out.0.claim_trace=$in.0.claim_trace;
+$out.0.claim_unused_archive=$in.0.claim_unused_archive;
+$out.0.audit_requested=$in.0.audit_requested == null ? null : ($in.0.audit_requested ? "true" : "false");
+$out.0.submitted_txt=$in.0.submitted_txt;
+$out.0.claimed_amount=$in.0.claimed_amount == null ? null : num2str($in.0.claimed_amount,"0.00","en.US");
+$out.0.claim_class=$in.0.claim_class;
+$out.0.audit_state=$in.0.audit_state;
+$out.0.audit_label=$in.0.audit_label;
+$out.0.accepted_at=$in.0.accepted_at == null ? null : date2str($in.0.accepted_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.accepted_index=$in.0.accepted_index == null ? null : num2str($in.0.accepted_index);
+$out.0.accepted_running=$in.0.accepted_running == null ? null : num2str($in.0.accepted_running,"0.00","en.US");
+$out.0.previous_claim_key=$in.0.previous_claim_key;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T73_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

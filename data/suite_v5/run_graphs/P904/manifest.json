@@ -1,0 +1,128 @@
+{
+  "test_id": "P904",
+  "label": "P904",
+  "graph_file": "suite_v5/graph/P904.grf",
+  "reference_sha256": "ea389613e51c108cafb75635dac1cebf311ddab76fcab90e83028f17ae2ef36e",
+  "graph_sha256": "fb6a02390b56da654f129093e664a25012da5362885740882acc0a1f35f84edf",
+  "files": [
+    {
+      "local": "run_graphs/P904/data-in/input_0.csv",
+      "remote": "suite_v5/data-in/P904_input_0.csv",
+      "sha256": "d47aa33e9198effcf827d0db56ca1ae25456032c137d096f61d0ad4b96f08834"
+    },
+    {
+      "local": "run_graphs/P904/data-in/input_1.csv",
+      "remote": "suite_v5/data-in/P904_input_1.csv",
+      "sha256": "5b745aac3be573901a405b7149c5f9efeb3b982acf5502fec81c6c09b1bbba7d"
+    },
+    {
+      "local": "run_graphs/P904/graph/P904.grf",
+      "remote": "suite_v5/graph/P904.grf",
+      "sha256": "fb6a02390b56da654f129093e664a25012da5362885740882acc0a1f35f84edf"
+    }
+  ],
+  "output_paths": {
+    "0": "suite_v5/data-out/P904_out_0.csv",
+    "1": "suite_v5/data-out/P904_out_1.csv",
+    "2": "suite_v5/data-out/P904_out_2.csv"
+  },
+  "output_metadata": [
+    "<Record name=\"Side\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"value_cd\" type=\"string\" nullable=\"true\"/>\n</Record>",
+    "<Record name=\"Both\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"pair_txt\" type=\"string\" nullable=\"true\"/>\n</Record>",
+    "<Record name=\"Side\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"value_cd\" type=\"string\" nullable=\"true\"/>\n</Record>"
+  ],
+  "fixture": {
+    "inputs": [
+      [
+        {
+          "key_id": null,
+          "value_cd": "NA"
+        },
+        {
+          "key_id": 1,
+          "value_cd": "A1"
+        },
+        {
+          "key_id": 2,
+          "value_cd": "A2"
+        },
+        {
+          "key_id": 2,
+          "value_cd": "A3"
+        },
+        {
+          "key_id": 4,
+          "value_cd": "A4"
+        }
+      ],
+      [
+        {
+          "key_id": null,
+          "value_cd": "NB"
+        },
+        {
+          "key_id": 2,
+          "value_cd": "B2"
+        },
+        {
+          "key_id": 2,
+          "value_cd": "B3"
+        },
+        {
+          "key_id": 3,
+          "value_cd": "B3"
+        },
+        {
+          "key_id": 5,
+          "value_cd": "B5"
+        }
+      ]
+    ],
+    "expected": {
+      "0": [
+        {
+          "key_id": 1,
+          "value_cd": "A1"
+        },
+        {
+          "key_id": 4,
+          "value_cd": "A4"
+        }
+      ],
+      "1": [
+        {
+          "key_id": null,
+          "pair_txt": "NA:NB"
+        },
+        {
+          "key_id": 2,
+          "pair_txt": "A2:B2"
+        },
+        {
+          "key_id": 2,
+          "pair_txt": "A2:B3"
+        },
+        {
+          "key_id": 2,
+          "pair_txt": "A3:B2"
+        },
+        {
+          "key_id": 2,
+          "pair_txt": "A3:B3"
+        }
+      ],
+      "2": [
+        {
+          "key_id": 3,
+          "value_cd": "B3"
+        },
+        {
+          "key_id": 5,
+          "value_cd": "B5"
+        }
+      ]
+    }
+  },
+  "parameters": {},
+  "expected_failure": false
+}

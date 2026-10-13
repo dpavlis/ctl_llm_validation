@@ -1,0 +1,7 @@
+"batch-lab_batch"|"2026-01-01 00:00:00.000"|"17.25"|"opaque-1"|"__NULL__"|"2"|"S1"|"F2"|"AB"|"1"|"__NULL__"|"__NULL__"|"BLOCKED"
+"batch-lab_batch"|"2026-01-01 00:00:00.000"|"17.25"|"opaque-5"|"__NULL__"|"6"|"S1"|"F1"|"ZZ"|"1"|"__NULL__"|"__NULL__"|"NO_FACTOR"
+"batch-lab_batch"|"2026-01-01 00:00:00.000"|"17.25"|"opaque-6"|"__NULL__"|"7"|"S2"|"__NULL__"|"?"|"1e2"|"__NULL__"|"__NULL__"|"FACILITY;ASSAY;VALUE"
+"batch-lab_batch"|"2026-01-01 00:00:00.000"|"17.25"|"opaque-7"|""|"8"|"S3"|""|"AB"|""|"__NULL__"|"__NULL__"|"FACILITY;VALUE"
+"batch-lab_batch"|"2026-01-01 00:00:00.000"|"17.25"|"opaque-8"|"__NULL__"|"9"|"S0"|"F1"|"NN"|"1"|"__NULL__"|"__NULL__"|"NO_FACTOR"
+"batch-lab_batch"|"2026-01-01 00:00:00.000"|"17.25"|"opaque-9"|"__NULL__"|"10"|"S1"|"F1"|"AB"|"1234567"|"__NULL__"|"__NULL__"|"VALUE"
+"batch-lab_batch"|"2026-01-01 00:00:00.000"|"17.25"|"opaque-12"|"__NULL__"|"13"|"S0"|"F1"|"XX"|"1"|"__NULL__"|"__NULL__"|"NO_FACTOR"

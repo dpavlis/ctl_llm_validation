@@ -1,0 +1,25 @@
+[
+  {
+    "tank_key": "SIM-1",
+    "tank_tenant": "LAB",
+    "tank_file": "reservoir",
+    "tank_row": 1,
+    "tank_received": "2026-02-01 00:00:00",
+    "tank_team": null,
+    "tank_market": null,
+    "tank_currency": "UNIT",
+    "tank_batch": "SIM",
+    "tank_note": null,
+    "tank_trace": "STEP-1",
+    "tank_unused_archive": null,
+    "step_no": 1,
+    "prior_level": "5.00",
+    "inflow": "7.00",
+    "withdrawal": "3.00",
+    "stored_level": "9.00",
+    "spill_amount": "0.00",
+    "total_spill": "0.00",
+    "simulation_day": "2026-02-01",
+    "level_band": "PARTIAL"
+  }
+]

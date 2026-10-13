@@ -1,0 +1,298 @@
+{
+  "test_id": "T71",
+  "label": "T71",
+  "graph_file": "suite_v5/graph/T71.grf",
+  "reference_sha256": "2ede2e7b673deb9fb339f56c7823f5fa4650cadc9f9ca9cfd108b7d426e6ca27",
+  "graph_sha256": "36fd2e845ff976946004c256593ba0fae46c4c3b40a36e8e8f5d430db8dfef7f",
+  "files": [
+    {
+      "local": "run_graphs/T71/graph/T71.grf",
+      "remote": "suite_v5/graph/T71.grf",
+      "sha256": "36fd2e845ff976946004c256593ba0fae46c4c3b40a36e8e8f5d430db8dfef7f"
+    }
+  ],
+  "output_paths": {
+    "0": "suite_v5/data-out/T71_out_0.csv"
+  },
+  "output_metadata": [
+    "<Record name=\"ReservoirFixture\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"tank_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"tank_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"tank_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"step_no\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"prior_level\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"inflow\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"withdrawal\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"stored_level\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"spill_amount\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"total_spill\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"simulation_day\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"level_band\" type=\"string\" nullable=\"false\"/>\n</Record>"
+  ],
+  "fixture": {
+    "inputs": [],
+    "expected": {
+      "0": [
+        {
+          "tank_key": "SIM-1",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 1,
+          "tank_received": "2026-02-01 00:00:00",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-1",
+          "tank_unused_archive": null,
+          "step_no": 1,
+          "prior_level": "5.00",
+          "inflow": "7.00",
+          "withdrawal": "3.00",
+          "stored_level": "9.00",
+          "spill_amount": "0.00",
+          "total_spill": "0.00",
+          "simulation_day": "2026-02-01",
+          "level_band": "PARTIAL"
+        },
+        {
+          "tank_key": "SIM-2",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 2,
+          "tank_received": "2026-02-02 00:00:00",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-2",
+          "tank_unused_archive": null,
+          "step_no": 2,
+          "prior_level": "9.00",
+          "inflow": "0.00",
+          "withdrawal": "8.00",
+          "stored_level": "1.00",
+          "spill_amount": "0.00",
+          "total_spill": "0.00",
+          "simulation_day": "2026-02-02",
+          "level_band": "PARTIAL"
+        },
+        {
+          "tank_key": "SIM-3",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 3,
+          "tank_received": "2026-02-03 00:00:00",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-3",
+          "tank_unused_archive": null,
+          "step_no": 3,
+          "prior_level": "1.00",
+          "inflow": "4.00",
+          "withdrawal": "3.00",
+          "stored_level": "2.00",
+          "spill_amount": "0.00",
+          "total_spill": "0.00",
+          "simulation_day": "2026-02-03",
+          "level_band": "PARTIAL"
+        },
+        {
+          "tank_key": "SIM-4",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 4,
+          "tank_received": "2026-02-04 00:00:00",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-4",
+          "tank_unused_archive": null,
+          "step_no": 4,
+          "prior_level": "2.00",
+          "inflow": "10.00",
+          "withdrawal": "0.00",
+          "stored_level": "10.00",
+          "spill_amount": "2.00",
+          "total_spill": "2.00",
+          "simulation_day": "2026-02-04",
+          "level_band": "FULL"
+        },
+        {
+          "tank_key": "SIM-5",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 5,
+          "tank_received": "2026-02-05 00:00:00",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-5",
+          "tank_unused_archive": null,
+          "step_no": 5,
+          "prior_level": "10.00",
+          "inflow": "0.00",
+          "withdrawal": "3.00",
+          "stored_level": "7.00",
+          "spill_amount": "0.00",
+          "total_spill": "2.00",
+          "simulation_day": "2026-02-05",
+          "level_band": "PARTIAL"
+        },
+        {
+          "tank_key": "SIM-6",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 6,
+          "tank_received": "2026-02-06 00:00:00",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-6",
+          "tank_unused_archive": null,
+          "step_no": 6,
+          "prior_level": "7.00",
+          "inflow": "4.00",
+          "withdrawal": "8.00",
+          "stored_level": "3.00",
+          "spill_amount": "0.00",
+          "total_spill": "2.00",
+          "simulation_day": "2026-02-06",
+          "level_band": "PARTIAL"
+        },
+        {
+          "tank_key": "SIM-7",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 7,
+          "tank_received": "2026-02-07 00:00:00",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-7",
+          "tank_unused_archive": null,
+          "step_no": 7,
+          "prior_level": "3.00",
+          "inflow": "7.00",
+          "withdrawal": "3.00",
+          "stored_level": "7.00",
+          "spill_amount": "0.00",
+          "total_spill": "2.00",
+          "simulation_day": "2026-02-07",
+          "level_band": "PARTIAL"
+        },
+        {
+          "tank_key": "SIM-8",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 8,
+          "tank_received": "2026-02-08 00:00:00",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-8",
+          "tank_unused_archive": null,
+          "step_no": 8,
+          "prior_level": "7.00",
+          "inflow": "0.00",
+          "withdrawal": "8.00",
+          "stored_level": "0.00",
+          "spill_amount": "0.00",
+          "total_spill": "2.00",
+          "simulation_day": "2026-02-08",
+          "level_band": "EMPTY"
+        },
+        {
+          "tank_key": "SIM-9",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 9,
+          "tank_received": "2026-02-09 00:00:00",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-9",
+          "tank_unused_archive": null,
+          "step_no": 9,
+          "prior_level": "0.00",
+          "inflow": "4.00",
+          "withdrawal": "3.00",
+          "stored_level": "1.00",
+          "spill_amount": "0.00",
+          "total_spill": "2.00",
+          "simulation_day": "2026-02-09",
+          "level_band": "PARTIAL"
+        }
+      ]
+    },
+    "rows_count": 9,
+    "parameters": {
+      "STEPS": "9"
+    },
+    "boundary_probes": [
+      {
+        "name": "zero_steps",
+        "parameters": {
+          "STEPS": "0"
+        },
+        "resources": {
+          "parameters": {
+            "STEPS": "0"
+          }
+        },
+        "rows_count": 0,
+        "inputs": [],
+        "expected": {
+          "0": []
+        }
+      },
+      {
+        "name": "one_step",
+        "parameters": {
+          "STEPS": "1"
+        },
+        "resources": {
+          "parameters": {
+            "STEPS": "1"
+          }
+        },
+        "rows_count": 1,
+        "inputs": [],
+        "expected": {
+          "0": [
+            {
+              "tank_key": "SIM-1",
+              "tank_tenant": "LAB",
+              "tank_file": "reservoir",
+              "tank_row": 1,
+              "tank_received": "2026-02-01 00:00:00",
+              "tank_team": null,
+              "tank_market": null,
+              "tank_currency": "UNIT",
+              "tank_batch": "SIM",
+              "tank_note": null,
+              "tank_trace": "STEP-1",
+              "tank_unused_archive": null,
+              "step_no": 1,
+              "prior_level": "5.00",
+              "inflow": "7.00",
+              "withdrawal": "3.00",
+              "stored_level": "9.00",
+              "spill_amount": "0.00",
+              "total_spill": "0.00",
+              "simulation_day": "2026-02-01",
+              "level_band": "PARTIAL"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "parameters": {},
+  "expected_failure": false
+}

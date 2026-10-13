@@ -1,0 +1,417 @@
+[
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in",
+      "filename": "T64_input_0.csv",
+      "content": "BASKET1|ACME|basket.csv|1|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1||X1|keep:1|\"{\"\"lines\"\": [{\"\"sku\"\": \"\" A \"\", \"\"details\"\": {\"\"note\"\": \"\"\"\"}, \"\"amount\"\": \"\"1.25\"\"}, {\"\"sku\"\": \"\" A \"\", \"\"details\"\": null, \"\"amount\"\": null}, {\"\"sku\"\": \"\"B\"\", \"\"details\"\": {\"\"note\"\": \"\" x \"\"}, \"\"amount\"\": \"\"-2.00\"\"}]}\"|__NULL__|2026-01-01 00:00:00.000\nBASKET1|ACME|basket.csv|2|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X2|keep:2|{}|12.50|2026-01-01 00:00:00.000\nBASKET3|ACME|basket.csv|3|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X3|keep:3|__NULL__|__NULL__|__NULL__\nBASKET4|ACME|basket.csv|4|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X4|keep:4||12.50|2026-01-01 00:00:00.000\nBASKET5|ACME|basket.csv|5|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X5|keep:5|   |__NULL__|2026-01-01 00:00:00.000\nBASKET6|ACME|basket.csv|6|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X6|keep:6|\"{\"\"lines\"\": null}\"|12.50|2026-01-01 00:00:00.000\nBASKET7|ACME|basket.csv|7|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X7|keep:7|\"{\"\"lines\"\": []}\"|__NULL__|2026-01-01 00:00:00.000\nBASKET8|ACME|basket.csv|8|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X8|keep:8|\"{\"\"lines\"\": [{\"\"sku\"\": \"\"LAST\"\", \"\"details\"\": {}, \"\"amount\"\": \"\"0.00\"\"}]}\"|12.50|2026-01-01 00:00:00.000\n"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/data-in/T64_input_0.csv' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/data-in/T64_input_0.csv' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph",
+      "filename": "T64.grf",
+      "content": "<?xml version='1.0' encoding='utf-8'?>\n<Graph author=\"Codex\" name=\"T64\" id=\"6101300064\" nature=\"etlGraph\" revision=\"1.0\" guiVersion=\"7.5.0\">\n  <Global>\n    <GraphParameters>\n      <GraphParameterFile fileURL=\"workspace.prm\" />\n      <GraphParameter name=\"PROJECT\" value=\".\" />\n    </GraphParameters>\n    <RichTextNote id=\"Note\" x=\"50\" y=\"25\" width=\"1200\" height=\"100\" backgroundColor=\"FAF6D6\" textColor=\"444444\" fontSize=\"medium\" folded=\"false\">\n      <attr name=\"text\">Basket rows retain optional nested notes\nAcceptance fixture exercises the business rules and preserves every source field for comparison.</attr>\n    </RichTextNote>\n    <Metadata id=\"In0\">\n      <Record name=\"BasketEnvelope\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"basket_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"basket_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"basket_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payload_json\" type=\"string\" nullable=\"true\" />\n        <Field name=\"parent_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"business_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawIn0\">\n      <Record name=\"RawInput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"basket_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"basket_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payload_json\" type=\"string\" nullable=\"true\" />\n        <Field name=\"parent_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"business_dt\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out0\">\n      <Record name=\"BasketLine\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"basket_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"basket_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"basket_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"parent_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"business_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n        <Field name=\"child_code\" type=\"string\" nullable=\"false\" />\n        <Field name=\"child_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"ordinal\" type=\"integer\" nullable=\"false\" />\n        <Field name=\"child_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut0\">\n      <Record name=\"RawOutput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"basket_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"basket_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"basket_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"parent_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"business_dt\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n        <Field name=\"child_code\" type=\"string\" nullable=\"false\" />\n        <Field name=\"child_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"ordinal\" type=\"string\" nullable=\"false\" />\n        <Field name=\"child_amount\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n  </Global>\n  <Phase number=\"0\">\n    <Node id=\"Reader0\" type=\"DATA_READER\" enabled=\"enabled\" guiName=\"Reader0\" guiX=\"50\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-in/T64_input_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"dataPolicy\">strict</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"parser\">org.jetel.data.parser.DataParser</attr>\n    </Node>\n    <Node id=\"Decode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Decode0\" guiX=\"275\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.basket_key=$in.0.basket_key;\n$out.0.basket_tenant=$in.0.basket_tenant;\n$out.0.basket_file=$in.0.basket_file;\n$out.0.basket_row=$in.0.basket_row == null ? null : str2long($in.0.basket_row);\n$out.0.basket_received=$in.0.basket_received == null ? null : str2date($in.0.basket_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\n$out.0.basket_team=$in.0.basket_team;\n$out.0.basket_market=$in.0.basket_market;\n$out.0.basket_currency=$in.0.basket_currency;\n$out.0.basket_batch=$in.0.basket_batch;\n$out.0.basket_note=$in.0.basket_note;\n$out.0.basket_trace=$in.0.basket_trace;\n$out.0.basket_unused_archive=$in.0.basket_unused_archive;\n$out.0.payload_json=$in.0.payload_json;\n$out.0.parent_value=$in.0.parent_value == null ? null : str2decimal($in.0.parent_value);\n$out.0.business_dt=$in.0.business_dt == null ? null : str2date($in.0.business_dt,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\nreturn OK;}</attr>\n    </Node>\n    <Edge id=\"Read0\" fromNode=\"Reader0:0\" toNode=\"Decode0:0\" metadata=\"RawIn0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Decoded0\" fromNode=\"Decode0:0\" toNode=\"Test:0\" metadata=\"In0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Test\" type=\"NORMALIZER\" enabled=\"enabled\" guiName=\"Test\" guiX=\"500\" guiY=\"200\">\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"normalize\">//#CTL2\nvariant children;\nfunction integer count() {\n children=null;\n if (isnull($in.0.payload_json) || trim($in.0.payload_json)==\"\") return 0;\n variant root=parseJson($in.0.payload_json);\n children=containsKey(root,\"lines\") ? root[\"lines\"] : null;\n return isnull(children) ? 0 : length(children);\n}\nfunction integer transform(integer idx) {\n variant item=children[idx];\n $out.0.*=$in.0.*;\n $out.0.child_code=cast(item[\"sku\"],string);$out.0.ordinal=idx+1;\n variant details=containsKey(item,\"details\") ? item[\"details\"] : null;\n $out.0.child_note=null;\n if (!isnull(details) &amp;&amp; containsKey(details,\"note\") &amp;&amp; !isnull(details[\"note\"])) $out.0.child_note=cast(details[\"note\"],string);\n $out.0.child_amount=null;\n if (containsKey(item,\"amount\") &amp;&amp; !isnull(item[\"amount\"])) {\n  string text=cast(item[\"amount\"],string);\n  if (!(text ~= \"-?[0-9]{1,9}(\\\\.[0-9]{1,2})?\")) raiseError(\"Invalid child amount shape\");\n  $out.0.child_amount=str2decimal(text);\n }\n return OK;\n}\nfunction void clean(){children=null;}\n</attr>\n    </Node>\n    <Node id=\"Encode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode0\" guiX=\"725\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.basket_key=$in.0.basket_key;\n$out.0.basket_tenant=$in.0.basket_tenant;\n$out.0.basket_file=$in.0.basket_file;\n$out.0.basket_row=$in.0.basket_row == null ? null : num2str($in.0.basket_row);\n$out.0.basket_received=$in.0.basket_received == null ? null : date2str($in.0.basket_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.basket_team=$in.0.basket_team;\n$out.0.basket_market=$in.0.basket_market;\n$out.0.basket_currency=$in.0.basket_currency;\n$out.0.basket_batch=$in.0.basket_batch;\n$out.0.basket_note=$in.0.basket_note;\n$out.0.basket_trace=$in.0.basket_trace;\n$out.0.basket_unused_archive=$in.0.basket_unused_archive;\n$out.0.parent_value=$in.0.parent_value == null ? null : num2str($in.0.parent_value,\"0.00\",\"en.US\");\n$out.0.business_dt=$in.0.business_dt == null ? null : date2str($in.0.business_dt,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.child_code=$in.0.child_code;\n$out.0.child_note=$in.0.child_note;\n$out.0.ordinal=$in.0.ordinal == null ? null : num2str($in.0.ordinal);\n$out.0.child_amount=$in.0.child_amount == null ? null : num2str($in.0.child_amount,\"0.00\",\"en.US\");\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer0\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer0\" guiX=\"950\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-out/T64_out_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result0\" fromNode=\"Test:0\" toNode=\"Encode0:0\" metadata=\"Out0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written0\" fromNode=\"Encode0:0\" toNode=\"Writer0:0\" metadata=\"RawOut0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n  </Phase>\n</Graph>"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/graph/T64.grf' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/graph/T64.grf' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_validate",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T64.grf",
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"timedOut\":false,\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "timedOut": false,
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_run",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T64.grf",
+      "params": {}
+    },
+    "payload": {
+      "runId": 17970,
+      "message": "Job started. runId: 17970"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17970,\"message\":\"Job started. runId: 17970\"}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17970,
+        "message": "Job started. runId: 17970"
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_await",
+    "arguments": {
+      "runId": 17970,
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "runId": 17970,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T64.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:49:13.828+02:00",
+      "startTime": "2026-10-13T11:49:13.828+02:00",
+      "stopTime": "2026-10-13T11:49:13.850+02:00",
+      "durationMs": 22
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17970,\"sandboxCode\":\"MiscExamples\",\"jobFile\":\"suite_v5/graph/T64.grf\",\"jobType\":\"ETL_GRAPH\",\"status\":\"FINISHED_OK\",\"submitTime\":\"2026-10-13T11:49:13.828+02:00\",\"startTime\":\"2026-10-13T11:49:13.828+02:00\",\"stopTime\":\"2026-10-13T11:49:13.850+02:00\",\"durationMs\":22}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17970,
+        "sandboxCode": "MiscExamples",
+        "jobFile": "suite_v5/graph/T64.grf",
+        "jobType": "ETL_GRAPH",
+        "status": "FINISHED_OK",
+        "submitTime": "2026-10-13T11:49:13.828+02:00",
+        "startTime": "2026-10-13T11:49:13.828+02:00",
+        "stopTime": "2026-10-13T11:49:13.850+02:00",
+        "durationMs": 22
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_tracking",
+    "arguments": {
+      "runId": 17970,
+      "detailed": true
+    },
+    "payload": {
+      "run_id": "17970",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.005,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.003,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 2015
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 2015
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1493
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "NORMALIZER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1493
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 546
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 546
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 814
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 814
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 48,
+        "total_bytes": 9736
+      }
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"run_id\":\"17970\",\"status\":\"FINISHED_OK\",\"exec_seconds\":0.005,\"phases\":[{\"phase_number\":0,\"exec_seconds\":0.003,\"nodes\":[{\"node_id\":\"Reader0\",\"node_name\":\"Reader0\",\"node_type\":\"DATA_READER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":8,\"bytes\":2015}]},{\"node_id\":\"Decode0\",\"node_name\":\"Decode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":8,\"bytes\":2015},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":8,\"bytes\":1493}]},{\"node_id\":\"Test\",\"node_name\":\"Test\",\"node_type\":\"NORMALIZER\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":8,\"bytes\":1493},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":4,\"bytes\":546}]},{\"node_id\":\"Encode0\",\"node_name\":\"Encode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":4,\"bytes\":546},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":4,\"bytes\":814}]},{\"node_id\":\"Writer0\",\"node_name\":\"Writer0\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":4,\"bytes\":814}]}]}],\"summary\":{\"phase_count\":1,\"node_count\":5,\"port_count\":8,\"total_records\":48,\"total_bytes\":9736}}"
+        }
+      ],
+      "structuredContent": {
+        "run_id": "17970",
+        "status": "FINISHED_OK",
+        "exec_seconds": 0.005,
+        "phases": [
+          {
+            "phase_number": 0,
+            "exec_seconds": 0.003,
+            "nodes": [
+              {
+                "node_id": "Reader0",
+                "node_name": "Reader0",
+                "node_type": "DATA_READER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 2015
+                  }
+                ]
+              },
+              {
+                "node_id": "Decode0",
+                "node_name": "Decode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 2015
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1493
+                  }
+                ]
+              },
+              {
+                "node_id": "Test",
+                "node_name": "Test",
+                "node_type": "NORMALIZER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1493
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 4,
+                    "bytes": 546
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode0",
+                "node_name": "Encode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 4,
+                    "bytes": 546
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 4,
+                    "bytes": 814
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer0",
+                "node_name": "Writer0",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 4,
+                    "bytes": 814
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "phase_count": 1,
+          "node_count": 5,
+          "port_count": 8,
+          "total_records": 48,
+          "total_bytes": 9736
+        }
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_log",
+    "arguments": {
+      "runId": 17970
+    },
+    "payload": {
+      "text": "2026-10-13 11:49:13,830 INFO  17970 [boundedElastic-89] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:49:13,830 INFO  17970 [boundedElastic-89] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:49:13,830 INFO  17970 [boundedElastic-89] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:49:13,833 INFO  17970 [JobStarter_17970] Starting job: MiscExamples/suite_v5/graph/T64.grf\n\t Run ID: \t\t17970\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:49:13,836 INFO  17970 [JobExecutor_17970] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:49:13,839 INFO  17970 [JobExecutor_17970] Initializing metadata\n2026-10-13 11:49:13,839 INFO  17970 [JobExecutor_17970] Initializing phase 0\n2026-10-13 11:49:13,842 INFO  17970 [JobExecutor_17970] Phase 0 initialized successfully.\n2026-10-13 11:49:13,842 INFO  17970 [WatchDog_17970] Job execution type: ETL_GRAPH\n2026-10-13 11:49:13,842 INFO  17970 [WatchDog_17970] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T64.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T64.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17970\nPROJECT=.\nROOT_RUN_ID=17970\nRUN_ID=17970\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:49:13,842 INFO  17970 [WatchDog_17970] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:49:13,845 INFO  17970 [WatchDog_17970] Starting up all nodes in phase [0]\n2026-10-13 11:49:13,845 INFO  17970 [WatchDog_17970] Successfully started all nodes in phase!\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Time: 13/10/2026 11:49:13, JVM heap used: 111 MB\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] ---------------------------------------------------------------------------------\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]  (alloc:0MB, cpu:33%)           Out:0              8          1    2666      655\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]  (alloc:0MB, cpu:33%)            In:0              8          1    2666      655\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]                                 Out:0              8          1    2666      486\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Test                     Test                                        FINISHED_OK\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]  (alloc:0MB, cpu:0%)             In:0              8          1    2666      486\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]                                 Out:0              4          0    1333      177\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]  (alloc:0MB, cpu:0%)             In:0              4          0    1333      177\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]                                 Out:0              4          0    1333      264\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]  (alloc:0MB, cpu:33%)            In:0              4          0    1333      264\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] 0                 FINISHED_OK                        0               111\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:49:13,850 INFO  17970 [JobFinalizer_17970] Job finished: MiscExamples/suite_v5/graph/T64.grf\n\t Run ID: \t\t17970\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t22 ms\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "2026-10-13 11:49:13,830 INFO  17970 [boundedElastic-89] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:49:13,830 INFO  17970 [boundedElastic-89] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:49:13,830 INFO  17970 [boundedElastic-89] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:49:13,833 INFO  17970 [JobStarter_17970] Starting job: MiscExamples/suite_v5/graph/T64.grf\n\t Run ID: \t\t17970\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:49:13,836 INFO  17970 [JobExecutor_17970] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:49:13,839 INFO  17970 [JobExecutor_17970] Initializing metadata\n2026-10-13 11:49:13,839 INFO  17970 [JobExecutor_17970] Initializing phase 0\n2026-10-13 11:49:13,842 INFO  17970 [JobExecutor_17970] Phase 0 initialized successfully.\n2026-10-13 11:49:13,842 INFO  17970 [WatchDog_17970] Job execution type: ETL_GRAPH\n2026-10-13 11:49:13,842 INFO  17970 [WatchDog_17970] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T64.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T64.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17970\nPROJECT=.\nROOT_RUN_ID=17970\nRUN_ID=17970\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:49:13,842 INFO  17970 [WatchDog_17970] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:49:13,845 INFO  17970 [WatchDog_17970] Starting up all nodes in phase [0]\n2026-10-13 11:49:13,845 INFO  17970 [WatchDog_17970] Successfully started all nodes in phase!\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Time: 13/10/2026 11:49:13, JVM heap used: 111 MB\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] ---------------------------------------------------------------------------------\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]  (alloc:0MB, cpu:33%)           Out:0              8          1    2666      655\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]  (alloc:0MB, cpu:33%)            In:0              8          1    2666      655\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]                                 Out:0              8          1    2666      486\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Test                     Test                                        FINISHED_OK\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]  (alloc:0MB, cpu:0%)             In:0              8          1    2666      486\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]                                 Out:0              4          0    1333      177\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]  (alloc:0MB, cpu:0%)             In:0              4          0    1333      177\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]                                 Out:0              4          0    1333      264\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970]  (alloc:0MB, cpu:33%)            In:0              4          0    1333      264\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] 0                 FINISHED_OK                        0               111\n2026-10-13 11:49:13,849 INFO  17970 [WatchDog_17970] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:49:13,850 INFO  17970 [JobFinalizer_17970] Job finished: MiscExamples/suite_v5/graph/T64.grf\n\t Run ID: \t\t17970\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t22 ms\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T64_out_0.csv"
+    },
+    "payload": {
+      "text": "\"BASKET1\"|\"ACME\"|\"basket.csv\"|\"1\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"\"|\"X1\"|\"keep:1\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"|\" A \"|\"\"|\"1\"|\"1.25\"\n\"BASKET1\"|\"ACME\"|\"basket.csv\"|\"1\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"\"|\"X1\"|\"keep:1\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"|\" A \"|\"__NULL__\"|\"2\"|\"__NULL__\"\n\"BASKET1\"|\"ACME\"|\"basket.csv\"|\"1\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"\"|\"X1\"|\"keep:1\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"|\"B\"|\" x \"|\"3\"|\"-2.00\"\n\"BASKET8\"|\"ACME\"|\"basket.csv\"|\"8\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X8\"|\"keep:8\"|\"12.50\"|\"2026-01-01 00:00:00.000\"|\"LAST\"|\"__NULL__\"|\"1\"|\"0.00\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"BASKET1\"|\"ACME\"|\"basket.csv\"|\"1\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"\"|\"X1\"|\"keep:1\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"|\" A \"|\"\"|\"1\"|\"1.25\"\n\"BASKET1\"|\"ACME\"|\"basket.csv\"|\"1\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"\"|\"X1\"|\"keep:1\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"|\" A \"|\"__NULL__\"|\"2\"|\"__NULL__\"\n\"BASKET1\"|\"ACME\"|\"basket.csv\"|\"1\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"\"|\"X1\"|\"keep:1\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"|\"B\"|\" x \"|\"3\"|\"-2.00\"\n\"BASKET8\"|\"ACME\"|\"basket.csv\"|\"8\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X8\"|\"keep:8\"|\"12.50\"|\"2026-01-01 00:00:00.000\"|\"LAST\"|\"__NULL__\"|\"1\"|\"0.00\"\n"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

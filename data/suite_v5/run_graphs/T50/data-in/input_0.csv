@@ -1,0 +1,10 @@
+batch-freight_batch|2026-01-01 00:00:00.000|17.25|opaque-0|__NULL__|1|F0| a |exp|2026-01-31 00:00:00.000|__NULL__|__NULL__
+batch-freight_batch|2026-01-01 00:00:00.000|17.25|opaque-1|__NULL__|2|F1|A|EXP|2026-01-31 00:00:01.000|__NULL__|__NULL__
+batch-freight_batch|2026-01-01 00:00:00.000|17.25|opaque-2|__NULL__|3|F2|A|NULL|2026-02-01 00:00:00.000|__NULL__|__NULL__
+batch-freight_batch|2026-01-01 00:00:00.000|17.25|opaque-3|__NULL__|4|F0|A|BAD|2026-03-01 00:00:00.000|__NULL__|__NULL__
+batch-freight_batch|2026-01-01 00:00:00.000|17.25|opaque-4|__NULL__|5|F1|B|??|2026-03-01 00:00:00.000|__NULL__|__NULL__
+batch-freight_batch|2026-01-01 00:00:00.000|17.25|opaque-5|__NULL__|6|F2|__NULL__|EXP|2026-03-01 00:00:00.000|__NULL__|__NULL__
+batch-freight_batch|2026-01-01 00:00:00.000|17.25|opaque-6|__NULL__|7|F0|||__NULL__|__NULL__|
+batch-freight_batch|2026-01-01 00:00:00.000|17.25|opaque-7|__NULL__|8|F1|A|EXP|__NULL__|__NULL__|__NULL__
+batch-freight_batch|2026-01-01 00:00:00.000|17.25|opaque-8|__NULL__|9|F2|A|EXP|2027-01-01 00:00:00.000|__NULL__|__NULL__
+batch-freight_batch|2026-01-01 00:00:00.000|17.25|opaque-9|__NULL__|10|F0| a |exp|2026-01-01 00:00:00.000|__NULL__|__NULL__

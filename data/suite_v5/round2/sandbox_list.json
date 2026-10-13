@@ -1,0 +1,46 @@
+{
+  "meta": null,
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"sandboxes\":[{\"sandboxCode\":\"wrangler_shared_home\",\"name\":\"wrangler_shared_home\",\"description\":\"\",\"suspended\":false},{\"sandboxCode\":\"DPOForge\",\"name\":\"DPOForge\",\"description\":\"\",\"suspended\":false},{\"sandboxCode\":\"MiscExamples\",\"name\":\"MiscExamples\",\"description\":\"\",\"suspended\":false},{\"sandboxCode\":\"QuickStartGuide\",\"name\":\"QuickStartGuide\",\"description\":\"\",\"suspended\":false},{\"sandboxCode\":\"DWHExample\",\"name\":\"DWHExample\",\"description\":\"\",\"suspended\":false}]}",
+      "annotations": null,
+      "meta": null
+    }
+  ],
+  "structuredContent": {
+    "sandboxes": [
+      {
+        "sandboxCode": "wrangler_shared_home",
+        "name": "wrangler_shared_home",
+        "description": "",
+        "suspended": false
+      },
+      {
+        "sandboxCode": "DPOForge",
+        "name": "DPOForge",
+        "description": "",
+        "suspended": false
+      },
+      {
+        "sandboxCode": "MiscExamples",
+        "name": "MiscExamples",
+        "description": "",
+        "suspended": false
+      },
+      {
+        "sandboxCode": "QuickStartGuide",
+        "name": "QuickStartGuide",
+        "description": "",
+        "suspended": false
+      },
+      {
+        "sandboxCode": "DWHExample",
+        "name": "DWHExample",
+        "description": "",
+        "suspended": false
+      }
+    ]
+  },
+  "isError": false
+}

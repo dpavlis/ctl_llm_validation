@@ -1,0 +1,110 @@
+{
+  "test_id": "P901",
+  "label": "P901",
+  "graph_file": "suite_v5/graph/P901.grf",
+  "reference_sha256": "f96dd40fb5ee9fad411d2e9f9bc5d59ff913d2a6417d175014526a7bc7cedf92",
+  "graph_sha256": "cf8a271021d642c0566b779c25533dbbe5e79e6c474142218df901f1b44d1766",
+  "files": [
+    {
+      "local": "run_graphs/P901/graph/P901.grf",
+      "remote": "suite_v5/graph/P901.grf",
+      "sha256": "cf8a271021d642c0566b779c25533dbbe5e79e6c474142218df901f1b44d1766"
+    }
+  ],
+  "output_paths": {
+    "0": "suite_v5/data-out/P901_out_0.csv"
+  },
+  "output_metadata": [
+    "<Record name=\"ConversionProbe\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"case_id\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"raw_date\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"decimal_threw\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"decimal_null\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"is_date\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"parse_threw\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"parsed_date\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"unicode_length\" type=\"integer\" nullable=\"false\"/>\n</Record>"
+  ],
+  "fixture": {
+    "inputs": [],
+    "expected": {
+      "0": [
+        {
+          "case_id": 1,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        {
+          "case_id": 2,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        {
+          "case_id": 3,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        {
+          "case_id": 4,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        {
+          "case_id": 5,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        {
+          "case_id": 6,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        {
+          "case_id": 7,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        {
+          "case_id": 8,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      ]
+    },
+    "rows_count": 8
+  },
+  "parameters": {},
+  "expected_failure": false
+}

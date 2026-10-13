@@ -1,0 +1,521 @@
+[
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in",
+      "filename": "T44_input_0.csv",
+      "content": "batch-vendor_batch|2026-01-01 00:00:00.000|17.25|opaque-0|__NULL__|1| A |0|2026-01-01| net30 ||__NULL__|Marta|__NULL__|__NULL__|__NULL__|CZ|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-vendor_batch|2026-01-01 00:00:00.000|17.25|opaque-1|__NULL__|2| |__NULL__|2025-02-30|bad|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|CZ|__NULL__|__NULL__|__NULL__|__NULL__||__NULL__\nbatch-vendor_batch|2026-01-01 00:00:00.000|17.25|opaque-2|__NULL__|3|A|||__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-vendor_batch|2026-01-01 00:00:00.000|17.25|opaque-3|__NULL__|4|B|1234567890123|2025-1-1|NET60|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-vendor_batch|2026-01-01 00:00:00.000|17.25|opaque-4|__NULL__|5|C|1e2|2026-01-01|NET30|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-vendor_batch|2026-01-01 00:00:00.000|17.25|opaque-5|__NULL__|6|D|1.|2026-01-01x|NET30|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-vendor_batch|2026-01-01 00:00:00.000|17.25|opaque-6|__NULL__|7|E| 12.50 |2026-02-28 12:34:56|NET60|__NULL__||__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__\nbatch-vendor_batch|2026-01-01 00:00:00.000|17.25|opaque-7|__NULL__|8|A|999999999999.99|2024-02-29|NET30|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__||__NULL__\n"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/data-in/T44_input_0.csv' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/data-in/T44_input_0.csv' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph",
+      "filename": "T44.grf",
+      "content": "<?xml version='1.0' encoding='utf-8'?>\n<Graph author=\"Codex\" name=\"T44\" id=\"6101300044\" nature=\"etlGraph\" revision=\"1.0\" guiVersion=\"7.5.0\">\n  <Global>\n    <GraphParameters>\n      <GraphParameterFile fileURL=\"workspace.prm\" />\n      <GraphParameter name=\"PROJECT\" value=\".\" />\n    </GraphParameters>\n    <RichTextNote id=\"Note\" x=\"50\" y=\"25\" width=\"1200\" height=\"100\" backgroundColor=\"FAF6D6\" textColor=\"444444\" fontSize=\"medium\" folded=\"false\">\n      <attr name=\"text\">Vendor registrations with complete remediation reasons\nAcceptance fixture exercises the business rules and preserves every source field for comparison.</attr>\n    </RichTextNote>\n    <Metadata id=\"In0\">\n      <Record name=\"InputT44\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"vendor_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"vendor_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"vendor_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"vendor_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"vendor_ref_no\" type=\"string\" nullable=\"false\" />\n        <Field name=\"invoice_limit_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"activation_dt_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_term_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"contact_email\" type=\"string\" nullable=\"true\" />\n        <Field name=\"address_line2\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_nm\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_address_line1\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_postal_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_country_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_bank_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_tax_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_branch_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_sales_rep\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_remittance_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_legal_entity\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawIn0\">\n      <Record name=\"RawInput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"vendor_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"vendor_loaded\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"vendor_ledger\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"vendor_ref_no\" type=\"string\" nullable=\"false\" />\n        <Field name=\"invoice_limit_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"activation_dt_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_term_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"contact_email\" type=\"string\" nullable=\"true\" />\n        <Field name=\"address_line2\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_nm\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_address_line1\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_postal_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_country_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_bank_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_tax_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_branch_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_sales_rep\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_remittance_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_legal_entity\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out0\">\n      <Record name=\"VendorAccepted\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"vendor_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"vendor_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"vendor_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"vendor_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"vendor_ref_no\" type=\"string\" nullable=\"false\" />\n        <Field name=\"invoice_limit_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"activation_dt_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_term_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"contact_email\" type=\"string\" nullable=\"true\" />\n        <Field name=\"address_line2\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_nm\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_address_line1\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_postal_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_country_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_bank_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_tax_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_branch_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_sales_rep\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_remittance_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_legal_entity\" type=\"string\" nullable=\"true\" />\n        <Field name=\"approved_amount\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\" />\n        <Field name=\"effective_dt\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"business_code\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut0\">\n      <Record name=\"RawOutput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"vendor_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"vendor_loaded\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"vendor_ledger\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"vendor_ref_no\" type=\"string\" nullable=\"false\" />\n        <Field name=\"invoice_limit_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"activation_dt_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_term_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"contact_email\" type=\"string\" nullable=\"true\" />\n        <Field name=\"address_line2\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_nm\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_address_line1\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_postal_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_country_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_bank_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_tax_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_branch_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_sales_rep\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_remittance_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_legal_entity\" type=\"string\" nullable=\"true\" />\n        <Field name=\"approved_amount\" type=\"string\" nullable=\"false\" />\n        <Field name=\"effective_dt\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"business_code\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out1\">\n      <Record name=\"VendorRejected\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"vendor_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"vendor_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"vendor_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"vendor_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"vendor_ref_no\" type=\"string\" nullable=\"false\" />\n        <Field name=\"invoice_limit_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"activation_dt_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_term_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"contact_email\" type=\"string\" nullable=\"true\" />\n        <Field name=\"address_line2\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_nm\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_address_line1\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_postal_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_country_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_bank_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_tax_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_branch_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_sales_rep\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_remittance_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_legal_entity\" type=\"string\" nullable=\"true\" />\n        <Field name=\"reject_reason\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut1\">\n      <Record name=\"RawOutput1\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"vendor_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"vendor_loaded\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"vendor_ledger\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"vendor_ref_no\" type=\"string\" nullable=\"false\" />\n        <Field name=\"invoice_limit_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"activation_dt_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_term_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"contact_email\" type=\"string\" nullable=\"true\" />\n        <Field name=\"address_line2\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_nm\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_contact_phone\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_address_line1\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_postal_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_country_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_bank_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_tax_ref\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_branch_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_sales_rep\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_remittance_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"vendor_legal_entity\" type=\"string\" nullable=\"true\" />\n        <Field name=\"reject_reason\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n  </Global>\n  <Phase number=\"0\">\n    <Node id=\"Reader0\" type=\"DATA_READER\" enabled=\"enabled\" guiName=\"Reader0\" guiX=\"50\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-in/T44_input_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"dataPolicy\">strict</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"parser\">org.jetel.data.parser.DataParser</attr>\n    </Node>\n    <Node id=\"Decode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Decode0\" guiX=\"275\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.vendor_batch=$in.0.vendor_batch;\n$out.0.vendor_loaded=$in.0.vendor_loaded == null ? null : str2date($in.0.vendor_loaded,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\n$out.0.vendor_ledger=$in.0.vendor_ledger == null ? null : str2decimal($in.0.vendor_ledger);\n$out.0.vendor_unused=$in.0.vendor_unused;\n$out.0.vendor_note=$in.0.vendor_note;\n$out.0.vendor_row=$in.0.vendor_row == null ? null : str2long($in.0.vendor_row);\n$out.0.vendor_ref_no=$in.0.vendor_ref_no;\n$out.0.invoice_limit_txt=$in.0.invoice_limit_txt;\n$out.0.activation_dt_txt=$in.0.activation_dt_txt;\n$out.0.payment_term_txt=$in.0.payment_term_txt;\n$out.0.contact_email=$in.0.contact_email;\n$out.0.address_line2=$in.0.address_line2;\n$out.0.vendor_contact_nm=$in.0.vendor_contact_nm;\n$out.0.vendor_contact_phone=$in.0.vendor_contact_phone;\n$out.0.vendor_address_line1=$in.0.vendor_address_line1;\n$out.0.vendor_postal_cd=$in.0.vendor_postal_cd;\n$out.0.vendor_country_cd=$in.0.vendor_country_cd;\n$out.0.vendor_bank_ref=$in.0.vendor_bank_ref;\n$out.0.vendor_tax_ref=$in.0.vendor_tax_ref;\n$out.0.vendor_branch_cd=$in.0.vendor_branch_cd;\n$out.0.vendor_sales_rep=$in.0.vendor_sales_rep;\n$out.0.vendor_remittance_note=$in.0.vendor_remittance_note;\n$out.0.vendor_legal_entity=$in.0.vendor_legal_entity;\nreturn OK;}</attr>\n    </Node>\n    <Edge id=\"Read0\" fromNode=\"Reader0:0\" toNode=\"Decode0:0\" metadata=\"RawIn0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Decoded0\" fromNode=\"Decode0:0\" toNode=\"Test:0\" metadata=\"In0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Test\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Test\" guiX=\"500\" guiY=\"200\">\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n string[] reasons=[];string m=trim(nvl($in.0.invoice_limit_txt,\"\"));string d=trim(nvl($in.0.activation_dt_txt,\"\"));string term=upperCase(trim(nvl($in.0.payment_term_txt,\"\")));string p=\"yyyy-MM-dd\";boolean good=false;\n if(d ~= \"[0-9]{4}-[0-9]{2}-[0-9]{2}\")good=isDate(d,p,\"en.US\",\"UTC\",true);\n else if(d ~= \"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\"){p=\"yyyy-MM-dd HH:mm:ss\";good=isDate(d,p,\"en.US\",\"UTC\",true);}\n if(trim($in.0.vendor_ref_no)==\"\")append(reasons,\"REF\");if(!(m ~= \"[0-9]{1,12}(\\\\.[0-9]{1,2})?\"))append(reasons,\"LIMIT\");if(!good)append(reasons,\"DATE\");if(!(term==\"NET30\"||term==\"NET60\"))append(reasons,\"TERM\");\n if(length(reasons)&gt;0){$out.1.*=$in.0.*;$out.1.reject_reason=join(\";\",reasons);return 1;}\n $out.0.*=$in.0.*;$out.0.approved_amount=str2decimal(m);$out.0.effective_dt=str2date(d,p,\"en.US\",\"UTC\",true);$out.0.business_code=term;return 0;\n}</attr>\n    </Node>\n    <Node id=\"Encode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode0\" guiX=\"725\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.vendor_batch=$in.0.vendor_batch;\n$out.0.vendor_loaded=$in.0.vendor_loaded == null ? null : date2str($in.0.vendor_loaded,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.vendor_ledger=$in.0.vendor_ledger == null ? null : num2str($in.0.vendor_ledger,\"0.00\",\"en.US\");\n$out.0.vendor_unused=$in.0.vendor_unused;\n$out.0.vendor_note=$in.0.vendor_note;\n$out.0.vendor_row=$in.0.vendor_row == null ? null : num2str($in.0.vendor_row);\n$out.0.vendor_ref_no=$in.0.vendor_ref_no;\n$out.0.invoice_limit_txt=$in.0.invoice_limit_txt;\n$out.0.activation_dt_txt=$in.0.activation_dt_txt;\n$out.0.payment_term_txt=$in.0.payment_term_txt;\n$out.0.contact_email=$in.0.contact_email;\n$out.0.address_line2=$in.0.address_line2;\n$out.0.vendor_contact_nm=$in.0.vendor_contact_nm;\n$out.0.vendor_contact_phone=$in.0.vendor_contact_phone;\n$out.0.vendor_address_line1=$in.0.vendor_address_line1;\n$out.0.vendor_postal_cd=$in.0.vendor_postal_cd;\n$out.0.vendor_country_cd=$in.0.vendor_country_cd;\n$out.0.vendor_bank_ref=$in.0.vendor_bank_ref;\n$out.0.vendor_tax_ref=$in.0.vendor_tax_ref;\n$out.0.vendor_branch_cd=$in.0.vendor_branch_cd;\n$out.0.vendor_sales_rep=$in.0.vendor_sales_rep;\n$out.0.vendor_remittance_note=$in.0.vendor_remittance_note;\n$out.0.vendor_legal_entity=$in.0.vendor_legal_entity;\n$out.0.approved_amount=$in.0.approved_amount == null ? null : num2str($in.0.approved_amount,\"0.00\",\"en.US\");\n$out.0.effective_dt=$in.0.effective_dt == null ? null : date2str($in.0.effective_dt,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.business_code=$in.0.business_code;\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer0\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer0\" guiX=\"950\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-out/T44_out_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result0\" fromNode=\"Test:0\" toNode=\"Encode0:0\" metadata=\"Out0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written0\" fromNode=\"Encode0:0\" toNode=\"Writer0:0\" metadata=\"RawOut0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Encode1\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode1\" guiX=\"725\" guiY=\"375\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.vendor_batch=$in.0.vendor_batch;\n$out.0.vendor_loaded=$in.0.vendor_loaded == null ? null : date2str($in.0.vendor_loaded,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.vendor_ledger=$in.0.vendor_ledger == null ? null : num2str($in.0.vendor_ledger,\"0.00\",\"en.US\");\n$out.0.vendor_unused=$in.0.vendor_unused;\n$out.0.vendor_note=$in.0.vendor_note;\n$out.0.vendor_row=$in.0.vendor_row == null ? null : num2str($in.0.vendor_row);\n$out.0.vendor_ref_no=$in.0.vendor_ref_no;\n$out.0.invoice_limit_txt=$in.0.invoice_limit_txt;\n$out.0.activation_dt_txt=$in.0.activation_dt_txt;\n$out.0.payment_term_txt=$in.0.payment_term_txt;\n$out.0.contact_email=$in.0.contact_email;\n$out.0.address_line2=$in.0.address_line2;\n$out.0.vendor_contact_nm=$in.0.vendor_contact_nm;\n$out.0.vendor_contact_phone=$in.0.vendor_contact_phone;\n$out.0.vendor_address_line1=$in.0.vendor_address_line1;\n$out.0.vendor_postal_cd=$in.0.vendor_postal_cd;\n$out.0.vendor_country_cd=$in.0.vendor_country_cd;\n$out.0.vendor_bank_ref=$in.0.vendor_bank_ref;\n$out.0.vendor_tax_ref=$in.0.vendor_tax_ref;\n$out.0.vendor_branch_cd=$in.0.vendor_branch_cd;\n$out.0.vendor_sales_rep=$in.0.vendor_sales_rep;\n$out.0.vendor_remittance_note=$in.0.vendor_remittance_note;\n$out.0.vendor_legal_entity=$in.0.vendor_legal_entity;\n$out.0.reject_reason=$in.0.reject_reason;\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer1\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer1\" guiX=\"950\" guiY=\"375\">\n      <attr name=\"fileURL\">suite_v5/data-out/T44_out_1.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result1\" fromNode=\"Test:1\" toNode=\"Encode1:0\" metadata=\"Out1\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written1\" fromNode=\"Encode1:0\" toNode=\"Writer1:0\" metadata=\"RawOut1\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n  </Phase>\n</Graph>"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/graph/T44.grf' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/graph/T44.grf' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_validate",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T44.grf",
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"timedOut\":false,\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "timedOut": false,
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_run",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T44.grf",
+      "params": {}
+    },
+    "payload": {
+      "runId": 17995,
+      "message": "Job started. runId: 17995"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17995,\"message\":\"Job started. runId: 17995\"}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17995,
+        "message": "Job started. runId: 17995"
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_await",
+    "arguments": {
+      "runId": 17995,
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "runId": 17995,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T44.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T12:00:27.955+02:00",
+      "startTime": "2026-10-13T12:00:27.955+02:00",
+      "stopTime": "2026-10-13T12:00:28.001+02:00",
+      "durationMs": 46
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17995,\"sandboxCode\":\"MiscExamples\",\"jobFile\":\"suite_v5/graph/T44.grf\",\"jobType\":\"ETL_GRAPH\",\"status\":\"FINISHED_OK\",\"submitTime\":\"2026-10-13T12:00:27.955+02:00\",\"startTime\":\"2026-10-13T12:00:27.955+02:00\",\"stopTime\":\"2026-10-13T12:00:28.001+02:00\",\"durationMs\":46}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17995,
+        "sandboxCode": "MiscExamples",
+        "jobFile": "suite_v5/graph/T44.grf",
+        "jobType": "ETL_GRAPH",
+        "status": "FINISHED_OK",
+        "submitTime": "2026-10-13T12:00:27.955+02:00",
+        "startTime": "2026-10-13T12:00:27.955+02:00",
+        "stopTime": "2026-10-13T12:00:28.001+02:00",
+        "durationMs": 46
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_tracking",
+    "arguments": {
+      "runId": 17995,
+      "detailed": true
+    },
+    "payload": {
+      "run_id": "17995",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.009,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.003,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1410
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1410
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1114
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 1114
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 551
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 1,
+                  "records": 5,
+                  "bytes": 767
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 551
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 806
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 806
+                }
+              ]
+            },
+            {
+              "node_id": "Encode1",
+              "node_name": "Encode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 767
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 952
+                }
+              ]
+            },
+            {
+              "node_id": "Writer1",
+              "node_name": "Writer1",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 952
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 7,
+        "port_count": 12,
+        "total_records": 64,
+        "total_bytes": 11200
+      }
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"run_id\":\"17995\",\"status\":\"FINISHED_OK\",\"exec_seconds\":0.009,\"phases\":[{\"phase_number\":0,\"exec_seconds\":0.003,\"nodes\":[{\"node_id\":\"Reader0\",\"node_name\":\"Reader0\",\"node_type\":\"DATA_READER\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":8,\"bytes\":1410}]},{\"node_id\":\"Decode0\",\"node_name\":\"Decode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":8,\"bytes\":1410},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":8,\"bytes\":1114}]},{\"node_id\":\"Test\",\"node_name\":\"Test\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":8,\"bytes\":1114},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":3,\"bytes\":551},{\"port_type\":\"OUTPUT\",\"index\":1,\"records\":5,\"bytes\":767}]},{\"node_id\":\"Encode0\",\"node_name\":\"Encode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":3,\"bytes\":551},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":3,\"bytes\":806}]},{\"node_id\":\"Writer0\",\"node_name\":\"Writer0\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":3,\"bytes\":806}]},{\"node_id\":\"Encode1\",\"node_name\":\"Encode1\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":5,\"bytes\":767},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":5,\"bytes\":952}]},{\"node_id\":\"Writer1\",\"node_name\":\"Writer1\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":5,\"bytes\":952}]}]}],\"summary\":{\"phase_count\":1,\"node_count\":7,\"port_count\":12,\"total_records\":64,\"total_bytes\":11200}}"
+        }
+      ],
+      "structuredContent": {
+        "run_id": "17995",
+        "status": "FINISHED_OK",
+        "exec_seconds": 0.009,
+        "phases": [
+          {
+            "phase_number": 0,
+            "exec_seconds": 0.003,
+            "nodes": [
+              {
+                "node_id": "Reader0",
+                "node_name": "Reader0",
+                "node_type": "DATA_READER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1410
+                  }
+                ]
+              },
+              {
+                "node_id": "Decode0",
+                "node_name": "Decode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1410
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1114
+                  }
+                ]
+              },
+              {
+                "node_id": "Test",
+                "node_name": "Test",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 1114
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 551
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 1,
+                    "records": 5,
+                    "bytes": 767
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode0",
+                "node_name": "Encode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 551
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 806
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer0",
+                "node_name": "Writer0",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 806
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode1",
+                "node_name": "Encode1",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 5,
+                    "bytes": 767
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 5,
+                    "bytes": 952
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer1",
+                "node_name": "Writer1",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 5,
+                    "bytes": 952
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "phase_count": 1,
+          "node_count": 7,
+          "port_count": 12,
+          "total_records": 64,
+          "total_bytes": 11200
+        }
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_log",
+    "arguments": {
+      "runId": 17995
+    },
+    "payload": {
+      "text": "2026-10-13 12:00:27,958 INFO  17995 [boundedElastic-93] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 12:00:27,958 INFO  17995 [boundedElastic-93] Running with CloverDX version 0.0.0.devel\n2026-10-13 12:00:27,958 INFO  17995 [boundedElastic-93] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 12:00:27,962 INFO  17995 [JobStarter_17995] Starting job: MiscExamples/suite_v5/graph/T44.grf\n\t Run ID: \t\t17995\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 12:00:27,977 INFO  17995 [JobExecutor_17995] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 12:00:27,986 INFO  17995 [JobExecutor_17995] Initializing metadata\n2026-10-13 12:00:27,986 INFO  17995 [JobExecutor_17995] Initializing phase 0\n2026-10-13 12:00:27,989 INFO  17995 [JobExecutor_17995] Phase 0 initialized successfully.\n2026-10-13 12:00:27,989 INFO  17995 [WatchDog_17995] Job execution type: ETL_GRAPH\n2026-10-13 12:00:27,989 INFO  17995 [WatchDog_17995] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T44.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T44.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17995\nPROJECT=.\nROOT_RUN_ID=17995\nRUN_ID=17995\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 12:00:27,989 INFO  17995 [WatchDog_17995] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 12:00:27,993 INFO  17995 [WatchDog_17995] Starting up all nodes in phase [0]\n2026-10-13 12:00:27,993 INFO  17995 [WatchDog_17995] Successfully started all nodes in phase!\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Time: 13/10/2026 12:00:27, JVM heap used: 102 MB\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] ---------------------------------------------------------------------------------\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:0%)            Out:0              8          1    2666      458\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:0%)             In:0              8          1    2666      458\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]                                 Out:0              8          1    2666      362\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Test                     Test                                        FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:0%)             In:0              8          1    2666      362\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]                                 Out:0              3          0    1000      179\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]                                 Out:1              5          0    1666      249\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:0%)             In:0              3          0    1000      179\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]                                 Out:0              3          0    1000      262\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:33%)            In:0              3          0    1000      262\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Encode1                  Encode1                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:0%)             In:0              5          0    1666      249\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]                                 Out:0              5          0    1666      309\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Writer1                  Writer1                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:33%)            In:0              5          0    1666      309\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] ---------------------------------** End of Log **--------------------------------\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] WatchDog finished - total execution time: 0 sec\n2026-10-13 12:00:28,000 INFO  17995 [WatchDog_17995] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 12:00:28,000 INFO  17995 [WatchDog_17995] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 12:00:28,000 INFO  17995 [WatchDog_17995] 0                 FINISHED_OK                        0               102\n2026-10-13 12:00:28,000 INFO  17995 [WatchDog_17995] ------------------------------** End of Summary **---------------------------\n2026-10-13 12:00:28,001 INFO  17995 [JobFinalizer_17995] Job finished: MiscExamples/suite_v5/graph/T44.grf\n\t Run ID: \t\t17995\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t46 ms\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "2026-10-13 12:00:27,958 INFO  17995 [boundedElastic-93] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 12:00:27,958 INFO  17995 [boundedElastic-93] Running with CloverDX version 0.0.0.devel\n2026-10-13 12:00:27,958 INFO  17995 [boundedElastic-93] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 12:00:27,962 INFO  17995 [JobStarter_17995] Starting job: MiscExamples/suite_v5/graph/T44.grf\n\t Run ID: \t\t17995\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 12:00:27,977 INFO  17995 [JobExecutor_17995] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 12:00:27,986 INFO  17995 [JobExecutor_17995] Initializing metadata\n2026-10-13 12:00:27,986 INFO  17995 [JobExecutor_17995] Initializing phase 0\n2026-10-13 12:00:27,989 INFO  17995 [JobExecutor_17995] Phase 0 initialized successfully.\n2026-10-13 12:00:27,989 INFO  17995 [WatchDog_17995] Job execution type: ETL_GRAPH\n2026-10-13 12:00:27,989 INFO  17995 [WatchDog_17995] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T44.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T44.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17995\nPROJECT=.\nROOT_RUN_ID=17995\nRUN_ID=17995\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 12:00:27,989 INFO  17995 [WatchDog_17995] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 12:00:27,993 INFO  17995 [WatchDog_17995] Starting up all nodes in phase [0]\n2026-10-13 12:00:27,993 INFO  17995 [WatchDog_17995] Successfully started all nodes in phase!\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Time: 13/10/2026 12:00:27, JVM heap used: 102 MB\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] ---------------------------------------------------------------------------------\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:0%)            Out:0              8          1    2666      458\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:0%)             In:0              8          1    2666      458\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]                                 Out:0              8          1    2666      362\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Test                     Test                                        FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:0%)             In:0              8          1    2666      362\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]                                 Out:0              3          0    1000      179\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]                                 Out:1              5          0    1666      249\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:0%)             In:0              3          0    1000      179\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]                                 Out:0              3          0    1000      262\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:33%)            In:0              3          0    1000      262\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Encode1                  Encode1                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:0%)             In:0              5          0    1666      249\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]                                 Out:0              5          0    1666      309\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Writer1                  Writer1                                     FINISHED_OK\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995]  (alloc:0MB, cpu:33%)            In:0              5          0    1666      309\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] ---------------------------------** End of Log **--------------------------------\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 12:00:27,999 INFO  17995 [WatchDog_17995] WatchDog finished - total execution time: 0 sec\n2026-10-13 12:00:28,000 INFO  17995 [WatchDog_17995] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 12:00:28,000 INFO  17995 [WatchDog_17995] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 12:00:28,000 INFO  17995 [WatchDog_17995] 0                 FINISHED_OK                        0               102\n2026-10-13 12:00:28,000 INFO  17995 [WatchDog_17995] ------------------------------** End of Summary **---------------------------\n2026-10-13 12:00:28,001 INFO  17995 [JobFinalizer_17995] Job finished: MiscExamples/suite_v5/graph/T44.grf\n\t Run ID: \t\t17995\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t46 ms\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T44_out_0.csv"
+    },
+    "payload": {
+      "text": "\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-0\"|\"__NULL__\"|\"1\"|\" A \"|\"0\"|\"2026-01-01\"|\" net30 \"|\"\"|\"__NULL__\"|\"Marta\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"CZ\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"0.00\"|\"2026-01-01 00:00:00.000\"|\"NET30\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-6\"|\"__NULL__\"|\"7\"|\"E\"|\" 12.50 \"|\"2026-02-28 12:34:56\"|\"NET60\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"12.50\"|\"2026-02-28 12:34:56.000\"|\"NET60\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-7\"|\"__NULL__\"|\"8\"|\"A\"|\"999999999999.99\"|\"2024-02-29\"|\"NET30\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"999999999999.99\"|\"2024-02-29 00:00:00.000\"|\"NET30\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-0\"|\"__NULL__\"|\"1\"|\" A \"|\"0\"|\"2026-01-01\"|\" net30 \"|\"\"|\"__NULL__\"|\"Marta\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"CZ\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"0.00\"|\"2026-01-01 00:00:00.000\"|\"NET30\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-6\"|\"__NULL__\"|\"7\"|\"E\"|\" 12.50 \"|\"2026-02-28 12:34:56\"|\"NET60\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"12.50\"|\"2026-02-28 12:34:56.000\"|\"NET60\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-7\"|\"__NULL__\"|\"8\"|\"A\"|\"999999999999.99\"|\"2024-02-29\"|\"NET30\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"999999999999.99\"|\"2024-02-29 00:00:00.000\"|\"NET30\"\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T44_out_1.csv"
+    },
+    "payload": {
+      "text": "\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-1\"|\"__NULL__\"|\"2\"|\" \"|\"__NULL__\"|\"2025-02-30\"|\"bad\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"CZ\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"REF;LIMIT;DATE;TERM\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-2\"|\"__NULL__\"|\"3\"|\"A\"|\"\"|\"\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"LIMIT;DATE;TERM\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-3\"|\"__NULL__\"|\"4\"|\"B\"|\"1234567890123\"|\"2025-1-1\"|\"NET60\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"LIMIT;DATE\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-4\"|\"__NULL__\"|\"5\"|\"C\"|\"1e2\"|\"2026-01-01\"|\"NET30\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"LIMIT\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-5\"|\"__NULL__\"|\"6\"|\"D\"|\"1.\"|\"2026-01-01x\"|\"NET30\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"LIMIT;DATE\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-1\"|\"__NULL__\"|\"2\"|\" \"|\"__NULL__\"|\"2025-02-30\"|\"bad\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"CZ\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"\"|\"__NULL__\"|\"REF;LIMIT;DATE;TERM\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-2\"|\"__NULL__\"|\"3\"|\"A\"|\"\"|\"\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"LIMIT;DATE;TERM\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-3\"|\"__NULL__\"|\"4\"|\"B\"|\"1234567890123\"|\"2025-1-1\"|\"NET60\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"LIMIT;DATE\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-4\"|\"__NULL__\"|\"5\"|\"C\"|\"1e2\"|\"2026-01-01\"|\"NET30\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"LIMIT\"\n\"batch-vendor_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-5\"|\"__NULL__\"|\"6\"|\"D\"|\"1.\"|\"2026-01-01x\"|\"NET30\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"LIMIT;DATE\"\n"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

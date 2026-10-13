@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T51" id="6101300051" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Claim payout tariff selection over duplicate reference keys
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="InputT51" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="claim_batch" type="string" nullable="false" />
+        <Field name="claim_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="claim_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="claim_unused" type="string" nullable="true" />
+        <Field name="claim_note" type="string" nullable="true" />
+        <Field name="claim_row" type="long" nullable="false" />
+        <Field name="claim_ref" type="string" nullable="false" />
+        <Field name="provider_id" type="string" nullable="true" />
+        <Field name="region_id" type="string" nullable="true" />
+        <Field name="loss_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="claim_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="coverage_label" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="claim_batch" type="string" nullable="false" />
+        <Field name="claim_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="claim_ledger" type="string" nullable="true" />
+        <Field name="claim_unused" type="string" nullable="true" />
+        <Field name="claim_note" type="string" nullable="true" />
+        <Field name="claim_row" type="string" nullable="false" />
+        <Field name="claim_ref" type="string" nullable="false" />
+        <Field name="provider_id" type="string" nullable="true" />
+        <Field name="region_id" type="string" nullable="true" />
+        <Field name="loss_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="claim_amount" type="string" nullable="true" />
+        <Field name="coverage_label" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="ClaimPayout" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="claim_batch" type="string" nullable="false" />
+        <Field name="claim_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="claim_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="claim_unused" type="string" nullable="true" />
+        <Field name="claim_note" type="string" nullable="true" />
+        <Field name="claim_row" type="long" nullable="false" />
+        <Field name="claim_ref" type="string" nullable="false" />
+        <Field name="provider_id" type="string" nullable="true" />
+        <Field name="region_id" type="string" nullable="true" />
+        <Field name="loss_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="claim_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="coverage_label" type="string" nullable="true" />
+        <Field name="selected_tariff" type="string" nullable="false" />
+        <Field name="tariff_missing" type="boolean" nullable="false" />
+        <Field name="payout" type="decimal" nullable="false" length="18" scale="2" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="claim_batch" type="string" nullable="false" />
+        <Field name="claim_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="claim_ledger" type="string" nullable="true" />
+        <Field name="claim_unused" type="string" nullable="true" />
+        <Field name="claim_note" type="string" nullable="true" />
+        <Field name="claim_row" type="string" nullable="false" />
+        <Field name="claim_ref" type="string" nullable="false" />
+        <Field name="provider_id" type="string" nullable="true" />
+        <Field name="region_id" type="string" nullable="true" />
+        <Field name="loss_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="claim_amount" type="string" nullable="true" />
+        <Field name="coverage_label" type="string" nullable="true" />
+        <Field name="selected_tariff" type="string" nullable="false" />
+        <Field name="tariff_missing" type="string" nullable="false" />
+        <Field name="payout" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Lookup0">
+      <Record name="ClaimTariff" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="tariff_batch" type="string" nullable="false" />
+        <Field name="tariff_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="tariff_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="tariff_unused" type="string" nullable="true" />
+        <Field name="tariff_note" type="string" nullable="true" />
+        <Field name="tariff_row" type="long" nullable="false" />
+        <Field name="provider_id" type="string" nullable="false" />
+        <Field name="region_id" type="string" nullable="false" />
+        <Field name="tariff_id" type="string" nullable="false" />
+        <Field name="effective_from" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="effective_to" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="payout_percent" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="admin_fee" type="decimal" nullable="false" length="18" scale="2" />
+      </Record>
+    </Metadata>
+    <LookupTable id="ClaimTariffs" name="ClaimTariffs" type="simpleLookup" charset="UTF-8" metadata="Lookup0" key="provider_id;region_id" initialSize="64" keyDuplicates="true" allowKeyDuplicates="true">
+      <attr name="fileURL">suite_v5/data-in/T51_lookup_0.csv</attr>
+    </LookupTable>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T51_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.claim_batch=$in.0.claim_batch;
+$out.0.claim_loaded=$in.0.claim_loaded == null ? null : str2date($in.0.claim_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.claim_ledger=$in.0.claim_ledger == null ? null : str2decimal($in.0.claim_ledger);
+$out.0.claim_unused=$in.0.claim_unused;
+$out.0.claim_note=$in.0.claim_note;
+$out.0.claim_row=$in.0.claim_row == null ? null : str2long($in.0.claim_row);
+$out.0.claim_ref=$in.0.claim_ref;
+$out.0.provider_id=$in.0.provider_id;
+$out.0.region_id=$in.0.region_id;
+$out.0.loss_at=$in.0.loss_at == null ? null : str2date($in.0.loss_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.claim_amount=$in.0.claim_amount == null ? null : str2decimal($in.0.claim_amount);
+$out.0.coverage_label=$in.0.coverage_label;
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+function integer transform(){$out.0.*=$in.0.*;$out.0.selected_tariff="";$out.0.tariff_missing=true;$out.0.payout=0D;string a=upperCase(trim(nvl($in.0.provider_id,"")));string b=upperCase(trim(nvl($in.0.region_id,"")));boolean found=false;ClaimTariff best;if(a!=""&amp;&amp;b!=""&amp;&amp;$in.0.loss_at!=null){ClaimTariff r=lookup(ClaimTariffs).get(a,b);while(r!=null){boolean good=$in.0.loss_at&gt;=r.effective_from&amp;&amp;(r.effective_to==null||$in.0.loss_at&lt;=r.effective_to)&amp;&amp;r.payout_percent!=null&amp;&amp;r.payout_percent&gt;=0D&amp;&amp;r.payout_percent&lt;=100D;if(good){if(!found||r.effective_from&gt;best.effective_from||(r.effective_from==best.effective_from&amp;&amp;(r.admin_fee&lt;best.admin_fee||(r.admin_fee==best.admin_fee&amp;&amp;r.tariff_id&lt;best.tariff_id)))){best=r;found=true;}}r=lookup(ClaimTariffs).next();}}if(found){$out.0.selected_tariff=best.tariff_id;$out.0.tariff_missing=false;if($in.0.claim_amount!=null&amp;&amp;$in.0.claim_amount&gt;0D)$out.0.payout=round($in.0.claim_amount*best.payout_percent/100D,2);}return OK;}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.claim_batch=$in.0.claim_batch;
+$out.0.claim_loaded=$in.0.claim_loaded == null ? null : date2str($in.0.claim_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.claim_ledger=$in.0.claim_ledger == null ? null : num2str($in.0.claim_ledger,"0.00","en.US");
+$out.0.claim_unused=$in.0.claim_unused;
+$out.0.claim_note=$in.0.claim_note;
+$out.0.claim_row=$in.0.claim_row == null ? null : num2str($in.0.claim_row);
+$out.0.claim_ref=$in.0.claim_ref;
+$out.0.provider_id=$in.0.provider_id;
+$out.0.region_id=$in.0.region_id;
+$out.0.loss_at=$in.0.loss_at == null ? null : date2str($in.0.loss_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.claim_amount=$in.0.claim_amount == null ? null : num2str($in.0.claim_amount,"0.00","en.US");
+$out.0.coverage_label=$in.0.coverage_label;
+$out.0.selected_tariff=$in.0.selected_tariff;
+$out.0.tariff_missing=$in.0.tariff_missing == null ? null : ($in.0.tariff_missing ? "true" : "false");
+$out.0.payout=$in.0.payout == null ? null : num2str($in.0.payout,"0.00","en.US");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T51_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

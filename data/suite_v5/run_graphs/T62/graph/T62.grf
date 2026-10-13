@@ -1,0 +1,242 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T62" id="6101300062" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Claim monthly report with override and reopening controls
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="Event" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="claim_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="group_key" type="string" nullable="false" />
+        <Field name="occurred_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="net_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="billable" type="boolean" nullable="false" />
+        <Field name="delay_days" type="integer" nullable="true" />
+        <Field name="amount_override_txt" type="string" nullable="true" />
+        <Field name="late_waived" type="boolean" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="claim_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="string" nullable="false" />
+        <Field name="source_row_no" type="string" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="group_key" type="string" nullable="false" />
+        <Field name="occurred_at" type="string" nullable="false" />
+        <Field name="net_amount" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="billable" type="string" nullable="false" />
+        <Field name="delay_days" type="string" nullable="true" />
+        <Field name="amount_override_txt" type="string" nullable="true" />
+        <Field name="late_waived" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="Report" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="claim_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="group_key" type="string" nullable="false" />
+        <Field name="period_label" type="string" nullable="false" />
+        <Field name="rows_seen" type="integer" nullable="false" />
+        <Field name="paid_total" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="pending_total" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="billable_average" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="late_percent" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="bad_amount_rows" type="integer" nullable="false" />
+        <Field name="reopened_rows" type="integer" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="claim_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="string" nullable="false" />
+        <Field name="source_row_no" type="string" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="group_key" type="string" nullable="false" />
+        <Field name="period_label" type="string" nullable="false" />
+        <Field name="rows_seen" type="string" nullable="false" />
+        <Field name="paid_total" type="string" nullable="false" />
+        <Field name="pending_total" type="string" nullable="false" />
+        <Field name="billable_average" type="string" nullable="true" />
+        <Field name="late_percent" type="string" nullable="false" />
+        <Field name="bad_amount_rows" type="string" nullable="false" />
+        <Field name="reopened_rows" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Accumulator">
+      <Record name="ReportAcc" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="acc_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="n" type="integer" nullable="false" />
+        <Field name="late" type="integer" nullable="false" />
+        <Field name="eligible" type="integer" nullable="false" />
+        <Field name="paid" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="pending" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="eligible_total" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="bad_amounts" type="integer" nullable="false" />
+        <Field name="reopened" type="integer" nullable="false" />
+        <Field name="previous_seen" type="boolean" nullable="false" />
+        <Field name="previous_status" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T62_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.claim_ref_no=$in.0.claim_ref_no;
+$out.0.tenant_cd=$in.0.tenant_cd;
+$out.0.source_file_nm=$in.0.source_file_nm;
+$out.0.received_at=$in.0.received_at == null ? null : str2date($in.0.received_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.source_row_no=$in.0.source_row_no == null ? null : str2long($in.0.source_row_no);
+$out.0.owner_team_cd=$in.0.owner_team_cd;
+$out.0.market_cd=$in.0.market_cd;
+$out.0.currency_cd=$in.0.currency_cd;
+$out.0.batch_ref=$in.0.batch_ref;
+$out.0.operator_note=$in.0.operator_note;
+$out.0.external_trace_id=$in.0.external_trace_id;
+$out.0.unused_archive_label=$in.0.unused_archive_label;
+$out.0.group_key=$in.0.group_key;
+$out.0.occurred_at=$in.0.occurred_at == null ? null : str2date($in.0.occurred_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.net_amount=$in.0.net_amount == null ? null : str2decimal($in.0.net_amount);
+$out.0.status_cd=$in.0.status_cd;
+$out.0.billable=$in.0.billable == null ? null : str2bool($in.0.billable);
+$out.0.delay_days=$in.0.delay_days == null ? null : str2integer($in.0.delay_days);
+$out.0.amount_override_txt=$in.0.amount_override_txt;
+$out.0.late_waived=$in.0.late_waived == null ? null : str2bool($in.0.late_waived);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="ROLLUP" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="groupKeyFields">group_key</attr>
+      <attr name="groupAccumulatorMetadataId">Accumulator</attr>
+      <attr name="transform">//#CTL2
+string first_claim_ref_no;
+string first_tenant_cd;
+string first_source_file_nm;
+date first_received_at;
+long first_source_row_no;
+string first_owner_team_cd;
+string first_market_cd;
+string first_currency_cd;
+string first_batch_ref;
+string first_operator_note;
+string first_external_trace_id;
+string first_unused_archive_label;
+function void initGroup(ReportAcc acc) {first_claim_ref_no=$in.0.claim_ref_no;first_tenant_cd=$in.0.tenant_cd;first_source_file_nm=$in.0.source_file_nm;first_received_at=$in.0.received_at;first_source_row_no=$in.0.source_row_no;first_owner_team_cd=$in.0.owner_team_cd;first_market_cd=$in.0.market_cd;first_currency_cd=$in.0.currency_cd;first_batch_ref=$in.0.batch_ref;first_operator_note=$in.0.operator_note;first_external_trace_id=$in.0.external_trace_id;first_unused_archive_label=$in.0.unused_archive_label;acc.n=0;acc.late=0;acc.eligible=0;acc.paid=0D;acc.pending=0D;acc.eligible_total=0D;acc.bad_amounts=0;acc.reopened=0;acc.previous_seen=false;acc.previous_status=null;}
+function boolean updateGroup(ReportAcc acc) {
+ acc.n++;
+ if(acc.previous_seen &amp;&amp; acc.previous_status=="PAID" &amp;&amp; $in.0.status_cd=="PENDING") acc.reopened++;
+ acc.previous_seen=true;acc.previous_status=$in.0.status_cd;
+ if(!isnull($in.0.delay_days) &amp;&amp; $in.0.delay_days&gt;2 &amp;&amp; !$in.0.late_waived) acc.late++;
+ decimal amount=$in.0.net_amount;boolean valid=true;
+ if(!isnull($in.0.amount_override_txt)) {string txt=trim($in.0.amount_override_txt);if(!(txt ~= "-?[0-9]{1,10}(\\.[0-9]{1,2})?")) {acc.bad_amounts++;valid=false;}else amount=str2decimal(txt);}
+ if(valid &amp;&amp; !isnull(amount)) {if($in.0.status_cd=="PAID") acc.paid+=amount;if($in.0.status_cd=="PENDING") acc.pending+=amount;if($in.0.billable) {acc.eligible++;acc.eligible_total+=amount;}}
+ return false;
+}
+function integer updateTransform(integer counter,ReportAcc acc) {return SKIP;}
+function boolean finishGroup(ReportAcc acc) {return true;}
+function integer transform(integer counter,ReportAcc acc) {if(counter&gt;0) return SKIP;$out.0.claim_ref_no=first_claim_ref_no;$out.0.tenant_cd=first_tenant_cd;$out.0.source_file_nm=first_source_file_nm;$out.0.received_at=first_received_at;$out.0.source_row_no=first_source_row_no;$out.0.owner_team_cd=first_owner_team_cd;$out.0.market_cd=first_market_cd;$out.0.currency_cd=first_currency_cd;$out.0.batch_ref=first_batch_ref;$out.0.operator_note=first_operator_note;$out.0.external_trace_id=first_external_trace_id;$out.0.unused_archive_label=first_unused_archive_label;$out.0.group_key=$in.0.group_key;$out.0.period_label=date2str($in.0.occurred_at,"yyyy-MM","en.US","UTC");$out.0.rows_seen=acc.n;$out.0.paid_total=acc.paid;$out.0.pending_total=acc.pending;$out.0.billable_average=acc.eligible==0 ? null : round(acc.eligible_total/acc.eligible,2);$out.0.late_percent=round(100D*acc.late/acc.n,2);$out.0.bad_amount_rows=acc.bad_amounts;$out.0.reopened_rows=acc.reopened;return OK;}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.claim_ref_no=$in.0.claim_ref_no;
+$out.0.tenant_cd=$in.0.tenant_cd;
+$out.0.source_file_nm=$in.0.source_file_nm;
+$out.0.received_at=$in.0.received_at == null ? null : date2str($in.0.received_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.source_row_no=$in.0.source_row_no == null ? null : num2str($in.0.source_row_no);
+$out.0.owner_team_cd=$in.0.owner_team_cd;
+$out.0.market_cd=$in.0.market_cd;
+$out.0.currency_cd=$in.0.currency_cd;
+$out.0.batch_ref=$in.0.batch_ref;
+$out.0.operator_note=$in.0.operator_note;
+$out.0.external_trace_id=$in.0.external_trace_id;
+$out.0.unused_archive_label=$in.0.unused_archive_label;
+$out.0.group_key=$in.0.group_key;
+$out.0.period_label=$in.0.period_label;
+$out.0.rows_seen=$in.0.rows_seen == null ? null : num2str($in.0.rows_seen);
+$out.0.paid_total=$in.0.paid_total == null ? null : num2str($in.0.paid_total,"0.00","en.US");
+$out.0.pending_total=$in.0.pending_total == null ? null : num2str($in.0.pending_total,"0.00","en.US");
+$out.0.billable_average=$in.0.billable_average == null ? null : num2str($in.0.billable_average,"0.00","en.US");
+$out.0.late_percent=$in.0.late_percent == null ? null : num2str($in.0.late_percent,"0.00","en.US");
+$out.0.bad_amount_rows=$in.0.bad_amount_rows == null ? null : num2str($in.0.bad_amount_rows);
+$out.0.reopened_rows=$in.0.reopened_rows == null ? null : num2str($in.0.reopened_rows);
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T62_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

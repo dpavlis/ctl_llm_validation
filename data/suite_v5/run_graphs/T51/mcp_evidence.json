@@ -1,0 +1,439 @@
+[
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in",
+      "filename": "T51_lookup_0.csv",
+      "content": "batch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-0|__NULL__|1|P|N|Z|2026-01-01 00:00:00|__NULL__|50.00|1.00\nbatch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-1|__NULL__|2|P|N|B|2026-02-01 00:00:00|__NULL__|12.50|2.00\nbatch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-2|__NULL__|3|P|N|A|2026-02-01 00:00:00|__NULL__|25.00|2.00\nbatch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-3|__NULL__|4|P|N|LOW|2026-02-01 00:00:00|__NULL__|75.00|3.00\nbatch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-4|__NULL__|5|P|N|BAD|2026-03-01 00:00:00|__NULL__|101.00|0.00\nbatch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-5|__NULL__|6|Q|N|ZERO|2026-01-01 00:00:00|__NULL__|0.00|1.00\nbatch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-6|__NULL__|7|R|N|NULL|2026-01-01 00:00:00|__NULL__|__NULL__|1.00\nbatch-tariff_batch|2026-01-01 00:00:00|17.25|opaque-7|__NULL__|8|S|N|EXP|2026-01-01 00:00:00|2026-01-31 00:00:00|100.00|1.00\n"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/data-in/T51_lookup_0.csv' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/data-in/T51_lookup_0.csv' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in",
+      "filename": "T51_input_0.csv",
+      "content": "batch-claim_batch|2026-01-01 00:00:00.000|17.25|opaque-0|__NULL__|1|C0| p | n |2026-02-01 00:00:00.000|0.02|__NULL__\nbatch-claim_batch|2026-01-01 00:00:00.000|17.25|opaque-1|__NULL__|2|C1|P|N|2026-01-31 23:59:59.000|10.00|__NULL__\nbatch-claim_batch|2026-01-01 00:00:00.000|17.25|opaque-2|__NULL__|3|C2|P|N|2026-04-01 00:00:00.000|__NULL__|__NULL__\nbatch-claim_batch|2026-01-01 00:00:00.000|17.25|opaque-3|__NULL__|4|C3|P|N|2026-04-01 00:00:00.000|-2.00|__NULL__\nbatch-claim_batch|2026-01-01 00:00:00.000|17.25|opaque-4|__NULL__|5|C0|Q|N|2026-04-01 00:00:00.000|1.00|__NULL__\nbatch-claim_batch|2026-01-01 00:00:00.000|17.25|opaque-5|__NULL__|6|C1|R|N|2026-04-01 00:00:00.000|3.00|__NULL__\nbatch-claim_batch|2026-01-01 00:00:00.000|17.25|opaque-6|__NULL__|7|C2|S|N|2026-01-31 00:00:01.000|3.00|__NULL__\nbatch-claim_batch|2026-01-01 00:00:00.000|17.25|opaque-7|__NULL__|8|C3|__NULL__|N|2026-01-01 00:00:00.000|5.00|__NULL__\nbatch-claim_batch|2026-01-01 00:00:00.000|17.25|opaque-8|__NULL__|9|C0||N|__NULL__|5.00|\nbatch-claim_batch|2026-01-01 00:00:00.000|17.25|opaque-9|__NULL__|10|C1|P|N|2025-01-01 00:00:00.000|5.00|__NULL__\n"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/data-in/T51_input_0.csv' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/data-in/T51_input_0.csv' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph",
+      "filename": "T51.grf",
+      "content": "<?xml version='1.0' encoding='utf-8'?>\n<Graph author=\"Codex\" name=\"T51\" id=\"6101300051\" nature=\"etlGraph\" revision=\"1.0\" guiVersion=\"7.5.0\">\n  <Global>\n    <GraphParameters>\n      <GraphParameterFile fileURL=\"workspace.prm\" />\n      <GraphParameter name=\"PROJECT\" value=\".\" />\n    </GraphParameters>\n    <RichTextNote id=\"Note\" x=\"50\" y=\"25\" width=\"1200\" height=\"100\" backgroundColor=\"FAF6D6\" textColor=\"444444\" fontSize=\"medium\" folded=\"false\">\n      <attr name=\"text\">Claim payout tariff selection over duplicate reference keys\nAcceptance fixture exercises the business rules and preserves every source field for comparison.</attr>\n    </RichTextNote>\n    <Metadata id=\"In0\">\n      <Record name=\"InputT51\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"claim_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"claim_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"claim_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"claim_ref\" type=\"string\" nullable=\"false\" />\n        <Field name=\"provider_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"region_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"loss_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"claim_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"coverage_label\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawIn0\">\n      <Record name=\"RawInput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"claim_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_loaded\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"claim_ledger\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_ref\" type=\"string\" nullable=\"false\" />\n        <Field name=\"provider_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"region_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"loss_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n        <Field name=\"claim_amount\" type=\"string\" nullable=\"true\" />\n        <Field name=\"coverage_label\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out0\">\n      <Record name=\"ClaimPayout\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"claim_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"claim_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"claim_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"claim_ref\" type=\"string\" nullable=\"false\" />\n        <Field name=\"provider_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"region_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"loss_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"claim_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"coverage_label\" type=\"string\" nullable=\"true\" />\n        <Field name=\"selected_tariff\" type=\"string\" nullable=\"false\" />\n        <Field name=\"tariff_missing\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"payout\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut0\">\n      <Record name=\"RawOutput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"claim_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_loaded\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"claim_ledger\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_ref\" type=\"string\" nullable=\"false\" />\n        <Field name=\"provider_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"region_id\" type=\"string\" nullable=\"true\" />\n        <Field name=\"loss_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n        <Field name=\"claim_amount\" type=\"string\" nullable=\"true\" />\n        <Field name=\"coverage_label\" type=\"string\" nullable=\"true\" />\n        <Field name=\"selected_tariff\" type=\"string\" nullable=\"false\" />\n        <Field name=\"tariff_missing\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payout\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Lookup0\">\n      <Record name=\"ClaimTariff\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"tariff_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"tariff_loaded\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"tariff_ledger\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"tariff_unused\" type=\"string\" nullable=\"true\" />\n        <Field name=\"tariff_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"tariff_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"provider_id\" type=\"string\" nullable=\"false\" />\n        <Field name=\"region_id\" type=\"string\" nullable=\"false\" />\n        <Field name=\"tariff_id\" type=\"string\" nullable=\"false\" />\n        <Field name=\"effective_from\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"effective_to\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"payout_percent\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"admin_fee\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\" />\n      </Record>\n    </Metadata>\n    <LookupTable id=\"ClaimTariffs\" name=\"ClaimTariffs\" type=\"simpleLookup\" charset=\"UTF-8\" metadata=\"Lookup0\" key=\"provider_id;region_id\" initialSize=\"64\" keyDuplicates=\"true\" allowKeyDuplicates=\"true\">\n      <attr name=\"fileURL\">suite_v5/data-in/T51_lookup_0.csv</attr>\n    </LookupTable>\n  </Global>\n  <Phase number=\"0\">\n    <Node id=\"Reader0\" type=\"DATA_READER\" enabled=\"enabled\" guiName=\"Reader0\" guiX=\"50\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-in/T51_input_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"dataPolicy\">strict</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"parser\">org.jetel.data.parser.DataParser</attr>\n    </Node>\n    <Node id=\"Decode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Decode0\" guiX=\"275\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.claim_batch=$in.0.claim_batch;\n$out.0.claim_loaded=$in.0.claim_loaded == null ? null : str2date($in.0.claim_loaded,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\n$out.0.claim_ledger=$in.0.claim_ledger == null ? null : str2decimal($in.0.claim_ledger);\n$out.0.claim_unused=$in.0.claim_unused;\n$out.0.claim_note=$in.0.claim_note;\n$out.0.claim_row=$in.0.claim_row == null ? null : str2long($in.0.claim_row);\n$out.0.claim_ref=$in.0.claim_ref;\n$out.0.provider_id=$in.0.provider_id;\n$out.0.region_id=$in.0.region_id;\n$out.0.loss_at=$in.0.loss_at == null ? null : str2date($in.0.loss_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\n$out.0.claim_amount=$in.0.claim_amount == null ? null : str2decimal($in.0.claim_amount);\n$out.0.coverage_label=$in.0.coverage_label;\nreturn OK;}</attr>\n    </Node>\n    <Edge id=\"Read0\" fromNode=\"Reader0:0\" toNode=\"Decode0:0\" metadata=\"RawIn0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Decoded0\" fromNode=\"Decode0:0\" toNode=\"Test:0\" metadata=\"In0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Test\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Test\" guiX=\"500\" guiY=\"200\">\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){$out.0.*=$in.0.*;$out.0.selected_tariff=\"\";$out.0.tariff_missing=true;$out.0.payout=0D;string a=upperCase(trim(nvl($in.0.provider_id,\"\")));string b=upperCase(trim(nvl($in.0.region_id,\"\")));boolean found=false;ClaimTariff best;if(a!=\"\"&amp;&amp;b!=\"\"&amp;&amp;$in.0.loss_at!=null){ClaimTariff r=lookup(ClaimTariffs).get(a,b);while(r!=null){boolean good=$in.0.loss_at&gt;=r.effective_from&amp;&amp;(r.effective_to==null||$in.0.loss_at&lt;=r.effective_to)&amp;&amp;r.payout_percent!=null&amp;&amp;r.payout_percent&gt;=0D&amp;&amp;r.payout_percent&lt;=100D;if(good){if(!found||r.effective_from&gt;best.effective_from||(r.effective_from==best.effective_from&amp;&amp;(r.admin_fee&lt;best.admin_fee||(r.admin_fee==best.admin_fee&amp;&amp;r.tariff_id&lt;best.tariff_id)))){best=r;found=true;}}r=lookup(ClaimTariffs).next();}}if(found){$out.0.selected_tariff=best.tariff_id;$out.0.tariff_missing=false;if($in.0.claim_amount!=null&amp;&amp;$in.0.claim_amount&gt;0D)$out.0.payout=round($in.0.claim_amount*best.payout_percent/100D,2);}return OK;}</attr>\n    </Node>\n    <Node id=\"Encode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode0\" guiX=\"725\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.claim_batch=$in.0.claim_batch;\n$out.0.claim_loaded=$in.0.claim_loaded == null ? null : date2str($in.0.claim_loaded,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.claim_ledger=$in.0.claim_ledger == null ? null : num2str($in.0.claim_ledger,\"0.00\",\"en.US\");\n$out.0.claim_unused=$in.0.claim_unused;\n$out.0.claim_note=$in.0.claim_note;\n$out.0.claim_row=$in.0.claim_row == null ? null : num2str($in.0.claim_row);\n$out.0.claim_ref=$in.0.claim_ref;\n$out.0.provider_id=$in.0.provider_id;\n$out.0.region_id=$in.0.region_id;\n$out.0.loss_at=$in.0.loss_at == null ? null : date2str($in.0.loss_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.claim_amount=$in.0.claim_amount == null ? null : num2str($in.0.claim_amount,\"0.00\",\"en.US\");\n$out.0.coverage_label=$in.0.coverage_label;\n$out.0.selected_tariff=$in.0.selected_tariff;\n$out.0.tariff_missing=$in.0.tariff_missing == null ? null : ($in.0.tariff_missing ? \"true\" : \"false\");\n$out.0.payout=$in.0.payout == null ? null : num2str($in.0.payout,\"0.00\",\"en.US\");\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer0\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer0\" guiX=\"950\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-out/T51_out_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result0\" fromNode=\"Test:0\" toNode=\"Encode0:0\" metadata=\"Out0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written0\" fromNode=\"Encode0:0\" toNode=\"Writer0:0\" metadata=\"RawOut0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n  </Phase>\n</Graph>"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/graph/T51.grf' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/graph/T51.grf' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_validate",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T51.grf",
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"timedOut\":false,\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "timedOut": false,
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_run",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T51.grf",
+      "params": {}
+    },
+    "payload": {
+      "runId": 17957,
+      "message": "Job started. runId: 17957"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17957,\"message\":\"Job started. runId: 17957\"}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17957,
+        "message": "Job started. runId: 17957"
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_await",
+    "arguments": {
+      "runId": 17957,
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "runId": 17957,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T51.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:48:07.988+02:00",
+      "startTime": "2026-10-13T11:48:07.988+02:00",
+      "stopTime": "2026-10-13T11:48:08.017+02:00",
+      "durationMs": 29
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17957,\"sandboxCode\":\"MiscExamples\",\"jobFile\":\"suite_v5/graph/T51.grf\",\"jobType\":\"ETL_GRAPH\",\"status\":\"FINISHED_OK\",\"submitTime\":\"2026-10-13T11:48:07.988+02:00\",\"startTime\":\"2026-10-13T11:48:07.988+02:00\",\"stopTime\":\"2026-10-13T11:48:08.017+02:00\",\"durationMs\":29}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17957,
+        "sandboxCode": "MiscExamples",
+        "jobFile": "suite_v5/graph/T51.grf",
+        "jobType": "ETL_GRAPH",
+        "status": "FINISHED_OK",
+        "submitTime": "2026-10-13T11:48:07.988+02:00",
+        "startTime": "2026-10-13T11:48:07.988+02:00",
+        "stopTime": "2026-10-13T11:48:08.017+02:00",
+        "durationMs": 29
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_tracking",
+    "arguments": {
+      "runId": 17957,
+      "detailed": true
+    },
+    "payload": {
+      "run_id": "17957",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.015,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.011,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1776
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1776
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1054
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1054
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1170
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1170
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1992
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1992
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 80,
+        "total_bytes": 11984
+      }
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"run_id\":\"17957\",\"status\":\"FINISHED_OK\",\"exec_seconds\":0.015,\"phases\":[{\"phase_number\":0,\"exec_seconds\":0.011,\"nodes\":[{\"node_id\":\"Reader0\",\"node_name\":\"Reader0\",\"node_type\":\"DATA_READER\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":10,\"bytes\":1776}]},{\"node_id\":\"Decode0\",\"node_name\":\"Decode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":10,\"bytes\":1776},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":10,\"bytes\":1054}]},{\"node_id\":\"Test\",\"node_name\":\"Test\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":10,\"bytes\":1054},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":10,\"bytes\":1170}]},{\"node_id\":\"Encode0\",\"node_name\":\"Encode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":10,\"bytes\":1170},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":10,\"bytes\":1992}]},{\"node_id\":\"Writer0\",\"node_name\":\"Writer0\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":10,\"bytes\":1992}]}]}],\"summary\":{\"phase_count\":1,\"node_count\":5,\"port_count\":8,\"total_records\":80,\"total_bytes\":11984}}"
+        }
+      ],
+      "structuredContent": {
+        "run_id": "17957",
+        "status": "FINISHED_OK",
+        "exec_seconds": 0.015,
+        "phases": [
+          {
+            "phase_number": 0,
+            "exec_seconds": 0.011,
+            "nodes": [
+              {
+                "node_id": "Reader0",
+                "node_name": "Reader0",
+                "node_type": "DATA_READER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1776
+                  }
+                ]
+              },
+              {
+                "node_id": "Decode0",
+                "node_name": "Decode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1776
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1054
+                  }
+                ]
+              },
+              {
+                "node_id": "Test",
+                "node_name": "Test",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1054
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1170
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode0",
+                "node_name": "Encode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1170
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1992
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer0",
+                "node_name": "Writer0",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1992
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "phase_count": 1,
+          "node_count": 5,
+          "port_count": 8,
+          "total_records": 80,
+          "total_bytes": 11984
+        }
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_log",
+    "arguments": {
+      "runId": 17957
+    },
+    "payload": {
+      "text": "2026-10-13 11:48:07,990 INFO  17957 [boundedElastic-89] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:48:07,990 INFO  17957 [boundedElastic-89] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:48:07,990 INFO  17957 [boundedElastic-89] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:48:07,992 INFO  17957 [JobStarter_17957] Starting job: MiscExamples/suite_v5/graph/T51.grf\n\t Run ID: \t\t17957\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:48:07,995 INFO  17957 [JobExecutor_17957] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:48:07,999 INFO  17957 [JobExecutor_17957] Initializing metadata\n2026-10-13 11:48:07,999 INFO  17957 [JobExecutor_17957] Initializing lookup table:\n2026-10-13 11:48:07,999 INFO  17957 [JobExecutor_17957] [ClaimTariffs:ClaimTariffs] ... OK\n2026-10-13 11:48:07,999 INFO  17957 [JobExecutor_17957] Initializing phase 0\n2026-10-13 11:48:08,001 INFO  17957 [JobExecutor_17957] Phase 0 initialized successfully.\n2026-10-13 11:48:08,001 INFO  17957 [WatchDog_17957] Job execution type: ETL_GRAPH\n2026-10-13 11:48:08,001 INFO  17957 [WatchDog_17957] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T51.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T51.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17957\nPROJECT=.\nROOT_RUN_ID=17957\nRUN_ID=17957\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:48:08,001 INFO  17957 [WatchDog_17957] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:48:08,003 INFO  17957 [WatchDog_17957] Pre-execute initialization of lookup table:\n2026-10-13 11:48:08,004 INFO  17957 [WatchDog_17957] [ClaimTariffs:ClaimTariffs] ... OK\n2026-10-13 11:48:08,004 INFO  17957 [WatchDog_17957] Starting up all nodes in phase [0]\n2026-10-13 11:48:08,004 INFO  17957 [WatchDog_17957] Successfully started all nodes in phase!\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Time: 13/10/2026 11:48:08, JVM heap used: 103 MB\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] ---------------------------------------------------------------------------------\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]  (alloc:0MB, cpu:0%)            Out:0             10          1     909      157\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]  (alloc:0MB, cpu:9%)             In:0             10          1     909      157\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]                                 Out:0             10          1     909       93\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Test                     Test                                        FINISHED_OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]  (alloc:0MB, cpu:9%)             In:0             10          1     909       93\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]                                 Out:0             10          1     909      103\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]  (alloc:0MB, cpu:9%)             In:0             10          1     909      103\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]                                 Out:0             10          1     909      176\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]  (alloc:0MB, cpu:9%)             In:0             10          1     909      176\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Post-execute finalization of lookup table:\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] [ClaimTariffs:ClaimTariffs] ... OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] 0                 FINISHED_OK                        0               103\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:48:08,017 INFO  17957 [JobFinalizer_17957] Job finished: MiscExamples/suite_v5/graph/T51.grf\n\t Run ID: \t\t17957\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t29 ms\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "2026-10-13 11:48:07,990 INFO  17957 [boundedElastic-89] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:48:07,990 INFO  17957 [boundedElastic-89] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:48:07,990 INFO  17957 [boundedElastic-89] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:48:07,992 INFO  17957 [JobStarter_17957] Starting job: MiscExamples/suite_v5/graph/T51.grf\n\t Run ID: \t\t17957\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:48:07,995 INFO  17957 [JobExecutor_17957] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:48:07,999 INFO  17957 [JobExecutor_17957] Initializing metadata\n2026-10-13 11:48:07,999 INFO  17957 [JobExecutor_17957] Initializing lookup table:\n2026-10-13 11:48:07,999 INFO  17957 [JobExecutor_17957] [ClaimTariffs:ClaimTariffs] ... OK\n2026-10-13 11:48:07,999 INFO  17957 [JobExecutor_17957] Initializing phase 0\n2026-10-13 11:48:08,001 INFO  17957 [JobExecutor_17957] Phase 0 initialized successfully.\n2026-10-13 11:48:08,001 INFO  17957 [WatchDog_17957] Job execution type: ETL_GRAPH\n2026-10-13 11:48:08,001 INFO  17957 [WatchDog_17957] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T51.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T51.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17957\nPROJECT=.\nROOT_RUN_ID=17957\nRUN_ID=17957\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:48:08,001 INFO  17957 [WatchDog_17957] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:48:08,003 INFO  17957 [WatchDog_17957] Pre-execute initialization of lookup table:\n2026-10-13 11:48:08,004 INFO  17957 [WatchDog_17957] [ClaimTariffs:ClaimTariffs] ... OK\n2026-10-13 11:48:08,004 INFO  17957 [WatchDog_17957] Starting up all nodes in phase [0]\n2026-10-13 11:48:08,004 INFO  17957 [WatchDog_17957] Successfully started all nodes in phase!\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Time: 13/10/2026 11:48:08, JVM heap used: 103 MB\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] ---------------------------------------------------------------------------------\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]  (alloc:0MB, cpu:0%)            Out:0             10          1     909      157\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]  (alloc:0MB, cpu:9%)             In:0             10          1     909      157\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]                                 Out:0             10          1     909       93\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Test                     Test                                        FINISHED_OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]  (alloc:0MB, cpu:9%)             In:0             10          1     909       93\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]                                 Out:0             10          1     909      103\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]  (alloc:0MB, cpu:9%)             In:0             10          1     909      103\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]                                 Out:0             10          1     909      176\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957]  (alloc:0MB, cpu:9%)             In:0             10          1     909      176\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Post-execute finalization of lookup table:\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] [ClaimTariffs:ClaimTariffs] ... OK\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] 0                 FINISHED_OK                        0               103\n2026-10-13 11:48:08,016 INFO  17957 [WatchDog_17957] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:48:08,017 INFO  17957 [JobFinalizer_17957] Job finished: MiscExamples/suite_v5/graph/T51.grf\n\t Run ID: \t\t17957\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t29 ms\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T51_out_0.csv"
+    },
+    "payload": {
+      "text": "\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-0\"|\"__NULL__\"|\"1\"|\"C0\"|\" p \"|\" n \"|\"2026-02-01 00:00:00.000\"|\"0.02\"|\"__NULL__\"|\"A\"|\"false\"|\"0.01\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-1\"|\"__NULL__\"|\"2\"|\"C1\"|\"P\"|\"N\"|\"2026-01-31 23:59:59.000\"|\"10.00\"|\"__NULL__\"|\"Z\"|\"false\"|\"5.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-2\"|\"__NULL__\"|\"3\"|\"C2\"|\"P\"|\"N\"|\"2026-04-01 00:00:00.000\"|\"__NULL__\"|\"__NULL__\"|\"A\"|\"false\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-3\"|\"__NULL__\"|\"4\"|\"C3\"|\"P\"|\"N\"|\"2026-04-01 00:00:00.000\"|\"-2.00\"|\"__NULL__\"|\"A\"|\"false\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-4\"|\"__NULL__\"|\"5\"|\"C0\"|\"Q\"|\"N\"|\"2026-04-01 00:00:00.000\"|\"1.00\"|\"__NULL__\"|\"ZERO\"|\"false\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-5\"|\"__NULL__\"|\"6\"|\"C1\"|\"R\"|\"N\"|\"2026-04-01 00:00:00.000\"|\"3.00\"|\"__NULL__\"|\"\"|\"true\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-6\"|\"__NULL__\"|\"7\"|\"C2\"|\"S\"|\"N\"|\"2026-01-31 00:00:01.000\"|\"3.00\"|\"__NULL__\"|\"\"|\"true\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-7\"|\"__NULL__\"|\"8\"|\"C3\"|\"__NULL__\"|\"N\"|\"2026-01-01 00:00:00.000\"|\"5.00\"|\"__NULL__\"|\"\"|\"true\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-8\"|\"__NULL__\"|\"9\"|\"C0\"|\"\"|\"N\"|\"__NULL__\"|\"5.00\"|\"\"|\"\"|\"true\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-9\"|\"__NULL__\"|\"10\"|\"C1\"|\"P\"|\"N\"|\"2025-01-01 00:00:00.000\"|\"5.00\"|\"__NULL__\"|\"\"|\"true\"|\"0.00\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-0\"|\"__NULL__\"|\"1\"|\"C0\"|\" p \"|\" n \"|\"2026-02-01 00:00:00.000\"|\"0.02\"|\"__NULL__\"|\"A\"|\"false\"|\"0.01\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-1\"|\"__NULL__\"|\"2\"|\"C1\"|\"P\"|\"N\"|\"2026-01-31 23:59:59.000\"|\"10.00\"|\"__NULL__\"|\"Z\"|\"false\"|\"5.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-2\"|\"__NULL__\"|\"3\"|\"C2\"|\"P\"|\"N\"|\"2026-04-01 00:00:00.000\"|\"__NULL__\"|\"__NULL__\"|\"A\"|\"false\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-3\"|\"__NULL__\"|\"4\"|\"C3\"|\"P\"|\"N\"|\"2026-04-01 00:00:00.000\"|\"-2.00\"|\"__NULL__\"|\"A\"|\"false\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-4\"|\"__NULL__\"|\"5\"|\"C0\"|\"Q\"|\"N\"|\"2026-04-01 00:00:00.000\"|\"1.00\"|\"__NULL__\"|\"ZERO\"|\"false\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-5\"|\"__NULL__\"|\"6\"|\"C1\"|\"R\"|\"N\"|\"2026-04-01 00:00:00.000\"|\"3.00\"|\"__NULL__\"|\"\"|\"true\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-6\"|\"__NULL__\"|\"7\"|\"C2\"|\"S\"|\"N\"|\"2026-01-31 00:00:01.000\"|\"3.00\"|\"__NULL__\"|\"\"|\"true\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-7\"|\"__NULL__\"|\"8\"|\"C3\"|\"__NULL__\"|\"N\"|\"2026-01-01 00:00:00.000\"|\"5.00\"|\"__NULL__\"|\"\"|\"true\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-8\"|\"__NULL__\"|\"9\"|\"C0\"|\"\"|\"N\"|\"__NULL__\"|\"5.00\"|\"\"|\"\"|\"true\"|\"0.00\"\n\"batch-claim_batch\"|\"2026-01-01 00:00:00.000\"|\"17.25\"|\"opaque-9\"|\"__NULL__\"|\"10\"|\"C1\"|\"P\"|\"N\"|\"2025-01-01 00:00:00.000\"|\"5.00\"|\"__NULL__\"|\"\"|\"true\"|\"0.00\"\n"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

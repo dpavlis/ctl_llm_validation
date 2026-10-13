@@ -1,0 +1,1126 @@
+{
+ "T44": {
+  "required": [
+   {
+    "id": "T44.1",
+    "check": "Two-output Reformat: transform() returns 0 for accepted rows (written to $out.0) and 1 for rejected rows (written to $out.1); every row returns one of the two.",
+    "rationale": "Returning OK/ALL or a single port for every row breaks the accepted/remediation split.",
+    "clauses": [
+     1,
+     7,
+     8
+    ]
+   },
+   {
+    "id": "T44.2",
+    "check": "All four checks (REF, LIMIT, DATE, TERM) are evaluated for every row and each failure is recorded (e.g. appended to a list or separate flags), with no early return or else-if chain after the first failure; a row failing all four yields all four codes.",
+    "rationale": "Stopping at the first failure turns REF;LIMIT;DATE;TERM into REF only.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T44.3",
+    "check": "Null, empty and whitespace-only invoice_limit_txt fail LIMIT without an exception (nvl/null check before trim and the pattern test; `str2decimal(\"\")` throws).",
+    "rationale": "An unguarded trim/str2decimal on null or empty text throws instead of reporting LIMIT.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T44.4",
+    "check": "The LIMIT grammar caps the integer part at 12 digits: 1234567890123 (13 digits) fails, 999999999999.99 passes (e.g. whole-string `~= \"[0-9]{1,12}(\\\\.[0-9]{1,2})?\"` or matches()).",
+    "rationale": "A plain numeric test or str2decimal success accepts the 13-digit ceiling.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T44.5",
+    "check": "The LIMIT grammar is a whole-string match on the trimmed text that rejects a trailing decimal point (\"1.\"), exponents (\"1e2\"), signs, currency symbols and grouping separators; it uses `~=` or matches(), not the substring operator `?=`, and not \"str2decimal succeeds\" (which accepts 1e2 / 1.).",
+    "rationale": "Conversion-based validation accepts 1e2 and 1., which the spec rejects.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T44.6",
+    "check": "Impossible dates (2025-02-30) and shortened digits (2025-1-1) fail DATE via a strict check: either strict `isDate(d, pattern, ..., \"UTC\", true)`, a strict `str2date(...) : null` conditional-fail, or a regex shape check plus strict isDate (strict isDate alone is verified to reject both).",
+    "rationale": "Lenient parsing rolls 2025-02-30 into March and accepts 2025-1-1.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T44.7",
+    "check": "Trailing characters (\"2026-01-01x\") fail DATE through an explicit whole-string shape check (regex such as `[0-9]{4}-[0-9]{2}-[0-9]{2}( [0-9]{2}:[0-9]{2}:[0-9]{2})?` with `~=`, or an equivalent length-plus-pattern test); strict isDate/str2date alone is not verified to reject trailing text.",
+    "rationale": "Without a shape check, parsers that stop at the pattern end can accept 2026-01-01x.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T44.8",
+    "check": "Both yyyy-MM-dd and yyyy-MM-dd HH:mm:ss are accepted, with the parse pattern chosen by the value's shape (or length); a supplied timestamp keeps its seconds in effective_dt (2026-02-28 12:34:56).",
+    "rationale": "Parsing only the date-only pattern rejects valid timestamps or drops the time part.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T44.9",
+    "check": "effective_dt is parsed with the \"UTC\" time-zone argument (e.g. `str2date(d, p, \"en.US\", \"UTC\", true)`), so a date-only value becomes 00:00:00 UTC; date functions without a time zone use the host zone (CET).",
+    "rationale": "Parsing in the host zone shifts date-only values by an hour in the UTC output field.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T44.10",
+    "check": "payment_term_txt is compared after trim and upperCase (null-safe, e.g. `upperCase(trim(nvl(x,\"\")))`): \" net30 \" passes, null/blank/\"bad\" fail TERM; business_code receives the normalized value while the source payment_term_txt field is left unchanged.",
+    "rationale": "Comparing the raw text rejects \" net30 \"; normalizing in place corrupts the copied source field.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T44.11",
+    "check": "Accepted rows copy all input fields unchanged (`$out.0.* = $in.0.*;` or per-field), including vendor_ref_no with its outer spaces and the raw invoice/date/term texts, and set approved_amount from the validated trimmed limit, effective_dt and business_code.",
+    "rationale": "Copying trimmed values or omitting the copy loses the original spelling the receiving teams reconcile on.",
+    "clauses": [
+     2,
+     6
+    ]
+   },
+   {
+    "id": "T44.12",
+    "check": "Rejected rows copy all input fields and set reject_reason to the failed codes in the order REF, LIMIT, DATE, TERM joined by \";\" without spaces or a trailing separator (`join(\";\", list)` or equivalent concatenation); a whitespace-only vendor_ref_no (trim leaves \"\") yields REF.",
+    "rationale": "Wrong order, spaces or a trailing ; breaks the remediation codes.",
+    "clauses": [
+     2,
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T44.F1",
+    "check": "A parse/conversion exception can escape where the spec requires a defined result: str2decimal/str2date is called on text that has not passed the grammar check (no guard). Valid guards: a prior regex shape check, strict isDate(...), or the conditional-fail form `str2date(...) : null` / `str2decimal(...) : null`.",
+    "rationale": "str2decimal(\"\") and strict str2date on 2025-02-30 throw, failing the graph instead of routing the row to remediation."
+   },
+   {
+    "id": "T44.F2",
+    "check": "Returns SKIP or ALL (or writes both $out.0 and $out.1 and returns ALL) for some rows, so a row is dropped or reaches both destinations.",
+    "rationale": "Every source row must reach exactly one destination; SKIP drops it and ALL duplicates it."
+   }
+  ],
+  "notes": "Clause 4 trailing-character rejection stays an explicit shape-check item because strict isDate on trailing text is unverified. Old T44.2/T44.8 overlap removed: independence is .2, reason format is .12."
+ },
+ "T45": {
+  "required": [
+   {
+    "id": "T45.1",
+    "check": "Two-output Reformat: transform() returns 0 for schedulable rows (written to $out.0) and 1 for correction rows (written to $out.1); every row returns one of the two.",
+    "rationale": "Any other return scheme loses or duplicates enrollments.",
+    "clauses": [
+     1,
+     8
+    ]
+   },
+   {
+    "id": "T45.2",
+    "check": "Age, guardian, consent, visit and program defects are all collected for every row (no early return after the first defect); e.g. age 1e2 with null consent, 2026-02-30 and SENIOR yields AGE,CONSENT,VISIT,PROGRAM.",
+    "rationale": "Stopping early reports AGE only for a multi-defect row.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T45.3",
+    "check": "age_txt is validated before conversion as trimmed whole-string 1–3 ASCII digits (e.g. `~= \"[0-9]{1,3}\"`); null, empty, signed, decimal and exponent forms (\"1e2\") fail AGE and str2integer is not called for them.",
+    "rationale": "Converting first throws on 1e2 or empty text.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T45.4",
+    "check": "A grammatically valid age is accepted only between 0 and 120 inclusive: 121 fails AGE, 0 is a valid (minor) age.",
+    "rationale": "Off-by-one bounds misclassify 0 or 121.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T45.5",
+    "check": "For a valid age under 18, a null or whitespace-only guardian_id (trimmed, null-safe) produces GUARDIAN; age 0 with null guardian yields GUARDIAN.",
+    "rationale": "Testing only null misses \" \"; testing only blank throws or misses null.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T45.6",
+    "check": "GUARDIAN is never produced when the age is invalid (1e2, empty, 121) or the age is 18 or older (18 with null guardian is accepted).",
+    "rationale": "Applying the guardian rule to an unparsed/default age 0 adds a fictitious GUARDIAN defect.",
+    "clauses": [
+     2,
+     3
+    ]
+   },
+   {
+    "id": "T45.7",
+    "check": "consent_txt passes only when `upperCase(trim(...))` equals \"Y\" (\"y\" and \" Y \" pass); N, null, blank and other text produce CONSENT, independently of age or guardian.",
+    "rationale": "Comparing raw text rejects \" Y \"; inferring consent from a guardian accepts N.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T45.8",
+    "check": "visit_day_txt must have the exact whole-string yyyy-MM-dd shape: time-bearing \"2026-04-01 00:00:00\" and shortened \"2026-4-1\" fail VISIT (regex shape check, or strict isDate for short digits; trailing time text needs the explicit shape check). Trimming visit_day_txt first or not is both acceptable.",
+    "rationale": "A lenient or prefix parse accepts the time-bearing string the spec rejects.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T45.9",
+    "check": "A well-shaped visit day must be a real calendar date (strict check: 2026-02-30 fails) and lie between 2026-04-01 and 2026-04-30 inclusive (04-30 passes, 05-01 fails); the range test may compare typed dates or the validated yyyy-MM-dd strings lexicographically.",
+    "rationale": "Exclusive bounds drop 04-30; lenient parsing accepts 02-30.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T45.10",
+    "check": "appointment_day is produced with the \"UTC\" time-zone argument (e.g. `str2date(d, \"yyyy-MM-dd\", \"en.US\", \"UTC\", true)`), giving midnight UTC; functions without a zone use the host zone (CET).",
+    "rationale": "Host-zone parsing writes 2026-03-31 23:00 UTC for 2026-04-01.",
+    "clauses": [
+     5,
+     7
+    ]
+   },
+   {
+    "id": "T45.11",
+    "check": "program_txt is trimmed and upper-cased; WELL passes for any age (an invalid age adds no PROGRAM defect), SENIOR passes only with a valid age >= 65 (64 fails, 65 passes, invalid age fails), any other code fails PROGRAM.",
+    "rationale": "Using the default age 0 or skipping the age-validity condition misjudges SENIOR.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T45.12",
+    "check": "Correction rows copy all source fields unchanged and set correction_codes to the defects in the order AGE, GUARDIAN, CONSENT, VISIT, PROGRAM joined by \",\" (no spaces, no trailing comma); accepted rows copy the source fields and add patient_age, appointment_day and normalized_program.",
+    "rationale": "Wrong order or separators break the correction contract.",
+    "clauses": [
+     7,
+     8
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T45.F1",
+    "check": "A parse/conversion exception can escape where the spec requires a defined result: str2integer on age_txt or str2date on visit_day_txt is called on text that has not passed the grammar check (no guard). Valid guards: a prior regex shape check, strict isDate(...), or the conditional-fail form `str2date(...) : null` / `str2decimal(...) : null`.",
+    "rationale": "str2integer(\"1e2\") and strict str2date(\"2026-02-30\") throw instead of producing AGE/VISIT."
+   },
+   {
+    "id": "T45.F2",
+    "check": "Returns SKIP or ALL (or writes both $out.0 and $out.1 and returns ALL) for some rows, so a row is dropped or reaches both destinations.",
+    "rationale": "Every source row must reach exactly one destination; SKIP drops it and ALL duplicates it."
+   }
+  ],
+  "notes": "Clause 5 does not say whether visit_day_txt is trimmed (reference does not trim); both are accepted. Lexicographic range comparison on a validated yyyy-MM-dd string is accepted."
+ },
+ "T46": {
+  "required": [
+   {
+    "id": "T46.1",
+    "check": "Two-output Reformat: transform() returns 0 for valid manifests (written to $out.0) and 1 for invalid ones (written to $out.1); every row returns one of the two.",
+    "rationale": "Any other return scheme loses or duplicates manifests.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T46.2",
+    "check": "movement_txt is trimmed and upper-cased; only SHIP and REVERSE are recognized, null/blank/other fail MOVEMENT, and an unrecognized movement does not suppress the QTY, VALUE and DISPATCH checks (\"?\" with null quantity yields MOVEMENT|QTY|VALUE|DISPATCH).",
+    "rationale": "Returning early on an unknown movement hides the other defects.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T46.3",
+    "check": "quantity_txt grammar is a whole-string match on the trimmed text of an optional minus and 1–6 digits (e.g. `~= \"-?[0-9]{1,6}\"`): \"+2\", null and blank fail QTY, and str2integer is called only after the grammar passes.",
+    "rationale": "Converting before the grammar check accepts +2 or throws on null.",
+    "clauses": [
+     3,
+     8
+    ]
+   },
+   {
+    "id": "T46.4",
+    "check": "After the grammar passes, SHIP requires a positive quantity and REVERSE a negative one (REVERSE 2 fails QTY); an unrecognized movement applies no sign rule.",
+    "rationale": "Ignoring the movement-dependent sign accepts a positive reversal.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T46.5",
+    "check": "A zero quantity always fails QTY, including \"-0\" for REVERSE and 0 for SHIP (test the converted value, not the text).",
+    "rationale": "A text test for a leading minus accepts -0 as a negative reversal.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T46.6",
+    "check": "unit_value_txt is validated as a whole-string match of 1–8 integer digits with optional 1–2 fraction digits, no sign (e.g. `~= \"[0-9]{1,8}(\\\\.[0-9]{1,2})?\"`): \"1e2\" and empty fail VALUE, 99999999.99 passes, and 0 is valid (not treated as missing).",
+    "rationale": "Conversion-based checks accept 1e2; a zero test treats 0 as missing.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T46.7",
+    "check": "For REVERSE, ORIGINAL is reported when trimmed original_manifest is null/blank or equals trimmed manifest_id (self-reference M0/M0 fails).",
+    "rationale": "Checking only null misses the self-reference reversal.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T46.8",
+    "check": "For SHIP or an unrecognized movement, original_manifest is not checked at all (SHIP with \"x\" and \"?\" with \"x\" get no ORIGINAL).",
+    "rationale": "Applying the reversal rule to every row adds spurious ORIGINAL defects.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T46.9",
+    "check": "dispatch_txt must be exactly 8 digits by an explicit whole-string shape check (e.g. `~= \"[0-9]{8}\"` or length 8 plus digits): \"202611\" and \"20260101x\" fail DISPATCH; strict date parsing alone is not verified to reject trailing text. Trimming first or not is both acceptable.",
+    "rationale": "Without a shape check a suffix after a valid day may be accepted.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T46.10",
+    "check": "A well-shaped dispatch_txt must be a real calendar day (strict isDate/str2date: 20260230 fails, 20240229 passes) and dispatch_day is parsed with the \"UTC\" time-zone argument so it is midnight UTC.",
+    "rationale": "Lenient parsing accepts 20260230; host-zone parsing shifts the day by an hour.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T46.11",
+    "check": "declared_value is the signed quantity times the unit value as a decimal (e.g. `qty * str2decimal(v)`), negative for REVERSE (-2 × 1.25 = -2.50), and signed_quantity is the converted signed integer; raw source fields are copied unchanged.",
+    "rationale": "Using abs() or the unsigned text loses the reversal sign.",
+    "clauses": [
+     7
+    ]
+   },
+   {
+    "id": "T46.12",
+    "check": "Rejected rows copy all fields and set defect_list to the defects in the order MOVEMENT, QTY, VALUE, ORIGINAL, DISPATCH joined by \"|\" with no trailing separator.",
+    "rationale": "Wrong order or separator breaks the broker evidence.",
+    "clauses": [
+     8
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T46.F1",
+    "check": "A parse/conversion exception can escape where the spec requires a defined result: str2integer/str2decimal/str2date is called on text that has not passed the grammar check (no guard). Valid guards: a prior regex shape check, strict isDate(...), or the conditional-fail form `str2date(...) : null` / `str2decimal(...) : null`.",
+    "rationale": "str2integer(\"+2\"), str2decimal(\"1e2\") or strict str2date(\"20260230\") throw instead of producing a defect."
+   },
+   {
+    "id": "T46.F2",
+    "check": "declared_value is computed through number (double) arithmetic, e.g. decimal2double, a `number` variable or a floating intermediate that is then rounded.",
+    "rationale": "99999899990000.01 is not representable exactly as a double; the spec requires exact decimal arithmetic."
+   },
+   {
+    "id": "T46.F3",
+    "check": "Returns SKIP or ALL (or writes both $out.0 and $out.1 and returns ALL) for some rows, so a row is dropped or reaches both destinations.",
+    "rationale": "Every source row must reach exactly one destination; SKIP drops it and ALL duplicates it."
+   }
+  ],
+  "notes": "Clause 6 does not say whether dispatch_txt is trimmed (reference does not trim); both accepted."
+ },
+ "T47": {
+  "required": [
+   {
+    "id": "T47.1",
+    "check": "Single-output Reformat: transform() writes $out.0 and returns OK (or 0 / ALL) for every policy; no row is skipped.",
+    "rationale": "Returning SKIP for any row loses a migrated policy.",
+    "clauses": [
+     1,
+     8
+    ]
+   },
+   {
+    "id": "T47.2",
+    "check": "policy_number = trim(legacy_policy_no); a trimmed empty identifier becomes UNASSIGNED.",
+    "rationale": "Copying the raw identifier keeps outer spaces; missing the default leaves an empty key.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T47.3",
+    "check": "billing_mode is trimmed and upper-cased null-safely: M → MONTHLY, A → ANNUAL, null/blank/unknown → MANUAL (\" M \" maps to MONTHLY).",
+    "rationale": "Comparing the raw code maps \" M \" to MANUAL.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T47.4",
+    "check": "UNKNOWN_MODE is added only for a nonblank unrecognized billing code (\"bad\", \"?\"), not for null or blank billing_mode.",
+    "rationale": "Treating null as unknown adds a spurious warning.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T47.5",
+    "check": "manual_override null and empty are distinguished: null means no override (source mode kept), while a non-null override that trims to empty forces MANUAL (\" M \" with override \"\" → MANUAL). `isBlank(override)` / `trim(nvl(override,\"\")) == \"\"` as the 'no override' test is wrong here.",
+    "rationale": "Collapsing \"\" into null keeps MONTHLY where the spec demands MANUAL.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T47.6",
+    "check": "A trimmed, upper-cased override of M or A replaces the computed mode with MONTHLY or ANNUAL (unknown \"?\" source with override \"m\" → MONTHLY).",
+    "rationale": "Ignoring a lowercase override keeps MANUAL.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T47.7",
+    "check": "Any other nonblank override adds BAD_OVERRIDE and leaves the source-computed mode unchanged (billing m, override \"?\" → MONTHLY with BAD_OVERRIDE).",
+    "rationale": "Resetting the mode to MANUAL on a bad override discards the valid source mode.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T47.8",
+    "check": "suspended true forces mode_cd HOLD after both codes are applied; false or null is not suspended, tested null-safely (e.g. `nvl($in.0.suspended, false)` or `$in.0.suspended == true`).",
+    "rationale": "Applying HOLD before the override lets the override win; an unguarded null boolean test can fail.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T47.9",
+    "check": "Warnings survive suspension: migration_warning lists UNKNOWN_MODE before BAD_OVERRIDE joined by \";\" even when mode_cd is HOLD, and is the empty string (not null) when there are none.",
+    "rationale": "Clearing warnings on HOLD or emitting null for none violates clauses 4 and 8.",
+    "clauses": [
+     4,
+     8
+    ]
+   },
+   {
+    "id": "T47.10",
+    "check": "display_nm is trimmed and becomes \"Unnamed\" when null or blank.",
+    "rationale": "Missing the null/blank default leaves null or \" \" names.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T47.11",
+    "check": "email_txt stays null when null; otherwise it is trimmed and lower-cased, so empty stays empty (\" B@C \" → \"b@c\"); it is never defaulted because the name was defaulted.",
+    "rationale": "lowerCase(trim(nvl(email,\"\"))) turns null into \"\".",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T47.12",
+    "check": "credit_balance, retired_at and all other retained fields are copied unchanged by name (`$out.0.* = $in.0.*;` or per-field), keeping negative/null balances and the time part of retired_at (1970-01-01 12:00:00).",
+    "rationale": "Rounding, truncating or defaulting these values alters migrated data.",
+    "clauses": [
+     6,
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T47.F1",
+    "check": "Copies fields by position between the different input and output schemas (copyByPosition or index-based field access), shifting values after the removed columns.",
+    "rationale": "The output drops columns, so positional copy misaligns every following field."
+   },
+   {
+    "id": "T47.F2",
+    "check": "Writes to output fields that do not exist in PolicyDestination (e.g. $out.0.legacy_policy_no, $out.0.billing_mode, $out.0.old_policy_memo).",
+    "rationale": "Those fields were removed from the output schema, so the CTL does not compile."
+   }
+  ],
+  "notes": "Key discriminator is .5 (null vs empty override). Single-output contract: OK/0/ALL all accepted."
+ },
+ "T48": {
+  "required": [
+   {
+    "id": "T48.1",
+    "check": "Normalizer contract: count() returns the number of child rows for the current property (retained owners, or 1 for the placeholder) and transform(integer idx) builds child idx on $out.0 and returns OK.",
+    "rationale": "A Rollup/Reformat-style single transform() does not normalize one parent into several rows.",
+    "clauses": [
+     1,
+     4
+    ]
+   },
+   {
+    "id": "T48.2",
+    "check": "parcel_number = trim(old_parcel_id), with UNKNOWN_PARCEL when the trimmed value is empty.",
+    "rationale": "Copying the raw id keeps \" P1 \"; missing the default leaves an empty parcel.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T48.3",
+    "check": "owners_txt is split on \";\" (null handled with nvl or an explicit check), each segment trimmed, and empty segments from leading, trailing or repeated delimiters discarded; other punctuation (\"X.Y\") stays part of the name.",
+    "rationale": "Keeping empty segments emits blank owners and inflates the count.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T48.4",
+    "check": "Duplicates within one property are removed case-insensitively after trimming (e.g. upperCase/lowerCase key in a map), keeping the first spelling and first-appearance order (\" Ann ;bob;ANN; ;Bob;\" → Ann, bob).",
+    "rationale": "Case-sensitive dedup keeps ANN and Bob; keeping the last spelling changes names.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T48.5",
+    "check": "A property with no usable owner (null, empty, whitespace or delimiter-only \" ; ; \") emits exactly one row with owner_name UNKNOWN_OWNER, owner_missing true, owner_ordinal 1 and owner_total 1; real owner rows have owner_missing false.",
+    "rationale": "Missing the placeholder loses the parcel; flag errors misreport ownership.",
+    "clauses": [
+     4,
+     5
+    ]
+   },
+   {
+    "id": "T48.6",
+    "check": "owner_ordinal is idx + 1 in retained order and owner_total is the retained count after blank removal and dedup (2 for the first property, not 5 or 6).",
+    "rationale": "Counting separators gives the wrong total.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T48.7",
+    "check": "tenure_txt is trimmed and upper-cased null-safely: F → FREEHOLD, L → LEASEHOLD (\"f\" and \"l\" too), null/empty/unknown → UNVERIFIED, written on every child row.",
+    "rationale": "Comparing raw codes maps \"f\" to UNVERIFIED.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T48.8",
+    "check": "Tenure (and parcel/missing values) is derived from the current property each time, so a property with \"?\" after a LEASEHOLD property gets UNVERIFIED rather than a borrowed value.",
+    "rationale": "Keeping the tenure variable from the previous parent when the current code is missing leaks LEASEHOLD.",
+    "clauses": [
+     6,
+     8
+    ]
+   },
+   {
+    "id": "T48.9",
+    "check": "The owner list and dedup set are reset for every property (either clear()/reassign in count(), clear in clean(), or fresh declarations per parent), so \"Bob\" in a later P1 row is emitted again.",
+    "rationale": "Without a reset the second P1's Bob is deduplicated against the first property and lost.",
+    "clauses": [
+     3,
+     8
+    ]
+   },
+   {
+    "id": "T48.10",
+    "check": "Each child carries the parent's other fields unchanged (`$out.0.* = $in.0.*;` in transform, or a copy of the parent record saved in count()), including null/negative assessed_value, registered_at with time and street_label null vs empty.",
+    "rationale": "Missing the copy leaves the property attributes empty on owner rows.",
+    "clauses": [
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T48.F1",
+    "check": "transform(idx) indexes the raw split result (e.g. `parts[idx]`) while count() returns the retained count, or count() returns a different number than the list transform() reads.",
+    "rationale": "Blank or duplicate segments then shift names or raise an index-out-of-bounds error."
+   },
+   {
+    "id": "T48.F2",
+    "check": "count() returns 0 for a property with null, blank or delimiter-only ownership.",
+    "rationale": "A Normalizer emits nothing when count() is 0, so the parcel disappears."
+   }
+  ],
+  "notes": "Old T48.8 'do not expose ownership text' dropped (output has no owners_txt field; it could never fail)."
+ },
+ "T49": {
+  "required": [
+   {
+    "id": "T49.1",
+    "check": "Single-output Reformat: transform() writes $out.0 and returns OK (or 0 / ALL) for every entry; the carried balance, ordinal and previous key live in global variables that persist between calls.",
+    "rationale": "Local-only state cannot carry balances across records.",
+    "clauses": [
+     1,
+     8
+    ]
+   },
+   {
+    "id": "T49.2",
+    "check": "account_key = trim(old_account), and the account change test compares trimmed keys (\" A \" continues account A as entry 2).",
+    "rationale": "Comparing raw keys starts a new account at \" A \".",
+    "clauses": [
+     1,
+     2
+    ]
+   },
+   {
+    "id": "T49.3",
+    "check": "The first record is handled so that a blank key is a legitimate account: either an explicit first-record flag/counter, or a plain `k != previous` comparison relying on the declared defaults (previous \"\", balance 0, ordinal 0). A sentinel such as `previous == \"\"` / isBlank(previous) fails: the three leading blank-key rows must be numbered 1, 2, 3 with balance 2.00, 2.00, 0.00.",
+    "rationale": "An empty-string sentinel resets the blank account on every row.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T49.4",
+    "check": "When the trimmed key differs from the previous entry, balance and ordinal are reset to zero before the current entry is applied (B after A starts at 0.00, entry 1).",
+    "rationale": "Resetting after applying the entry or not at all carries A's balance into B.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T49.5",
+    "check": "entry_kind is trimmed and upper-cased null-safely; OPEN sets the balance to opening_balance, with null meaning zero (`nvl(opening_balance, 0D)`), ignores movement_amount, and a second OPEN replaces the earlier balance.",
+    "rationale": "Adding instead of replacing, or a null opening, corrupts the balance.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T49.6",
+    "check": "MOVE with non-null movement_amount adds it to the balance, including zero and negative amounts, with status OK.",
+    "rationale": "Skipping zero/negative amounts loses movements.",
+    "clauses": [
+     4,
+     6
+    ]
+   },
+   {
+    "id": "T49.7",
+    "check": "MOVE with null movement_amount leaves the balance unchanged and reports MISSING_AMOUNT, with no arithmetic on the null value.",
+    "rationale": "balance + null throws or nulls the non-nullable balance.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T49.8",
+    "check": "CLOSE sets the balance to zero regardless of the numeric fields and reports CLOSED; the row is still emitted.",
+    "rationale": "Keeping the balance or skipping the row breaks clause 5.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T49.9",
+    "check": "Unknown, blank or null entry_kind reports UNKNOWN_KIND and leaves the balance unchanged (\"??\" in A keeps 7.50).",
+    "rationale": "Treating unknown kinds as zero resets loses the carried balance.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T49.10",
+    "check": "migration_status is decided fresh for every entry (e.g. a local status initialized to OK each call), so OK follows a MISSING_AMOUNT or UNKNOWN_KIND entry.",
+    "rationale": "A global status carries a previous defect forward.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T49.11",
+    "check": "migrated_balance is the balance after the current entry, account_entry_no is the per-account ordinal starting at 1, and all original fields are copied unchanged (`$out.0.* = $in.0.*;` or per-field), including raw entry_kind.",
+    "rationale": "Writing the pre-entry balance or a global row number misreports history.",
+    "clauses": [
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T49.F1",
+    "check": "Resets account_entry_no (or treats the row as a new account) on CLOSE or OPEN instead of only on a key change.",
+    "rationale": "Clause 5 says a later MOVE continues the same account; only a key change starts one."
+   },
+   {
+    "id": "T49.F2",
+    "check": "Declares the carried balance or ordinal as a local variable inside transform() (reset on every record).",
+    "rationale": "Balances and ordinals then never carry from one entry to the next."
+   }
+  ],
+  "notes": "First-record sentinel: plain `k != previous` with declared defaults is functionally correct here and accepted; `previous == null` is harmless dead code (never true) and not penalised; only an empty-string sentinel breaks the blank account."
+ },
+ "T50": {
+  "required": [
+   {
+    "id": "T50.1",
+    "check": "Single-output Reformat: transform() writes $out.0 and returns OK (or 0 / ALL) for every shipment, including misses.",
+    "rationale": "Skipping misses loses shipments.",
+    "clauses": [
+     1,
+     8
+    ]
+   },
+   {
+    "id": "T50.2",
+    "check": "carrier_cd and service_cd are trimmed and upper-cased null-safely only for the lookup keys; the raw values are copied unchanged to the output (\" a \" stays \" a \").",
+    "rationale": "Writing the normalized keys over the source fields changes raw spelling.",
+    "clauses": [
+     2,
+     8
+    ]
+   },
+   {
+    "id": "T50.3",
+    "check": "No ServiceRules query is made when either normalized key is empty (null or blank) or pickup_day is null; such rows get the missing-reference result.",
+    "rationale": "Querying with blank keys or comparing a null pickup_day misclassifies or throws.",
+    "clauses": [
+     2,
+     3
+    ]
+   },
+   {
+    "id": "T50.4",
+    "check": "The queries run in order exact (carrier, service) → (carrier, \"*\") → (\"*\", \"*\") via `lookup(ServiceRules).get(a, b)`, and reference_level is EXACT, CARRIER or NETWORK by the stage that supplied the selected record, not by rule_label.",
+    "rationale": "Wrong order or label-based levels misreport the commitment source.",
+    "clauses": [
+     4,
+     6
+    ]
+   },
+   {
+    "id": "T50.5",
+    "check": "An exact (or carrier) record that exists but is ineligible does not end the search: an expired exact hit (pickup one second after valid_to) falls back to CARRIER, a negative sla_days exact record falls back to CARRIER.",
+    "rationale": "Stopping at the first non-null record uses an expired commitment.",
+    "clauses": [
+     4,
+     5
+    ]
+   },
+   {
+    "id": "T50.6",
+    "check": "Eligibility bounds are inclusive and compared on the full typed timestamps: pickup_day exactly at valid_from or exactly at valid_to is eligible, one second after valid_to is not.",
+    "rationale": "Exclusive comparisons reject boundary pickups; day truncation accepts the late one.",
+    "clauses": [
+     3,
+     5
+    ]
+   },
+   {
+    "id": "T50.7",
+    "check": "A null valid_to means no upper limit (record eligible from valid_from on).",
+    "rationale": "Comparing against null valid_to rejects open-ended rules.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T50.8",
+    "check": "sla_days must be null or >= 0 for eligibility; a selected record with null sla_days gives sla_days 5 with reference_miss false.",
+    "rationale": "Treating a null sla as a miss sets reference_miss true wrongly.",
+    "clauses": [
+     5,
+     6
+    ]
+   },
+   {
+    "id": "T50.9",
+    "check": "A selected sla_days of 0 is used unchanged (not replaced by 5).",
+    "rationale": "A truthiness/positive test turns the zero-day commitment into 5.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T50.10",
+    "check": "When no stage yields an eligible record: sla_days 5, reference_miss true, reference_level NONE.",
+    "rationale": "Missing defaults leave fields unset or stale.",
+    "clauses": [
+     7
+    ]
+   },
+   {
+    "id": "T50.11",
+    "check": "On a miss, reference_key is the normalized carrier, \":\", and the normalized service, with null or blank parts as empty strings (\":\" for both empty, \":EXP\" for null carrier). Setting reference_key the same way on hits is also acceptable.",
+    "rationale": "Using raw keys or the string \"null\" breaks the diagnostic key.",
+    "clauses": [
+     7
+    ]
+   },
+   {
+    "id": "T50.12",
+    "check": "Every row starts from its own defaults (e.g. assign sla 5 / miss true / NONE first, or assign all four computed fields on every path) and lookup results are held in local variables, so a miss after a hit does not inherit the hit's values.",
+    "rationale": "Global or unassigned outputs leak the previous shipment's commitment.",
+    "clauses": [
+     8
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T50.F1",
+    "check": "Reads fields of a lookup result without first checking that it is not null (e.g. `r.valid_from` after `get` returned null), with none of `r == null`, `isnull(r)` or `count(...) > 0` as a guard.",
+    "rationale": "A missing exact key (carrier B) then throws instead of falling back."
+   },
+   {
+    "id": "T50.F2",
+    "check": "Truncates pickup_day or valid_from/valid_to to the day (trunc, date2str, a day-based dateDiff) before comparing.",
+    "rationale": "A pickup one second after valid_to becomes eligible, keeping an expired exact rule."
+   }
+  ],
+  "notes": "Spec gap: clause 7 defines reference_key only for misses; the reference sets it on every row (A:EXP on hits). The item accepts both. Owner may want to state the hit value in the prompt."
+ },
+ "T51": {
+  "required": [
+   {
+    "id": "T51.1",
+    "check": "Single-output Reformat: transform() writes $out.0 and returns OK (or 0 / ALL) for every claim, including misses.",
+    "rationale": "Skipping misses loses claims.",
+    "clauses": [
+     1,
+     8
+    ]
+   },
+   {
+    "id": "T51.2",
+    "check": "provider_id and region_id are trimmed and upper-cased null-safely for the query only (raw values copied); a null/blank key or null loss_at makes no query and gives the missing-tariff result.",
+    "rationale": "Raw keys miss \" p \"; querying with a null loss_at compares against null.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T51.3",
+    "check": "All candidates for the key are read: `get(a, b)` followed by `next()` until null (while loop), or a loop bounded by `count(a, b)` with get then next(). The graph lookup is configured with keyDuplicates=true, so a single get() sees only the first candidate.",
+    "rationale": "Reading only get() ignores competing tariffs and picks by table order.",
+    "clauses": [
+     1,
+     3
+    ]
+   },
+   {
+    "id": "T51.4",
+    "check": "A candidate is eligible only when effective_from <= loss_at and (effective_to is null or loss_at <= effective_to), compared on full timestamps (a loss one second after effective_to is ineligible; a loss before every effective_from finds nothing).",
+    "rationale": "Open-ended or boundary errors select expired or future tariffs.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T51.5",
+    "check": "payout_percent must be non-null and between 0 and 100 inclusive: 101 and null are ineligible, and a 0 percentage is a valid winner.",
+    "rationale": "Missing the range check lets a 101% tariff win; treating 0 as missing loses the ZERO tariff.",
+    "clauses": [
+     3,
+     5
+    ]
+   },
+   {
+    "id": "T51.6",
+    "check": "Among eligible candidates the latest effective_from wins, regardless of lookup order.",
+    "rationale": "Taking the first or last returned candidate depends on table order.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T51.7",
+    "check": "Ties on effective_from are broken by the lowest admin_fee (LOW with fee 3.00 loses to fee 2.00).",
+    "rationale": "Ignoring the fee picks the wrong tariff among same-day candidates.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T51.8",
+    "check": "Remaining ties are broken by the lexicographically smallest tariff_id (A beats B at equal date and fee).",
+    "rationale": "Without the id tie-break the winner depends on lookup order.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T51.9",
+    "check": "payout is computed in decimal arithmetic as claim_amount * payout_percent / 100 with decimal operands (e.g. `100D`), never via number/double.",
+    "rationale": "Double arithmetic can turn 0.005 into 0.00499… and round down.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T51.10",
+    "check": "payout is rounded explicitly with `round(x, 2)` on the decimal value (rounds half away from zero: 0.02 × 25% = 0.005 → 0.01).",
+    "rationale": "Relying on implicit scale or truncating gives 0.00 instead of 0.01.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T51.11",
+    "check": "A null or negative claim_amount gives payout 0 while the winner is still reported (selected_tariff set, tariff_missing false); a zero amount gives payout 0 and is not a miss.",
+    "rationale": "Treating a null amount as a miss or computing with it misreports the tariff.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T51.12",
+    "check": "With no eligible candidate (including a key hit whose candidates are all ineligible) selected_tariff is \"\", tariff_missing true and payout 0.",
+    "rationale": "Missing defaults leave null or stale outputs.",
+    "clauses": [
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T51.F1",
+    "check": "Keeps the winning record or found flag in global variables that are not reset at the start of each claim.",
+    "rationale": "A miss after a zero-percent hit then reuses the previous tariff."
+   },
+   {
+    "id": "T51.F2",
+    "check": "Subtracts or otherwise applies admin_fee to the payout.",
+    "rationale": "Clause 4 says the fee is only a tie-break and is never deducted."
+   },
+   {
+    "id": "T51.F3",
+    "check": "Reads fields of the record returned by get()/next() before checking it for null (e.g. a do-while that reads r.effective_from on a miss).",
+    "rationale": "A queryable key with no tariff records then throws instead of producing the miss result."
+   }
+  ],
+  "notes": "Spec says 'rounded half-up'; CTL2 round(decimal,2) rounds half away from zero, identical for the non-negative payouts here, so explicit round(...,2) is required. keyDuplicates=true is a graph setting stated in .3."
+ },
+ "T52": {
+  "required": [
+   {
+    "id": "T52.1",
+    "check": "Two-output Reformat: transform() returns 0 for calibrated samples (written to $out.0) and 1 for corrections (written to $out.1); every row returns one of the two.",
+    "rationale": "Any other return scheme loses or duplicates samples.",
+    "clauses": [
+     1,
+     9
+    ]
+   },
+   {
+    "id": "T52.2",
+    "check": "facility_txt is trimmed and upper-cased null-safely; null or blank adds FACILITY; the raw value is copied unchanged (\" f1 \" stays).",
+    "rationale": "Writing the normalized key over the source changes the sample record.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T52.3",
+    "check": "The assay grammar is a whole-string match on the trimmed, upper-cased value of a letter followed by 1–5 letters/digits (e.g. `~= \"[A-Z][A-Z0-9]{1,5}\"`): \"ab\" passes as AB, \"?\" fails ASSAY, independently of the reference tables.",
+    "rationale": "Testing only table presence or skipping the grammar misreports ASSAY.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T52.4",
+    "check": "result_txt grammar is a whole-string match on the trimmed text of an optional minus, 1–6 integer digits and optional 1–3 fraction digits (e.g. `~= \"-?[0-9]{1,6}(\\\\.[0-9]{1,3})?\"`): \"1e2\", empty and \"1234567\" fail VALUE; 0 and -1.002 pass.",
+    "rationale": "str2decimal-based checks accept 1e2 and 7-digit values.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T52.5",
+    "check": "FACILITY, ASSAY and VALUE defects are all collected and joined in that order with \";\" (null facility, \"?\", \"1e2\" → FACILITY;ASSAY;VALUE; blank facility and empty result → FACILITY;VALUE).",
+    "rationale": "Stopping at the first syntax defect or misordering breaks the correction reason.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T52.6",
+    "check": "Neither lookup table is queried when any syntax defect exists.",
+    "rationale": "Clause 5 forbids queries for syntactically invalid input.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T52.7",
+    "check": "A facility record with enabled false yields the single reason BLOCKED and does not fall back to the assay default (F2 with a valid AB default is still BLOCKED).",
+    "rationale": "Falling back on a disabled facility rescues a blocked measurement.",
+    "clauses": [
+     6,
+     7
+    ]
+   },
+   {
+    "id": "T52.8",
+    "check": "The facility factor is used only when enabled is true and factor is non-null, > 0 and <= 1000000; null enabled, null factor or a factor over 1000000 falls back to the assay default (F3, F4, F5 → DEFAULT).",
+    "rationale": "Treating null enabled as disabled blocks a valid fallback; skipping the bound uses 1000001.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T52.9",
+    "check": "A missing facility record also falls back to the assay default (UNKNOWN facility → DEFAULT 2.50).",
+    "rationale": "Rejecting on a missing facility record skips the general standard.",
+    "clauses": [
+     7
+    ]
+   },
+   {
+    "id": "T52.10",
+    "check": "The default factor is usable only when non-null, > 0 and <= 1000000; zero, null, over-limit or a missing default record gives the single reason NO_FACTOR.",
+    "rationale": "Accepting a zero or over-limit default calibrates with an invalid factor.",
+    "clauses": [
+     7,
+     8
+    ]
+   },
+   {
+    "id": "T52.11",
+    "check": "calibrated_result = round(str2decimal(trimmed result) * factor, 2) in decimal arithmetic, with factor_used and factor_source FACILITY or DEFAULT; `round(x, 2)` rounds half away from zero (-1.002 × 2.50 = -2.505 → -2.51) and is accepted for 'half-up'.",
+    "rationale": "Unrounded or double arithmetic misstates the calibrated value.",
+    "clauses": [
+     8
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T52.F1",
+    "check": "A parse/conversion exception can escape where the spec requires a defined result: str2decimal on result_txt (including while building a reject row) is called on text that has not passed the grammar check (no guard). Valid guards: a prior regex shape check, strict isDate(...), or the conditional-fail form `str2date(...) : null` / `str2decimal(...) : null`.",
+    "rationale": "str2decimal(\"1e2\") or str2decimal(\"\") throws instead of producing VALUE."
+   },
+   {
+    "id": "T52.F2",
+    "check": "Reads fields of a lookup result before checking it for null (e.g. `f.enabled` when FacilityFactors.get returned null), with no `== null`, isnull() or count() guard.",
+    "rationale": "A missing facility record (UNKNOWN) then throws instead of falling back to the default."
+   },
+   {
+    "id": "T52.F3",
+    "check": "Keeps the selected factor or factor_source in global variables that are not reset for each sample.",
+    "rationale": "A failed lookup after a success then reuses the earlier factor (clause 9)."
+   }
+  ],
+  "notes": "Spec gap: 'rounded half-up' is ambiguous for negatives; CTL2 round() rounds half away from zero (reference -2.505 → -2.51). Item .11 accepts round(x,2); owner may reword clause 8 to 'half away from zero'."
+ },
+ "T53": {
+  "required": [
+   {
+    "id": "T53.1",
+    "check": "DataIntersection contract: transform() handles matched pairs only ($in.0 previous, $in.1 incoming), writes the result to `$out.0` and returns an emitting value (OK, 0, 1 or ALL). Verified by live runs: the matched record written to CTL `$out.0` is emitted on physical port 1, and writing `$out.1` fails at graph init (ctl2-basics §8.9 still says `$out.1` and is outdated). One-sided records are passed through by the component with no CTL code; unused transformLeftOnly/transformRightOnly declarations are harmless.",
+    "rationale": "Writing $out.1 as ctl2-basics suggests fails at init.",
+    "clauses": [
+     1,
+     2
+    ]
+   },
+   {
+    "id": "T53.2",
+    "check": "status_cd is compared without trimming or nvl coercion, null-safely (`!=`/`==` are null-safe): null equals null, and an empty status differs from null (X → \"\" is a change; nvl(status, \"\") would hide null → \"\").",
+    "rationale": "Coercing null to \"\" hides the null-to-empty change.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T53.3",
+    "check": "annual_value is compared as a typed decimal without nvl-to-zero or rounding: null differs from 0.00 and 2.00 → null is a change.",
+    "rationale": "nvl(value, 0) equates null with zero.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T53.4",
+    "check": "expires_at is compared as the complete date value including time: 00:00:00 vs 00:00:01 on the same day is a change (no trunc/date2str to day), and null vs non-null differs.",
+    "rationale": "Day-level comparison misses the one-second change.",
+    "clauses": [
+     7
+    ]
+   },
+   {
+    "id": "T53.5",
+    "check": "cdc_action is UPDATE when any tracked field differs and UNCHANGED otherwise; customer_label, contract_note, timestamps and other ancillary fields are not compared.",
+    "rationale": "Comparing ancillary fields turns unchanged pairs into updates.",
+    "clauses": [
+     4,
+     5
+    ]
+   },
+   {
+    "id": "T53.6",
+    "check": "changed_fields lists the differing field names in the order status_cd, annual_value, expires_at, joined by \",\" without spaces or trailing comma (`join(\",\", list)` or equivalent), and is the empty string (not null) for an unchanged pair.",
+    "rationale": "Wrong order/separator or null for unchanged breaks the delta contract.",
+    "clauses": [
+     4,
+     5
+    ]
+   },
+   {
+    "id": "T53.7",
+    "check": "Two all-null tracked tuples are UNCHANGED (the first pair A with all-null fields).",
+    "rationale": "A null-unsafe comparison marks the all-null pair as changed or throws.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T53.8",
+    "check": "All output snapshot fields come from the incoming record $in.1 (`$out.0.* = $in.1.*;` or per-field), keeping its nulls, blanks and zeros; only cdc_action and changed_fields are computed.",
+    "rationale": "Copying $in.0 publishes the previous snapshot's values.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T53.9",
+    "check": "The change list/decision is reset for every pair (local declaration in transform() or explicit clearing each call), so each Cartesian pairing of duplicate keys gets its own result (E pairs: UNCHANGED, UPDATE, UPDATE, UNCHANGED).",
+    "rationale": "A global list carries earlier differences into an unchanged pair.",
+    "clauses": [
+     8
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T53.F1",
+    "check": "Writes one-sided records from transform() or fabricates removal/addition rows (e.g. INSERT/DELETE actions, writing `$out.2`).",
+    "rationale": "One-sided records are passed through by the component on ports 0 and 2; CTL sees only matched pairs."
+   },
+   {
+    "id": "T53.F2",
+    "check": "Returns SKIP (drops the pair) or STOP (the run ends in ERROR) for any matched pair, e.g. SKIP for unchanged pairs.",
+    "rationale": "Clause 5 requires unchanged pairs to be emitted; only OK/0/1/ALL emit."
+   }
+  ],
+  "notes": "Since `==`/`!=` are null-safe, the comparison itself is easy; items target null/empty coercion, full timestamps, $in.1 source and per-pair reset. The ctl2-basics §8.9 $out.1 statement contradicts the live run; item .1 states the verified fact."
+ }
+}

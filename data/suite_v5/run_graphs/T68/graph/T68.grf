@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T68" id="6101300068" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Invoice utilities round once after the surcharge
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="InvoiceUtilityInput" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="invoice_key" type="string" nullable="false" />
+        <Field name="invoice_tenant" type="string" nullable="false" />
+        <Field name="invoice_file" type="string" nullable="false" />
+        <Field name="invoice_row" type="long" nullable="false" />
+        <Field name="invoice_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="invoice_team" type="string" nullable="true" />
+        <Field name="invoice_market" type="string" nullable="true" />
+        <Field name="invoice_currency" type="string" nullable="false" />
+        <Field name="invoice_batch" type="string" nullable="false" />
+        <Field name="invoice_note" type="string" nullable="true" />
+        <Field name="invoice_trace" type="string" nullable="true" />
+        <Field name="invoice_unused_archive" type="string" nullable="true" />
+        <Field name="raw_code" type="string" nullable="true" />
+        <Field name="gross_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="discount_percent" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="surcharge_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="budget_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="document_dt" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="invoice_key" type="string" nullable="false" />
+        <Field name="invoice_tenant" type="string" nullable="false" />
+        <Field name="invoice_file" type="string" nullable="false" />
+        <Field name="invoice_row" type="string" nullable="false" />
+        <Field name="invoice_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="invoice_team" type="string" nullable="true" />
+        <Field name="invoice_market" type="string" nullable="true" />
+        <Field name="invoice_currency" type="string" nullable="false" />
+        <Field name="invoice_batch" type="string" nullable="false" />
+        <Field name="invoice_note" type="string" nullable="true" />
+        <Field name="invoice_trace" type="string" nullable="true" />
+        <Field name="invoice_unused_archive" type="string" nullable="true" />
+        <Field name="raw_code" type="string" nullable="true" />
+        <Field name="gross_amount" type="string" nullable="true" />
+        <Field name="discount_percent" type="string" nullable="true" />
+        <Field name="surcharge_amount" type="string" nullable="true" />
+        <Field name="budget_amount" type="string" nullable="true" />
+        <Field name="document_dt" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="InvoiceUtilityOutput" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="invoice_key" type="string" nullable="false" />
+        <Field name="invoice_tenant" type="string" nullable="false" />
+        <Field name="invoice_file" type="string" nullable="false" />
+        <Field name="invoice_row" type="long" nullable="false" />
+        <Field name="invoice_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="invoice_team" type="string" nullable="true" />
+        <Field name="invoice_market" type="string" nullable="true" />
+        <Field name="invoice_currency" type="string" nullable="false" />
+        <Field name="invoice_batch" type="string" nullable="false" />
+        <Field name="invoice_note" type="string" nullable="true" />
+        <Field name="invoice_trace" type="string" nullable="true" />
+        <Field name="invoice_unused_archive" type="string" nullable="true" />
+        <Field name="raw_code" type="string" nullable="true" />
+        <Field name="gross_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="discount_percent" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="surcharge_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="budget_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="document_dt" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="clean_code" type="string" nullable="true" />
+        <Field name="net_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="budget_pct" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="business_token" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="invoice_key" type="string" nullable="false" />
+        <Field name="invoice_tenant" type="string" nullable="false" />
+        <Field name="invoice_file" type="string" nullable="false" />
+        <Field name="invoice_row" type="string" nullable="false" />
+        <Field name="invoice_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="invoice_team" type="string" nullable="true" />
+        <Field name="invoice_market" type="string" nullable="true" />
+        <Field name="invoice_currency" type="string" nullable="false" />
+        <Field name="invoice_batch" type="string" nullable="false" />
+        <Field name="invoice_note" type="string" nullable="true" />
+        <Field name="invoice_trace" type="string" nullable="true" />
+        <Field name="invoice_unused_archive" type="string" nullable="true" />
+        <Field name="raw_code" type="string" nullable="true" />
+        <Field name="gross_amount" type="string" nullable="true" />
+        <Field name="discount_percent" type="string" nullable="true" />
+        <Field name="surcharge_amount" type="string" nullable="true" />
+        <Field name="budget_amount" type="string" nullable="true" />
+        <Field name="document_dt" type="string" nullable="true" timeZone="UTC" />
+        <Field name="clean_code" type="string" nullable="true" />
+        <Field name="net_amount" type="string" nullable="true" />
+        <Field name="budget_pct" type="string" nullable="true" />
+        <Field name="business_token" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T68_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.invoice_key=$in.0.invoice_key;
+$out.0.invoice_tenant=$in.0.invoice_tenant;
+$out.0.invoice_file=$in.0.invoice_file;
+$out.0.invoice_row=$in.0.invoice_row == null ? null : str2long($in.0.invoice_row);
+$out.0.invoice_received=$in.0.invoice_received == null ? null : str2date($in.0.invoice_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.invoice_team=$in.0.invoice_team;
+$out.0.invoice_market=$in.0.invoice_market;
+$out.0.invoice_currency=$in.0.invoice_currency;
+$out.0.invoice_batch=$in.0.invoice_batch;
+$out.0.invoice_note=$in.0.invoice_note;
+$out.0.invoice_trace=$in.0.invoice_trace;
+$out.0.invoice_unused_archive=$in.0.invoice_unused_archive;
+$out.0.raw_code=$in.0.raw_code;
+$out.0.gross_amount=$in.0.gross_amount == null ? null : str2decimal($in.0.gross_amount);
+$out.0.discount_percent=$in.0.discount_percent == null ? null : str2decimal($in.0.discount_percent);
+$out.0.surcharge_amount=$in.0.surcharge_amount == null ? null : str2decimal($in.0.surcharge_amount);
+$out.0.budget_amount=$in.0.budget_amount == null ? null : str2decimal($in.0.budget_amount);
+$out.0.document_dt=$in.0.document_dt == null ? null : str2date($in.0.document_dt,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+function string canonicalCode(string value){return isnull(value) ? null : upperCase(trim(value));}
+function decimal pricedAmount(decimal gross,decimal pct,decimal surcharge){if(isnull(gross)||isnull(pct))return null;return round(gross*(100D-pct)/100D+nvl(surcharge,0D),2);}
+function decimal budgetShare(decimal amount,decimal budget){if(isnull(amount)||isnull(budget))return null;if(budget==0D)return 0D;return round(amount/budget*100D,2);}
+function string businessToken(string code,date value){if(isnull(code)||isnull(value))return null;return canonicalCode(code)+"/"+date2str(value,"yyyy-MM-dd","en.US","UTC");}
+function integer transform(){$out.0.*=$in.0.*;$out.0.clean_code=canonicalCode($in.0.raw_code);$out.0.net_amount=pricedAmount($in.0.gross_amount,$in.0.discount_percent,$in.0.surcharge_amount);$out.0.budget_pct=budgetShare($out.0.net_amount,$in.0.budget_amount);$out.0.business_token=businessToken($in.0.raw_code,$in.0.document_dt);return OK;}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.invoice_key=$in.0.invoice_key;
+$out.0.invoice_tenant=$in.0.invoice_tenant;
+$out.0.invoice_file=$in.0.invoice_file;
+$out.0.invoice_row=$in.0.invoice_row == null ? null : num2str($in.0.invoice_row);
+$out.0.invoice_received=$in.0.invoice_received == null ? null : date2str($in.0.invoice_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.invoice_team=$in.0.invoice_team;
+$out.0.invoice_market=$in.0.invoice_market;
+$out.0.invoice_currency=$in.0.invoice_currency;
+$out.0.invoice_batch=$in.0.invoice_batch;
+$out.0.invoice_note=$in.0.invoice_note;
+$out.0.invoice_trace=$in.0.invoice_trace;
+$out.0.invoice_unused_archive=$in.0.invoice_unused_archive;
+$out.0.raw_code=$in.0.raw_code;
+$out.0.gross_amount=$in.0.gross_amount == null ? null : num2str($in.0.gross_amount,"0.00","en.US");
+$out.0.discount_percent=$in.0.discount_percent == null ? null : num2str($in.0.discount_percent,"0.00","en.US");
+$out.0.surcharge_amount=$in.0.surcharge_amount == null ? null : num2str($in.0.surcharge_amount,"0.00","en.US");
+$out.0.budget_amount=$in.0.budget_amount == null ? null : num2str($in.0.budget_amount,"0.00","en.US");
+$out.0.document_dt=$in.0.document_dt == null ? null : date2str($in.0.document_dt,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.clean_code=$in.0.clean_code;
+$out.0.net_amount=$in.0.net_amount == null ? null : num2str($in.0.net_amount,"0.00","en.US");
+$out.0.budget_pct=$in.0.budget_pct == null ? null : num2str($in.0.budget_pct,"0.00","en.US");
+$out.0.business_token=$in.0.business_token;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T68_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

@@ -1,0 +1,84 @@
+{
+  "test_id": "P903",
+  "label": "P903",
+  "graph_file": "suite_v5/graph/P903.grf",
+  "reference_sha256": "90dcc0f0635be9efed885bcd495308d80b32c08da169a7307ca60194354f4497",
+  "graph_sha256": "13c1fc33813f8d0d960f1df2937fb4c06815db6e0c0d25d49600fe6ac6f5e6e0",
+  "files": [
+    {
+      "local": "run_graphs/P903/data-in/input_0.csv",
+      "remote": "suite_v5/data-in/P903_input_0.csv",
+      "sha256": "dd9adcf35b3bc870fc6e379347764bf64b952c3c40ab7ecf46d985eb7a8797e3"
+    },
+    {
+      "local": "run_graphs/P903/graph/P903.grf",
+      "remote": "suite_v5/graph/P903.grf",
+      "sha256": "13c1fc33813f8d0d960f1df2937fb4c06815db6e0c0d25d49600fe6ac6f5e6e0"
+    }
+  ],
+  "output_paths": {
+    "0": "suite_v5/data-out/P903_out_0.csv"
+  },
+  "output_metadata": [
+    "<Record name=\"GroupResult\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"group_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"rows_seen\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"total\" type=\"integer\" nullable=\"false\"/>\n</Record>"
+  ],
+  "fixture": {
+    "inputs": [
+      [
+        {
+          "group_key": "A",
+          "amount": 2
+        },
+        {
+          "group_key": "A",
+          "amount": 3
+        },
+        {
+          "group_key": "A",
+          "amount": 1
+        },
+        {
+          "group_key": "B",
+          "amount": 4
+        },
+        {
+          "group_key": "C",
+          "amount": 0
+        },
+        {
+          "group_key": "C",
+          "amount": 5
+        },
+        {
+          "group_key": "C",
+          "amount": -1
+        },
+        {
+          "group_key": "C",
+          "amount": 2
+        }
+      ]
+    ],
+    "expected": {
+      "0": [
+        {
+          "group_key": "A",
+          "rows_seen": 3,
+          "total": 6
+        },
+        {
+          "group_key": "B",
+          "rows_seen": 1,
+          "total": 4
+        },
+        {
+          "group_key": "C",
+          "rows_seen": 4,
+          "total": 6
+        }
+      ]
+    }
+  },
+  "parameters": {},
+  "expected_failure": false
+}

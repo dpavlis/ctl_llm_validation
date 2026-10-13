@@ -1,0 +1,42 @@
+[
+  {
+    "cold_key": "COLD6",
+    "cold_tenant": "ACME",
+    "cold_file": "cold.csv",
+    "cold_row": 6,
+    "cold_received": "2026-01-01 00:00:00",
+    "cold_team": "OPS",
+    "cold_market": "CZ",
+    "cold_currency": "EUR",
+    "cold_batch": "B1",
+    "cold_note": null,
+    "cold_trace": "X6",
+    "cold_unused_archive": "keep:6",
+    "trip_id": "A",
+    "sample_no": 4,
+    "sensor_off": false,
+    "temperature_txt": "1",
+    "shipment_value": "100.00",
+    "sample_time": "2026-01-01 12:00:00"
+  },
+  {
+    "cold_key": "COLD7",
+    "cold_tenant": "ACME",
+    "cold_file": "cold.csv",
+    "cold_row": 7,
+    "cold_received": "2026-01-01 00:00:00",
+    "cold_team": null,
+    "cold_market": "CZ",
+    "cold_currency": "EUR",
+    "cold_batch": "B1",
+    "cold_note": null,
+    "cold_trace": "X7",
+    "cold_unused_archive": "keep:7",
+    "trip_id": "A",
+    "sample_no": 5,
+    "sensor_off": false,
+    "temperature_txt": "-20",
+    "shipment_value": "100.00",
+    "sample_time": "2026-01-01 12:00:00"
+  }
+]

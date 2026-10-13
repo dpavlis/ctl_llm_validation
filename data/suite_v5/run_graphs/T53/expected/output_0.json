@@ -1,0 +1,30 @@
+[
+  {
+    "contract_batch": "batch-contract_batch",
+    "contract_loaded": "2026-01-01 00:00:00",
+    "contract_ledger": "17.25",
+    "contract_unused": "opaque-7",
+    "contract_note": null,
+    "contract_row": 8,
+    "contract_ref_no": "G",
+    "status_cd": "OLD",
+    "annual_value": "5.00",
+    "expires_at": null,
+    "customer_label": "old 7",
+    "sales_channel": null
+  },
+  {
+    "contract_batch": "batch-contract_batch",
+    "contract_loaded": "2026-01-01 00:00:00",
+    "contract_ledger": "17.25",
+    "contract_unused": "opaque-8",
+    "contract_note": null,
+    "contract_row": 9,
+    "contract_ref_no": "I",
+    "status_cd": "Q",
+    "annual_value": "6.00",
+    "expires_at": null,
+    "customer_label": "old 8",
+    "sales_channel": null
+  }
+]

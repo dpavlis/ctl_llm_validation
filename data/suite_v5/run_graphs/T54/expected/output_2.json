@@ -1,0 +1,20 @@
+[
+  {
+    "business_ref": "E",
+    "tenant_cd": "T1",
+    "source_file": "feed.csv",
+    "source_row": 9,
+    "received_at": "2026-01-01 00:00:00",
+    "currency_cd": "EUR",
+    "operator_note": "",
+    "market_cd": "CZ",
+    "owner_team": null,
+    "trace_id": "r9",
+    "unused_archive_label": "old-9",
+    "context_value": null,
+    "tier_txt": "START",
+    "interests_txt": null,
+    "credit_limit": null,
+    "consent_until": null
+  }
+]

@@ -1,0 +1,171 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T50" id="6101300050" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Freight service enrichment with dated fallback commitments
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="InputT50" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="freight_batch" type="string" nullable="false" />
+        <Field name="freight_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="freight_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="freight_unused" type="string" nullable="true" />
+        <Field name="freight_note" type="string" nullable="true" />
+        <Field name="freight_row" type="long" nullable="false" />
+        <Field name="shipment_ref" type="string" nullable="false" />
+        <Field name="carrier_cd" type="string" nullable="true" />
+        <Field name="service_cd" type="string" nullable="true" />
+        <Field name="pickup_day" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="insured_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="destination_zone" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="freight_batch" type="string" nullable="false" />
+        <Field name="freight_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="freight_ledger" type="string" nullable="true" />
+        <Field name="freight_unused" type="string" nullable="true" />
+        <Field name="freight_note" type="string" nullable="true" />
+        <Field name="freight_row" type="string" nullable="false" />
+        <Field name="shipment_ref" type="string" nullable="false" />
+        <Field name="carrier_cd" type="string" nullable="true" />
+        <Field name="service_cd" type="string" nullable="true" />
+        <Field name="pickup_day" type="string" nullable="true" timeZone="UTC" />
+        <Field name="insured_value" type="string" nullable="true" />
+        <Field name="destination_zone" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="FreightEnriched" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="freight_batch" type="string" nullable="false" />
+        <Field name="freight_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="freight_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="freight_unused" type="string" nullable="true" />
+        <Field name="freight_note" type="string" nullable="true" />
+        <Field name="freight_row" type="long" nullable="false" />
+        <Field name="shipment_ref" type="string" nullable="false" />
+        <Field name="carrier_cd" type="string" nullable="true" />
+        <Field name="service_cd" type="string" nullable="true" />
+        <Field name="pickup_day" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="insured_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="destination_zone" type="string" nullable="true" />
+        <Field name="sla_days" type="integer" nullable="false" />
+        <Field name="reference_miss" type="boolean" nullable="false" />
+        <Field name="reference_level" type="string" nullable="false" />
+        <Field name="reference_key" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="freight_batch" type="string" nullable="false" />
+        <Field name="freight_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="freight_ledger" type="string" nullable="true" />
+        <Field name="freight_unused" type="string" nullable="true" />
+        <Field name="freight_note" type="string" nullable="true" />
+        <Field name="freight_row" type="string" nullable="false" />
+        <Field name="shipment_ref" type="string" nullable="false" />
+        <Field name="carrier_cd" type="string" nullable="true" />
+        <Field name="service_cd" type="string" nullable="true" />
+        <Field name="pickup_day" type="string" nullable="true" timeZone="UTC" />
+        <Field name="insured_value" type="string" nullable="true" />
+        <Field name="destination_zone" type="string" nullable="true" />
+        <Field name="sla_days" type="string" nullable="false" />
+        <Field name="reference_miss" type="string" nullable="false" />
+        <Field name="reference_level" type="string" nullable="false" />
+        <Field name="reference_key" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Lookup0">
+      <Record name="RouteRule" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="route_rule_batch" type="string" nullable="false" />
+        <Field name="route_rule_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="route_rule_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="route_rule_unused" type="string" nullable="true" />
+        <Field name="route_rule_note" type="string" nullable="true" />
+        <Field name="route_rule_row" type="long" nullable="false" />
+        <Field name="carrier_cd" type="string" nullable="false" />
+        <Field name="service_cd" type="string" nullable="false" />
+        <Field name="valid_from" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="valid_to" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="sla_days" type="integer" nullable="true" />
+        <Field name="rule_label" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <LookupTable id="ServiceRules" name="ServiceRules" type="simpleLookup" charset="UTF-8" metadata="Lookup0" key="carrier_cd;service_cd" initialSize="64" keyDuplicates="true" allowKeyDuplicates="true">
+      <attr name="fileURL">suite_v5/data-in/T50_lookup_0.csv</attr>
+    </LookupTable>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T50_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.freight_batch=$in.0.freight_batch;
+$out.0.freight_loaded=$in.0.freight_loaded == null ? null : str2date($in.0.freight_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.freight_ledger=$in.0.freight_ledger == null ? null : str2decimal($in.0.freight_ledger);
+$out.0.freight_unused=$in.0.freight_unused;
+$out.0.freight_note=$in.0.freight_note;
+$out.0.freight_row=$in.0.freight_row == null ? null : str2long($in.0.freight_row);
+$out.0.shipment_ref=$in.0.shipment_ref;
+$out.0.carrier_cd=$in.0.carrier_cd;
+$out.0.service_cd=$in.0.service_cd;
+$out.0.pickup_day=$in.0.pickup_day == null ? null : str2date($in.0.pickup_day,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.insured_value=$in.0.insured_value == null ? null : str2decimal($in.0.insured_value);
+$out.0.destination_zone=$in.0.destination_zone;
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+function boolean eligible(RouteRule r,date d){return r!=null&amp;&amp;d&gt;=r.valid_from&amp;&amp;(r.valid_to==null||d&lt;=r.valid_to)&amp;&amp;(r.sla_days==null||r.sla_days&gt;=0);}
+ function integer transform(){$out.0.*=$in.0.*;string a=upperCase(trim(nvl($in.0.carrier_cd,"")));string b=upperCase(trim(nvl($in.0.service_cd,"")));$out.0.reference_key=a+":"+b;$out.0.sla_days=5;$out.0.reference_miss=true;$out.0.reference_level="NONE";if(a!=""&amp;&amp;b!=""&amp;&amp;$in.0.pickup_day!=null){RouteRule r=lookup(ServiceRules).get(a,b);string level="EXACT";if(!eligible(r,$in.0.pickup_day)){r=lookup(ServiceRules).get(a,"*");level="CARRIER";}if(!eligible(r,$in.0.pickup_day)){r=lookup(ServiceRules).get("*","*");level="NETWORK";}if(eligible(r,$in.0.pickup_day)){$out.0.sla_days=nvl(r.sla_days,5);$out.0.reference_miss=false;$out.0.reference_level=level;}}return OK;}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.freight_batch=$in.0.freight_batch;
+$out.0.freight_loaded=$in.0.freight_loaded == null ? null : date2str($in.0.freight_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.freight_ledger=$in.0.freight_ledger == null ? null : num2str($in.0.freight_ledger,"0.00","en.US");
+$out.0.freight_unused=$in.0.freight_unused;
+$out.0.freight_note=$in.0.freight_note;
+$out.0.freight_row=$in.0.freight_row == null ? null : num2str($in.0.freight_row);
+$out.0.shipment_ref=$in.0.shipment_ref;
+$out.0.carrier_cd=$in.0.carrier_cd;
+$out.0.service_cd=$in.0.service_cd;
+$out.0.pickup_day=$in.0.pickup_day == null ? null : date2str($in.0.pickup_day,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,"0.00","en.US");
+$out.0.destination_zone=$in.0.destination_zone;
+$out.0.sla_days=$in.0.sla_days == null ? null : num2str($in.0.sla_days);
+$out.0.reference_miss=$in.0.reference_miss == null ? null : ($in.0.reference_miss ? "true" : "false");
+$out.0.reference_level=$in.0.reference_level;
+$out.0.reference_key=$in.0.reference_key;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T50_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

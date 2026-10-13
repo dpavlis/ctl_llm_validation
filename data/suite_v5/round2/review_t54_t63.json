@@ -1,0 +1,1030 @@
+{
+  "reviewer": "independent author of T44-T53",
+  "scope": "T54-T63 round2",
+  "compiler_and_runtime_status": "Root compiles and runs after review; no successful runtime claim inferred from static review.",
+  "tests": [
+    {
+      "test_id": "T54",
+      "reference_sha256": "d1a67773b0deca5709ae0a3a02c5471aba20ab7ae67f231f20777dc60bf79204",
+      "prompt_sha256": "45cf300103dfb35c7b51e62dee3b3ad77f4960de9af48fda17f5f8f870244a15",
+      "rubric_decidability": [
+        {
+          "id": "T54.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T54.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T54.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T54.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T54.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T54.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T54.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T54.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        }
+      ],
+      "forbidden_decidability": "No style-only penalties found; forbidden outcomes correspond to lost rows, wrong state/routing or stated business violations.",
+      "independent_derivation": "Only matched old/new pairs are examined; normalize tiers and semicolon token sets solely for semantic comparisons. Compare exact null asymmetry then >=.05 decimal credit delta, and full expiration timestamps. Build ordered TIER/INTERESTS/CREDIT/CONSENT reasons; SKIP empty changes. Copy incoming raw record into internal CTL output0, which verified worker maps to physical output1.",
+      "fixture_review": {
+        "input_counts": [
+          5,
+          4
+        ],
+        "expected_counts": {
+          "0": 1,
+          "1": 3,
+          "2": 1
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Expected main rows agree with independently derived business outcomes on the supplied finite fixtures."
+      },
+      "ctl2_fact_review": "Null-safe typed equality, short-circuit guards, default declaration state, wildcard copy, decimal arithmetic and graph long sequences match basics. Denormalizer and mandatory five-function Rollup lifecycle match section7 and guides. DataIntersection internal output0/physical output1 follows root verified runs17918/17919/17920, overriding stale owner port1 statement in basics. ExtMergeJoin absent-side behavior, resource bindings and sorted group execution remain root live-run gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "clause8 versus fixture",
+          "finding": "Clause describes one old B and two new B; fixture actually supplies two old B and one new B. Both are legitimate two-pair cases but the concrete example differs.",
+          "action": "Correct the descriptive example or align the fixtures.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        },
+        {
+          "severity": "warning",
+          "location": "interest-set fixture",
+          "finding": "No same multi-token set arrives in reversed order, so set equality without token-order dependence is not directly exercised. sort(a) mutation semantics are not established by this fixture.",
+          "action": "Add unchanged reversed-token-order pair and ensure no notice is emitted.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ],
+      "final_rubric_sha256": "d6338800431b63046a90bbec94236ca450801cca82d81cdb3eeec5a669762a36",
+      "final_specific_note": "Finalized rubric accepts successful nonnegative returns; internal CTL output0 reaches physical output1. SKIP is the deliberate suppression result. STOP is an error, confirmed run17993. Harmless unused one-sided helper declarations alone are not forbidden; relying on them to perform mapping is wrong."
+    },
+    {
+      "test_id": "T55",
+      "reference_sha256": "dc0b16f8ce73f4f4df4496f18e0ffd8f03090c0db00f4df3c1ff64b53317c249",
+      "prompt_sha256": "73a506be4cfd1e366c8ce30722813011a4d5ccaee00151cb39c3640bcbeeff7e",
+      "rubric_decidability": [
+        {
+          "id": "T55.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T55.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T55.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T55.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T55.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T55.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T55.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T55.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T55.9",
+          "clauses": [
+            9
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        }
+      ],
+      "forbidden_decidability": "No style-only penalties found; forbidden outcomes correspond to lost rows, wrong state/routing or stated business violations.",
+      "independent_derivation": "Determine side presence from each non-null key; copy context from invoice if present else bank. Exact VOID bypasses bank amount parsing. Invalid bank amount outranks present null expected amount. Valid missing-side amounts become zero and exact remainder determines WAITING, UNPLANNED, SHORT or EXCESS; matched zero is skipped but one-sided zero survives. Emit all repair and follow-up dispositions to the single connected output0 ledger, with REPAIR and precise error_reason for repairs. Newly supplied fixtures exercise EXPECTED_NULL and EXCESS.",
+      "fixture_review": {
+        "input_counts": [
+          5,
+          5
+        ],
+        "expected_counts": {
+          "0": 5
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Expected main rows agree with independently derived business outcomes on the supplied finite fixtures."
+      },
+      "ctl2_fact_review": "Null-safe typed equality, short-circuit guards, default declaration state, wildcard copy, decimal arithmetic and graph long sequences match basics. Denormalizer and mandatory five-function Rollup lifecycle match section7 and guides. DataIntersection internal output0/physical output1 follows root verified runs17918/17919/17920, overriding stale owner port1 statement in basics. ExtMergeJoin absent-side behavior, resource bindings and sorted group execution remain root live-run gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "fixture branch coverage",
+          "finding": "EXPECTED_NULL is only masked by higher-priority malformed bank input; EXCESS is not exercised.",
+          "action": "Add valid-bank/null-expected repair and matched negative-remainder EXCESS rows.",
+          "final_status": "resolved"
+        }
+      ]
+    },
+    {
+      "test_id": "T56",
+      "reference_sha256": "31d578540123925ea9fe6b2f431a11204460654c5facafb50aadef3f9889b22f",
+      "prompt_sha256": "6e37d7587927a87f589ee3f38b19f0676e5e6dc05a89e91a2eb07abce9892789",
+      "rubric_decidability": [
+        {
+          "id": "T56.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T56.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T56.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T56.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T56.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T56.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T56.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T56.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        }
+      ],
+      "forbidden_decidability": "No style-only penalties found; forbidden outcomes correspond to lost rows, wrong state/routing or stated business violations.",
+      "independent_derivation": "Use explicit first-candidate flag. Rank complete over incomplete, then non-null revision time over null, then later time, then higher revision number; exact tie keeps first. Save the entire same winning source row, count every version, and emit once/group. Reset have/quality/count per group rather than detecting null declared dates.",
+      "fixture_review": {
+        "input_counts": [
+          9
+        ],
+        "expected_counts": {
+          "0": 4
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Expected main rows agree with independently derived business outcomes on the supplied finite fixtures."
+      },
+      "ctl2_fact_review": "Null-safe typed equality, short-circuit guards, default declaration state, wildcard copy, decimal arithmetic and graph long sequences match basics. Denormalizer and mandatory five-function Rollup lifecycle match section7 and guides. DataIntersection internal output0/physical output1 follows root verified runs17918/17919/17920, overriding stale owner port1 statement in basics. ExtMergeJoin absent-side behavior, resource bindings and sorted group execution remain root live-run gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "clause8 metadata naming",
+          "finding": "dob is named as a field not to parse but no dob exists in the supplied metadata.",
+          "action": "Remove the stray field name or replace it with an actual date-looking string context field.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ]
+    },
+    {
+      "test_id": "T57",
+      "reference_sha256": "a95d7da0ab3411f683892dad3899b967a95bc81c50b5fd4ef08f9067e08cf2a1",
+      "prompt_sha256": "639580635fccc965b2577fe92ba50eba52294ecef5a347c4fdde1e37df3768bc",
+      "rubric_decidability": [
+        {
+          "id": "T57.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T57.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T57.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T57.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T57.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T57.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T57.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T57.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T57.9",
+          "clauses": [
+            9
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        }
+      ],
+      "forbidden_decidability": "No style-only penalties found; forbidden outcomes correspond to lost rows, wrong state/routing or stated business violations.",
+      "independent_derivation": "All five Rollup functions cooperate: reset identifier membership and winner, count every arrival, classify invalid before reserving valid raw ID, duplicate before candidate eligibility, choose earliest usable nonvoid positive candidate. Per-record emit only port0 after decision, final emit only port1 if winner. Save chosen complete source context rather than current first/last record.",
+      "fixture_review": {
+        "input_counts": [
+          8
+        ],
+        "expected_counts": {
+          "0": 8,
+          "1": 2
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Expected main rows agree with independently derived business outcomes on the supplied finite fixtures."
+      },
+      "ctl2_fact_review": "Null-safe typed equality, short-circuit guards, default declaration state, wildcard copy, decimal arithmetic and graph long sequences match basics. Denormalizer and mandatory five-function Rollup lifecycle match section7 and guides. DataIntersection internal output0/physical output1 follows root verified runs17918/17919/17920, overriding stale owner port1 statement in basics. ExtMergeJoin absent-side behavior, resource bindings and sorted group execution remain root live-run gates.",
+      "findings": []
+    },
+    {
+      "test_id": "T58",
+      "reference_sha256": "caaf506300cc4d48c8910cfa9af129ff598f29d4c7d3094897f259988c09c444",
+      "prompt_sha256": "fd7e80402cbd3cfeb1dea4f4195dc293f1219ab929ad486ec7e7f467445dd033",
+      "rubric_decidability": [
+        {
+          "id": "T58.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T58.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T58.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T58.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T58.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T58.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T58.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T58.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T58.9",
+          "clauses": [
+            9
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        }
+      ],
+      "forbidden_decidability": "No style-only penalties found; forbidden outcomes correspond to lost rows, wrong state/routing or stated business violations.",
+      "independent_derivation": "Retain aligned arrays of surviving raw additions. Remove all previous additions with the raw ID but allow subsequent additions. Validate unsigned positive units before parsing; all rows increment count. At end choose max units/non-null latest date/first exact tie, preserve surviving-order evidence, copy first-row context and emit nullable empty result. Reset arrays/count per group.",
+      "fixture_review": {
+        "input_counts": [
+          10
+        ],
+        "expected_counts": {
+          "0": 3
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Expected main rows agree with independently derived business outcomes on the supplied finite fixtures."
+      },
+      "ctl2_fact_review": "Null-safe typed equality, short-circuit guards, default declaration state, wildcard copy, decimal arithmetic and graph long sequences match basics. Denormalizer and mandatory five-function Rollup lifecycle match section7 and guides. DataIntersection internal output0/physical output1 follows root verified runs17918/17919/17920, overriding stale owner port1 statement in basics. ExtMergeJoin absent-side behavior, resource bindings and sorted group execution remain root live-run gates.",
+      "findings": []
+    },
+    {
+      "test_id": "T59",
+      "reference_sha256": "aaf253b070c0f3db1c6f5b79340a8823598f83fcedb0133dae47bbc4803749d4",
+      "prompt_sha256": "8a4a50773e68a1274ccb0e03772ff44d3e43e975581021c1d7cd189e8ca2e269",
+      "rubric_decidability": [
+        {
+          "id": "T59.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T59.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T59.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T59.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T59.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T59.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T59.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T59.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T59.9",
+          "clauses": [
+            9
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        }
+      ],
+      "forbidden_decidability": "No style-only penalties found; forbidden outcomes correspond to lost rows, wrong state/routing or stated business violations.",
+      "independent_derivation": "Resolver-supplied prior key determines existence. Existing equal tracked tuple SKIPs before sequence allocation. New tuple always opens, including all-null attributes; changed existing closes previous attributes on0 and opens incoming attributes on1 with one long sequence value. ALL is correct only for actual two-port changed events. Fixture opening IDs900000..900004 and three closing records follow derivation.",
+      "fixture_review": {
+        "input_counts": [
+          8
+        ],
+        "expected_counts": {
+          "0": 3,
+          "1": 5
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Expected main rows agree with independently derived business outcomes on the supplied finite fixtures."
+      },
+      "ctl2_fact_review": "Null-safe typed equality, short-circuit guards, default declaration state, wildcard copy, decimal arithmetic and graph long sequences match basics. Denormalizer and mandatory five-function Rollup lifecycle match section7 and guides. DataIntersection internal output0/physical output1 follows root verified runs17918/17919/17920, overriding stale owner port1 statement in basics. ExtMergeJoin absent-side behavior, resource bindings and sorted group execution remain root live-run gates.",
+      "findings": []
+    },
+    {
+      "test_id": "T60",
+      "reference_sha256": "b5c12a03f610eef012b63ae36b94cf25c5a95e370a03655dd649063dab45fcfc",
+      "prompt_sha256": "406601aca54a5879064a1e93e0fd21d864ed8e76e248bf4dd0dfd7d22c03dcb2",
+      "rubric_decidability": [
+        {
+          "id": "T60.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T60.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T60.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T60.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T60.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T60.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T60.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T60.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T60.9",
+          "clauses": [
+            9
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        }
+      ],
+      "forbidden_decidability": "No style-only penalties found; forbidden outcomes correspond to lost rows, wrong state/routing or stated business violations.",
+      "independent_derivation": "Prepare state per request. CANCEL bypasses rate parsing, optionally emits CLOSE then always CANCELLED audit without a sequence value. Bad noncancel rate emits ERROR only. Null/blank rate represents null; existing equal rate optionally emits UNCHANGED. New/change allocates one key and emits CLOSE(if exists), OPEN, optional REPRICED. Audit version fields reflect specified current/closed/new context, nulling ERROR fields.",
+      "fixture_review": {
+        "input_counts": [
+          9
+        ],
+        "expected_counts": {
+          "0": 13
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Expected main rows agree with independently derived business outcomes on the supplied finite fixtures."
+      },
+      "ctl2_fact_review": "Null-safe typed equality, short-circuit guards, default declaration state, wildcard copy, decimal arithmetic and graph long sequences match basics. Denormalizer and mandatory five-function Rollup lifecycle match section7 and guides. DataIntersection internal output0/physical output1 follows root verified runs17918/17919/17920, overriding stale owner port1 statement in basics. ExtMergeJoin absent-side behavior, resource bindings and sorted group execution remain root live-run gates.",
+      "findings": []
+    },
+    {
+      "test_id": "T61",
+      "reference_sha256": "9315d90924ffe8df539d7068443f97ec79eadc438202c0bd4a95995c21cc40b8",
+      "prompt_sha256": "50f1a201d5ee1ecbfdca3fc727a0617cac05e2e917b1b8bb2f3887ea972f1c51",
+      "rubric_decidability": [
+        {
+          "id": "T61.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T61.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T61.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T61.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T61.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T61.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T61.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T61.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T61.9",
+          "clauses": [
+            9
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        }
+      ],
+      "forbidden_decidability": "No style-only penalties found; forbidden outcomes correspond to lost rows, wrong state/routing or stated business violations.",
+      "independent_derivation": "Track explicit current-key and current-version flags. Seed only first row of each key; preserve introduced context even if unchanged. Compare against component-accepted state thereafter. On change close saved accepted context and old attributes, then open current row with one sequence value and replace saved state. Empty business key is real. Fixture opening IDs3000..3005 and four old closures agree.",
+      "fixture_review": {
+        "input_counts": [
+          9
+        ],
+        "expected_counts": {
+          "0": 4,
+          "1": 6
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Expected main rows agree with independently derived business outcomes on the supplied finite fixtures."
+      },
+      "ctl2_fact_review": "Null-safe typed equality, short-circuit guards, default declaration state, wildcard copy, decimal arithmetic and graph long sequences match basics. Denormalizer and mandatory five-function Rollup lifecycle match section7 and guides. DataIntersection internal output0/physical output1 follows root verified runs17918/17919/17920, overriding stale owner port1 statement in basics. ExtMergeJoin absent-side behavior, resource bindings and sorted group execution remain root live-run gates.",
+      "findings": []
+    },
+    {
+      "test_id": "T62",
+      "reference_sha256": "d3575f6cfc820808f533034dd7a613b1b51dc9dc3a140050d381361f28fbb26d",
+      "prompt_sha256": "4d4e9068efb490173a4915828c3ba6af02f911328615e68dcaeb0311849f47e4",
+      "rubric_decidability": [
+        {
+          "id": "T62.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T62.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T62.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T62.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T62.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T62.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T62.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T62.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T62.9",
+          "clauses": [
+            9
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        }
+      ],
+      "forbidden_decidability": "No style-only penalties found; forbidden outcomes correspond to lost rows, wrong state/routing or stated business violations.",
+      "independent_derivation": "Capture first context. Independently count all rows/late waivers/adjacent PAID->PENDING transitions. Null override uses nullable net amount, present invalid override counts bad and contributes no amount. Sum exact PAID/PENDING buckets, average only billable valid non-null amounts including negative/zero, use all rows for late percentage. Reset every accumulator and predecessor/group. Independent A:100.01 paid,-2.50 pending,48.75 mean,33.33% late,2 bad,2 reopen; B:0 buckets,null mean,2 bad,1 reopen; D duplicate weights mean.015=>.02.",
+      "fixture_review": {
+        "input_counts": [
+          14
+        ],
+        "expected_counts": {
+          "0": 4
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Expected main rows agree with independently derived business outcomes on the supplied finite fixtures."
+      },
+      "ctl2_fact_review": "Null-safe typed equality, short-circuit guards, default declaration state, wildcard copy, decimal arithmetic and graph long sequences match basics. Denormalizer and mandatory five-function Rollup lifecycle match section7 and guides. DataIntersection internal output0/physical output1 follows root verified runs17918/17919/17920, overriding stale owner port1 statement in basics. ExtMergeJoin absent-side behavior, resource bindings and sorted group execution remain root live-run gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "clause3 signed grammar",
+          "finding": "Prompt says signed ASCII decimal but does not expressly disallow plus; reference allows only optional minus.",
+          "action": "Spell out optional leading minus, no plus sign, so all valid solutions share the same grammar.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        },
+        {
+          "severity": "warning",
+          "location": "numeric accumulator domain",
+          "finding": "Per-group cardinality and input net_amount bounds are unrestricted, so integer counts and decimal18,2 sums can overflow on allowed metadata values.",
+          "action": "Add prevalidated amount/cardinality bounds or widen accumulator/output capacities to cover the stated domain.",
+          "final_status": "advisory_fixture_coverage_or_wording_observation"
+        }
+      ],
+      "final_rubric_sha256": "0d6ee68791463db0714d7503353905d8f9b41334d552db63172e8c53a21b87e4",
+      "final_timezone_wording_note": "Final prompt defines the UTC business calendar while explicitly allowing a different host default timezone. Harness parses typed input dates in UTC; reference/calendar obligations are therefore independent of host timezone. This is a wording-only consistency fix with unchanged reference and acceptance fixture."
+    },
+    {
+      "test_id": "T63",
+      "reference_sha256": "507d6beb01fe82e0931d7cca67d35fcda9492a5cb8eec9d7368a7ef60c9c78a4",
+      "prompt_sha256": "380c0fe8b11b243ce461ac2a10e3c0a07b40bfcdb481840e54456401a47640e4",
+      "rubric_decidability": [
+        {
+          "id": "T63.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T63.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T63.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T63.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T63.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T63.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T63.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T63.8",
+          "clauses": [
+            8
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        },
+        {
+          "id": "T63.9",
+          "clauses": [
+            9
+          ],
+          "status": "decidable from prompt and metadata; see any wording ambiguity below"
+        }
+      ],
+      "forbidden_decidability": "No style-only penalties found; forbidden outcomes correspond to lost rows, wrong state/routing or stated business violations.",
+      "independent_derivation": "Capture first context/audit/date. Exclude foreign/missing/nonpositive day or null-value rows before haircut parsing. Valid haircut0..100 discounts exact decimal exposure weighted by positive days. Count all arrivals once, save HIGH days by exact status, emit eligible summaries or first-row audited empty summaries; suppress other empty groups. Derive fiscal year/quarter from saved UTC calendar. Independent A weighted total27/days4=>6.750,HIGH25%; C audited empty; D .505,HIGH100%. Final UTC boundary rederivation: first A valuation2026-03-31 23:30:00 remains March2026 in UTC, so its fiscal label is2025-Q4. getMonth/getYear explicitly use UTC, preventing the host-local April1 label. Monetary and coverage inputs remain unchanged, so weighted total27, days4, adjusted_average6.750 and high_share25.00 remain correct.",
+      "fixture_review": {
+        "input_counts": [
+          9
+        ],
+        "expected_counts": {
+          "0": 3
+        },
+        "full_record_schema": "pass",
+        "oracle_semantics": "Expected main rows agree with independently derived business outcomes on the supplied finite fixtures."
+      },
+      "ctl2_fact_review": "Null-safe typed equality, short-circuit guards, default declaration state, wildcard copy, decimal arithmetic and graph long sequences match basics. Denormalizer and mandatory five-function Rollup lifecycle match section7 and guides. DataIntersection internal output0/physical output1 follows root verified runs17918/17919/17920, overriding stale owner port1 statement in basics. ExtMergeJoin absent-side behavior, resource bindings and sorted group execution remain root live-run gates.",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "numeric domain versus accumulator/output metadata",
+          "finding": "Positive coverage_days and asset_value are not bounded beyond metadata. Summing days in integer can overflow; decimal24,6 weighted_total can overflow for legal decimal18,2 values times large days. adjusted_average scale3 also reduces integer capacity compared with asset_value scale2.",
+          "action": "Declare upstream prevalidated safe value/day/group-cardinality bounds, or widen the accumulator/output types.",
+          "final_status": "resolved"
+        },
+        {
+          "severity": "warning",
+          "location": "clause3 wording",
+          "finding": "Phrase missing/nonpositive days or values are excluded can imply nonpositive asset values, but clause5 explicitly allows negative asset corrections and reference allows zero/negative non-null asset_value.",
+          "action": "State missing/nonpositive coverage days and null asset values are excluded, preserving the intended negative-value rule.",
+          "final_status": "resolved"
+        }
+      ],
+      "final_rubric_sha256": "cb28a00987475c823fc4e4f689bd54922ee124bed350012e25e76d50c79792da",
+      "final_specific_note": "Final authoritative reference uses getMonth(first_date,\"UTC\") and getYear(first_date,\"UTC\"). Root reports actual run18000 FINISHED_OK and exact boundary output match. Clause3 explicitly excludes null asset values/nonpositive days while allowing negative assets.",
+      "root_runtime_evidence": {
+        "run_id": 18000,
+        "reported_status": "FINISHED_OK",
+        "expected_boundary": {
+          "fiscal_period": "2025-Q4",
+          "adjusted_average": "6.750",
+          "high_share": "25.00"
+        },
+        "provenance": "Root reported full output match; reviewer independently rederived oracle."
+      },
+      "final_timezone_wording_note": "Final prompt defines the UTC business calendar while explicitly allowing a different host default timezone. Harness parses typed input dates in UTC; reference/calendar obligations are therefore independent of host timezone. This is a wording-only consistency fix with unchanged reference and acceptance fixture."
+    }
+  ],
+  "final_addendum": {
+    "review_scope": "Final frozen shard with common UTC date metadata",
+    "review_result": "No unresolved reference semantic errors identified on supplied fixtures. Live execution and compiler evidence are owned by root; advisory coverage/wording observations remain explicitly recorded.",
+    "tests": [
+      {
+        "test_id": "T54",
+        "final_reference_sha256": "d1a67773b0deca5709ae0a3a02c5471aba20ab7ae67f231f20777dc60bf79204",
+        "final_prompt_sha256": "45cf300103dfb35c7b51e62dee3b3ad77f4960de9af48fda17f5f8f870244a15",
+        "final_graph_spec_sha256": "3c1deb16db8ea57052eb62053d727936e552d07bf87fe0d417c3a479524f0fc6",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "final_rubric_sha256": "d6338800431b63046a90bbec94236ca450801cca82d81cdb3eeec5a669762a36",
+        "authoritative_source": "data/suite_v5/generate_rw.json after finalization"
+      },
+      {
+        "test_id": "T55",
+        "final_reference_sha256": "dc0b16f8ce73f4f4df4496f18e0ffd8f03090c0db00f4df3c1ff64b53317c249",
+        "final_prompt_sha256": "a35510d5b8d362de3b721c2820eb7c703c0427b0b224bf82e8ddd290bcd5f562",
+        "final_graph_spec_sha256": "c0c10a0e2bd197cfec04c087cfb3cb5b2c94d98bd4ab82efdd415b4f612484c0",
+        "resolution_checks": {
+          "single_connected_merge_output": true,
+          "added_expected_null_and_excess_oracles": true
+        },
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "round2b_prompt_edit": "2026-10-13 round 2b: prompt edited per the round-2 subagent reviews (trap hints removed, spec gaps closed; data/suite_v5/round2/fix_prompts_round2.py); reference unchanged and consistent with the stated behaviour per its recorded run."
+      },
+      {
+        "test_id": "T56",
+        "final_reference_sha256": "31d578540123925ea9fe6b2f431a11204460654c5facafb50aadef3f9889b22f",
+        "final_prompt_sha256": "6e37d7587927a87f589ee3f38b19f0676e5e6dc05a89e91a2eb07abce9892789",
+        "final_graph_spec_sha256": "bdb16dd5ed63de8ec9983ef33b344042bc3dacfbfd4f5f8fca73b130b12d3625",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": []
+      },
+      {
+        "test_id": "T57",
+        "final_reference_sha256": "a95d7da0ab3411f683892dad3899b967a95bc81c50b5fd4ef08f9067e08cf2a1",
+        "final_prompt_sha256": "639580635fccc965b2577fe92ba50eba52294ecef5a347c4fdde1e37df3768bc",
+        "final_graph_spec_sha256": "3b7f1177dfaa19443dadef2e9eefe9724c7f187f9e6b7ec28ff7b6c2d8ae9ed9",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": []
+      },
+      {
+        "test_id": "T58",
+        "final_reference_sha256": "caaf506300cc4d48c8910cfa9af129ff598f29d4c7d3094897f259988c09c444",
+        "final_prompt_sha256": "fd7e80402cbd3cfeb1dea4f4195dc293f1219ab929ad486ec7e7f467445dd033",
+        "final_graph_spec_sha256": "931a97ccfcf62dd223fd9bfec98c6f7b47ebcc07705b5cc439531d0f7b8cb96b",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": []
+      },
+      {
+        "test_id": "T59",
+        "final_reference_sha256": "aaf253b070c0f3db1c6f5b79340a8823598f83fcedb0133dae47bbc4803749d4",
+        "final_prompt_sha256": "8a4a50773e68a1274ccb0e03772ff44d3e43e975581021c1d7cd189e8ca2e269",
+        "final_graph_spec_sha256": "0667d284d35766628abe61f63f83054ba3d8d666c66ea84b9e868359ecaddf14",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": []
+      },
+      {
+        "test_id": "T60",
+        "final_reference_sha256": "b5c12a03f610eef012b63ae36b94cf25c5a95e370a03655dd649063dab45fcfc",
+        "final_prompt_sha256": "2641ddbf5e966b55394ccb345c7cca17ecab62078466de380cd9b41a6be3a865",
+        "final_graph_spec_sha256": "574a2508d1753d21a1a47334e6b0829ae35c46e6c6890dedee5bf3c84c9ab307",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "round2b_prompt_edit": "2026-10-13 round 2b: prompt edited per the round-2 subagent reviews (trap hints removed, spec gaps closed; data/suite_v5/round2/fix_prompts_round2.py); reference unchanged and consistent with the stated behaviour per its recorded run."
+      },
+      {
+        "test_id": "T61",
+        "final_reference_sha256": "9315d90924ffe8df539d7068443f97ec79eadc438202c0bd4a95995c21cc40b8",
+        "final_prompt_sha256": "50f1a201d5ee1ecbfdca3fc727a0617cac05e2e917b1b8bb2f3887ea972f1c51",
+        "final_graph_spec_sha256": "c6008e4ef3c21c2e58931289d5a13f52657786064311a1b3cdada8681bb8101b",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": []
+      },
+      {
+        "test_id": "T62",
+        "final_reference_sha256": "d3575f6cfc820808f533034dd7a613b1b51dc9dc3a140050d381361f28fbb26d",
+        "final_prompt_sha256": "4d4e9068efb490173a4915828c3ba6af02f911328615e68dcaeb0311849f47e4",
+        "final_graph_spec_sha256": "9c9f78f512475b8235372c8993260875c9f3dd12ddc9d547ba93c39c380a858c",
+        "resolution_checks": {},
+        "final_semantic_review": "pass on supplied main fixtures; see residual advisory coverage observations",
+        "remaining_reference_errors": [],
+        "final_rubric_sha256": "0d6ee68791463db0714d7503353905d8f9b41334d552db63172e8c53a21b87e4",
+        "authoritative_source": "data/suite_v5/generate_rw.json after final UTC-business-calendar wording freeze"
+      },
+      {
+        "test_id": "T63",
+        "final_reference_sha256": "507d6beb01fe82e0931d7cca67d35fcda9492a5cb8eec9d7368a7ef60c9c78a4",
+        "final_prompt_sha256": "380c0fe8b11b243ce461ac2a10e3c0a07b40bfcdb481840e54456401a47640e4",
+        "final_graph_spec_sha256": "d5c2f5d0fd3d248cb024d138ae7e12ec2f47b5f3be0f15dab58ed0d28b30c7af",
+        "resolution_checks": {
+          "safe_numeric_domain": true,
+          "negative_values_explicitly_eligible": true
+        },
+        "final_semantic_review": "pass: UTC fiscal boundary independently rederived; root run18000 matched output",
+        "remaining_reference_errors": [],
+        "final_rubric_sha256": "cb28a00987475c823fc4e4f689bd54922ee124bed350012e25e76d50c79792da",
+        "authoritative_source": "data/suite_v5/generate_rw.json after final UTC-business-calendar wording freeze"
+      }
+    ],
+    "authoritative_hash_refresh": "T54/T63/T71 refreshed after root finalization; rubric hash records live nonnegative-return and harmless-helper correction.",
+    "last_refresh": "T62/T63 final prompt hashes refreshed after UTC business-calendar wording fix; code and fixture are unchanged from verified executions including T63 run18000."
+  }
+}

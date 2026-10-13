@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T69" id="6101300069" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Meter utility distinguishes malformed text from absent readings
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="MeterUtilityInput" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="meter_key" type="string" nullable="false" />
+        <Field name="meter_tenant" type="string" nullable="false" />
+        <Field name="meter_file" type="string" nullable="false" />
+        <Field name="meter_row" type="long" nullable="false" />
+        <Field name="meter_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="meter_team" type="string" nullable="true" />
+        <Field name="meter_market" type="string" nullable="true" />
+        <Field name="meter_currency" type="string" nullable="false" />
+        <Field name="meter_batch" type="string" nullable="false" />
+        <Field name="meter_note" type="string" nullable="true" />
+        <Field name="meter_trace" type="string" nullable="true" />
+        <Field name="meter_unused_archive" type="string" nullable="true" />
+        <Field name="current_text" type="string" nullable="true" />
+        <Field name="previous_text" type="string" nullable="true" />
+        <Field name="unit_code" type="string" nullable="true" />
+        <Field name="meter_status" type="string" nullable="true" />
+        <Field name="calibration_factor" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="captured_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="meter_key" type="string" nullable="false" />
+        <Field name="meter_tenant" type="string" nullable="false" />
+        <Field name="meter_file" type="string" nullable="false" />
+        <Field name="meter_row" type="string" nullable="false" />
+        <Field name="meter_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="meter_team" type="string" nullable="true" />
+        <Field name="meter_market" type="string" nullable="true" />
+        <Field name="meter_currency" type="string" nullable="false" />
+        <Field name="meter_batch" type="string" nullable="false" />
+        <Field name="meter_note" type="string" nullable="true" />
+        <Field name="meter_trace" type="string" nullable="true" />
+        <Field name="meter_unused_archive" type="string" nullable="true" />
+        <Field name="current_text" type="string" nullable="true" />
+        <Field name="previous_text" type="string" nullable="true" />
+        <Field name="unit_code" type="string" nullable="true" />
+        <Field name="meter_status" type="string" nullable="true" />
+        <Field name="calibration_factor" type="string" nullable="true" />
+        <Field name="captured_at" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="MeterUtilityOutput" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="meter_key" type="string" nullable="false" />
+        <Field name="meter_tenant" type="string" nullable="false" />
+        <Field name="meter_file" type="string" nullable="false" />
+        <Field name="meter_row" type="long" nullable="false" />
+        <Field name="meter_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="meter_team" type="string" nullable="true" />
+        <Field name="meter_market" type="string" nullable="true" />
+        <Field name="meter_currency" type="string" nullable="false" />
+        <Field name="meter_batch" type="string" nullable="false" />
+        <Field name="meter_note" type="string" nullable="true" />
+        <Field name="meter_trace" type="string" nullable="true" />
+        <Field name="meter_unused_archive" type="string" nullable="true" />
+        <Field name="current_text" type="string" nullable="true" />
+        <Field name="previous_text" type="string" nullable="true" />
+        <Field name="unit_code" type="string" nullable="true" />
+        <Field name="meter_status" type="string" nullable="true" />
+        <Field name="calibration_factor" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="captured_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="current_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="delta_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="delta_status" type="string" nullable="false" />
+        <Field name="reading_label" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="meter_key" type="string" nullable="false" />
+        <Field name="meter_tenant" type="string" nullable="false" />
+        <Field name="meter_file" type="string" nullable="false" />
+        <Field name="meter_row" type="string" nullable="false" />
+        <Field name="meter_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="meter_team" type="string" nullable="true" />
+        <Field name="meter_market" type="string" nullable="true" />
+        <Field name="meter_currency" type="string" nullable="false" />
+        <Field name="meter_batch" type="string" nullable="false" />
+        <Field name="meter_note" type="string" nullable="true" />
+        <Field name="meter_trace" type="string" nullable="true" />
+        <Field name="meter_unused_archive" type="string" nullable="true" />
+        <Field name="current_text" type="string" nullable="true" />
+        <Field name="previous_text" type="string" nullable="true" />
+        <Field name="unit_code" type="string" nullable="true" />
+        <Field name="meter_status" type="string" nullable="true" />
+        <Field name="calibration_factor" type="string" nullable="true" />
+        <Field name="captured_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="current_value" type="string" nullable="true" />
+        <Field name="delta_value" type="string" nullable="true" />
+        <Field name="delta_status" type="string" nullable="false" />
+        <Field name="reading_label" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T69_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.meter_key=$in.0.meter_key;
+$out.0.meter_tenant=$in.0.meter_tenant;
+$out.0.meter_file=$in.0.meter_file;
+$out.0.meter_row=$in.0.meter_row == null ? null : str2long($in.0.meter_row);
+$out.0.meter_received=$in.0.meter_received == null ? null : str2date($in.0.meter_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.meter_team=$in.0.meter_team;
+$out.0.meter_market=$in.0.meter_market;
+$out.0.meter_currency=$in.0.meter_currency;
+$out.0.meter_batch=$in.0.meter_batch;
+$out.0.meter_note=$in.0.meter_note;
+$out.0.meter_trace=$in.0.meter_trace;
+$out.0.meter_unused_archive=$in.0.meter_unused_archive;
+$out.0.current_text=$in.0.current_text;
+$out.0.previous_text=$in.0.previous_text;
+$out.0.unit_code=$in.0.unit_code;
+$out.0.meter_status=$in.0.meter_status;
+$out.0.calibration_factor=$in.0.calibration_factor == null ? null : str2decimal($in.0.calibration_factor);
+$out.0.captured_at=$in.0.captured_at == null ? null : str2date($in.0.captured_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+function decimal readingValue(string text){string raw=trim(nvl(text,""));if(!(raw ~= "-?[0-9]{1,5}(\\.[0-9]{1,2})?"))return null;return str2decimal(raw);}
+function decimal readingDelta(string newer,string older){decimal n=readingValue(newer);decimal o=readingValue(older);return isnull(n)||isnull(o) ? null : n-o;}
+function string deltaStatus(string newer,string older){decimal n=readingValue(newer);decimal o=readingValue(older);if(!isBlank(newer)&amp;&amp;isnull(n))return "NEW_BAD";if(!isBlank(older)&amp;&amp;isnull(o))return "OLD_BAD";if(isnull(n)||isnull(o))return "MISSING";if(n&lt;o)return "RESET";return n==o ? "SAME" : "ADVANCE";}
+function string readingLabel(string unit,string text){decimal value=readingValue(text);return isnull(unit)||isnull(value) ? null : upperCase(trim(unit))+":"+num2str(value,"0.00","en.US");}
+function integer transform(){$out.0.*=$in.0.*;$out.0.current_value=readingValue($in.0.current_text);$out.0.delta_value=readingDelta($in.0.current_text,$in.0.previous_text);$out.0.delta_status=deltaStatus($in.0.current_text,$in.0.previous_text);$out.0.reading_label=readingLabel($in.0.unit_code,$in.0.current_text);return OK;}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.meter_key=$in.0.meter_key;
+$out.0.meter_tenant=$in.0.meter_tenant;
+$out.0.meter_file=$in.0.meter_file;
+$out.0.meter_row=$in.0.meter_row == null ? null : num2str($in.0.meter_row);
+$out.0.meter_received=$in.0.meter_received == null ? null : date2str($in.0.meter_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.meter_team=$in.0.meter_team;
+$out.0.meter_market=$in.0.meter_market;
+$out.0.meter_currency=$in.0.meter_currency;
+$out.0.meter_batch=$in.0.meter_batch;
+$out.0.meter_note=$in.0.meter_note;
+$out.0.meter_trace=$in.0.meter_trace;
+$out.0.meter_unused_archive=$in.0.meter_unused_archive;
+$out.0.current_text=$in.0.current_text;
+$out.0.previous_text=$in.0.previous_text;
+$out.0.unit_code=$in.0.unit_code;
+$out.0.meter_status=$in.0.meter_status;
+$out.0.calibration_factor=$in.0.calibration_factor == null ? null : num2str($in.0.calibration_factor,"0.00","en.US");
+$out.0.captured_at=$in.0.captured_at == null ? null : date2str($in.0.captured_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.current_value=$in.0.current_value == null ? null : num2str($in.0.current_value,"0.00","en.US");
+$out.0.delta_value=$in.0.delta_value == null ? null : num2str($in.0.delta_value,"0.00","en.US");
+$out.0.delta_status=$in.0.delta_status;
+$out.0.reading_label=$in.0.reading_label;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T69_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

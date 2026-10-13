@@ -1,0 +1,786 @@
+[
+  {
+    "test_id": "P901",
+    "label": "P901",
+    "graph_file": "suite_v5/graph/P901.grf",
+    "reference_sha256": "f96dd40fb5ee9fad411d2e9f9bc5d59ff913d2a6417d175014526a7bc7cedf92",
+    "graph_sha256": "cf8a271021d642c0566b779c25533dbbe5e79e6c474142218df901f1b44d1766",
+    "files": [
+      {
+        "local": "run_graphs/P901/graph/P901.grf",
+        "remote": "suite_v5/graph/P901.grf",
+        "sha256": "cf8a271021d642c0566b779c25533dbbe5e79e6c474142218df901f1b44d1766"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/P901_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"ConversionProbe\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"case_id\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"raw_date\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"decimal_threw\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"decimal_null\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"is_date\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"parse_threw\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"parsed_date\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"unicode_length\" type=\"integer\" nullable=\"false\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [],
+      "expected": {
+        "0": [
+          {
+            "case_id": 1,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 2,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 3,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 4,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 5,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 6,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 7,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 8,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          }
+        ]
+      },
+      "rows_count": 8
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "P902",
+    "label": "P902",
+    "graph_file": "suite_v5/graph/P902.grf",
+    "reference_sha256": "70fa52226c0f219561035f7e1da3bbe985d562959527cdd90abde385b6f272bc",
+    "graph_sha256": "99d0bbbfa6bf946f64bcd699ecc39779d6b961b06f2200e7e405c8e241c2b881",
+    "files": [
+      {
+        "local": "run_graphs/P902/graph/P902.grf",
+        "remote": "suite_v5/graph/P902.grf",
+        "sha256": "99d0bbbfa6bf946f64bcd699ecc39779d6b961b06f2200e7e405c8e241c2b881"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/P902_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"ZeroProbe\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"called\" type=\"boolean\" nullable=\"true\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [],
+      "expected": {
+        "0": []
+      },
+      "rows_count": 0
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "P903",
+    "label": "P903",
+    "graph_file": "suite_v5/graph/P903.grf",
+    "reference_sha256": "90dcc0f0635be9efed885bcd495308d80b32c08da169a7307ca60194354f4497",
+    "graph_sha256": "13c1fc33813f8d0d960f1df2937fb4c06815db6e0c0d25d49600fe6ac6f5e6e0",
+    "files": [
+      {
+        "local": "run_graphs/P903/data-in/input_0.csv",
+        "remote": "suite_v5/data-in/P903_input_0.csv",
+        "sha256": "dd9adcf35b3bc870fc6e379347764bf64b952c3c40ab7ecf46d985eb7a8797e3"
+      },
+      {
+        "local": "run_graphs/P903/graph/P903.grf",
+        "remote": "suite_v5/graph/P903.grf",
+        "sha256": "13c1fc33813f8d0d960f1df2937fb4c06815db6e0c0d25d49600fe6ac6f5e6e0"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/P903_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"GroupResult\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"group_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"rows_seen\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"total\" type=\"integer\" nullable=\"false\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [
+        [
+          {
+            "group_key": "A",
+            "amount": 2
+          },
+          {
+            "group_key": "A",
+            "amount": 3
+          },
+          {
+            "group_key": "A",
+            "amount": 1
+          },
+          {
+            "group_key": "B",
+            "amount": 4
+          },
+          {
+            "group_key": "C",
+            "amount": 0
+          },
+          {
+            "group_key": "C",
+            "amount": 5
+          },
+          {
+            "group_key": "C",
+            "amount": -1
+          },
+          {
+            "group_key": "C",
+            "amount": 2
+          }
+        ]
+      ],
+      "expected": {
+        "0": [
+          {
+            "group_key": "A",
+            "rows_seen": 3,
+            "total": 6
+          },
+          {
+            "group_key": "B",
+            "rows_seen": 1,
+            "total": 4
+          },
+          {
+            "group_key": "C",
+            "rows_seen": 4,
+            "total": 6
+          }
+        ]
+      }
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "P904",
+    "label": "P904",
+    "graph_file": "suite_v5/graph/P904.grf",
+    "reference_sha256": "ea389613e51c108cafb75635dac1cebf311ddab76fcab90e83028f17ae2ef36e",
+    "graph_sha256": "fb6a02390b56da654f129093e664a25012da5362885740882acc0a1f35f84edf",
+    "files": [
+      {
+        "local": "run_graphs/P904/data-in/input_0.csv",
+        "remote": "suite_v5/data-in/P904_input_0.csv",
+        "sha256": "d47aa33e9198effcf827d0db56ca1ae25456032c137d096f61d0ad4b96f08834"
+      },
+      {
+        "local": "run_graphs/P904/data-in/input_1.csv",
+        "remote": "suite_v5/data-in/P904_input_1.csv",
+        "sha256": "5b745aac3be573901a405b7149c5f9efeb3b982acf5502fec81c6c09b1bbba7d"
+      },
+      {
+        "local": "run_graphs/P904/graph/P904.grf",
+        "remote": "suite_v5/graph/P904.grf",
+        "sha256": "fb6a02390b56da654f129093e664a25012da5362885740882acc0a1f35f84edf"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/P904_out_0.csv",
+      "1": "suite_v5/data-out/P904_out_1.csv",
+      "2": "suite_v5/data-out/P904_out_2.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"Side\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"value_cd\" type=\"string\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"Both\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"pair_txt\" type=\"string\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"Side\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"value_cd\" type=\"string\" nullable=\"true\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [
+        [
+          {
+            "key_id": null,
+            "value_cd": "NA"
+          },
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "A2"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "A3"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        [
+          {
+            "key_id": null,
+            "value_cd": "NB"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "B2"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ]
+      ],
+      "expected": {
+        "0": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "1": [
+          {
+            "key_id": null,
+            "pair_txt": "NA:NB"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B3"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B3"
+          }
+        ],
+        "2": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ]
+      }
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "P905",
+    "label": "P905",
+    "graph_file": "suite_v5/graph/P905.grf",
+    "reference_sha256": "40ec278dc8f0d5616ec61093edb63fa48774e7bbbb133e3578b824dcda7e0a8b",
+    "graph_sha256": "cfb68bf61d93b906fd4d7318bf6f208554d40d0ff25f8c56b41fbf9cc3a5caf7",
+    "files": [
+      {
+        "local": "run_graphs/P905/data-in/input_0.csv",
+        "remote": "suite_v5/data-in/P905_input_0.csv",
+        "sha256": "d47aa33e9198effcf827d0db56ca1ae25456032c137d096f61d0ad4b96f08834"
+      },
+      {
+        "local": "run_graphs/P905/data-in/input_1.csv",
+        "remote": "suite_v5/data-in/P905_input_1.csv",
+        "sha256": "5b745aac3be573901a405b7149c5f9efeb3b982acf5502fec81c6c09b1bbba7d"
+      },
+      {
+        "local": "run_graphs/P905/graph/P905.grf",
+        "remote": "suite_v5/graph/P905.grf",
+        "sha256": "cfb68bf61d93b906fd4d7318bf6f208554d40d0ff25f8c56b41fbf9cc3a5caf7"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/P905_out_0.csv",
+      "1": "suite_v5/data-out/P905_out_1.csv",
+      "2": "suite_v5/data-out/P905_out_2.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"Side\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"value_cd\" type=\"string\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"Both\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"pair_txt\" type=\"string\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"Side\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"value_cd\" type=\"string\" nullable=\"true\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [
+        [
+          {
+            "key_id": null,
+            "value_cd": "NA"
+          },
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "A2"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "A3"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        [
+          {
+            "key_id": null,
+            "value_cd": "NB"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "B2"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ]
+      ],
+      "expected": {
+        "0": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "1": [
+          {
+            "key_id": null,
+            "pair_txt": "NA:NB"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B3"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B3"
+          }
+        ],
+        "2": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ]
+      }
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "P906",
+    "label": "P906",
+    "graph_file": "suite_v5/graph/P906.grf",
+    "reference_sha256": "3f00c810964e6bf24904b02e6f072ba02fc21bbdd3bf580491e6bc3ccc0e262e",
+    "graph_sha256": "1e4131f7b60ad6c1133172d182d51b884a5e1eb8bc35525b83751dca47619182",
+    "files": [
+      {
+        "local": "run_graphs/P906/data-in/input_0.csv",
+        "remote": "suite_v5/data-in/P906_input_0.csv",
+        "sha256": "d47aa33e9198effcf827d0db56ca1ae25456032c137d096f61d0ad4b96f08834"
+      },
+      {
+        "local": "run_graphs/P906/data-in/input_1.csv",
+        "remote": "suite_v5/data-in/P906_input_1.csv",
+        "sha256": "5b745aac3be573901a405b7149c5f9efeb3b982acf5502fec81c6c09b1bbba7d"
+      },
+      {
+        "local": "run_graphs/P906/graph/P906.grf",
+        "remote": "suite_v5/graph/P906.grf",
+        "sha256": "1e4131f7b60ad6c1133172d182d51b884a5e1eb8bc35525b83751dca47619182"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/P906_out_0.csv",
+      "1": "suite_v5/data-out/P906_out_1.csv",
+      "2": "suite_v5/data-out/P906_out_2.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"Side\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"value_cd\" type=\"string\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"Both\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"pair_txt\" type=\"string\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"Side\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"value_cd\" type=\"string\" nullable=\"true\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [
+        [
+          {
+            "key_id": null,
+            "value_cd": "NA"
+          },
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "A2"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "A3"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        [
+          {
+            "key_id": null,
+            "value_cd": "NB"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "B2"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ]
+      ],
+      "expected": {
+        "0": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "1": [
+          {
+            "key_id": null,
+            "pair_txt": "NA:NB"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B3"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B3"
+          }
+        ],
+        "2": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ]
+      }
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "P907",
+    "label": "P907",
+    "graph_file": "suite_v5/graph/P907.grf",
+    "reference_sha256": "4580e982e71eea7a7dff25d49f88c2b04ce886acaff31c6ac4c9b1f6e66ee5e9",
+    "graph_sha256": "bb9133f641464d7f3816854240f0c76e14a9ae473974fbbc5b23493cbf262c75",
+    "files": [
+      {
+        "local": "run_graphs/P907/data-in/input_0.csv",
+        "remote": "suite_v5/data-in/P907_input_0.csv",
+        "sha256": "d47aa33e9198effcf827d0db56ca1ae25456032c137d096f61d0ad4b96f08834"
+      },
+      {
+        "local": "run_graphs/P907/data-in/input_1.csv",
+        "remote": "suite_v5/data-in/P907_input_1.csv",
+        "sha256": "5b745aac3be573901a405b7149c5f9efeb3b982acf5502fec81c6c09b1bbba7d"
+      },
+      {
+        "local": "run_graphs/P907/graph/P907.grf",
+        "remote": "suite_v5/graph/P907.grf",
+        "sha256": "bb9133f641464d7f3816854240f0c76e14a9ae473974fbbc5b23493cbf262c75"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/P907_out_0.csv",
+      "1": "suite_v5/data-out/P907_out_1.csv",
+      "2": "suite_v5/data-out/P907_out_2.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"Side\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"value_cd\" type=\"string\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"Both\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"pair_txt\" type=\"string\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"Side\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"key_id\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"value_cd\" type=\"string\" nullable=\"true\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [
+        [
+          {
+            "key_id": null,
+            "value_cd": "NA"
+          },
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "A2"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "A3"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        [
+          {
+            "key_id": null,
+            "value_cd": "NB"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "B2"
+          },
+          {
+            "key_id": 2,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ]
+      ],
+      "expected": {
+        "0": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "1": [],
+        "2": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ]
+      }
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "P908",
+    "label": "P908",
+    "graph_file": "suite_v5/graph/P908.grf",
+    "reference_sha256": "c4897fddaeff3e25d9cf860cbd740a03c277db6d2ebe5c56e27def499b93e24a",
+    "graph_sha256": "d027cca75e12eb77dea0d600b4935e0fad4f514f96f6e234d1b9855e80984810",
+    "files": [
+      {
+        "local": "run_graphs/P908/graph/P908.grf",
+        "remote": "suite_v5/graph/P908.grf",
+        "sha256": "d027cca75e12eb77dea0d600b4935e0fad4f514f96f6e234d1b9855e80984810"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/P908_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"DictResult\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"flag\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"label\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"counter\" type=\"integer\" nullable=\"false\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [],
+      "expected": {
+        "0": [
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 1
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 2
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 3
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 4
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 5
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 6
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 7
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 8
+          }
+        ]
+      },
+      "rows_count": 8
+    },
+    "parameters": {},
+    "expected_failure": false
+  }
+]

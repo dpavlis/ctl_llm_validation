@@ -1,0 +1,52 @@
+{
+  "resources": [
+    {
+      "uri": "cloverdx://reference/graph-xml",
+      "name": "CloverDX Graph XML Reference",
+      "description": "Reference guide for CloverDX graph XML structure.",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "cloverdx://reference/ctl2",
+      "name": "CloverDX CTL2 Transformation Language Reference",
+      "description": "Reference guide for the CTL2 transformation language.",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "cloverdx://reference/subgraphs",
+      "name": "CloverDX Subgraphs Reference",
+      "description": "Reference guide for CloverDX subgraphs.",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "cloverdx://reference/data-service",
+      "name": "CloverDX Data Service Reference",
+      "description": "Reference guide for CloverDX Data Services.",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "cloverdx://reference/db-connection",
+      "name": "CloverDX Database Connection Reference",
+      "description": "Reference guide for CloverDX database connections.",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "cloverdx://reference/jobflow",
+      "name": "CloverDX Jobflow Reference",
+      "description": "Reference guide for CloverDX jobflows.",
+      "mimeType": "text/markdown"
+    },
+    {
+      "uri": "cloverdx://reference/components",
+      "name": "CloverDX Component Catalog",
+      "description": "Full catalog of available CloverDX components as JSON.",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "cloverdx://server/info",
+      "name": "CloverDX Server Info",
+      "description": "Structured information about the CloverDX server configuration for this MCP session.",
+      "mimeType": "application/json"
+    }
+  ]
+}

@@ -1,0 +1,3018 @@
+[
+  {
+    "test_id": "T64",
+    "label": "T64_empty_amount",
+    "graph_file": "suite_v5/graph/T64_empty_amount.grf",
+    "graph_sha256": "07d192172f4950da820bbed93b5514b6c8da8e90303f3af8ac88d9ae692c5661",
+    "reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+    "input_files": [
+      "run_graphs/T64_empty_amount/data-in/input_0.csv"
+    ],
+    "expected_files": [
+      "run_graphs/T64_empty_amount/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17981
+    ],
+    "outputs": {},
+    "row_checks": [],
+    "expected_failure": true,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17981,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T64_empty_amount.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:54:41.400+02:00",
+      "startTime": "2026-10-13T11:54:41.400+02:00",
+      "stopTime": "2026-10-13T11:54:41.448+02:00",
+      "durationMs": 48,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape",
+        "componentType": "NORMALIZER"
+      }
+    },
+    "tracking": {
+      "run_id": "17981",
+      "status": "ERROR",
+      "exec_seconds": 0.028,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.027,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 251
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 251
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 185
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "NORMALIZER",
+              "result": "ERROR",
+              "cpu_seconds": 0.002,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 185
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "ABORTED",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 4,
+        "total_bytes": 872
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:54:41,402 INFO  17981 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:54:41,402 INFO  17981 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:54:41,402 INFO  17981 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:54:41,408 INFO  17981 [JobStarter_17981] Starting job: MiscExamples/suite_v5/graph/T64_empty_amount.grf\n\t Run ID: \t\t17981\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:54:41,410 INFO  17981 [JobExecutor_17981] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:54:41,414 INFO  17981 [JobExecutor_17981] Initializing metadata\n2026-10-13 11:54:41,414 INFO  17981 [JobExecutor_17981] Initializing phase 0\n2026-10-13 11:54:41,415 INFO  17981 [JobExecutor_17981] Phase 0 initialized successfully.\n2026-10-13 11:54:41,415 INFO  17981 [WatchDog_17981] Job execution type: ETL_GRAPH\n2026-10-13 11:54:41,415 INFO  17981 [WatchDog_17981] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T64_empty_amount.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T64_empty_amount.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17981\nPROJECT=.\nROOT_RUN_ID=17981\nRUN_ID=17981\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:54:41,415 INFO  17981 [WatchDog_17981] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:54:41,417 INFO  17981 [WatchDog_17981] Starting up all nodes in phase [0]\n2026-10-13 11:54:41,417 INFO  17981 [WatchDog_17981] Successfully started all nodes in phase!\n2026-10-13 11:54:41,422 ERROR 17981 [WatchDog_17981] Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape\n2026-10-13 11:54:41,423 ERROR 17981 [WatchDog_17981] Error details:\norg.jetel.exception.JetelRuntimeException: Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n\tat org.jetel.graph.Node.createNodeException(Node.java:685)\n\tat org.jetel.graph.Node.run(Node.java:650)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.TransformException: Message: Normalizer failed!\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformOnError(CTLRecordNormalizeAdapter.java:147)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:234)\n\tat org.jetel.component.Normalizer.execute(Normalizer.java:305)\n\tat org.jetel.graph.Node.run(Node.java:597)\n\t... 3 more\nCaused by: org.jetel.ctl.RaiseErrorException: Interpreter runtime exception on line 20 column 50\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:2279)\n\tat org.jetel.ctl.ASTnode.CLVFRaiseErrorNode.jjtAccept(CLVFRaiseErrorNode.java:48)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3043)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3096)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformImpl(CTLRecordNormalizeAdapter.java:161)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transform(CTLRecordNormalizeAdapter.java:139)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:232)\n\t... 5 more\nCaused by: org.jetel.exception.JetelRuntimeException: Exception raised by user: Invalid child amount shape\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:53)\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:47)\n\tat org.jetel.ctl.RaiseErrorException.<init>(RaiseErrorException.java:58)\n\t... 25 more\n\n2026-10-13 11:54:41,433 INFO  17981 [WatchDog_17981] Interrupted node: Encode0\n2026-10-13 11:54:41,443 INFO  17981 [WatchDog_17981] Interrupted node: Writer0\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] Execution of phase [0] finished with error - elapsed time (sec): 0\n2026-10-13 11:54:41,444 ERROR 17981 [WatchDog_17981] Phase finished with error - stopping job run\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:54:41,444 INFO  17981 [WatchDog_17981] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:54:41,445 INFO  17981 [WatchDog_17981] 0                 ERROR                              0               106\n2026-10-13 11:54:41,445 INFO  17981 [WatchDog_17981] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:54:41,449 INFO  17981 [JobFinalizer_17981] Job finished: MiscExamples/suite_v5/graph/T64_empty_amount.grf\n\t Run ID: \t\t17981\n\t Status: \t\tERROR\n\t Duration: \t\t48 ms\n2026-10-13 11:54:41,449 ERROR 17981 [JobFinalizer_17981] \n--------------------------------- Error details ----------------------------------\n  Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n   Message: Normalizer failed!\n    Interpreter runtime exception on line 20 column 50\n     Exception raised by user: Invalid child amount shape\n----------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "negative_failure_verified": true,
+    "evidence_file": "run_graphs/T64_empty_amount/mcp_evidence.json"
+  },
+  {
+    "test_id": "T64",
+    "label": "T64_malformed_amount",
+    "graph_file": "suite_v5/graph/T64_malformed_amount.grf",
+    "graph_sha256": "4138f9d84f0ce8498fa8190cc363cbc649b94eaaa708309183340f23f62615c5",
+    "reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+    "input_files": [
+      "run_graphs/T64_malformed_amount/data-in/input_0.csv"
+    ],
+    "expected_files": [
+      "run_graphs/T64_malformed_amount/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17983
+    ],
+    "outputs": {},
+    "row_checks": [],
+    "expected_failure": true,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17983,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T64_malformed_amount.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:54:46.460+02:00",
+      "startTime": "2026-10-13T11:54:46.460+02:00",
+      "stopTime": "2026-10-13T11:54:46.499+02:00",
+      "durationMs": 39,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape",
+        "componentType": "NORMALIZER"
+      }
+    },
+    "tracking": {
+      "run_id": "17983",
+      "status": "ERROR",
+      "exec_seconds": 0.024,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.023,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 257
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 257
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 191
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "NORMALIZER",
+              "result": "ERROR",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 191
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "ABORTED",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 4,
+        "total_bytes": 896
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:54:46,461 INFO  17983 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:54:46,461 INFO  17983 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:54:46,461 INFO  17983 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:54:46,465 INFO  17983 [JobStarter_17983] Starting job: MiscExamples/suite_v5/graph/T64_malformed_amount.grf\n\t Run ID: \t\t17983\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:54:46,468 INFO  17983 [JobExecutor_17983] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:54:46,471 INFO  17983 [JobExecutor_17983] Initializing metadata\n2026-10-13 11:54:46,471 INFO  17983 [JobExecutor_17983] Initializing phase 0\n2026-10-13 11:54:46,473 INFO  17983 [JobExecutor_17983] Phase 0 initialized successfully.\n2026-10-13 11:54:46,473 INFO  17983 [WatchDog_17983] Job execution type: ETL_GRAPH\n2026-10-13 11:54:46,473 INFO  17983 [WatchDog_17983] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T64_malformed_amount.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T64_malformed_amount.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17983\nPROJECT=.\nROOT_RUN_ID=17983\nRUN_ID=17983\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:54:46,473 INFO  17983 [WatchDog_17983] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:54:46,474 INFO  17983 [WatchDog_17983] Starting up all nodes in phase [0]\n2026-10-13 11:54:46,474 INFO  17983 [WatchDog_17983] Successfully started all nodes in phase!\n2026-10-13 11:54:46,476 ERROR 17983 [WatchDog_17983] Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape\n2026-10-13 11:54:46,477 ERROR 17983 [WatchDog_17983] Error details:\norg.jetel.exception.JetelRuntimeException: Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n\tat org.jetel.graph.Node.createNodeException(Node.java:685)\n\tat org.jetel.graph.Node.run(Node.java:650)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.TransformException: Message: Normalizer failed!\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformOnError(CTLRecordNormalizeAdapter.java:147)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:234)\n\tat org.jetel.component.Normalizer.execute(Normalizer.java:305)\n\tat org.jetel.graph.Node.run(Node.java:597)\n\t... 3 more\nCaused by: org.jetel.ctl.RaiseErrorException: Interpreter runtime exception on line 20 column 50\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:2279)\n\tat org.jetel.ctl.ASTnode.CLVFRaiseErrorNode.jjtAccept(CLVFRaiseErrorNode.java:48)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3043)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3096)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformImpl(CTLRecordNormalizeAdapter.java:161)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transform(CTLRecordNormalizeAdapter.java:139)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:232)\n\t... 5 more\nCaused by: org.jetel.exception.JetelRuntimeException: Exception raised by user: Invalid child amount shape\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:53)\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:47)\n\tat org.jetel.ctl.RaiseErrorException.<init>(RaiseErrorException.java:58)\n\t... 25 more\n\n2026-10-13 11:54:46,487 INFO  17983 [WatchDog_17983] Interrupted node: Encode0\n2026-10-13 11:54:46,497 INFO  17983 [WatchDog_17983] Interrupted node: Writer0\n2026-10-13 11:54:46,497 INFO  17983 [WatchDog_17983] Execution of phase [0] finished with error - elapsed time (sec): 0\n2026-10-13 11:54:46,497 ERROR 17983 [WatchDog_17983] Phase finished with error - stopping job run\n2026-10-13 11:54:46,497 INFO  17983 [WatchDog_17983] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:54:46,498 INFO  17983 [WatchDog_17983] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:54:46,498 INFO  17983 [WatchDog_17983] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:54:46,498 INFO  17983 [WatchDog_17983] 0                 ERROR                              0                98\n2026-10-13 11:54:46,498 INFO  17983 [WatchDog_17983] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:54:46,499 INFO  17983 [JobFinalizer_17983] Job finished: MiscExamples/suite_v5/graph/T64_malformed_amount.grf\n\t Run ID: \t\t17983\n\t Status: \t\tERROR\n\t Duration: \t\t39 ms\n2026-10-13 11:54:46,499 ERROR 17983 [JobFinalizer_17983] \n--------------------------------- Error details ----------------------------------\n  Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n   Message: Normalizer failed!\n    Interpreter runtime exception on line 20 column 50\n     Exception raised by user: Invalid child amount shape\n----------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "negative_failure_verified": true,
+    "evidence_file": "run_graphs/T64_malformed_amount/mcp_evidence.json"
+  },
+  {
+    "test_id": "T64",
+    "label": "T64_excess_integer_digits",
+    "graph_file": "suite_v5/graph/T64_excess_integer_digits.grf",
+    "graph_sha256": "055251de47596b3653a02fe6d3c706ea0d5bb36dc900554da09f12ef3dcb394d",
+    "reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+    "input_files": [
+      "run_graphs/T64_excess_integer_digits/data-in/input_0.csv"
+    ],
+    "expected_files": [
+      "run_graphs/T64_excess_integer_digits/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17985
+    ],
+    "outputs": {},
+    "row_checks": [],
+    "expected_failure": true,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17985,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T64_excess_integer_digits.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:54:51.506+02:00",
+      "startTime": "2026-10-13T11:54:51.506+02:00",
+      "stopTime": "2026-10-13T11:54:51.546+02:00",
+      "durationMs": 40,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape",
+        "componentType": "NORMALIZER"
+      }
+    },
+    "tracking": {
+      "run_id": "17985",
+      "status": "ERROR",
+      "exec_seconds": 0.024,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.023,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 271
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 271
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 205
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "NORMALIZER",
+              "result": "ERROR",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 205
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "ABORTED",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 4,
+        "total_bytes": 952
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:54:51,509 INFO  17985 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:54:51,509 INFO  17985 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:54:51,509 INFO  17985 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:54:51,513 INFO  17985 [JobStarter_17985] Starting job: MiscExamples/suite_v5/graph/T64_excess_integer_digits.grf\n\t Run ID: \t\t17985\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:54:51,516 INFO  17985 [JobExecutor_17985] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:54:51,518 INFO  17985 [JobExecutor_17985] Initializing metadata\n2026-10-13 11:54:51,518 INFO  17985 [JobExecutor_17985] Initializing phase 0\n2026-10-13 11:54:51,519 INFO  17985 [JobExecutor_17985] Phase 0 initialized successfully.\n2026-10-13 11:54:51,519 INFO  17985 [WatchDog_17985] Job execution type: ETL_GRAPH\n2026-10-13 11:54:51,519 INFO  17985 [WatchDog_17985] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T64_excess_integer_digits.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T64_excess_integer_digits.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17985\nPROJECT=.\nROOT_RUN_ID=17985\nRUN_ID=17985\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:54:51,519 INFO  17985 [WatchDog_17985] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:54:51,521 INFO  17985 [WatchDog_17985] Starting up all nodes in phase [0]\n2026-10-13 11:54:51,521 INFO  17985 [WatchDog_17985] Successfully started all nodes in phase!\n2026-10-13 11:54:51,523 ERROR 17985 [WatchDog_17985] Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape\n2026-10-13 11:54:51,523 ERROR 17985 [WatchDog_17985] Error details:\norg.jetel.exception.JetelRuntimeException: Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n\tat org.jetel.graph.Node.createNodeException(Node.java:685)\n\tat org.jetel.graph.Node.run(Node.java:650)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.TransformException: Message: Normalizer failed!\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformOnError(CTLRecordNormalizeAdapter.java:147)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:234)\n\tat org.jetel.component.Normalizer.execute(Normalizer.java:305)\n\tat org.jetel.graph.Node.run(Node.java:597)\n\t... 3 more\nCaused by: org.jetel.ctl.RaiseErrorException: Interpreter runtime exception on line 20 column 50\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:2279)\n\tat org.jetel.ctl.ASTnode.CLVFRaiseErrorNode.jjtAccept(CLVFRaiseErrorNode.java:48)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3043)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3096)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformImpl(CTLRecordNormalizeAdapter.java:161)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transform(CTLRecordNormalizeAdapter.java:139)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:232)\n\t... 5 more\nCaused by: org.jetel.exception.JetelRuntimeException: Exception raised by user: Invalid child amount shape\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:53)\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:47)\n\tat org.jetel.ctl.RaiseErrorException.<init>(RaiseErrorException.java:58)\n\t... 25 more\n\n2026-10-13 11:54:51,534 INFO  17985 [WatchDog_17985] Interrupted node: Encode0\n2026-10-13 11:54:51,544 INFO  17985 [WatchDog_17985] Interrupted node: Writer0\n2026-10-13 11:54:51,544 INFO  17985 [WatchDog_17985] Execution of phase [0] finished with error - elapsed time (sec): 0\n2026-10-13 11:54:51,544 ERROR 17985 [WatchDog_17985] Phase finished with error - stopping job run\n2026-10-13 11:54:51,544 INFO  17985 [WatchDog_17985] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:54:51,545 INFO  17985 [WatchDog_17985] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:54:51,545 INFO  17985 [WatchDog_17985] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:54:51,545 INFO  17985 [WatchDog_17985] 0                 ERROR                              0               114\n2026-10-13 11:54:51,545 INFO  17985 [WatchDog_17985] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:54:51,547 INFO  17985 [JobFinalizer_17985] Job finished: MiscExamples/suite_v5/graph/T64_excess_integer_digits.grf\n\t Run ID: \t\t17985\n\t Status: \t\tERROR\n\t Duration: \t\t40 ms\n2026-10-13 11:54:51,547 ERROR 17985 [JobFinalizer_17985] \n--------------------------------- Error details ----------------------------------\n  Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n   Message: Normalizer failed!\n    Interpreter runtime exception on line 20 column 50\n     Exception raised by user: Invalid child amount shape\n----------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "negative_failure_verified": true,
+    "evidence_file": "run_graphs/T64_excess_integer_digits/mcp_evidence.json"
+  },
+  {
+    "test_id": "T64",
+    "label": "T64_excess_fraction_digits",
+    "graph_file": "suite_v5/graph/T64_excess_fraction_digits.grf",
+    "graph_sha256": "48200301d4da3f3523937277494f7b38b2b592a13bd3f8163a0562cd818f5026",
+    "reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+    "input_files": [
+      "run_graphs/T64_excess_fraction_digits/data-in/input_0.csv"
+    ],
+    "expected_files": [
+      "run_graphs/T64_excess_fraction_digits/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17986
+    ],
+    "outputs": {},
+    "row_checks": [],
+    "expected_failure": true,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17986,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T64_excess_fraction_digits.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:54:56.579+02:00",
+      "startTime": "2026-10-13T11:54:56.579+02:00",
+      "stopTime": "2026-10-13T11:54:56.637+02:00",
+      "durationMs": 58,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape",
+        "componentType": "NORMALIZER"
+      }
+    },
+    "tracking": {
+      "run_id": "17986",
+      "status": "ERROR",
+      "exec_seconds": 0.037,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.033,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 261
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 261
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 195
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "NORMALIZER",
+              "result": "ERROR",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 195
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "ABORTED",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 4,
+        "total_bytes": 912
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:54:56,580 INFO  17986 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:54:56,580 INFO  17986 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:54:56,580 INFO  17986 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:54:56,584 INFO  17986 [JobStarter_17986] Starting job: MiscExamples/suite_v5/graph/T64_excess_fraction_digits.grf\n\t Run ID: \t\t17986\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:54:56,587 INFO  17986 [JobExecutor_17986] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:54:56,591 INFO  17986 [JobExecutor_17986] Initializing metadata\n2026-10-13 11:54:56,591 INFO  17986 [JobExecutor_17986] Initializing phase 0\n2026-10-13 11:54:56,597 INFO  17986 [JobExecutor_17986] Phase 0 initialized successfully.\n2026-10-13 11:54:56,597 INFO  17986 [WatchDog_17986] Job execution type: ETL_GRAPH\n2026-10-13 11:54:56,597 INFO  17986 [WatchDog_17986] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T64_excess_fraction_digits.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T64_excess_fraction_digits.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17986\nPROJECT=.\nROOT_RUN_ID=17986\nRUN_ID=17986\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:54:56,597 INFO  17986 [WatchDog_17986] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:54:56,600 INFO  17986 [WatchDog_17986] Starting up all nodes in phase [0]\n2026-10-13 11:54:56,601 INFO  17986 [WatchDog_17986] Successfully started all nodes in phase!\n2026-10-13 11:54:56,603 ERROR 17986 [WatchDog_17986] Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n Message: Normalizer failed!\n  Interpreter runtime exception on line 20 column 50\n   Exception raised by user: Invalid child amount shape\n2026-10-13 11:54:56,604 ERROR 17986 [WatchDog_17986] Error details:\norg.jetel.exception.JetelRuntimeException: Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n\tat org.jetel.graph.Node.createNodeException(Node.java:685)\n\tat org.jetel.graph.Node.run(Node.java:650)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.TransformException: Message: Normalizer failed!\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformOnError(CTLRecordNormalizeAdapter.java:147)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:234)\n\tat org.jetel.component.Normalizer.execute(Normalizer.java:305)\n\tat org.jetel.graph.Node.run(Node.java:597)\n\t... 3 more\nCaused by: org.jetel.ctl.RaiseErrorException: Interpreter runtime exception on line 20 column 50\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:2279)\n\tat org.jetel.ctl.ASTnode.CLVFRaiseErrorNode.jjtAccept(CLVFRaiseErrorNode.java:48)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1435)\n\tat org.jetel.ctl.ASTnode.CLVFIfStatement.jjtAccept(CLVFIfStatement.java:59)\n\tat org.jetel.ctl.TransformLangExecutor.executeAndCleanup(TransformLangExecutor.java:3201)\n\tat org.jetel.ctl.TransformLangExecutor.visit(TransformLangExecutor.java:1667)\n\tat org.jetel.ctl.ASTnode.CLVFBlock.jjtAccept(CLVFBlock.java:50)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3043)\n\tat org.jetel.ctl.TransformLangExecutor.executeFunction(TransformLangExecutor.java:3096)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transformImpl(CTLRecordNormalizeAdapter.java:161)\n\tat org.jetel.component.normalize.CTLRecordNormalizeAdapter.transform(CTLRecordNormalizeAdapter.java:139)\n\tat org.jetel.component.Normalizer.processInput(Normalizer.java:232)\n\t... 5 more\nCaused by: org.jetel.exception.JetelRuntimeException: Exception raised by user: Invalid child amount shape\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:53)\n\tat org.jetel.ctl.TransformLangExecutorRuntimeException.<init>(TransformLangExecutorRuntimeException.java:47)\n\tat org.jetel.ctl.RaiseErrorException.<init>(RaiseErrorException.java:58)\n\t... 25 more\n\n2026-10-13 11:54:56,622 INFO  17986 [WatchDog_17986] Interrupted node: Encode0\n2026-10-13 11:54:56,632 INFO  17986 [WatchDog_17986] Interrupted node: Writer0\n2026-10-13 11:54:56,635 INFO  17986 [WatchDog_17986] Execution of phase [0] finished with error - elapsed time (sec): 0\n2026-10-13 11:54:56,635 ERROR 17986 [WatchDog_17986] Phase finished with error - stopping job run\n2026-10-13 11:54:56,635 INFO  17986 [WatchDog_17986] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:54:56,636 INFO  17986 [WatchDog_17986] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:54:56,636 INFO  17986 [WatchDog_17986] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:54:56,636 INFO  17986 [WatchDog_17986] 0                 ERROR                              0               116\n2026-10-13 11:54:56,636 INFO  17986 [WatchDog_17986] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:54:56,638 INFO  17986 [JobFinalizer_17986] Job finished: MiscExamples/suite_v5/graph/T64_excess_fraction_digits.grf\n\t Run ID: \t\t17986\n\t Status: \t\tERROR\n\t Duration: \t\t58 ms\n2026-10-13 11:54:56,638 ERROR 17986 [JobFinalizer_17986] \n--------------------------------- Error details ----------------------------------\n  Component [Test:Test] finished with status ERROR. (In0: 1 recs, Out0: 0 recs)\n   Message: Normalizer failed!\n    Interpreter runtime exception on line 20 column 50\n     Exception raised by user: Invalid child amount shape\n----------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "negative_failure_verified": true,
+    "evidence_file": "run_graphs/T64_excess_fraction_digits/mcp_evidence.json"
+  },
+  {
+    "test_id": "T70",
+    "label": "T70_zero_rows",
+    "graph_file": "suite_v5/graph/T70_zero_rows.grf",
+    "graph_sha256": "d8d531dd8a30e8a03e5005c9134a1150bed38aa5fd203a99a4efae869050e42b",
+    "reference_sha256": "c9e7584c5543b55d215c15c9ec1ee9d89d032e877b3a0069fe99956ed3f46a24",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/T70_zero_rows/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17987
+    ],
+    "outputs": {
+      "0": {
+        "actual": [],
+        "expected": [],
+        "actual_file": "run_graphs/T70_zero_rows/data-out/output_0.csv",
+        "pass_count": 0
+      }
+    },
+    "row_checks": [],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17987,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T70_zero_rows.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:55:01.630+02:00",
+      "startTime": "2026-10-13T11:55:01.630+02:00",
+      "stopTime": "2026-10-13T11:55:01.649+02:00",
+      "durationMs": 19
+    },
+    "tracking": {
+      "run_id": "17987",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.003,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.001,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 0,
+        "total_bytes": 0
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:55:01,632 INFO  17987 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:55:01,632 INFO  17987 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:55:01,632 INFO  17987 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:55:01,637 INFO  17987 [JobStarter_17987] Starting job: MiscExamples/suite_v5/graph/T70_zero_rows.grf\n\t Run ID: \t\t17987\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:55:01,640 INFO  17987 [JobExecutor_17987] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:55:01,643 INFO  17987 [JobExecutor_17987] Initializing metadata\n2026-10-13 11:55:01,643 INFO  17987 [JobExecutor_17987] Initializing phase 0\n2026-10-13 11:55:01,644 INFO  17987 [JobExecutor_17987] Phase 0 initialized successfully.\n2026-10-13 11:55:01,644 INFO  17987 [WatchDog_17987] Job execution type: ETL_GRAPH\n2026-10-13 11:55:01,645 INFO  17987 [WatchDog_17987] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nFIXTURE_ROWS=0\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T70_zero_rows.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T70_zero_rows.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17987\nPROJECT=.\nROOT_RUN_ID=17987\nRUN_ID=17987\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:55:01,645 INFO  17987 [WatchDog_17987] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:55:01,646 INFO  17987 [WatchDog_17987] Starting up all nodes in phase [0]\n2026-10-13 11:55:01,646 INFO  17987 [WatchDog_17987] Successfully started all nodes in phase!\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] Time: 13/10/2026 11:55:01, JVM heap used: 116 MB\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] ---------------------------------------------------------------------------------\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] Test                     Test                                        FINISHED_OK\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987]  (alloc:0MB, cpu:0%)            Out:0              0          0       0        0\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987]  (alloc:0MB, cpu:100%)           In:0              0          0       0        0\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987]                                 Out:0              0          0       0        0\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987]  (alloc:0MB, cpu:100%)           In:0              0          0       0        0\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] 0                 FINISHED_OK                        0               116\n2026-10-13 11:55:01,648 INFO  17987 [WatchDog_17987] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:55:01,649 INFO  17987 [JobFinalizer_17987] Job finished: MiscExamples/suite_v5/graph/T70_zero_rows.grf\n\t Run ID: \t\t17987\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t19 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/T70_zero_rows/mcp_evidence.json"
+  },
+  {
+    "test_id": "T70",
+    "label": "T70_one_row",
+    "graph_file": "suite_v5/graph/T70_one_row.grf",
+    "graph_sha256": "6f39b5abcb14ad8a042c9545cd52080ff146854f11f8365ae787656c8bae2cea",
+    "reference_sha256": "c9e7584c5543b55d215c15c9ec1ee9d89d032e877b3a0069fe99956ed3f46a24",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/T70_one_row/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17988
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "fixture_key": "FIX-100001",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 1,
+            "fixture_received": "2026-01-01 00:00:00.000",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100001,
+            "customer_id": 1000,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "quantity": 1,
+            "line_total": "13.50",
+            "customer_total": "13.50",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-01 00:00:00.000",
+            "fixture_state": "OPEN"
+          }
+        ],
+        "expected": [
+          {
+            "fixture_key": "FIX-100001",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 1,
+            "fixture_received": "2026-01-01 00:00:00.000",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100001,
+            "customer_id": 1000,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "quantity": 1,
+            "line_total": "13.50",
+            "customer_total": "13.50",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-01 00:00:00.000",
+            "fixture_state": "OPEN"
+          }
+        ],
+        "actual_file": "run_graphs/T70_one_row/data-out/output_0.csv",
+        "pass_count": 1
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "fixture_key": "FIX-100001",
+          "fixture_tenant": "TEST",
+          "fixture_file": "synthetic",
+          "fixture_row": 1,
+          "fixture_received": "2026-01-01 00:00:00.000",
+          "fixture_team": null,
+          "fixture_market": null,
+          "fixture_currency": "EUR",
+          "fixture_batch": "FIXTURE",
+          "fixture_note": null,
+          "fixture_trace": "CUST-1000",
+          "fixture_unused_archive": null,
+          "fixture_id": 100001,
+          "customer_id": 1000,
+          "line_no": 1,
+          "unit_price": "13.50",
+          "quantity": 1,
+          "line_total": "13.50",
+          "customer_total": "13.50",
+          "discount_pct": "0.00",
+          "event_dt": "2026-01-01 00:00:00.000",
+          "fixture_state": "OPEN"
+        },
+        "expected": {
+          "fixture_key": "FIX-100001",
+          "fixture_tenant": "TEST",
+          "fixture_file": "synthetic",
+          "fixture_row": 1,
+          "fixture_received": "2026-01-01 00:00:00.000",
+          "fixture_team": null,
+          "fixture_market": null,
+          "fixture_currency": "EUR",
+          "fixture_batch": "FIXTURE",
+          "fixture_note": null,
+          "fixture_trace": "CUST-1000",
+          "fixture_unused_archive": null,
+          "fixture_id": 100001,
+          "customer_id": 1000,
+          "line_no": 1,
+          "unit_price": "13.50",
+          "quantity": 1,
+          "line_total": "13.50",
+          "customer_total": "13.50",
+          "discount_pct": "0.00",
+          "event_dt": "2026-01-01 00:00:00.000",
+          "fixture_state": "OPEN"
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17988,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T70_one_row.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:55:06.688+02:00",
+      "startTime": "2026-10-13T11:55:06.688+02:00",
+      "stopTime": "2026-10-13T11:55:06.703+02:00",
+      "durationMs": 15
+    },
+    "tracking": {
+      "run_id": "17988",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.003,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.002,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 183
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 183
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 270
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 270
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 4,
+        "total_bytes": 906
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:55:06,690 INFO  17988 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:55:06,690 INFO  17988 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:55:06,690 INFO  17988 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:55:06,693 INFO  17988 [JobStarter_17988] Starting job: MiscExamples/suite_v5/graph/T70_one_row.grf\n\t Run ID: \t\t17988\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:55:06,695 INFO  17988 [JobExecutor_17988] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:55:06,697 INFO  17988 [JobExecutor_17988] Initializing metadata\n2026-10-13 11:55:06,697 INFO  17988 [JobExecutor_17988] Initializing phase 0\n2026-10-13 11:55:06,698 INFO  17988 [JobExecutor_17988] Phase 0 initialized successfully.\n2026-10-13 11:55:06,698 INFO  17988 [WatchDog_17988] Job execution type: ETL_GRAPH\n2026-10-13 11:55:06,698 INFO  17988 [WatchDog_17988] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nFIXTURE_ROWS=1\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T70_one_row.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T70_one_row.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17988\nPROJECT=.\nROOT_RUN_ID=17988\nRUN_ID=17988\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:55:06,699 INFO  17988 [WatchDog_17988] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:55:06,700 INFO  17988 [WatchDog_17988] Starting up all nodes in phase [0]\n2026-10-13 11:55:06,700 INFO  17988 [WatchDog_17988] Successfully started all nodes in phase!\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] Time: 13/10/2026 11:55:06, JVM heap used: 132 MB\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] ---------------------------------------------------------------------------------\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] Test                     Test                                        FINISHED_OK\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988]  (alloc:0MB, cpu:0%)            Out:0              1          0     500       89\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988]  (alloc:0MB, cpu:0%)             In:0              1          0     500       89\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988]                                 Out:0              1          0     500      131\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988]  (alloc:0MB, cpu:0%)             In:0              1          0     500      131\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] 0                 FINISHED_OK                        0               132\n2026-10-13 11:55:06,702 INFO  17988 [WatchDog_17988] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:55:06,703 INFO  17988 [JobFinalizer_17988] Job finished: MiscExamples/suite_v5/graph/T70_one_row.grf\n\t Run ID: \t\t17988\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t15 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/T70_one_row/mcp_evidence.json"
+  },
+  {
+    "test_id": "T70",
+    "label": "T70_partial_customer",
+    "graph_file": "suite_v5/graph/T70_partial_customer.grf",
+    "graph_sha256": "c8d25e54d01b18dd6011cab463dea2949913d4957aea76697e7bfc13e7368a17",
+    "reference_sha256": "c9e7584c5543b55d215c15c9ec1ee9d89d032e877b3a0069fe99956ed3f46a24",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/T70_partial_customer/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17989
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "fixture_key": "FIX-100001",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 1,
+            "fixture_received": "2026-01-01 00:00:00.000",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100001,
+            "customer_id": 1000,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "quantity": 1,
+            "line_total": "13.50",
+            "customer_total": "13.50",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-01 00:00:00.000",
+            "fixture_state": "OPEN"
+          },
+          {
+            "fixture_key": "FIX-100002",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 2,
+            "fixture_received": "2026-01-02 00:00:00.000",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100002,
+            "customer_id": 1000,
+            "line_no": 2,
+            "unit_price": "14.50",
+            "quantity": 2,
+            "line_total": "29.00",
+            "customer_total": "42.50",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-02 00:00:00.000",
+            "fixture_state": "CLOSED"
+          },
+          {
+            "fixture_key": "FIX-100003",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 3,
+            "fixture_received": "2026-01-03 00:00:00.000",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100003,
+            "customer_id": 1000,
+            "line_no": 3,
+            "unit_price": "15.50",
+            "quantity": 3,
+            "line_total": "46.50",
+            "customer_total": "89.00",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-03 00:00:00.000",
+            "fixture_state": "OPEN"
+          },
+          {
+            "fixture_key": "FIX-100004",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 4,
+            "fixture_received": "2026-01-04 00:00:00.000",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1001",
+            "fixture_unused_archive": null,
+            "fixture_id": 100004,
+            "customer_id": 1001,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "quantity": 1,
+            "line_total": "12.15",
+            "customer_total": "12.15",
+            "discount_pct": "10.00",
+            "event_dt": "2026-01-04 00:00:00.000",
+            "fixture_state": "CLOSED"
+          }
+        ],
+        "expected": [
+          {
+            "fixture_key": "FIX-100001",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 1,
+            "fixture_received": "2026-01-01 00:00:00.000",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100001,
+            "customer_id": 1000,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "quantity": 1,
+            "line_total": "13.50",
+            "customer_total": "13.50",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-01 00:00:00.000",
+            "fixture_state": "OPEN"
+          },
+          {
+            "fixture_key": "FIX-100002",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 2,
+            "fixture_received": "2026-01-02 00:00:00.000",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100002,
+            "customer_id": 1000,
+            "line_no": 2,
+            "unit_price": "14.50",
+            "quantity": 2,
+            "line_total": "29.00",
+            "customer_total": "42.50",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-02 00:00:00.000",
+            "fixture_state": "CLOSED"
+          },
+          {
+            "fixture_key": "FIX-100003",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 3,
+            "fixture_received": "2026-01-03 00:00:00.000",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100003,
+            "customer_id": 1000,
+            "line_no": 3,
+            "unit_price": "15.50",
+            "quantity": 3,
+            "line_total": "46.50",
+            "customer_total": "89.00",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-03 00:00:00.000",
+            "fixture_state": "OPEN"
+          },
+          {
+            "fixture_key": "FIX-100004",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 4,
+            "fixture_received": "2026-01-04 00:00:00.000",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1001",
+            "fixture_unused_archive": null,
+            "fixture_id": 100004,
+            "customer_id": 1001,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "quantity": 1,
+            "line_total": "12.15",
+            "customer_total": "12.15",
+            "discount_pct": "10.00",
+            "event_dt": "2026-01-04 00:00:00.000",
+            "fixture_state": "CLOSED"
+          }
+        ],
+        "actual_file": "run_graphs/T70_partial_customer/data-out/output_0.csv",
+        "pass_count": 4
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "fixture_key": "FIX-100001",
+          "fixture_tenant": "TEST",
+          "fixture_file": "synthetic",
+          "fixture_row": 1,
+          "fixture_received": "2026-01-01 00:00:00.000",
+          "fixture_team": null,
+          "fixture_market": null,
+          "fixture_currency": "EUR",
+          "fixture_batch": "FIXTURE",
+          "fixture_note": null,
+          "fixture_trace": "CUST-1000",
+          "fixture_unused_archive": null,
+          "fixture_id": 100001,
+          "customer_id": 1000,
+          "line_no": 1,
+          "unit_price": "13.50",
+          "quantity": 1,
+          "line_total": "13.50",
+          "customer_total": "13.50",
+          "discount_pct": "0.00",
+          "event_dt": "2026-01-01 00:00:00.000",
+          "fixture_state": "OPEN"
+        },
+        "expected": {
+          "fixture_key": "FIX-100001",
+          "fixture_tenant": "TEST",
+          "fixture_file": "synthetic",
+          "fixture_row": 1,
+          "fixture_received": "2026-01-01 00:00:00.000",
+          "fixture_team": null,
+          "fixture_market": null,
+          "fixture_currency": "EUR",
+          "fixture_batch": "FIXTURE",
+          "fixture_note": null,
+          "fixture_trace": "CUST-1000",
+          "fixture_unused_archive": null,
+          "fixture_id": 100001,
+          "customer_id": 1000,
+          "line_no": 1,
+          "unit_price": "13.50",
+          "quantity": 1,
+          "line_total": "13.50",
+          "customer_total": "13.50",
+          "discount_pct": "0.00",
+          "event_dt": "2026-01-01 00:00:00.000",
+          "fixture_state": "OPEN"
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "fixture_key": "FIX-100002",
+          "fixture_tenant": "TEST",
+          "fixture_file": "synthetic",
+          "fixture_row": 2,
+          "fixture_received": "2026-01-02 00:00:00.000",
+          "fixture_team": null,
+          "fixture_market": null,
+          "fixture_currency": "EUR",
+          "fixture_batch": "FIXTURE",
+          "fixture_note": null,
+          "fixture_trace": "CUST-1000",
+          "fixture_unused_archive": null,
+          "fixture_id": 100002,
+          "customer_id": 1000,
+          "line_no": 2,
+          "unit_price": "14.50",
+          "quantity": 2,
+          "line_total": "29.00",
+          "customer_total": "42.50",
+          "discount_pct": "0.00",
+          "event_dt": "2026-01-02 00:00:00.000",
+          "fixture_state": "CLOSED"
+        },
+        "expected": {
+          "fixture_key": "FIX-100002",
+          "fixture_tenant": "TEST",
+          "fixture_file": "synthetic",
+          "fixture_row": 2,
+          "fixture_received": "2026-01-02 00:00:00.000",
+          "fixture_team": null,
+          "fixture_market": null,
+          "fixture_currency": "EUR",
+          "fixture_batch": "FIXTURE",
+          "fixture_note": null,
+          "fixture_trace": "CUST-1000",
+          "fixture_unused_archive": null,
+          "fixture_id": 100002,
+          "customer_id": 1000,
+          "line_no": 2,
+          "unit_price": "14.50",
+          "quantity": 2,
+          "line_total": "29.00",
+          "customer_total": "42.50",
+          "discount_pct": "0.00",
+          "event_dt": "2026-01-02 00:00:00.000",
+          "fixture_state": "CLOSED"
+        }
+      },
+      {
+        "port": 0,
+        "index": 2,
+        "passed": true,
+        "actual": {
+          "fixture_key": "FIX-100003",
+          "fixture_tenant": "TEST",
+          "fixture_file": "synthetic",
+          "fixture_row": 3,
+          "fixture_received": "2026-01-03 00:00:00.000",
+          "fixture_team": null,
+          "fixture_market": null,
+          "fixture_currency": "EUR",
+          "fixture_batch": "FIXTURE",
+          "fixture_note": null,
+          "fixture_trace": "CUST-1000",
+          "fixture_unused_archive": null,
+          "fixture_id": 100003,
+          "customer_id": 1000,
+          "line_no": 3,
+          "unit_price": "15.50",
+          "quantity": 3,
+          "line_total": "46.50",
+          "customer_total": "89.00",
+          "discount_pct": "0.00",
+          "event_dt": "2026-01-03 00:00:00.000",
+          "fixture_state": "OPEN"
+        },
+        "expected": {
+          "fixture_key": "FIX-100003",
+          "fixture_tenant": "TEST",
+          "fixture_file": "synthetic",
+          "fixture_row": 3,
+          "fixture_received": "2026-01-03 00:00:00.000",
+          "fixture_team": null,
+          "fixture_market": null,
+          "fixture_currency": "EUR",
+          "fixture_batch": "FIXTURE",
+          "fixture_note": null,
+          "fixture_trace": "CUST-1000",
+          "fixture_unused_archive": null,
+          "fixture_id": 100003,
+          "customer_id": 1000,
+          "line_no": 3,
+          "unit_price": "15.50",
+          "quantity": 3,
+          "line_total": "46.50",
+          "customer_total": "89.00",
+          "discount_pct": "0.00",
+          "event_dt": "2026-01-03 00:00:00.000",
+          "fixture_state": "OPEN"
+        }
+      },
+      {
+        "port": 0,
+        "index": 3,
+        "passed": true,
+        "actual": {
+          "fixture_key": "FIX-100004",
+          "fixture_tenant": "TEST",
+          "fixture_file": "synthetic",
+          "fixture_row": 4,
+          "fixture_received": "2026-01-04 00:00:00.000",
+          "fixture_team": null,
+          "fixture_market": null,
+          "fixture_currency": "EUR",
+          "fixture_batch": "FIXTURE",
+          "fixture_note": null,
+          "fixture_trace": "CUST-1001",
+          "fixture_unused_archive": null,
+          "fixture_id": 100004,
+          "customer_id": 1001,
+          "line_no": 1,
+          "unit_price": "13.50",
+          "quantity": 1,
+          "line_total": "12.15",
+          "customer_total": "12.15",
+          "discount_pct": "10.00",
+          "event_dt": "2026-01-04 00:00:00.000",
+          "fixture_state": "CLOSED"
+        },
+        "expected": {
+          "fixture_key": "FIX-100004",
+          "fixture_tenant": "TEST",
+          "fixture_file": "synthetic",
+          "fixture_row": 4,
+          "fixture_received": "2026-01-04 00:00:00.000",
+          "fixture_team": null,
+          "fixture_market": null,
+          "fixture_currency": "EUR",
+          "fixture_batch": "FIXTURE",
+          "fixture_note": null,
+          "fixture_trace": "CUST-1001",
+          "fixture_unused_archive": null,
+          "fixture_id": 100004,
+          "customer_id": 1001,
+          "line_no": 1,
+          "unit_price": "13.50",
+          "quantity": 1,
+          "line_total": "12.15",
+          "customer_total": "12.15",
+          "discount_pct": "10.00",
+          "event_dt": "2026-01-04 00:00:00.000",
+          "fixture_state": "CLOSED"
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17989,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T70_partial_customer.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:55:11.735+02:00",
+      "startTime": "2026-10-13T11:55:11.735+02:00",
+      "stopTime": "2026-10-13T11:55:11.750+02:00",
+      "durationMs": 15
+    },
+    "tracking": {
+      "run_id": "17989",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.003,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.001,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 740
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 740
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 1090
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 1090
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 16,
+        "total_bytes": 3660
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:55:11,737 INFO  17989 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:55:11,737 INFO  17989 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:55:11,737 INFO  17989 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:55:11,740 INFO  17989 [JobStarter_17989] Starting job: MiscExamples/suite_v5/graph/T70_partial_customer.grf\n\t Run ID: \t\t17989\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:55:11,742 INFO  17989 [JobExecutor_17989] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:55:11,745 INFO  17989 [JobExecutor_17989] Initializing metadata\n2026-10-13 11:55:11,745 INFO  17989 [JobExecutor_17989] Initializing phase 0\n2026-10-13 11:55:11,745 INFO  17989 [JobExecutor_17989] Phase 0 initialized successfully.\n2026-10-13 11:55:11,746 INFO  17989 [WatchDog_17989] Job execution type: ETL_GRAPH\n2026-10-13 11:55:11,746 INFO  17989 [WatchDog_17989] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nFIXTURE_ROWS=4\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T70_partial_customer.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T70_partial_customer.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17989\nPROJECT=.\nROOT_RUN_ID=17989\nRUN_ID=17989\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:55:11,746 INFO  17989 [WatchDog_17989] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:55:11,747 INFO  17989 [WatchDog_17989] Starting up all nodes in phase [0]\n2026-10-13 11:55:11,747 INFO  17989 [WatchDog_17989] Successfully started all nodes in phase!\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] Time: 13/10/2026 11:55:11, JVM heap used: 132 MB\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] ---------------------------------------------------------------------------------\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] Test                     Test                                        FINISHED_OK\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989]  (alloc:0MB, cpu:100%)          Out:0              4          0    4000      722\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989]  (alloc:0MB, cpu:0%)             In:0              4          0    4000      722\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989]                                 Out:0              4          1    4000     1064\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989]  (alloc:0MB, cpu:100%)           In:0              4          1    4000     1064\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] 0                 FINISHED_OK                        0               132\n2026-10-13 11:55:11,749 INFO  17989 [WatchDog_17989] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:55:11,750 INFO  17989 [JobFinalizer_17989] Job finished: MiscExamples/suite_v5/graph/T70_partial_customer.grf\n\t Run ID: \t\t17989\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t15 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/T70_partial_customer/mcp_evidence.json"
+  },
+  {
+    "test_id": "T71",
+    "label": "T71_zero_steps",
+    "graph_file": "suite_v5/graph/T71_zero_steps.grf",
+    "graph_sha256": "b81a9c2238a8592de89ac6fc9b3b7fe8f08b493578b74f10114e3485d566fbbd",
+    "reference_sha256": "2ede2e7b673deb9fb339f56c7823f5fa4650cadc9f9ca9cfd108b7d426e6ca27",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/T71_zero_steps/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17990
+    ],
+    "outputs": {
+      "0": {
+        "actual": [],
+        "expected": [],
+        "actual_file": "run_graphs/T71_zero_steps/data-out/output_0.csv",
+        "pass_count": 0
+      }
+    },
+    "row_checks": [],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17990,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T71_zero_steps.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:55:16.793+02:00",
+      "startTime": "2026-10-13T11:55:16.793+02:00",
+      "stopTime": "2026-10-13T11:55:16.808+02:00",
+      "durationMs": 15
+    },
+    "tracking": {
+      "run_id": "17990",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.003,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.002,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 0,
+        "total_bytes": 0
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:55:16,794 INFO  17990 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:55:16,794 INFO  17990 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:55:16,794 INFO  17990 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:55:16,797 INFO  17990 [JobStarter_17990] Starting job: MiscExamples/suite_v5/graph/T71_zero_steps.grf\n\t Run ID: \t\t17990\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:55:16,799 INFO  17990 [JobExecutor_17990] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:55:16,801 INFO  17990 [JobExecutor_17990] Initializing metadata\n2026-10-13 11:55:16,801 INFO  17990 [JobExecutor_17990] Initializing phase 0\n2026-10-13 11:55:16,804 INFO  17990 [JobExecutor_17990] Phase 0 initialized successfully.\n2026-10-13 11:55:16,804 INFO  17990 [WatchDog_17990] Job execution type: ETL_GRAPH\n2026-10-13 11:55:16,804 INFO  17990 [WatchDog_17990] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T71_zero_steps.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T71_zero_steps.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17990\nPROJECT=.\nROOT_RUN_ID=17990\nRUN_ID=17990\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSTEPS=0\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:55:16,804 INFO  17990 [WatchDog_17990] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:55:16,805 INFO  17990 [WatchDog_17990] Starting up all nodes in phase [0]\n2026-10-13 11:55:16,805 INFO  17990 [WatchDog_17990] Successfully started all nodes in phase!\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] Time: 13/10/2026 11:55:16, JVM heap used: 118 MB\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] ---------------------------------------------------------------------------------\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] Test                     Test                                        FINISHED_OK\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990]  (alloc:0MB, cpu:0%)            Out:0              0          0       0        0\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990]  (alloc:0MB, cpu:0%)             In:0              0          0       0        0\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990]                                 Out:0              0          0       0        0\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990]  (alloc:0MB, cpu:0%)             In:0              0          0       0        0\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] 0                 FINISHED_OK                        0               118\n2026-10-13 11:55:16,807 INFO  17990 [WatchDog_17990] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:55:16,808 INFO  17990 [JobFinalizer_17990] Job finished: MiscExamples/suite_v5/graph/T71_zero_steps.grf\n\t Run ID: \t\t17990\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t15 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/T71_zero_steps/mcp_evidence.json"
+  },
+  {
+    "test_id": "T71",
+    "label": "T71_one_step",
+    "graph_file": "suite_v5/graph/T71_one_step.grf",
+    "graph_sha256": "3c4696b3bc50b3a6e06d7df5e0669d3c39af332b7bbb9d8c7407c1c18a0b35cf",
+    "reference_sha256": "2ede2e7b673deb9fb339f56c7823f5fa4650cadc9f9ca9cfd108b7d426e6ca27",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/T71_one_step/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17991
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "tank_key": "SIM-1",
+            "tank_tenant": "LAB",
+            "tank_file": "reservoir",
+            "tank_row": 1,
+            "tank_received": "2026-02-01 00:00:00.000",
+            "tank_team": null,
+            "tank_market": null,
+            "tank_currency": "UNIT",
+            "tank_batch": "SIM",
+            "tank_note": null,
+            "tank_trace": "STEP-1",
+            "tank_unused_archive": null,
+            "step_no": 1,
+            "prior_level": "5.00",
+            "inflow": "7.00",
+            "withdrawal": "3.00",
+            "stored_level": "9.00",
+            "spill_amount": "0.00",
+            "total_spill": "0.00",
+            "simulation_day": "2026-02-01 00:00:00.000",
+            "level_band": "PARTIAL"
+          }
+        ],
+        "expected": [
+          {
+            "tank_key": "SIM-1",
+            "tank_tenant": "LAB",
+            "tank_file": "reservoir",
+            "tank_row": 1,
+            "tank_received": "2026-02-01 00:00:00.000",
+            "tank_team": null,
+            "tank_market": null,
+            "tank_currency": "UNIT",
+            "tank_batch": "SIM",
+            "tank_note": null,
+            "tank_trace": "STEP-1",
+            "tank_unused_archive": null,
+            "step_no": 1,
+            "prior_level": "5.00",
+            "inflow": "7.00",
+            "withdrawal": "3.00",
+            "stored_level": "9.00",
+            "spill_amount": "0.00",
+            "total_spill": "0.00",
+            "simulation_day": "2026-02-01 00:00:00.000",
+            "level_band": "PARTIAL"
+          }
+        ],
+        "actual_file": "run_graphs/T71_one_step/data-out/output_0.csv",
+        "pass_count": 1
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "tank_key": "SIM-1",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 1,
+          "tank_received": "2026-02-01 00:00:00.000",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-1",
+          "tank_unused_archive": null,
+          "step_no": 1,
+          "prior_level": "5.00",
+          "inflow": "7.00",
+          "withdrawal": "3.00",
+          "stored_level": "9.00",
+          "spill_amount": "0.00",
+          "total_spill": "0.00",
+          "simulation_day": "2026-02-01 00:00:00.000",
+          "level_band": "PARTIAL"
+        },
+        "expected": {
+          "tank_key": "SIM-1",
+          "tank_tenant": "LAB",
+          "tank_file": "reservoir",
+          "tank_row": 1,
+          "tank_received": "2026-02-01 00:00:00.000",
+          "tank_team": null,
+          "tank_market": null,
+          "tank_currency": "UNIT",
+          "tank_batch": "SIM",
+          "tank_note": null,
+          "tank_trace": "STEP-1",
+          "tank_unused_archive": null,
+          "step_no": 1,
+          "prior_level": "5.00",
+          "inflow": "7.00",
+          "withdrawal": "3.00",
+          "stored_level": "9.00",
+          "spill_amount": "0.00",
+          "total_spill": "0.00",
+          "simulation_day": "2026-02-01 00:00:00.000",
+          "level_band": "PARTIAL"
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17991,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T71_one_step.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:55:21.835+02:00",
+      "startTime": "2026-10-13T11:55:21.835+02:00",
+      "stopTime": "2026-10-13T11:55:21.848+02:00",
+      "durationMs": 13
+    },
+    "tracking": {
+      "run_id": "17991",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.003,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.002,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 161
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 161
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 239
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 239
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 4,
+        "total_bytes": 800
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:55:21,836 INFO  17991 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:55:21,836 INFO  17991 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:55:21,836 INFO  17991 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:55:21,839 INFO  17991 [JobStarter_17991] Starting job: MiscExamples/suite_v5/graph/T71_one_step.grf\n\t Run ID: \t\t17991\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:55:21,841 INFO  17991 [JobExecutor_17991] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:55:21,843 INFO  17991 [JobExecutor_17991] Initializing metadata\n2026-10-13 11:55:21,843 INFO  17991 [JobExecutor_17991] Initializing phase 0\n2026-10-13 11:55:21,844 INFO  17991 [JobExecutor_17991] Phase 0 initialized successfully.\n2026-10-13 11:55:21,844 INFO  17991 [WatchDog_17991] Job execution type: ETL_GRAPH\n2026-10-13 11:55:21,844 INFO  17991 [WatchDog_17991] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T71_one_step.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T71_one_step.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17991\nPROJECT=.\nROOT_RUN_ID=17991\nRUN_ID=17991\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSTEPS=1\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:55:21,844 INFO  17991 [WatchDog_17991] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:55:21,845 INFO  17991 [WatchDog_17991] Starting up all nodes in phase [0]\n2026-10-13 11:55:21,845 INFO  17991 [WatchDog_17991] Successfully started all nodes in phase!\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] Time: 13/10/2026 11:55:21, JVM heap used: 118 MB\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] ---------------------------------------------------------------------------------\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] Test                     Test                                        FINISHED_OK\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991]  (alloc:0MB, cpu:50%)           Out:0              1          0     500       78\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991]  (alloc:0MB, cpu:0%)             In:0              1          0     500       78\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991]                                 Out:0              1          0     500      116\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991]  (alloc:0MB, cpu:50%)            In:0              1          0     500      116\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] 0                 FINISHED_OK                        0               118\n2026-10-13 11:55:21,847 INFO  17991 [WatchDog_17991] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:55:21,848 INFO  17991 [JobFinalizer_17991] Job finished: MiscExamples/suite_v5/graph/T71_one_step.grf\n\t Run ID: \t\t17991\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t13 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/T71_one_step/mcp_evidence.json"
+  },
+  {
+    "test_id": "T73",
+    "label": "T73_disabled_invalid_cutoff",
+    "graph_file": "suite_v5/graph/T73_disabled_invalid_cutoff.grf",
+    "graph_sha256": "f27691353c90ddf68920d8d7dccf272e73337bedfa98a168969b79b4653fd085",
+    "reference_sha256": "1cb954e9b2864dc220e9254fa44b14ea35b925bbcbb4ae4a6a5483f8d4935942",
+    "input_files": [
+      "run_graphs/T73_disabled_invalid_cutoff/data-in/input_0.csv"
+    ],
+    "expected_files": [
+      "run_graphs/T73_disabled_invalid_cutoff/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17992
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "claim_key": "claim1",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 1,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": "",
+            "claim_trace": "X1",
+            "claim_unused_archive": "keep:1",
+            "audit_requested": false,
+            "submitted_txt": "bad",
+            "claimed_amount": "100.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 2,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X2",
+            "claim_unused_archive": "keep:2",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-01 00:00:00",
+            "claimed_amount": "0.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim3",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 3,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X3",
+            "claim_unused_archive": "keep:3",
+            "audit_requested": true,
+            "submitted_txt": "2025-02-30 00:00:00",
+            "claimed_amount": "1.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim4",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 4,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X4",
+            "claim_unused_archive": "keep:4",
+            "audit_requested": true,
+            "submitted_txt": "2025-12-31 23:59:59",
+            "claimed_amount": "1.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim5",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 5,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X5",
+            "claim_unused_archive": "keep:5",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-02 00:00:00",
+            "claimed_amount": "-2.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim6",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 6,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X6",
+            "claim_unused_archive": "keep:6",
+            "audit_requested": false,
+            "submitted_txt": "not-time",
+            "claimed_amount": "5.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim7",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 7,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X7",
+            "claim_unused_archive": "keep:7",
+            "audit_requested": true,
+            "submitted_txt": null,
+            "claimed_amount": null,
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim8",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 8,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X8",
+            "claim_unused_archive": "keep:8",
+            "audit_requested": true,
+            "submitted_txt": "2026-1-3 00:00:00",
+            "claimed_amount": "2.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim9",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 9,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X9",
+            "claim_unused_archive": "keep:9",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-01 00:00:00",
+            "claimed_amount": null,
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim10",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 10,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X10",
+            "claim_unused_archive": "keep:10",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-04 12:00:00",
+            "claimed_amount": "3.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          }
+        ],
+        "expected": [
+          {
+            "claim_key": "claim1",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 1,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": "",
+            "claim_trace": "X1",
+            "claim_unused_archive": "keep:1",
+            "audit_requested": false,
+            "submitted_txt": "bad",
+            "claimed_amount": "100.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 2,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X2",
+            "claim_unused_archive": "keep:2",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-01 00:00:00",
+            "claimed_amount": "0.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim3",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 3,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X3",
+            "claim_unused_archive": "keep:3",
+            "audit_requested": true,
+            "submitted_txt": "2025-02-30 00:00:00",
+            "claimed_amount": "1.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim4",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 4,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X4",
+            "claim_unused_archive": "keep:4",
+            "audit_requested": true,
+            "submitted_txt": "2025-12-31 23:59:59",
+            "claimed_amount": "1.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim5",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 5,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X5",
+            "claim_unused_archive": "keep:5",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-02 00:00:00",
+            "claimed_amount": "-2.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim6",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 6,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X6",
+            "claim_unused_archive": "keep:6",
+            "audit_requested": false,
+            "submitted_txt": "not-time",
+            "claimed_amount": "5.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim7",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 7,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X7",
+            "claim_unused_archive": "keep:7",
+            "audit_requested": true,
+            "submitted_txt": null,
+            "claimed_amount": null,
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim8",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 8,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X8",
+            "claim_unused_archive": "keep:8",
+            "audit_requested": true,
+            "submitted_txt": "2026-1-3 00:00:00",
+            "claimed_amount": "2.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim9",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 9,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X9",
+            "claim_unused_archive": "keep:9",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-01 00:00:00",
+            "claimed_amount": null,
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim10",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 10,
+            "claim_received": "2026-01-01 00:00:00.000",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X10",
+            "claim_unused_archive": "keep:10",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-04 12:00:00",
+            "claimed_amount": "3.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          }
+        ],
+        "actual_file": "run_graphs/T73_disabled_invalid_cutoff/data-out/output_0.csv",
+        "pass_count": 10
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "claim_key": "claim1",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 1,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": null,
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": "",
+          "claim_trace": "X1",
+          "claim_unused_archive": "keep:1",
+          "audit_requested": false,
+          "submitted_txt": "bad",
+          "claimed_amount": "100.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        },
+        "expected": {
+          "claim_key": "claim1",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 1,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": null,
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": "",
+          "claim_trace": "X1",
+          "claim_unused_archive": "keep:1",
+          "audit_requested": false,
+          "submitted_txt": "bad",
+          "claimed_amount": "100.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "claim_key": "",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 2,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": "OPS",
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X2",
+          "claim_unused_archive": "keep:2",
+          "audit_requested": true,
+          "submitted_txt": "2026-01-01 00:00:00",
+          "claimed_amount": "0.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        },
+        "expected": {
+          "claim_key": "",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 2,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": "OPS",
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X2",
+          "claim_unused_archive": "keep:2",
+          "audit_requested": true,
+          "submitted_txt": "2026-01-01 00:00:00",
+          "claimed_amount": "0.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        }
+      },
+      {
+        "port": 0,
+        "index": 2,
+        "passed": true,
+        "actual": {
+          "claim_key": "claim3",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 3,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": null,
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X3",
+          "claim_unused_archive": "keep:3",
+          "audit_requested": true,
+          "submitted_txt": "2025-02-30 00:00:00",
+          "claimed_amount": "1.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        },
+        "expected": {
+          "claim_key": "claim3",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 3,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": null,
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X3",
+          "claim_unused_archive": "keep:3",
+          "audit_requested": true,
+          "submitted_txt": "2025-02-30 00:00:00",
+          "claimed_amount": "1.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        }
+      },
+      {
+        "port": 0,
+        "index": 3,
+        "passed": true,
+        "actual": {
+          "claim_key": "claim4",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 4,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": "OPS",
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X4",
+          "claim_unused_archive": "keep:4",
+          "audit_requested": true,
+          "submitted_txt": "2025-12-31 23:59:59",
+          "claimed_amount": "1.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        },
+        "expected": {
+          "claim_key": "claim4",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 4,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": "OPS",
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X4",
+          "claim_unused_archive": "keep:4",
+          "audit_requested": true,
+          "submitted_txt": "2025-12-31 23:59:59",
+          "claimed_amount": "1.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        }
+      },
+      {
+        "port": 0,
+        "index": 4,
+        "passed": true,
+        "actual": {
+          "claim_key": "claim5",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 5,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": null,
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X5",
+          "claim_unused_archive": "keep:5",
+          "audit_requested": true,
+          "submitted_txt": "2026-01-02 00:00:00",
+          "claimed_amount": "-2.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        },
+        "expected": {
+          "claim_key": "claim5",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 5,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": null,
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X5",
+          "claim_unused_archive": "keep:5",
+          "audit_requested": true,
+          "submitted_txt": "2026-01-02 00:00:00",
+          "claimed_amount": "-2.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        }
+      },
+      {
+        "port": 0,
+        "index": 5,
+        "passed": true,
+        "actual": {
+          "claim_key": "claim6",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 6,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": "OPS",
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X6",
+          "claim_unused_archive": "keep:6",
+          "audit_requested": false,
+          "submitted_txt": "not-time",
+          "claimed_amount": "5.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        },
+        "expected": {
+          "claim_key": "claim6",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 6,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": "OPS",
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X6",
+          "claim_unused_archive": "keep:6",
+          "audit_requested": false,
+          "submitted_txt": "not-time",
+          "claimed_amount": "5.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        }
+      },
+      {
+        "port": 0,
+        "index": 6,
+        "passed": true,
+        "actual": {
+          "claim_key": "claim7",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 7,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": null,
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X7",
+          "claim_unused_archive": "keep:7",
+          "audit_requested": true,
+          "submitted_txt": null,
+          "claimed_amount": null,
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        },
+        "expected": {
+          "claim_key": "claim7",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 7,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": null,
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X7",
+          "claim_unused_archive": "keep:7",
+          "audit_requested": true,
+          "submitted_txt": null,
+          "claimed_amount": null,
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        }
+      },
+      {
+        "port": 0,
+        "index": 7,
+        "passed": true,
+        "actual": {
+          "claim_key": "claim8",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 8,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": "OPS",
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X8",
+          "claim_unused_archive": "keep:8",
+          "audit_requested": true,
+          "submitted_txt": "2026-1-3 00:00:00",
+          "claimed_amount": "2.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        },
+        "expected": {
+          "claim_key": "claim8",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 8,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": "OPS",
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X8",
+          "claim_unused_archive": "keep:8",
+          "audit_requested": true,
+          "submitted_txt": "2026-1-3 00:00:00",
+          "claimed_amount": "2.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        }
+      },
+      {
+        "port": 0,
+        "index": 8,
+        "passed": true,
+        "actual": {
+          "claim_key": "claim9",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 9,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": null,
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X9",
+          "claim_unused_archive": "keep:9",
+          "audit_requested": true,
+          "submitted_txt": "2026-01-01 00:00:00",
+          "claimed_amount": null,
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        },
+        "expected": {
+          "claim_key": "claim9",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 9,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": null,
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X9",
+          "claim_unused_archive": "keep:9",
+          "audit_requested": true,
+          "submitted_txt": "2026-01-01 00:00:00",
+          "claimed_amount": null,
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        }
+      },
+      {
+        "port": 0,
+        "index": 9,
+        "passed": true,
+        "actual": {
+          "claim_key": "claim10",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 10,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": "OPS",
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X10",
+          "claim_unused_archive": "keep:10",
+          "audit_requested": true,
+          "submitted_txt": "2026-01-04 12:00:00",
+          "claimed_amount": "3.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        },
+        "expected": {
+          "claim_key": "claim10",
+          "claim_tenant": "ACME",
+          "claim_file": "claim.csv",
+          "claim_row": 10,
+          "claim_received": "2026-01-01 00:00:00.000",
+          "claim_team": "OPS",
+          "claim_market": "CZ",
+          "claim_currency": "EUR",
+          "claim_batch": "B1",
+          "claim_note": null,
+          "claim_trace": "X10",
+          "claim_unused_archive": "keep:10",
+          "audit_requested": true,
+          "submitted_txt": "2026-01-04 12:00:00",
+          "claimed_amount": "3.00",
+          "claim_class": "HEALTH",
+          "audit_state": "BYPASS",
+          "audit_label": null,
+          "accepted_at": null,
+          "accepted_index": 0,
+          "accepted_running": "0.00",
+          "previous_claim_key": null
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17992,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T73_disabled_invalid_cutoff.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:55:26.897+02:00",
+      "startTime": "2026-10-13T11:55:26.897+02:00",
+      "stopTime": "2026-10-13T11:55:26.916+02:00",
+      "durationMs": 19
+    },
+    "tracking": {
+      "run_id": "17992",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.004,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.002,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1904
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1904
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1478
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1478
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1868
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1868
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 2184
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 2184
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 80,
+        "total_bytes": 14868
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:55:26,899 INFO  17992 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:55:26,899 INFO  17992 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:55:26,899 INFO  17992 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:55:26,902 INFO  17992 [JobStarter_17992] Starting job: MiscExamples/suite_v5/graph/T73_disabled_invalid_cutoff.grf\n\t Run ID: \t\t17992\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:55:26,905 INFO  17992 [JobExecutor_17992] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:55:26,908 INFO  17992 [JobExecutor_17992] Initializing metadata\n2026-10-13 11:55:26,908 INFO  17992 [JobExecutor_17992] Initializing phase 0\n2026-10-13 11:55:26,910 INFO  17992 [JobExecutor_17992] Phase 0 initialized successfully.\n2026-10-13 11:55:26,910 INFO  17992 [WatchDog_17992] Job execution type: ETL_GRAPH\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T73_disabled_invalid_cutoff.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T73_disabled_invalid_cutoff.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17992\nPROJECT=.\nROOT_RUN_ID=17992\nRUN_ID=17992\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] Initial dictionary content:\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] DictEntry:auditEnabled:boolean:{value=false}\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] DictEntry:auditLabel:string:{value=OFF}\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] DictEntry:cutoffText:string:{value=NOT A DATE}\n2026-10-13 11:55:26,912 INFO  17992 [WatchDog_17992] Starting up all nodes in phase [0]\n2026-10-13 11:55:26,912 INFO  17992 [WatchDog_17992] Successfully started all nodes in phase!\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Time: 13/10/2026 11:55:26, JVM heap used: 134 MB\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ---------------------------------------------------------------------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)           Out:0             10          1    5000      929\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)            In:0             10          1    5000      929\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]                                 Out:0             10          1    5000      721\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Test                     Test                                        FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:0%)             In:0             10          1    5000      721\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]                                 Out:0             10          1    5000      912\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)            In:0             10          1    5000      912\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]                                 Out:0             10          2    5000     1066\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)            In:0             10          2    5000     1066\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Final dictionary content:\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] DictEntry:auditEnabled:boolean:{value=false}\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] DictEntry:auditLabel:string:{value=OFF}\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] DictEntry:cutoffText:string:{value=NOT A DATE}\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] 0                 FINISHED_OK                        0               134\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:55:26,916 INFO  17992 [JobFinalizer_17992] Job finished: MiscExamples/suite_v5/graph/T73_disabled_invalid_cutoff.grf\n\t Run ID: \t\t17992\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t19 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/T73_disabled_invalid_cutoff/mcp_evidence.json"
+  }
+]

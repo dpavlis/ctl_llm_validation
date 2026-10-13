@@ -1,0 +1,4170 @@
+{
+  "knowledge_list_resources": {
+    "name": "knowledge_list_resources",
+    "title": null,
+    "description": "List all reference documents and structured data exposed as MCP resources by\nthis CloverDX Server, along with their URI, name, description, and MIME type.\nResources are static files from the CloverDX knowledge library installed on\nthe server (distinct from the searchable `knowledge_base_search` entries).\n\nUse this to discover available reference URIs before calling `knowledge_read_resource`.\nTypical content includes graph XML reference, CTL language reference, and\ncomponent configuration guides published as MCP resources.\n",
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "resources"
+      ],
+      "properties": {
+        "resources": {
+          "description": "List of available MCP resource URIs with their metadata.",
+          "type": "array",
+          "items": {
+            "properties": {
+              "mimeType": {
+                "description": "MIME type of the resource content.",
+                "type": "string"
+              },
+              "description": {
+                "description": "Short description of the resource content.",
+                "type": "string"
+              },
+              "uri": {
+                "description": "Resource URI.",
+                "type": "string"
+              },
+              "name": {
+                "description": "Human-readable resource name.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "List Resources",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "knowledge_base_read": {
+    "name": "knowledge_base_read",
+    "title": null,
+    "description": "Read the full content of a specific knowledge base entry by name. Content is fetched\nfresh from the library on every call (no caching) so in-place edits to the .md file\non the server are visible immediately.\nThe `name` parameter is required. Use `knowledge_base_search` to discover available\nentries \u2014 it returns a JSON list with name, description, tags, and lane per entry.\nThe `name` parameter accepts either a bare kebab id (e.g. 'csv-file') or a\n'cdx:scope/id' pointer used in skill authoring (e.g. 'cdx:component/csv-file',\n'cdx:guide/data-app', 'cdx:graph/atomic-write-rename'). Supported scopes:\ncomponent, graph, ctl, jobflow, guide, troubleshooting.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name of the knowledge entry. Accepts kebab id ('csv-file') or 'cdx:scope/id' pointer ('cdx:component/csv-file', 'cdx:guide/data-app').",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Knowledge Base Read",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "component_list": {
+    "name": "component_list",
+    "title": null,
+    "description": "Browse and discover available CloverDX component types.\nUse this to identify which component to use when the correct type is not yet known.\nReturns a compact list: type key, display name, category, and short description.\n\nAfter finding the right type, call `component_get_info` (step 2) to get the full\nconfiguration details \u2014 ports, parameters, and default metadata \u2014 before adding\nthe component to a graph.\n\nFilter by category to narrow the search:\n- readers: components that read data from files, databases, streams, APIs\n- writers: components that write data to files, databases, streams, APIs\n- transformers: single-input components that transform, filter, or split records\n- joiners: multi-input components that join, merge, or combine record streams\n- jobControl: components used in jobflows (run graph, loop, switch, etc.)\n- others: lookup joins, sequence generators, and data generators\n\nThe searchString filter splits on whitespace into tokens; every token must appear\n(case-insensitive, literal substring) in at least one of the type, name, category,\nshortDescription, or description fields. All tokens must match (AND logic).\nExample: 'join data' matches DBJOIN (name contains 'Join', shortDescription\ncontains 'data').\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "description": "Optional category filter.",
+          "type": "string",
+          "enum": [
+            "readers",
+            "writers",
+            "transformers",
+            "joiners",
+            "others",
+            "jobControl"
+          ]
+        },
+        "searchString": {
+          "description": "Optional whitespace-tokenised filter. Every token must appear (case-insensitive, literal substring) in at least one of type, name, category, shortDescription, or description. Tokens AND across the component.",
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Component List",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_analyze_file": {
+    "name": "sandbox_analyze_file",
+    "title": null,
+    "description": "Analyse or decode a binary/structured file in a sandbox. Required: action, sandboxCode, sandboxPath.\n\nChoose the action by file type:\n\u2022 PDF (.pdf)                         \u2192 action=extract_pdf\n\u2022 Excel (.xlsx / .xls / .xlsm)       \u2192 action=extract_excel\n\u2022 CSV / delimited (.csv / .tsv / ...) \u2192 action=profile_csv  \u2190 USE THIS to understand a CSV file\n\u2022 Any other text file (.txt, .md, .json, .xml, .grf, source code, \u2026) \u2192 use `sandbox_read_file` instead\n\nAction details:\n\u2022 extract_pdf   \u2014 Extracts readable text from a PDF document. Supported: .pdf only. Optional: pages (e.g. '1-5' or '3', 1-indexed; defaults to whole document).\n\u2022 extract_excel \u2014 Returns tabular content from an Excel file. Default: first 50 data rows of the first sheet + sheet list. Optional: sheet (name or 0-based index), rows (data-row range, e.g. '1-50'), include_sheet_list (boolean). Refuses files larger than 50 MB.\n\u2022 profile_csv   \u2014 Profiles a CSV/delimited file for data-quality insights: detected delimiter, row count, and per-column stats (inferred type, null rate, distinct count, example values). Character encoding is auto-detected (handles non-UTF-8 files such as ISO-8859-2); pass encoding to override. Optional: delimiter (auto-detected if omitted), encoding (auto-detected if omitted), max_rows_scanned (default 10000), distinct_sample_size (default 5).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "distinct_sample_size": {
+          "description": "action=profile_csv only. Number of example distinct values to emit per column. Default 5.",
+          "type": "integer"
+        },
+        "rows": {
+          "description": "action=extract_excel only. Optional data-row range to return, 1-indexed over data rows (excludes header). Examples: '1-50' (default), '1-20', '50'. Multi-range specs are not supported.",
+          "type": "string"
+        },
+        "include_sheet_list": {
+          "description": "action=extract_excel only. Whether to prepend the full sheet list above the active sheet's content. Defaults to true when 'sheet' is omitted, false otherwise.",
+          "type": "boolean"
+        },
+        "sandboxCode": {
+          "description": "Sandbox code (e.g. 'MySandbox').",
+          "type": "string"
+        },
+        "sandboxPath": {
+          "description": "Full file path within the sandbox (e.g. 'data-in/report.pdf').",
+          "type": "string"
+        },
+        "max_rows_scanned": {
+          "description": "action=profile_csv only. Max data rows to scan for type inference / null rate / distinct counts. Default 10000.",
+          "type": "integer"
+        },
+        "delimiter": {
+          "description": "action=profile_csv only. Optional delimiter character. Accepts ',', ';', '|', actual tab, or '\\t'. Omit to auto-detect from the first line.",
+          "type": "string"
+        },
+        "sheet": {
+          "description": "action=extract_excel only. Optional sheet name (e.g. 'Customers') or 0-based index ('0', '1'). Defaults to the first sheet.",
+          "type": "string"
+        },
+        "encoding": {
+          "description": "action=profile_csv only. Optional character encoding (e.g. 'ISO-8859-2', 'windows-1250'). Omit to auto-detect (handles non-UTF-8 files); pass 'detect' to force detection.",
+          "type": "string"
+        },
+        "action": {
+          "description": "The analysis operation to perform.",
+          "type": "string",
+          "enum": [
+            "extract_pdf",
+            "extract_excel",
+            "profile_csv"
+          ]
+        },
+        "pages": {
+          "description": "action=extract_pdf only. Optional page range to extract (1-indexed, inclusive). Examples: '3' for a single page, '1-5' for a range. Defaults to the whole document.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "sandboxCode",
+        "sandboxPath"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Analyze File",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_delete_directory": {
+    "name": "sandbox_delete_directory",
+    "title": null,
+    "description": "Delete a directory from a CloverDX sandbox. Use with caution \u2014 this is irreversible and may remove nested content.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sandboxCode": {
+          "description": "Sandbox code",
+          "type": "string"
+        },
+        "sandboxPath": {
+          "description": "Directory path to delete (e.g. 'graph/archive')",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "sandboxPath"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Delete Directory",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "component_get_info": {
+    "name": "component_get_info",
+    "title": null,
+    "description": "Resolve a CloverDX component by type or name (case-insensitive). Returns plain text, not JSON.\nIf exactly one match is found, returns full formatted details: usage guidance,\ninput/output ports incl. propagated metadata, and properties incl. required/conditional groups.\nIf multiple matches are found, returns a compact candidate table \u2014 re-query with an exact type or name.\nIf no match is found, returns a not-found hint to use `component_list`.\nUse this tool before selecting or configuring any component.\nFor detailed info on a specific component, use `component_get_guide`.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "description": "Component type (e.g. 'XML_EXTRACT') or display name (e.g. 'XML Extract') to search for.",
+          "type": "string"
+        },
+        "includeDeprecated": {
+          "description": "Include deprecated components in results (default: false).",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Component Get Info",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "job_get_log": {
+    "name": "job_get_log",
+    "title": null,
+    "description": "Fetch the execution log for a graph or jobflow run by its runId.\n\nReturns the unstructured text of the execution log \u2014 identical to what is shown\nin the CloverDX Server Execution History UI. Use to inspect diagnostic messages\nfor a failed run, audit a specific execution, or retrieve log output for debugging.\n\nThe response is capped at 1 MiB (1048576 bytes). For longer logs the returned\ntext contains the first 1 MiB followed by an explicit truncation marker \u2014 the\nfull log is then available via the CloverDX Server Execution History UI or on\nthe server's file system.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "description": "Unique numeric identifier of the job execution (run ID).",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "runId"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Job Get Log",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "report_support_issue": {
+    "name": "report_support_issue",
+    "title": null,
+    "description": "Reports a problem to the CloverDX Support Portal.\n\nThis tool is invoked when the user requests to report\nan issue or incident directly to CloverDX Support.\nThe issue report can optionally include a generated\ndiagnostic support package for faster troubleshooting.\n\nBefore invoking this tool, the LLM must ask the user for the email address under which the issue should be submitted.\nThe email is mandatory and must be explicitly confirmed by the user.\nThe LLM must also validate that the provided email address is in a valid email format (e.g., name@example.com).\nIf the user provides an invalid email address, the LLM must request the email again until a valid one is confirmed.\n\nParameters:\n- **email** (required): Email address of the user reporting the issue. Must be obtained from the user before the tool is executed.\n- **description** (required): Text description of the problem or incident.\n- **subject** (required): Subject line summarizing the issue.\n- **includeSupportPackage** (optional): Whether to attach a diagnostic\n  package with logs and configuration details (default: true).\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "includeSupportPackage": {
+          "description": "Attach a support package (logs, configs) to the report (default: true).",
+          "type": "boolean",
+          "default": true
+        },
+        "emailFrom": {
+          "description": "Email address of the user reporting the issue.",
+          "type": "string"
+        },
+        "subject": {
+          "description": "Subject of message which summary the issue.",
+          "type": "string"
+        },
+        "description": {
+          "description": "Detailed description of the problem to report.",
+          "type": "string",
+          "minLength": 10
+        }
+      },
+      "required": [
+        "description",
+        "subject"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Report Support Issue",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": true
+    },
+    "meta": null,
+    "execution": null
+  },
+  "job_await": {
+    "name": "job_await",
+    "title": null,
+    "description": "Block until a graph or jobflow run completes or the timeout is reached.\n\nPolls the job status server-side and returns the final status once the job reaches\na terminal state (FINISHED_OK, ERROR, ABORTED). On timeout, returns the last known\nstatus with timedOut=true; safe to re-call with the same runId.\n\nUse immediately after `job_run` to synchronously wait for completion.\nFor full execution log use `job_get_log`; for tracking details use `job_get_tracking`.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "timeoutSeconds": {
+          "description": "Maximum seconds to wait before returning. Defaults to 300.",
+          "type": "integer"
+        },
+        "runId": {
+          "description": "Unique numeric identifier of the job execution (run ID).",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "runId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "runId",
+        "status"
+      ],
+      "properties": {
+        "jobFile": {
+          "description": "Path to the job file.",
+          "type": "string"
+        },
+        "runId": {
+          "description": "Unique execution identifier.",
+          "type": "integer"
+        },
+        "stopTime": {
+          "description": "ISO 8601 stop timestamp, null if still running.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "startTime": {
+          "description": "ISO 8601 start timestamp, null if not yet started.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandboxCode": {
+          "description": "Sandbox code.",
+          "type": "string"
+        },
+        "error": {
+          "description": "Error details if status is ERROR, null otherwise.",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "jobType": {
+          "description": "Job type.",
+          "type": "string"
+        },
+        "durationMs": {
+          "description": "Execution duration in milliseconds.",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "status": {
+          "description": "Final execution status: FINISHED_OK, ERROR, ABORTED, N_A.",
+          "type": "string"
+        },
+        "executionLabel": {
+          "description": "Custom execution label.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "submitTime": {
+          "description": "ISO 8601 submit timestamp.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Job Await",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "job_abort": {
+    "name": "job_abort",
+    "title": null,
+    "description": "Abort a running graph or jobflow execution identified by runId.\n\nAlso terminates child jobs spawned by this execution.\nReturns the current status if the job has already finished (no-op).\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "description": "Unique numeric identifier of the job execution to abort.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "runId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "runId",
+        "abortRequested"
+      ],
+      "properties": {
+        "runId": {
+          "description": "Run ID of the aborted job.",
+          "type": "integer"
+        },
+        "killedRunIds": {
+          "description": "List of run IDs that were killed (includes child jobs).",
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "abortRequested": {
+          "description": "Whether the abort was successfully requested.",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Job Abort",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "note_add": {
+    "name": "note_add",
+    "title": null,
+    "description": "Append a note under a named section to session-scoped working memory.\nCreates the section if it does not exist. Use for ephemeral findings,\nintermediate state, and short summaries shared between sub-agent and\nouter agent within a single MCP session. Notes survive only until the\nMCP session ends or `note_clear` is called \u2014 for facts that must outlive\nthe session, write to DECISIONS.md in the project sandbox instead.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "description": "Note text to append.",
+          "type": "string"
+        },
+        "section": {
+          "description": "Section name to append the note to (e.g. 'findings', '_summary', '_needs_clarification').",
+          "type": "string"
+        }
+      },
+      "required": [
+        "section",
+        "content"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Note Add",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "note_clear": {
+    "name": "note_clear",
+    "title": null,
+    "description": "Clear notes from session-scoped working memory. When 'section' is set,\nremoves only that section; otherwise removes all sections.\nSee `note_add` for write semantics and the session/DECISIONS.md trade-off.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "section": {
+          "description": "Section name to clear. Omit to clear all sections.",
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Note Clear",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_list_files": {
+    "name": "sandbox_list_files",
+    "title": null,
+    "description": "List files and folders in a sandbox directory. Set folderOnly=true to return directories only.\n\nReturns:\n  - files: array of file/folder entries\n    - files[].isFolder: whether the entry is a folder (boolean)\n    - files[].name: file or folder name (string)\n    - files[].path: full path relative to the sandbox root (string)\n    - files[].lastModified: last modification timestamp in milliseconds (number)\n    - files[].size: file size in bytes (0 for folders) (number)\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "folderOnly": {
+          "description": "List only subdirectories (default: false)",
+          "type": "boolean"
+        },
+        "sandboxPath": {
+          "description": "Directory path within the sandbox (e.g. 'graph', 'data/in')",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "Sandbox code (e.g. MySandbox)",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "sandboxPath"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "files"
+      ],
+      "properties": {
+        "files": {
+          "items": {
+            "type": "object",
+            "required": [
+              "isFolder",
+              "name",
+              "path",
+              "lastModified",
+              "size"
+            ],
+            "properties": {
+              "size": {
+                "type": "number"
+              },
+              "isFolder": {
+                "type": "boolean"
+              },
+              "path": {
+                "type": "string"
+              },
+              "lastModified": {
+                "type": "number"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox List Files",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_git": {
+    "name": "sandbox_git",
+    "title": null,
+    "description": "Unified sandbox git tool. Performs version-control operations on a sandbox's local git repository (stored under assistant/.git-assistant/ as a separate gitdir). Required: action, sandboxCode. All other parameters depend on the chosen action.\n\nActions:\n\u2022 commit  \u2014 Stage and commit. Lazy-inits the repo on first call. Required: message. Optional: paths (defaults to git add -A).\n\u2022 log     \u2014 List recent commits. Optional: limit (default 30), path, grep (message filter), since (ISO-8601 date, e.g. 2025-01-01T00:00:00Z).\n\u2022 show    \u2014 Read a file at a historical commit. Required: ref, path. Do NOT use for current working-tree reads.\n\u2022 diff    \u2014 Diff between two refs or a ref and the working tree. Optional: fromRef (default HEAD), toRef (default working tree), path.\n\u2022 status  \u2014 Show working-tree status: staged, changed, unstaged, deleted, untracked lists.\n\u2022 branch  \u2014 Manage branches. Required: op (list|create|switch|delete). Required for create/switch/delete: name.\n\u2022 restore \u2014 Restore file(s) to a ref or HEAD. Required: paths. Optional: ref.\n\u2022 reset   \u2014 Move HEAD or unstage files. Optional: mode (soft|mixed|hard, default mixed), ref, paths. With paths = unstage only.\n\u2022 stash   \u2014 Manage stash. Required: op (push|pop|apply|drop|list). Optional: message (push), stashIndex (0-based, default 0).\n\u2022 init    \u2014 Explicitly initialize the repo (otherwise auto-initialized on first commit).",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "Commit message (action=commit). When working inside a named project, prefix with '[<project-name>]'. Append 'Sprint: S<id>' trailer when relevant.",
+          "type": "string"
+        },
+        "grep": {
+          "description": "Filter log commits whose message matches this string.",
+          "type": "string"
+        },
+        "path": {
+          "description": "Sandbox-relative path to restrict log or diff output.",
+          "type": "string"
+        },
+        "fromRef": {
+          "description": "Start ref for diff (default HEAD).",
+          "type": "string"
+        },
+        "paths": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Sandbox-relative paths. For commit: paths to stage (default all). For restore/reset: required path list."
+        },
+        "limit": {
+          "description": "Max commits to return for log (default 30).",
+          "type": "integer"
+        },
+        "toRef": {
+          "description": "End ref for diff (default working tree).",
+          "type": "string"
+        },
+        "mode": {
+          "description": "Reset mode (default mixed). Ignored when paths are supplied.",
+          "type": "string",
+          "enum": [
+            "soft",
+            "mixed",
+            "hard"
+          ]
+        },
+        "name": {
+          "description": "Branch name for branch create/switch/delete.",
+          "type": "string"
+        },
+        "stashIndex": {
+          "description": "0-based stash index for stash pop/apply/drop (default 0).",
+          "type": "integer"
+        },
+        "action": {
+          "description": "The git operation to perform.",
+          "type": "string",
+          "enum": [
+            "commit",
+            "log",
+            "show",
+            "diff",
+            "status",
+            "branch",
+            "restore",
+            "reset",
+            "stash",
+            "init"
+          ]
+        },
+        "since": {
+          "description": "ISO-8601 timestamp; log returns only commits after this date (e.g. '2025-01-01T00:00:00Z').",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "The unique sandbox code (e.g. 'MySandbox').",
+          "type": "string"
+        },
+        "ref": {
+          "description": "Commit ref (SHA, HEAD~N, branch name). Used by show, restore, reset.",
+          "type": "string"
+        },
+        "op": {
+          "description": "Sub-operation for branch (list|create|switch|delete) or stash (push|pop|apply|drop|list).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "sandboxCode"
+      ]
+    },
+    "outputSchema": {
+      "description": "Result shape varies by action.",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Git",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "knowledge_project_store": {
+    "name": "knowledge_project_store",
+    "title": null,
+    "description": "Store (overwrite) a project-local knowledge entry under\n<sandbox>/assistant/<projectName>/knowledge_project/[<topic>/]<name>.md.\nUse to persist project-specific facts that the agent should recall in later sessions:\nbusiness rules, naming conventions, sandbox quirks, validated investigation results.\nFrontmatter (name, description, tags, scope, provenance, created, updated, topic) is\nadded automatically. Overwriting preserves the original created date.\nThe server also rebuilds INDEX.md after every store \u2014 a topic-grouped overview the\nagent can read via `knowledge_project_read` with a blank name.\nIf an entry with the same name already exists in a different topic, the old file is\ndeleted and the entry is relocated to the new topic (names are unique per project).\nProject-bound only; do NOT use for platform-wide truth (that ships in CloverDXMCPKnowledge).\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Optional tags for discovery via `knowledge_project_search`."
+        },
+        "description": {
+          "description": "Short one-line description (drives search ranking).",
+          "type": "string"
+        },
+        "projectName": {
+          "description": "Project name within the sandbox (e.g. 'dwh-q4-refresh'). Entries live under <sandbox>/assistant/<projectName>/knowledge_project/.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Unique entry name (used as filename without extension). Alphanumeric, hyphens, underscores, and dots only.",
+          "type": "string"
+        },
+        "topic": {
+          "description": "Optional grouping subdirectory (e.g. 'conventions', 'gotchas', 'decisions', 'patterns'). Lets the agent organise related entries. If omitted or blank, the entry lands at the project knowledge root.",
+          "type": "string"
+        },
+        "content": {
+          "description": "Full Markdown body of the entry.",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "Code of the project sandbox to write into.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "projectName",
+        "name",
+        "description",
+        "content"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Project Knowledge Store",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "graph_edit_properties": {
+    "name": "graph_edit_properties",
+    "title": null,
+    "description": "Set or update a property on one or more existing elements via XML DOM in any\nCloverDX job \u2014 graph (.grf), jobflow (.jbf), subgraph (.sgrf), and other job types.\nSingle-edit: provide element_type, element_id, attribute_name, value.\nBulk edit: provide a changes[] array - all changes applied atomically; fails entirely\nif any change is invalid. Use dry_run=true to preview. graph_path and sandbox apply\nto all changes in both modes.\n\nPlain attribute_name (for example 'recordsNumber', 'joinType', 'fileURL') sets an\nXML attribute directly. 'attr:X' sets an <attr name='X'> child with auto CDATA\nwrapping. For Metadata, use attribute_name='record' with full <Record>...</Record>\nXML. External metadata (.fmt files) cannot be modified here.\nAlways call `job_validate` after using this tool.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "graph_path": {
+          "description": "Path to the CloverDX job file within the sandbox \u2014 graph (.grf), jobflow (.jbf), subgraph (.sgrf), etc. (e.g. 'graph/MyGraph.grf').",
+          "type": "string"
+        },
+        "changes": {
+          "items": {
+            "type": "object",
+            "required": [
+              "element_type",
+              "element_id",
+              "attribute_name",
+              "value"
+            ],
+            "properties": {
+              "value": {
+                "type": "string"
+              },
+              "attribute_name": {
+                "type": "string"
+              },
+              "element_id": {
+                "type": "string"
+              },
+              "element_type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "type": "array",
+          "description": "Bulk edit array. Mutually exclusive with single-edit params."
+        },
+        "value": {
+          "description": "New value. For 'attr:': do NOT wrap in CDATA yourself.",
+          "type": "string"
+        },
+        "attribute_name": {
+          "description": "Plain name -> XML attribute. 'attr:X' -> CDATA child. For Metadata: 'record'.",
+          "type": "string"
+        },
+        "element_id": {
+          "description": "Element identifier. Matches 'id' attribute (or 'name' for GraphParameter).",
+          "type": "string"
+        },
+        "element_type": {
+          "description": "Element type. GraphParameter matches by 'name'; all others match by 'id'.",
+          "type": "string",
+          "enum": [
+            "Node",
+            "Edge",
+            "Metadata",
+            "GraphParameter",
+            "Connection"
+          ]
+        },
+        "dry_run": {
+          "description": "Preview without writing. Default: false.",
+          "type": "boolean"
+        },
+        "sandbox": {
+          "description": "Sandbox code.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "graph_path",
+        "sandbox"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attribute_name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandbox": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "element_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "element_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "applied": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "description": "ok or error",
+          "type": "string"
+        },
+        "failed_index": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "dry_run": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "graph_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "planned": {
+          "items": {
+            "type": "object"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Graph Edit Properties",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_patch_file": {
+    "name": "sandbox_patch_file",
+    "title": null,
+    "description": "Patch a sandbox file using anchor-based line replacements.\nEach patch locates an anchor string, applies fromOffset/toOffset to define the\nreplacement range, then all patches are applied bottom-up.\nAnchor matching is literal against the raw file content after UTF-8 decode; no HTML/XML entity decoding or escaping is applied.\nSupports dryRun=true for preview.\n\nUSE FOR: non-graph text files (.txt, .ctl, .prm, .csv, .sql, etc.).\nDO NOT USE FOR graph (.grf) or jobflow (.jbf) files -- use the graph edit tools instead:\n  `graph_edit_structure`  - add/delete/move whole elements (Metadata, Node, Edge, Phase, ...)\n  `graph_edit_properties` - set attributes, CTL code, metadata records on existing elements\nThe graph_edit_* tools operate on the XML DOM and are far more reliable for graph edits.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "dryRun": {
+          "description": "Validate and preview patches without writing the file (default: false)",
+          "type": "boolean"
+        },
+        "patches": {
+          "description": "Array of patch specifications to apply.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "anchor",
+              "fromOffset",
+              "toOffset",
+              "newContent"
+            ],
+            "properties": {
+              "newContent": {
+                "description": "Replacement text. Empty string deletes the target range.",
+                "type": "string"
+              },
+              "toOffset": {
+                "description": "Line offset from anchor line to end of replacement (inclusive).",
+                "type": "integer"
+              },
+              "anchor": {
+                "description": "Unique literal substring used to locate the target line. Matching is trim-insensitive and does not perform HTML/XML entity decoding.",
+                "type": "string"
+              },
+              "fromOffset": {
+                "description": "Line offset from anchor line to start of replacement.",
+                "type": "integer"
+              },
+              "anchorOccurrence": {
+                "description": "Optional 1-based occurrence index if anchor appears multiple times.",
+                "type": "integer"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "sandboxPath": {
+          "description": "Full file path within the sandbox (e.g. 'data_in/myfile.txt')",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "Sandbox code (e.g. 'MySandbox')",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "sandboxPath",
+        "patches"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "status",
+        "patches_applied"
+      ],
+      "properties": {
+        "errors": {
+          "items": {
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "lines_before": {
+          "type": "integer"
+        },
+        "preview": {
+          "items": {
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "lines_after": {
+          "type": "integer"
+        },
+        "patches_applied": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Patch File",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_create_directory": {
+    "name": "sandbox_create_directory",
+    "title": null,
+    "description": "Create a directory in a CloverDX sandbox. Parent directory must already exist.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sandboxCode": {
+          "description": "Sandbox code",
+          "type": "string"
+        },
+        "sandboxPath": {
+          "description": "Directory path to create (e.g. 'graph/archive')",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "sandboxPath"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Create Directory",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "knowledge_project_delete": {
+    "name": "knowledge_project_delete",
+    "title": null,
+    "description": "Delete a project-local knowledge entry by name from\n<sandbox>/assistant/<projectName>/knowledge_project/.\nThe server locates the entry across all topic subdirectories\n(names are unique per project) and rebuilds INDEX.md after deletion.\nIdempotent: if the entry does not exist, returns a \"not found\" message\nrather than an error.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectName": {
+          "description": "Project name within the sandbox (e.g. 'dwh-q4-refresh').",
+          "type": "string"
+        },
+        "name": {
+          "description": "Entry name to delete (without .md extension).",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "Code of the project sandbox the entry lives in.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "projectName",
+        "name"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Project Knowledge Delete",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_read_file": {
+    "name": "sandbox_read_file",
+    "title": null,
+    "description": "Read a plain-text file from a sandbox and return its raw content directly, with no conversion or decoding.\nUse this for any text-based format that is directly readable as-is: .txt, .csv, .json, .xml, .md, source code, CloverDX graphs, etc.\nDo NOT use this for binary or rich-document formats like PDF (.pdf) \u2014 use `sandbox_analyze_file` action=extract_pdf for those.\nOptionally read a line range via start_line + line_count.\nstart_line: 1-based; negative counts from end (-1 = last line).\nOptional encoding (defaults to utf-8).\nSet encoding='detect' to return detected encoding instead of file content.\nMax response: 1 MiB.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "line_count": {
+          "description": "Optional number of lines to read. Must be provided together with start_line.",
+          "type": "integer"
+        },
+        "start_line": {
+          "description": "Optional starting line number. 1-based for positive values; negative values count from end (-1 is last line). Must be provided together with line_count.",
+          "type": "integer"
+        },
+        "sandboxCode": {
+          "description": "Sandbox code",
+          "type": "string"
+        },
+        "encoding": {
+          "description": "Optional text encoding used to decode file content (default: utf-8). Use 'detect' to return only the detected encoding name instead of file content.",
+          "type": "string"
+        },
+        "sandboxPath": {
+          "description": "Full file path within the sandbox (e.g. 'graph/MyGraph.grf')",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "sandboxPath"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Read File",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "knowledge_project_search": {
+    "name": "knowledge_project_search",
+    "title": null,
+    "description": "Search project-local knowledge entries stored under\n<sandbox>/assistant/<projectName>/knowledge_project/ (including all topic subdirectories).\nUse for recalling agent- or user-authored project facts: business rules,\nnaming conventions, sandbox-local quirks discovered in earlier sessions.\nScored by token overlap on name, tags, and description.\nFor a topic-grouped overview without keyword matching, call `knowledge_project_read`\nwith a blank name \u2014 that returns the auto-maintained INDEX.md.\nThis is separate from `knowledge_base_search`, which reads the read-only platform knowledge base.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "description": "Keyword query (space-separated tokens).",
+          "type": "string"
+        },
+        "projectName": {
+          "description": "Project name within the sandbox (e.g. 'dwh-q4-refresh'). Entries live under <sandbox>/assistant/<projectName>/knowledge_project/.",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "Code of the project sandbox to search in.",
+          "type": "string"
+        },
+        "limit": {
+          "description": "Maximum number of hits to return. Default 20.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "projectName",
+        "query"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Project Knowledge Search",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "server_db_get_schema": {
+    "name": "server_db_get_schema",
+    "title": null,
+    "description": "Retrieves the table and column schema of the CloverDX Server's internal system\ndatabase \u2014 the server's own backing store for run history, users, sandboxes,\nschedules, and other server-managed records.\n\nNOT for user-defined ETL database connections configured in sandbox graphs.\nTo query sandbox connection targets, use `server_db_execute_query` (SELECT only)\nor read the connection's .cfg file via `sandbox_read_file`.\n\n## Behavior\nRead-only metadata introspection via JDBC \u2014 does not execute arbitrary SQL.\n\n## Returned information\n- List of accessible tables\n- Columns per table with data types, nullability, and key flags\n- Optional indexes or constraints if available\n\n## Use cases\n- Inspect table structure before writing a system database query with `server_db_execute_query`\n- Validate column names and types for diagnostic or admin queries\n\n## Security\n- System and credential tables are excluded\n- No data content is returned \u2014 only schema metadata",
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Retrieve Database Schema",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_get_detail": {
+    "name": "sandbox_get_detail",
+    "title": null,
+    "description": "Returns detailed information about a single sandbox identified by its sandboxCode.\n\nReturns:\n  - sandboxCode: unique sandbox identifier\n  - name: display name\n  - description: sandbox description (may be empty)\n  - rootPath: filesystem root path of the sandbox\n  - ownerUsername: username of the sandbox owner\n  - distributionType: one of partitioned, shared, local\n  - suspended: whether the sandbox is currently suspended\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sandboxCode": {
+          "description": "The unique sandbox code (e.g. 'MySandbox')",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "sandboxCode",
+        "name",
+        "suspended"
+      ],
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "ownerUsername": {
+          "type": "string"
+        },
+        "suspended": {
+          "type": "boolean"
+        },
+        "rootPath": {
+          "type": "string"
+        },
+        "sandboxCode": {
+          "type": "string"
+        },
+        "distributionType": {
+          "type": "string",
+          "enum": [
+            "partitioned",
+            "shared",
+            "local"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Get Sandbox Detail",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "graph_edit_structure": {
+    "name": "graph_edit_structure",
+    "title": null,
+    "description": "Add, delete, or move whole structural elements in any CloverDX job \u2014 graph\n(.grf), jobflow (.jbf), subgraph (.sgrf), and other job types \u2014 via XML DOM.\nCompanion to `graph_edit_properties` (which sets attribute values, CTL code, or\nmetadata records on existing elements).\n\nUSE FOR: adding new Metadata/Node/Edge/Phase/Connection/etc., deleting elements,\n  moving a Node or Edge between Phases.\nDO NOT USE FOR: changing attribute values, CTL code, or metadata records on\n  existing elements \u2014 use `graph_edit_properties` for that.\n\nActions:\n  add    - Insert a new element. Provide full element XML in element_xml.\n  delete - Remove an element by its identity attribute (id or name).\n  move   - Move a Node or Edge to a different Phase (target_phase_number).\n           Only valid for Node and Edge.\n\ndry_run=true previews changes without writing the file.\nAlways call `job_validate` after structural changes.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sandbox": {
+          "description": "Sandbox code.",
+          "type": "string"
+        },
+        "cascade": {
+          "description": "[delete only] Auto-remove dependent elements. Default: false.",
+          "type": "boolean"
+        },
+        "dry_run": {
+          "description": "Preview without writing. Default: false.",
+          "type": "boolean"
+        },
+        "element_xml": {
+          "description": "[add only] Full XML string of the element to insert. DictionaryEntry expects <Entry .../>.",
+          "type": "string"
+        },
+        "graph_path": {
+          "description": "Path to the CloverDX job file within the sandbox \u2014 graph (.grf), jobflow (.jbf), subgraph (.sgrf), etc. (e.g. 'graph/MyGraph.grf').",
+          "type": "string"
+        },
+        "target_phase_number": {
+          "description": "[move only] Phase number to move the Node or Edge into.",
+          "type": "integer"
+        },
+        "element_id": {
+          "description": "[delete/move] Identity attribute value. Most types: 'id'; GraphParameter: 'name'; Phase: 'number'; DictionaryEntry: Entry 'name'.",
+          "type": "string"
+        },
+        "validate": {
+          "description": "Run Stage 1 local validation after the operation. Default: true. Set false for batch edits.",
+          "type": "boolean"
+        },
+        "action": {
+          "description": "add inserts a new element; delete removes one; move repositions a Node or Edge to another Phase.",
+          "type": "string",
+          "enum": [
+            "add",
+            "delete",
+            "move"
+          ]
+        },
+        "phase_number": {
+          "description": "[add Node/Edge only] Phase number to insert into.",
+          "type": "integer"
+        },
+        "element_type": {
+          "description": "Type of graph element to operate on.",
+          "type": "string",
+          "enum": [
+            "Metadata",
+            "Phase",
+            "Node",
+            "Edge",
+            "Connection",
+            "GraphParameter",
+            "RichTextNote",
+            "LookupTable",
+            "DictionaryEntry",
+            "Sequence"
+          ]
+        }
+      },
+      "required": [
+        "graph_path",
+        "sandbox",
+        "action",
+        "element_type"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "element_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "changes": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "graph_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandbox": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "description": "ok, dry_run, or error",
+          "type": "string"
+        },
+        "errors": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "action": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Graph Edit Structure",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "server_perf_logs_query": {
+    "name": "server_perf_logs_query",
+    "title": null,
+    "description": "Execute a SQL query (Apache Calcite dialect) against the CloverDX Server performance log file.\nReturns CPU, memory, GC, and I/O metrics sampled every 3 seconds by the server monitor.\nUse for time-series analysis of server health \u2014 peak CPU during a job run, memory trends, GC pause frequency.\n\nNOT for job execution logs (use `server_logs_search`) or per-graph record counts (use `job_get_tracking`).\n\n## Data volume \u2014 required sampling\n\nEntries are recorded every 3 seconds \u2192 1\u202f200/hour, 28\u202f800/day.\nQuerying without sampling or aggregation will exceed the 1\u202fMB result limit and fail.\n\n| Time range    | Recommended sampleRate  | Expected rows |\n|---------------|-------------------------|---------------|\n| 1\u20132 hours     | 1                       | ~1\u202f200\u20132\u202f400  |\n| 6\u201312 hours    | 20\u201360                   | ~360\u20131\u202f080    |\n| 24 hours      | 60\u2013120                  | ~480\u20131\u202f440    |\n| 3 days        | 120\u2013240                 | ~720\u20132\u202f160    |\n| 1 week        | 240\u2013600                 | ~1\u202f008\u20131\u202f764  |\n| 1 month+      | aggregation (GROUP BY)  | <1\u202f000        |\n\nTarget 1\u202f000\u20131\u202f500 rows. Formula: `(time_range_seconds / 3) / sampleRate`. Default sampleRate = 60.\n\nIf you get \"Tool result is too large\": increase sampleRate, reduce the time range,\nuse GROUP BY aggregation, or select fewer columns (avoid SELECT *).\n\n## Time column \u2014 required transformation\n\nThe `time` column uses a comma as millisecond separator (e.g. `2025-12-03 07:00:12,275`).\nCalcite cannot parse this as TIMESTAMP. Always use:\n\n\tCAST(REPLACE(\"time\", ',', '.') AS TIMESTAMP)\n\nApply in WHERE, ORDER BY, and SELECT \u2014 never use the raw `\"time\"` column as a timestamp.\n\n## Column reference\n\n| Column            | Description |\n|-------------------|-------------|\n| time              | Sample timestamp (every 3\u202fs; gaps indicate system/comm issues) |\n| sysCPU            | Total system CPU\u202f% (all processes); if sysCPU >> cCPU+wCPU, other processes are consuming CPU |\n| cCPU / wCPU       | CPU\u202f% of Core and Worker JVMs; Core typically stays below 10\u202f% |\n| cHeap / wHeap     | Heap usage (GB); approaching max \u2192 GC pressure or OOM risk |\n| cGC / wGC         | GC activity\u202f% for Core/Worker; sustained high = memory pressure |\n| hbAge             | Worker heartbeat age (s); >60 \u2192 overloaded or unresponsive Worker |\n| jobs              | Running job count on this node |\n| jobQueue          | Jobs waiting in queue |\n| cThread / wThread | Live thread count; steadily rising = thread leak or blocking tasks |\n| swap              | Memory swapped to disk (GB); high \u2192 severe performance degradation |\n| cFD / wFD         | Open file descriptors; high/rising \u2192 \"Too many open files\" risk |\n| cUptime / wUptime | Process uptime (s); resets to 0 on restart |\n\n## Constraints\n\n- SELECT only \u2014 INSERT/UPDATE/DELETE are rejected\n- Column names must be double-quoted: `\"sysCPU\"`, `\"cHeap\"`, etc.\n- `#logFile#` is replaced by the actual log file path automatically\n- LIMIT 100 applied automatically if omitted\n\n## Examples\n\n```sql\n-- Last 10 minutes, full detail\nSELECT CAST(REPLACE(\"time\", ',', '.') AS TIMESTAMP) AS ts, \"sysCPU\", \"cCPU\", \"wCPU\"\nFROM #logFile#\nWHERE CAST(REPLACE(\"time\", ',', '.') AS TIMESTAMP) >= CURRENT_TIMESTAMP - INTERVAL '10' MINUTE\nORDER BY ts DESC\n```\n\n```sql\n-- Last 24 hours, hourly averages (safe for large time ranges)\nSELECT DATE_TRUNC('hour', CAST(REPLACE(\"time\", ',', '.') AS TIMESTAMP)) AS hour,\n       AVG(\"sysCPU\"), MAX(\"cHeap\")\nFROM #logFile#\nGROUP BY hour\nORDER BY hour DESC\n```\n\n## Reference\n- [CloverDX Performance Logs](https://doc.cloverdx.com/latest/operations/logging.html#id_performance_logs)\n- [Apache Calcite](https://calcite.apache.org/)\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "description": "A valid SQL query (calcite.apache.org) to execute against the performance log.",
+          "type": "string"
+        },
+        "sampleRate": {
+          "description": "Return every Nth row (1 = all, default = 60).",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "List Performance Logs",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": {
+      "intervalSeconds": 3,
+      "defaultSampleRate": 60,
+      "metrics": [
+        "cCPU",
+        "wCPU",
+        "sysCPU",
+        "cHeap",
+        "wHeap",
+        "cGC",
+        "wGC",
+        "hbAge",
+        "swap",
+        "cFD",
+        "wFD",
+        "jobs",
+        "jobQueue"
+      ],
+      "reference": [
+        "https://doc.cloverdx.com/latest/operations/logging.html#id_performance_logs",
+        "https://calcite.apache.org"
+      ]
+    },
+    "execution": null
+  },
+  "component_get_guide": {
+    "name": "component_get_guide",
+    "title": null,
+    "description": "Fetch the in-depth Markdown reference for a CloverDX component \u2014 full syntax, config\nrules, mapping/CTL examples, and the gotchas the catalog (`component_get_info`) only\nlabels opaquely (e.g. validatorRules, xmlMapping, hashJoinKey).\nCall this after `component_get_info` when the property list alone is not enough to\nconfigure a mapping-heavy or otherwise complex component.\nLookup is by component type key (case-insensitive; e.g. 'XML_EXTRACT').\n\nOptionally pass `filter` \u2014 a list of section keys \u2014 to return ONLY those sections\ninstead of the whole document (cheaper and focused). Omit it for the full document.\nValid section keys: description, purpose, xml, properties, ports, ctl, definition,\nexamples, mistakes, notes. Unknown keys, and sections a component does not have, are\nignored (never an error). Example: filter=[\"ctl\",\"ports\",\"mistakes\"] for CTL2 authoring.\nIf the documentation is missing, returns the list of available keys so you can\nretry with a valid type.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Optional. Canonical section keys to return: description, purpose, xml, properties, ports, ctl, definition, examples, mistakes, notes. Omit for the whole document. Unknown or absent sections are ignored."
+        },
+        "componentType": {
+          "description": "Component type key (e.g. 'XML_EXTRACT'). Case-insensitive; use the exact type string from `component_get_info` or `component_list`.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "componentType"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Component Get Detail",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "ctl_validate": {
+    "name": "ctl_validate",
+    "title": null,
+    "description": "Validates standalone CTL2 code against explicit port metadata \u2014 no graph file needed.\n\ncomponentType -> required entry point(s):\n- reformat, joiner: transform()\n- normalizer: count() + transform(integer)\n- denormalizer: append() + transform()\n- partition: getOutputPort() (input metadata only \u2014 no outputMetadata, no $out writes)\n- filter: 'code' is a bare boolean expression \u2014 no function wrapper, no return,\n  no $out writes (input metadata only)\n- rollup: initGroup(<AccType>), updateGroup(<AccType>), finishGroup(<AccType>),\n  updateTransform(integer, <AccType>), transform(integer, <AccType>) \u2014 with a group\n  accumulator, pass accumulatorMetadata and use a type name matching its <Record name>;\n  without one, omit accumulatorMetadata and use the built-in VoidMetadata type\n- expression: 'code' is a single CTL2 expression of any type (not just boolean) \u2014\n  no function wrapper, no entry-point contract\n- generic: any other CTL2 code (global scope, any functions) for any component or\n  purpose \u2014 checks only that the code is compilable; no entry functions are required\n\nFor expression and generic, inputMetadata and outputMetadata are both optional \u2014\nprovide them only when the code references $in.N/$out.N ports or declares variables\nor function parameters typed by a metadata <Record name>.\n\nMetadata: one .fmt <Record> XML doc per port, in port order. joiner port 0 = driver,\nports 1+ = slaves.\n\nKnown unresolvable at this scope (reported as ERROR, not silently skipped): lookup\ntables, sequences, dictionary entries, Java transform classes. If your CTL only fails\nbecause of these, that's expected \u2014 not a real bug in your code.\n\nError reporting: structural errors (missing ';', bad port refs) fail fast \u2014 fix and\nre-run to see what's next. Once the code parses, remaining semantic errors (type\nmismatches, undeclared functions, unresolved lookups/sequences) are reported together.\n\nReturns PASS only when no ERROR-severity problems remain.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "CTL2 source code (full transform), the boolean filter expression when componentType=filter, or a single CTL2 expression of any type when componentType=expression.",
+          "type": "string"
+        },
+        "accumulatorMetadata": {
+          "description": "One .fmt XML <Record> document describing the rollup group accumulator record. Only used when componentType=rollup. The accumulator type name in your CTL must match the name attribute of this <Record>. Omit for rollups without a group accumulator \u2014 their functions use the built-in VoidMetadata type instead.",
+          "type": "string"
+        },
+        "componentType": {
+          "description": "Component family the CTL code targets.",
+          "type": "string",
+          "enum": [
+            "reformat",
+            "joiner",
+            "rollup",
+            "normalizer",
+            "denormalizer",
+            "partition",
+            "filter",
+            "expression",
+            "generic"
+          ]
+        },
+        "inputMetadata": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "One CloverDX .fmt XML document (<Record> root) per input port, in port order. Required for all component types except expression and generic, where it is optional."
+        },
+        "outputMetadata": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "One .fmt XML document per output port, in port order. Required for reformat, joiner, rollup (at least one) and normalizer, denormalizer (exactly one); ignored for partition and filter; optional for expression and generic."
+        }
+      },
+      "required": [
+        "componentType",
+        "code"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "overall",
+        "problems"
+      ],
+      "properties": {
+        "problems": {
+          "description": "List of problems found.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "severity",
+              "stage",
+              "message"
+            ],
+            "properties": {
+              "line": {
+                "description": "1-based line of the problem in the CTL code (compile stage) or metadata XML (metadata stage).",
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "message": {
+                "description": "Human-readable problem description.",
+                "type": "string"
+              },
+              "stage": {
+                "description": "Validation stage that produced the problem: metadata (parsing .fmt XML), compile (CTL compilation), or init (entry-function and global-scope checks).",
+                "type": "string"
+              },
+              "endColumn": {
+                "description": "1-based end column of the problem range.",
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "column": {
+                "description": "1-based column of the problem.",
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "hint": {
+                "description": "Optional hint how to fix the problem.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "portType": {
+                "description": "For metadata-stage problems: input, output, or accumulator.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "port": {
+                "description": "For metadata-stage problems: zero-based port index of the invalid metadata document (always 0 for accumulator).",
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "severity": {
+                "description": "Problem severity: ERROR or WARNING.",
+                "type": "string"
+              },
+              "endLine": {
+                "description": "1-based end line of the problem range.",
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "overall": {
+          "description": "Validation result: PASS if no ERROR-severity problems were found, FAIL otherwise.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Validate CTL",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "server_deployment": {
+    "name": "server_deployment",
+    "title": null,
+    "description": "Returns CloverDX Server deployment information. Use the `type` parameter to select:\n\n**type=current** (default) \u2014 snapshot of the running environment:\nproperties (SMTP, cluster, security, database, job queue),\nsystem info (OS, JVM, memory, GC), and runtime context (env\nvariables, system properties).\n\nArchitecture context: CloverDX Server uses a split-process\nmodel \u2014 a Core JVM for management and a separate Worker JVM\nfor job execution. Cluster deployments consist of multiple\nCore nodes, each with its own Worker, sharing a system database.\n\nCall once per session, or whenever environment-dependent decisions\nare needed (SQL dialect, available features, supported integrations).\nThe deployment state is stable for the lifetime of the running\nserver \u2014 cache the result mentally and reuse.\n\n**type=supported** \u2014 the official support matrix for this CloverDX Server\nversion: validated Operating Systems, Java runtimes, Databases, and\nApplication Servers.\n\nTypical workflow for compatibility check:\n1. Call `server_deployment` (type=current) to get current environment.\n2. Call `server_deployment` (type=supported) to get the support matrix.\n3. Compare to spot unsupported OS, JVM, or database.\n\n## Call when\n- User asks about configuration, environment, JVM/memory, database type,\n  or cluster topology \u2192 type=current.\n- User asks what environments/versions are officially supported \u2192 type=supported.\n- Checking compatibility of current deployment \u2192 call both.\n\n## Do NOT call\n- For trivial questions (CTL syntax, sandbox listings, graph editing,\n  job execution, file reads/writes, status checks).\n- type=current more than once per session \u2014 re-call only if the user\n  explicitly says the server was restarted or reconfigured mid-session.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "What to return: 'current' (default) = running environment snapshot; 'supported' = official support matrix.",
+          "type": "string",
+          "enum": [
+            "current",
+            "supported"
+          ]
+        }
+      },
+      "required": []
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Server Deployment Info",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": {
+      "purpose": "CloverDX Server deployment information \u2014 current environment or supported matrix",
+      "documentation": "https://doc.cloverdx.com/latest/admin/list-of-properties.html"
+    },
+    "execution": null
+  },
+  "job_plan": {
+    "name": "job_plan",
+    "title": null,
+    "description": "Record a structured graph design plan before writing XML.\nValidates internal consistency and surfaces issues before implementation.\n\nWHEN: After component lookups (`component_get_info` / `component_list` / `component_get_guide`), BEFORE `sandbox_write_file`.\nCall `sandbox_list_assets` first to discover existing shared assets.\n\nValidates:\n- Edge source/target IDs exist in components[]\n- CTL components have ctl_entry_points declared\n- Sort-requiring components (DENORMALIZER, MERGE, DEDUP, EXT_MERGE_JOIN) have upstream sort\n- Edge metadata_ids exist in metadata[]\n- Referenced connections/lookups/sequences exist in global_assets\nReturns plan with consistency warnings.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sandbox": {
+          "description": "Target sandbox code.",
+          "type": "string"
+        },
+        "edges": {
+          "description": "All edges. Use exact port strings from `component_get_info`.",
+          "type": "array",
+          "items": {
+            "required": [
+              "id",
+              "from_node",
+              "from_port",
+              "to_node",
+              "to_port",
+              "metadata"
+            ],
+            "type": "object",
+            "properties": {
+              "to_node": {
+                "description": "Target component ID.",
+                "type": "string"
+              },
+              "metadata": {
+                "description": "Exactly one of: (1) ID of a metadata record declared in metadata[] (e.g. 'MetaOrder') \u2014 must exist there; (2) reference to another edge that already has metadata assigned: '#//Edge0'; (3) empty string for auto-propagation from the connected component.",
+                "type": "string"
+              },
+              "from_node": {
+                "description": "Source component ID.",
+                "type": "string"
+              },
+              "to_port": {
+                "description": "inPort number",
+                "type": "integer"
+              },
+              "id": {
+                "description": "Edge ID \u2014 unique within the graph (e.g. 'Edge0').",
+                "type": "string"
+              },
+              "from_port": {
+                "description": "outPort number",
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "purpose": {
+          "description": "Brief: source, transformation, and target. Used as graph description.",
+          "type": "string"
+        },
+        "graph_path": {
+          "description": "Intended file path within the sandbox (e.g. 'graph/MyGraph.grf').",
+          "type": "string"
+        },
+        "reference_graphs": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Paths to existing graphs consulted as patterns before designing."
+        },
+        "components": {
+          "description": "All component nodes. Call `component_get_info` for each type before filling.",
+          "type": "array",
+          "items": {
+            "required": [
+              "id",
+              "type",
+              "purpose"
+            ],
+            "type": "object",
+            "properties": {
+              "ctl_entry_points": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "description": "Required CTL functions (e.g. ['transform()']). Must declare for any CTL component."
+              },
+              "key_config": {
+                "description": "The most important configuration note for this component.",
+                "type": "string"
+              },
+              "debug_input": {
+                "description": "Set true for test-data source nodes in subgraphs (debugInput='true').",
+                "type": "boolean"
+              },
+              "purpose": {
+                "description": "What this component does in this specific graph.",
+                "type": "string"
+              },
+              "debug_output": {
+                "description": "Set true for test-data sink nodes in subgraphs (debugOutput='true').",
+                "type": "boolean"
+              },
+              "phase": {
+                "description": "Phase number this component belongs to (default 0).",
+                "type": "integer"
+              },
+              "id": {
+                "description": "Node ID \u2014 unique within the graph, ALLCAPS_N convention (e.g. 'ORDER_VALIDATOR').",
+                "type": "string"
+              },
+              "type": {
+                "description": "Canonical component type string (e.g. 'REFORMAT', 'VALIDATOR', 'EXT_HASH_JOIN').",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "graph_name": {
+          "description": "Name of the graph being designed (becomes the 'name' attribute on <Graph>).",
+          "type": "string"
+        },
+        "phases": {
+          "description": "Execution phases. Most graphs use single phase 0. Add phases only for sequential dependencies.",
+          "type": "array",
+          "items": {
+            "required": [
+              "number"
+            ],
+            "type": "object",
+            "properties": {
+              "purpose": {
+                "description": "Why this phase is separate from the previous one.",
+                "type": "string"
+              },
+              "number": {
+                "description": "Phase number (0-based, must be non-decreasing).",
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "metadata": {
+          "description": "All metadata definitions. Every edge must reference one.",
+          "type": "array",
+          "items": {
+            "required": [
+              "id",
+              "description",
+              "source"
+            ],
+            "type": "object",
+            "properties": {
+              "key_fields": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "description": "Key field:type pairs for planning (e.g. ['Order_Id:long'])."
+              },
+              "source": {
+                "description": "'inline'=in-graph <Record>, 'external'=.fmt fileURL (preferred), 'propagated'=auto from connected component.",
+                "type": "string",
+                "enum": [
+                  "inline",
+                  "external",
+                  "propagated"
+                ]
+              },
+              "description": {
+                "description": "What records this metadata describes.",
+                "type": "string"
+              },
+              "id": {
+                "description": "Metadata ID referenced on edges (e.g. 'MetaOrder').",
+                "type": "string"
+              },
+              "file_url": {
+                "description": "Path to .fmt file when source='external'.",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "risks": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Known risks to verify before writing (e.g. sort requirements, CDATA nesting, existing assets to reuse)."
+        },
+        "global_assets": {
+          "type": "object",
+          "properties": {
+            "parameters": {
+              "description": "Additional graph parameters beyond workspace.prm.",
+              "type": "array",
+              "items": {
+                "required": [
+                  "name"
+                ],
+                "type": "object",
+                "properties": {
+                  "public": {
+                    "description": "Whether exposed as a public parameter.",
+                    "type": "boolean"
+                  },
+                  "component_reference": {
+                    "description": "Component property this param drives (e.g. 'READER.fileURL').",
+                    "type": "string"
+                  },
+                  "default_value": {
+                    "description": "Default value.",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Parameter name (e.g. 'INPUT_FILE').",
+                    "type": "string"
+                  },
+                  "required": {
+                    "description": "Whether a value must be supplied at runtime.",
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "subgraphs": {
+              "description": "SUBGRAPH components. Verify port counts and required parameters before filling.",
+              "type": "array",
+              "items": {
+                "required": [
+                  "component_id",
+                  "job_url"
+                ],
+                "type": "object",
+                "properties": {
+                  "job_url": {
+                    "description": "Path to the .sgrf file.",
+                    "type": "string"
+                  },
+                  "output_ports": {
+                    "description": "Number of output ports this subgraph exposes.",
+                    "type": "integer"
+                  },
+                  "input_ports": {
+                    "description": "Number of input ports this subgraph exposes.",
+                    "type": "integer"
+                  },
+                  "component_id": {
+                    "description": "Node ID of the SUBGRAPH component (e.g. 'EXTRACT').",
+                    "type": "string"
+                  },
+                  "param_values": {
+                    "description": "__PARAM overrides on the Node.",
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "ctl_imports": {
+              "description": "External .ctl files via import or transformURL.",
+              "type": "array",
+              "items": {
+                "required": [
+                  "file_url"
+                ],
+                "type": "object",
+                "properties": {
+                  "file_url": {
+                    "description": "Path to .ctl file (e.g. '${TRANS_DIR}/orderValidationRules.ctl').",
+                    "type": "string"
+                  },
+                  "used_by": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Component IDs whose CTL imports this file."
+                  },
+                  "provides": {
+                    "description": "Brief note on what functions this file provides.",
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "lookup_tables": {
+              "description": "Lookup tables for LOOKUP_JOIN or CTL lookup('id').get(...).",
+              "type": "array",
+              "items": {
+                "required": [
+                  "id",
+                  "type",
+                  "source"
+                ],
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "external",
+                      "inline"
+                    ]
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "simpleLookup",
+                      "dbLookup",
+                      "rangeLookup",
+                      "persistentLookup"
+                    ]
+                  },
+                  "used_by": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Component IDs or CTL locations referencing this lookup."
+                  },
+                  "id": {
+                    "description": "Lookup table ID as referenced in CTL and LOOKUP_JOIN.",
+                    "type": "string"
+                  },
+                  "file_url": {
+                    "description": "Path to .lkp file when source='external'.",
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "connections": {
+              "description": "Database/service connections referenced by component dbConnection attributes.",
+              "type": "array",
+              "items": {
+                "required": [
+                  "id",
+                  "type",
+                  "source"
+                ],
+                "type": "object",
+                "properties": {
+                  "cfg_path": {
+                    "description": "Plan field only \u2014 path to the .cfg file when source='external', e.g. '${CONN_DIR}/MyDB.cfg'. In generated XML: dbConfig= for type=JDBC, config= for all other types. Never use cfg_path as an XML attribute.",
+                    "type": "string"
+                  },
+                  "source": {
+                    "description": "'external'=backed by a .cfg file (preferred); 'inline'=all attributes embedded in graph XML.",
+                    "type": "string",
+                    "enum": [
+                      "external",
+                      "inline"
+                    ]
+                  },
+                  "type": {
+                    "description": "Connection type. Determines the XML type= attribute on <Connection>.",
+                    "type": "string",
+                    "enum": [
+                      "JDBC",
+                      "JMS",
+                      "OAUTH2",
+                      "SALESFORCE",
+                      "KAFKA",
+                      "HADOOP",
+                      "MONGODB"
+                    ]
+                  },
+                  "used_by": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Component IDs that reference this connection."
+                  },
+                  "id": {
+                    "description": "Connection ID \u2014 unique within the graph, referenced by dbConnection= on components (e.g. 'DWHConn').",
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "sequences": {
+              "description": "Sequences for CTL sequence('id').next(). Missing declaration fails at runtime.",
+              "type": "array",
+              "items": {
+                "required": [
+                  "id",
+                  "source"
+                ],
+                "type": "object",
+                "properties": {
+                  "step": {
+                    "description": "Step when source='inline' (default 1).",
+                    "type": "integer"
+                  },
+                  "file_url": {
+                    "description": "Path to .seq file when source='external'.",
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "external",
+                      "inline"
+                    ]
+                  },
+                  "id": {
+                    "description": "Sequence ID as referenced in CTL (e.g. 'RecordSeq').",
+                    "type": "string"
+                  },
+                  "start": {
+                    "description": "Start value when source='inline' (default 1).",
+                    "type": "integer"
+                  },
+                  "used_by": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "description": "Component IDs whose CTL calls this sequence."
+                  }
+                }
+              }
+            }
+          },
+          "description": "<Global> section assets beyond metadata. Missing declarations cause validation/runtime failures. Call `sandbox_list_assets` first.",
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "graph_name",
+        "sandbox",
+        "graph_path",
+        "purpose",
+        "components",
+        "edges"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Job Plan",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "graph_resolve_edge_schemas": {
+    "name": "graph_resolve_edge_schemas",
+    "title": null,
+    "description": "Resolve what record schema (field names, types, nullability) would flow along\neach edge of a CloverDX graph/jobflow at runtime, using the engine's metadata propagation.\n\nUse this when inspecting a static graph where edges have no explicit metadata\nassigned in the XML \u2014 the engine often derives the schema automatically (e.g.\na SORT propagates its input schema unchanged to the output).\n\nUseful for:\n- Understanding what data flows between components before editing a graph\n- Verifying that a transformation outputs the expected fields\n- Debugging schema mismatches without running the graph\n\nFor each edge, returns:\n- metadataSource: how the schema was determined\n  - EXPLICIT: defined directly on this edge in the graph XML\n  - REFERENCED: this edge points to another edge's metadata (see metadataRefEdge);\n    fields are fully resolved through the reference\n  - PROPAGATED: not defined on the edge; engine derived it from a neighbouring edge\n  - NONE: no schema and none is expected (e.g. jobflow control edges)\n- metadataName: name of the resolved record schema, or null for NONE\n- fields: full field list (name, type, nullable) \u2014 populated for EXPLICIT,\n  REFERENCED, and PROPAGATED; empty for NONE\n\nBy default all edges are returned. Pass edgeIds to restrict to specific edges.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "jobFile": {
+          "description": "Path to the graph(.grf) or jobflow(.jbf) file within the sandbox (e.g. 'graph/MyGraph.grf').",
+          "type": "string"
+        },
+        "edgeIds": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "description": "Optional list of edge IDs to include in the result. When omitted, all edges are returned. Must not be empty. Unknown IDs cause an error."
+        },
+        "sandboxCode": {
+          "description": "Code of the sandbox containing the job file.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "jobFile"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "edges"
+      ],
+      "properties": {
+        "edges": {
+          "description": "Map of edge ID to its resolved metadata. Contains every edge in the root graph, or only the requested edges if edge_ids was supplied.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "hasMetadata",
+              "metadataSource",
+              "metadataName",
+              "metadataRefEdge",
+              "fields"
+            ],
+            "properties": {
+              "metadataName": {
+                "description": "Name of the resolved metadata record, or null when metadataSource is NONE.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "hasMetadata": {
+                "description": "True if a schema could be resolved for this edge (metadataSource is EXPLICIT, REFERENCED, or PROPAGATED).",
+                "type": "boolean"
+              },
+              "metadataSource": {
+                "description": "How the schema was determined. EXPLICIT: defined directly on this edge in the XML. REFERENCED: this edge links to another edge's metadata (see metadataRefEdge); fields are resolved through the reference. PROPAGATED: not defined on the edge, but the engine derived it from a neighbouring edge during propagation. NONE: the edge legitimately has no schema and none is expected.",
+                "type": "string",
+                "enum": [
+                  "EXPLICIT",
+                  "REFERENCED",
+                  "PROPAGATED",
+                  "NONE"
+                ]
+              },
+              "metadataRefEdge": {
+                "description": "When metadataSource is REFERENCED, the ID of the edge whose metadata this edge points to (the metadataRef target); otherwise null.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fields": {
+                "description": "Fields of the resolved schema, fully populated for EXPLICIT, REFERENCED, and PROPAGATED. Empty when metadataSource is NONE.",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "name",
+                    "type",
+                    "nullable"
+                  ],
+                  "properties": {
+                    "type": {
+                      "description": "CloverDX field type name (e.g. string, integer, date).",
+                      "type": "string"
+                    },
+                    "nullable": {
+                      "description": "Whether the field accepts null values.",
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "description": "Field name.",
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Job Resolve Metadata",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_copy_file": {
+    "name": "sandbox_copy_file",
+    "title": null,
+    "description": "Copy a file within or across sandboxes. Overwrites destination if it exists.\nAlways back up a graph (e.g. 'graph/MyGraph.bak.grf') before large edits.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sourceSandboxPath": {
+          "description": "Full source file path within the source sandbox (e.g. 'graph/MyGraph.grf')",
+          "type": "string"
+        },
+        "sourceSandboxCode": {
+          "description": "Sandbox code containing the source file",
+          "type": "string"
+        },
+        "destSandboxCode": {
+          "description": "Sandbox code for the destination. Omit or set to the same value as sourceSandboxCode for an intra-sandbox copy.",
+          "type": "string"
+        },
+        "destSandboxPath": {
+          "description": "Full destination file path (e.g. 'graph/MyGraph.bak.grf'). Directory must already exist.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sourceSandboxCode",
+        "sourceSandboxPath",
+        "destSandboxPath"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Copy File",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "job_list": {
+    "name": "job_list",
+    "title": null,
+    "description": "List recent graph and jobflow executions from the CloverDX Server execution history.\n\nFilter by sandbox, jobFile (substring), or status. Returns runId, status, timestamps,\nduration, and error info. Results are ordered by start time descending (newest first).\nUse to find runIds for other job_* tools.\n\nStatus values: RUNNING, FINISHED_OK, ERROR, ABORTED, N_A.\nNote: the status filter parameter accepts only the four explicit\nvalues; N_A appears in results but cannot be used as a filter value.\nUse limit and offset for pagination.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "description": "Maximum number of results to return. Default 20, max 100.",
+          "type": "integer"
+        },
+        "jobFile": {
+          "description": "Filter by job file path (partial match).",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "Filter by an existing sandbox code.",
+          "type": "string"
+        },
+        "status": {
+          "description": "Filter by execution status. One of: RUNNING, FINISHED_OK, ERROR, ABORTED.",
+          "type": "string"
+        },
+        "offset": {
+          "description": "Number of results to skip for pagination. Default 0.",
+          "type": "integer"
+        }
+      },
+      "required": []
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "total",
+        "returned",
+        "runs"
+      ],
+      "properties": {
+        "returned": {
+          "description": "Number of executions returned in this response.",
+          "type": "integer"
+        },
+        "runs": {
+          "description": "List of execution records.",
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "total": {
+          "description": "Total number of matching executions.",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Job List",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "job_run": {
+    "name": "job_run",
+    "title": null,
+    "description": "Submit a graph or jobflow for async execution. Returns the assigned runId immediately.\n\nFollow-up tools: `job_await` (block until completion), `job_get_status` (poll status),\n`job_get_log` (retrieve log), `job_get_tracking` (record counts per component),\n`job_get_edge_debug_data` (per-edge sampled records \u2014 requires debug=true).\nUse the params object to pass job parameter overrides as key-value pairs.\nSet debug=true for edge debug data capture.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "jobFile": {
+          "description": "Path to the job file within the sandbox (e.g. graph/MyGraph.grf).",
+          "type": "string"
+        },
+        "params": {
+          "description": "Optional key-value pairs passed as job parameters.",
+          "type": "object"
+        },
+        "sandboxCode": {
+          "description": "Code of the sandbox containing the job.",
+          "type": "string"
+        },
+        "debug": {
+          "description": "Enable edge debug data capture (default: false). Required for `job_get_edge_debug_data` to return data.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "jobFile"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "runId",
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "description": "Confirmation message.",
+          "type": "string"
+        },
+        "runId": {
+          "description": "Run ID assigned to the new execution.",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Job Run",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "returnDirect": true
+    },
+    "meta": null,
+    "execution": null
+  },
+  "knowledge_base_search": {
+    "name": "knowledge_base_search",
+    "title": null,
+    "description": "Search the read-only CloverDX MCP Knowledge base (guides, recipes, troubleshooting\n\u2014 shipped in the CloverDXMCPKnowledge library; per-component reference now lives in\n`component_get_guide`). Content is fetched fresh from the library on every call\n(no caching).\nReturns a JSON array of matching entries; each item has name, description, tags,\nsource, and category (lane). Default matchMode='literal' scores by token overlap on\nname (word-boundary +3, substring +2), tags (+2 per match), and description (+1).\nTokens are case-insensitive and dropped if shorter than 2 chars. Set matchMode='regex'\nto treat the whole query as a single regex applied to name/description/tags (case-\ninsensitive). Use the category param to restrict to a single lane.\nFor project-scoped agent-curated notes use `knowledge_project_search` instead.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "matchMode": {
+          "description": "Match mode: 'literal' (default, token-based) or 'regex' (case-insensitive regex against name/description/tags).",
+          "type": "string",
+          "enum": [
+            "literal",
+            "regex"
+          ]
+        },
+        "query": {
+          "description": "Search query. With matchMode='literal' (default) tokenised on non-alphanumeric. With matchMode='regex' the whole string is a regex.",
+          "type": "string"
+        },
+        "category": {
+          "description": "Optional lane filter: guides, recipes, or troubleshooting. Omit to search all lanes.",
+          "type": "string"
+        },
+        "limit": {
+          "description": "Maximum number of results to return. Default: 20.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "query"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Knowledge Base Search",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "job_validate": {
+    "name": "job_validate",
+    "title": null,
+    "description": "Validates a graph or jobflow file using server-side checkConfig.\n\nRuns deep configuration validation: checks component settings, connections,\nmetadata compatibility, and attribute values. Returns a list of problems\nwith severity (ERROR, WARNING, INFO) and location details.\n\nOverall result is PASS only when no ERROR-severity problems are found.\nWarnings and info messages are reported but do not cause FAIL.\n\nFor parameterized jobs, job_validate may report errors or warnings\nthat do not occur at runtime, because validation does not receive\nruntime parameter values. Interpret such findings with caution.\n\nErrors may not be exhaustive \u2014 some block further checks. Fix reported\nissues and re-validate until the result is PASS.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "jobFile": {
+          "description": "Path to the graph or jobflow file within the sandbox (e.g. 'graph/MyGraph.grf').",
+          "type": "string"
+        },
+        "timeoutSeconds": {
+          "description": "Maximum seconds to wait for validation to complete. Defaults to 120.",
+          "type": "integer"
+        },
+        "sandboxCode": {
+          "description": "Sandbox code containing the job file.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "jobFile"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "overall",
+        "timedOut",
+        "problems"
+      ],
+      "properties": {
+        "overall": {
+          "description": "Validation result: PASS if no errors found, FAIL otherwise.",
+          "type": "string"
+        },
+        "problems": {
+          "description": "List of configuration problems found.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "severity"
+            ],
+            "properties": {
+              "priority": {
+                "description": "Problem priority: NORMAL or HIGH.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "severity": {
+                "description": "Problem severity: ERROR, WARNING, or INFO.",
+                "type": "string"
+              },
+              "exceptionStackTrace": {
+                "description": "Truncated stack trace of the underlying exception, when present.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "exceptionMessage": {
+                "description": "Underlying exception message chain, when the problem carries a cause.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "message": {
+                "description": "Human-readable problem description.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "attributeName": {
+                "description": "Attribute name related to the problem.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "elementName": {
+                "description": "Name of the graph element with the problem.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "elementId": {
+                "description": "ID of the graph element with the problem.",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "timedOut": {
+          "description": "True if the operation timed out before completing.",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Job Validate",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "think": {
+    "name": "think",
+    "title": null,
+    "description": "Log explicit reasoning before acting. Returns acknowledgement only.\n\nMUST use before:\n- Choosing between components (reason through criteria)\n- Writing or editing a graph (plan components, edges, metadata)\n- Fixing validation errors (diagnose root cause first)\n- Following a reference graph pattern\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "thought": {
+          "description": "Your reasoning, plan, hypothesis, or decision rationale.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "thought"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "description": "Always 'acknowledged'.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Think",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_grep_files": {
+    "name": "sandbox_grep_files",
+    "title": null,
+    "description": "Search file contents across one or more sandboxes (like grep -rn).\nSupports literal or regex matching, optional file glob filtering,\noptional path scoping, and optional context lines around matches.\n\nExamples:\n- Find graphs using a component: searchString='type=\"VALIDATOR\"', sandboxes=['DWH'], sandboxPath='graph'\n- Regex search in CTL files: searchString='function\\s+[A-Za-z_]+', matchMode='regex', filePattern='*.ctl'\n\nFiles larger than 10 MB are skipped; they appear in the `skipped` array with reason `file_too_large`.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "filePattern": {
+          "description": "Optional shell-style wildcard to filter files before content search. Defaults to '*' (all files).",
+          "type": "string"
+        },
+        "sandboxPath": {
+          "description": "Optional directory prefix within each sandbox to search recursively under. Defaults to sandbox root.",
+          "type": "string"
+        },
+        "maxResultsPerSandbox": {
+          "type": "integer",
+          "maximum": 200,
+          "minimum": 1,
+          "description": "Maximum number of matches to return per sandbox. Default: 25, max: 200."
+        },
+        "contextLines": {
+          "description": "Number of lines to include before and after each matched line. Default: 0.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "searchString": {
+          "type": "string",
+          "pattern": "\\S",
+          "minLength": 1,
+          "description": "Exact string or regex pattern to search for. Must not be blank (must contain at least one non-whitespace character)."
+        },
+        "matchMode": {
+          "description": "Match mode: literal string match or regex. Default: literal.",
+          "type": "string",
+          "enum": [
+            "literal",
+            "regex"
+          ]
+        },
+        "sandboxes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "Sandbox codes to search in."
+        }
+      },
+      "required": [
+        "searchString",
+        "sandboxes"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "totalMatches",
+        "truncated",
+        "results"
+      ],
+      "properties": {
+        "skipped": {
+          "items": {
+            "type": "object",
+            "required": [
+              "sandbox",
+              "filePath",
+              "skippedReason"
+            ],
+            "properties": {
+              "fileSizeBytes": {
+                "type": "integer"
+              },
+              "skippedReason": {
+                "type": "string"
+              },
+              "maxBytes": {
+                "type": "integer"
+              },
+              "filePath": {
+                "type": "string"
+              },
+              "sandbox": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "type": "array"
+        },
+        "results": {
+          "items": {
+            "type": "object",
+            "required": [
+              "sandbox",
+              "filePath",
+              "lineNumber",
+              "context"
+            ],
+            "properties": {
+              "filePath": {
+                "type": "string"
+              },
+              "context": {
+                "items": {
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "sandbox": {
+                "type": "string"
+              },
+              "lineNumber": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": false
+          },
+          "type": "array"
+        },
+        "totalMatches": {
+          "type": "integer"
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Grep Files",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "server_logs_search": {
+    "name": "server_logs_search",
+    "title": null,
+    "description": "Lists server log entries filtered by a regular expression pattern and appender type, within a specified time interval.\n\nReturns up to 1MB of log data per call.\n\nTo retrieve all matching entries, use pagination:\n\t- Call repeatedly, passing the timestamp of the last message from the previous response (found in the 'logs' field) as the fromTimestamp parameter in the next request.\n\t- **Stop pagination when:**\n\t\t- The 'moreData' field in the response is false (indicating you've reached the end)\n\t\t- You've reached the toTimestamp limit\n\t- **Only continue pagination if 'moreData' is true**, as this indicates there may be more matching entries available.\n\n\tThis way, each subsequent call continues fetching logs after the last returned timestamp until no more results are available.\n\n\tParameters:\n\t\t- pattern: Java regex to filter log entries.\n\t\t- appender: Which log appender to query.\n\t\t- fromTimestamp: Start of the time interval (inclusive). For pagination, set this to the timestamp of the last message from the previous response. Format: yyyy-MM-dd HH:mm:ss,SSS.\n\t\t- toTimestamp: End of the time interval (exclusive). Format: yyyy-MM-dd HH:mm:ss,SSS.\n\n\tResponse:\n\t\t- logs: String containing the log entries.\n\t\t- moreData: Boolean indicating if there are more entries to retrieve (true = more data available, false = no more data).\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "description": "Regular expression pattern in Java format (java.util.regex.Pattern) to filter log entries",
+          "type": "string"
+        },
+        "appender": {
+          "description": "\tSpecifies which\tlog appender to retrieve logs from.\n\tAvailable options are:\n\n\t\t- ALL: It contains information related to Server core and worker processes, start and end times of job executions, successful and unsuccessful logins, etc.\n- NODE_STATUS: It contains cluster-related messages. It contains information on job delegation across nodes and other types of messages related to cluster communication.\n- USER_ACTION: It contains user-related operations, e.g. login, logout, user creation, and file synchronization triggered by changes in Server projects.\n- SERVER_AUDIT_LOG: It contains information about operations triggered by the CloverDX Server core, e.g., job execution calls. This log is disabled by default. Refer here for more information about how to enable it and what kind of information it logs.\n- SERVER_INTEGRATION: It contains information related to the interaction between CloverDX Designer and Server.\n- DATA_SERVICE: It contains information related to data services, e.g., login information, target URI, IP address, or returned HTTP code.\n- JOB_QUEUE: It contains information related to jobs processing, e.g., the number of currently queued and running jobs, and the current system CPU.\n- MONITOR: It contains information related to monitors, e.g., creation and deletion of monitors, changes in monitor states, or the number of failing items in monitors.\n- REMOTE_DATA_MANAGER: It contains details of remote access to data sets in the Data Manager if remote Data Manager is configured. It includes information like the IP address of the remote Server, the configured user and client name of the remote connection, the type of action performed (such as read or write), and how long the operation took.\n- ASSISTANT_WRANGLER: It contains information related to the AI Assistant Wrangler feature, e.g., requests made to the assistant and responses received.\n- WORKER: It contains worker-related information (e.g. when a worker process was stopped or started, and it lists job start and end times\n\n",
+          "type": "string",
+          "enum": [
+            "ALL",
+            "NODE_STATUS",
+            "USER_ACTION",
+            "SERVER_AUDIT_LOG",
+            "SERVER_INTEGRATION",
+            "DATA_SERVICE",
+            "JOB_QUEUE",
+            "MONITOR",
+            "REMOTE_DATA_MANAGER",
+            "ASSISTANT_WRANGLER",
+            "WORKER"
+          ]
+        },
+        "fromTimestamp": {
+          "description": "The start of the time interval (inclusive). For pagination, set this to the timestamp of the last log message from the previous response to continue retrieving subsequent entries.",
+          "type": "string"
+        },
+        "toTimestamp": {
+          "description": "The end of the time interval (exclusive). Only log entries with timestamps earlier than this value are returned.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "appender"
+      ]
+    },
+    "outputSchema": {
+      "required": [
+        "logs",
+        "moreData"
+      ],
+      "type": "object",
+      "properties": {
+        "moreData": {
+          "type": "boolean"
+        },
+        "logs": {
+          "type": "string"
+        }
+      }
+    },
+    "icons": null,
+    "annotations": {
+      "title": "List Server Logs",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "note_read": {
+    "name": "note_read",
+    "title": null,
+    "description": "Read notes from session-scoped working memory. When 'section' is set,\nreturns only that section's contents (empty string if not present);\notherwise returns all sections inlined in full while the board is small, or a lightweight index of section names with sizes once it grows past the inline limit (call note_read with a section name to read that section's contents).\nSee `note_add` for write semantics and the session/DECISIONS.md trade-off.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "section": {
+          "description": "Section name to read. Omit to read all sections.",
+          "type": "string"
+        }
+      },
+      "required": []
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Note Read",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_write_file": {
+    "name": "sandbox_write_file",
+    "title": null,
+    "description": "Write a file in a sandbox using one of four modes: overwrite (default), append, insert, replace.\ninsert requires start_line and shifts existing lines down.\nreplace requires start_line + line_count and replaces that line range with the provided content.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "description": "Write mode (default: overwrite).",
+          "type": "string",
+          "enum": [
+            "overwrite",
+            "append",
+            "insert",
+            "replace"
+          ]
+        },
+        "sandboxPath": {
+          "description": "Directory path within the sandbox (e.g. 'graph')",
+          "type": "string"
+        },
+        "filename": {
+          "description": "File name including extension (e.g. 'MyGraph.grf')",
+          "type": "string"
+        },
+        "start_line": {
+          "description": "1-based line position. Required for insert and replace.",
+          "type": "integer"
+        },
+        "content": {
+          "description": "UTF-8 text to write. For insert/replace, content is inserted by lines.",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "The unique sandbox code (e.g. 'MySandbox')",
+          "type": "string"
+        },
+        "line_count": {
+          "description": "Number of lines to replace. Required for replace only.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "filename",
+        "content"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Write File",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_list_assets": {
+    "name": "sandbox_list_assets",
+    "title": null,
+    "description": "List reusable assets in a sandbox. Asset types are recognized by file extension:\nmetadata (.fmt), connections (.cfg), lookups (.lkp), CTL (.ctl), sequences (.seq),\nparameters (.prm).\nCall early during graph creation to discover shared assets and their fileURL\npaths before defining anything inline. Filter by assetType to narrow results.\n\nUse detail=verbose to parse file contents and return enriched metadata\nalongside the paths. detail=basic (default) returns paths only and is faster.\n\nReturns:\n  - sandbox: sandbox code (string)\n  - asset_type: the requested asset type filter (string)\n  - count: total number of distinct asset paths found (integer)\n  - assets: when assetType=all, an object keyed by type; when a specific type\n            is requested, a list for that type only.\n\nAsset list entries:\n  - metadata: {path, fields: [...up to 25 field names...], truncated?}\n  - connection: {path, type, dbURL?, database?, jndiName?}\n  - lookup: {path, type} (e.g. dbLookup, simpleLookup, persistentLookup)\n  - parameters: {path, parameters: [...parameter names...]}\n  - ctl: {path, functions: [\"returnType name(params)\", ...]}\n  - sequence: plain string paths\n  - any file whose content cannot be parsed: {path, content: \"unknown\"}\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "detail": {
+          "description": "basic (default): paths only. verbose: parse file contents \u2014 metadata fields, connection dbURL/type, lookup type, CTL functions, parameter names.",
+          "type": "string",
+          "enum": [
+            "basic",
+            "verbose"
+          ]
+        },
+        "assetType": {
+          "description": "Filter: metadata(.fmt), connection(.cfg), lookup(.lkp), ctl(.ctl), sequence(.seq), parameters(.prm), or all (default).",
+          "type": "string",
+          "enum": [
+            "metadata",
+            "connection",
+            "lookup",
+            "ctl",
+            "sequence",
+            "parameters",
+            "all"
+          ]
+        },
+        "sandboxCode": {
+          "description": "Sandbox code to inspect.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "sandbox",
+        "asset_type",
+        "count",
+        "assets"
+      ],
+      "properties": {
+        "asset_type": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer"
+        },
+        "sandbox": {
+          "type": "string"
+        },
+        "assets": {}
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox List Linked Assets",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "job_get_tracking": {
+    "name": "job_get_tracking",
+    "title": null,
+    "description": "# Execution Tracking \u2014 Per-Run Phases / Nodes / Ports\n\nReturns a structured tracking snapshot for a single graph execution: phase\ntimings, per-component results and CPU times, and per-port record / byte\ncounters. Use this to verify data flow (\"filter passed N of M records\") or\nto debug a failed run.\n\n## Parameters\n* `runId` (required) \u2014 the numeric run identifier.\n* `detailed` (optional, default `true`) \u2014 when `false`, the response is\n  trimmed to just the top-level status + `summary` aggregates (phase / node\n  / port counts and total records / bytes), omitting the full hierarchy.\n  Useful on large graphs where the detailed payload is heavy.\n\n## Response shape (detailed=true)\n```\n{\n  \"run_id\": \"12345\",\n  \"status\": \"FINISHED_OK\",\n  \"exec_seconds\": 180.0,\n  \"phases\": [{\n    \"phase_number\": 0,\n    \"exec_seconds\": 90.5,\n    \"nodes\": [{\n      \"node_id\": \"READ_CSV\", \"node_name\": \"Read CSV\",\n      \"node_type\": \"DATA_READER\", \"result\": \"FINISHED_OK\",\n      \"cpu_seconds\": 1.2,\n      \"ports\": [{\"port_type\": \"OUTPUT\", \"index\": 0,\n                 \"records\": 100, \"bytes\": 5000}]\n    }]\n  }],\n  \"summary\": {\"phase_count\": 1, \"node_count\": 1, \"port_count\": 1,\n              \"total_records\": 100, \"total_bytes\": 5000}\n}\n```\nWhen tracking is not yet available (job hasn't started, or tracking wasn't\nrecorded), the response carries `status: \"UNKNOWN\"`, empty aggregates, and\na `warning` field describing the situation. The tool does not error in that\ncase \u2014 callers can re-poll.\n\n## Obtaining runId\nIf the runId is not known in advance, use `job_list` or query the\n`run_record` table via `server_db_execute_query`.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "detailed": {
+          "description": "If false, return only the summary aggregates without the per-phase/node/port hierarchy. Default true.",
+          "type": "boolean"
+        },
+        "runId": {
+          "description": "Unique numeric identifier of the job execution (run ID).",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "runId"
+      ]
+    },
+    "outputSchema": {
+      "required": [
+        "run_id",
+        "status",
+        "summary"
+      ],
+      "type": "object",
+      "properties": {
+        "phases": {
+          "items": {
+            "required": [
+              "phase_number",
+              "nodes"
+            ],
+            "type": "object",
+            "properties": {
+              "exec_seconds": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "nodes": {
+                "items": {
+                  "required": [
+                    "node_id",
+                    "node_type",
+                    "ports"
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "cpu_seconds": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "node_type": {
+                      "type": "string"
+                    },
+                    "result": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "node_name": {
+                      "type": "string"
+                    },
+                    "node_id": {
+                      "type": "string"
+                    },
+                    "ports": {
+                      "items": {
+                        "required": [
+                          "port_type",
+                          "index",
+                          "records",
+                          "bytes"
+                        ],
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "integer"
+                          },
+                          "port_type": {
+                            "type": "string",
+                            "enum": [
+                              "INPUT",
+                              "OUTPUT"
+                            ]
+                          },
+                          "bytes": {
+                            "type": "integer"
+                          },
+                          "records": {
+                            "type": "integer"
+                          }
+                        }
+                      },
+                      "type": "array"
+                    }
+                  }
+                },
+                "type": "array"
+              },
+              "phase_number": {
+                "type": "integer"
+              }
+            }
+          },
+          "type": "array"
+        },
+        "summary": {
+          "required": [
+            "phase_count",
+            "node_count",
+            "port_count",
+            "total_records",
+            "total_bytes"
+          ],
+          "type": "object",
+          "properties": {
+            "total_records": {
+              "type": "integer"
+            },
+            "total_bytes": {
+              "type": "integer"
+            },
+            "phase_count": {
+              "type": "integer"
+            },
+            "port_count": {
+              "type": "integer"
+            },
+            "node_count": {
+              "type": "integer"
+            }
+          }
+        },
+        "warning": {
+          "description": "Present only when tracking data is unavailable.",
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "exec_seconds": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Job Get Tracking",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "job_get_status": {
+    "name": "job_get_status",
+    "title": null,
+    "description": "Quick status check for a graph or jobflow run (no log fetch). Identifies the run by runId.\n\nStatus values: RUNNING, FINISHED_OK, ERROR, ABORTED, N_A.\nRUNNING includes elapsed time and current phase number.\nFor completed runs, use `job_get_tracking` or `job_get_log`.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "description": "Unique numeric identifier of the job execution (run ID).",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "runId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "runId",
+        "status"
+      ],
+      "properties": {
+        "jobFile": {
+          "description": "Path to the job file.",
+          "type": "string"
+        },
+        "runId": {
+          "description": "Unique execution identifier.",
+          "type": "integer"
+        },
+        "stopTime": {
+          "description": "ISO 8601 stop timestamp, null if still running.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "startTime": {
+          "description": "ISO 8601 start timestamp, null if not yet started.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sandboxCode": {
+          "description": "Sandbox code.",
+          "type": "string"
+        },
+        "error": {
+          "description": "Error details if status is ERROR, null otherwise.",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "jobType": {
+          "description": "Job type.",
+          "type": "string"
+        },
+        "durationMs": {
+          "description": "Execution duration in milliseconds.",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "status": {
+          "description": "Execution status: RUNNING, FINISHED_OK, ERROR, ABORTED, N_A.",
+          "type": "string"
+        },
+        "executionLabel": {
+          "description": "Custom execution label.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "submitTime": {
+          "description": "ISO 8601 submit timestamp.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Job Get Status",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "knowledge_project_read": {
+    "name": "knowledge_project_read",
+    "title": null,
+    "description": "Read a single project-local knowledge entry from\n<sandbox>/assistant/<projectName>/knowledge_project/[<topic>/]<name>.md.\nReturns the entry body without the YAML frontmatter; names are unique per project,\nso the server auto-resolves across topic subdirectories.\nIf called without a name (or with a blank name), returns the auto-generated\nINDEX.md \u2014 a topic-grouped overview of the project's persisted knowledge.\nUse this as a cheap discovery call to see what already exists.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "projectName": {
+          "description": "Project name within the sandbox (e.g. 'dwh-q4-refresh'). Entries live under <sandbox>/assistant/<projectName>/knowledge_project/.",
+          "type": "string"
+        },
+        "name": {
+          "description": "Entry name (without .md extension). Omit or leave blank to list available entries in the project.",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "Code of the project sandbox the entry lives in.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "projectName"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Project Knowledge Read",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "job_get_edge_debug_data": {
+    "name": "job_get_edge_debug_data",
+    "title": null,
+    "description": "Fetch sample records that flowed through an edge during a debug run.\n\nUse to inspect mid-graph data for diagnosing transformation logic \u2014 e.g. checking\nwhat values reached a component's reject port or an intermediate edge.\nRequires the job to have been executed with edge debugging enabled\n(debug=true top-level parameter on `job_run`; the legacy\nedgeDebugging=true in `job_run` params still works for back-compat\nbut new code should use the top-level parameter). If debugging\nwas not enabled, the response will contain debugNotAvailable=true\nwith an explanation.\n\nRecords are returned as an array of field-name to string-value maps.\nAll field values are serialized as strings; null fields are represented as JSON null.\nUse fromRecord and recordCount for pagination.\n\nEach response also includes a metadata array \u2014 one entry per record\nfield with name, type, nullable, and optional format. Use this to\ncorrectly interpret record values (e.g. parse the string with the\nformat pattern for date fields, or apply type-specific validation).\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "edgeId": {
+          "description": "Edge ID as defined in the graph XML (e.g. 'Edge0').",
+          "type": "string"
+        },
+        "recordCount": {
+          "description": "Maximum number of records to return. Defaults to 50.",
+          "type": "integer"
+        },
+        "runId": {
+          "description": "Run ID of the job execution (from `job_run` or `job_list`).",
+          "type": "integer"
+        },
+        "fromRecord": {
+          "description": "Zero-based index of the first record to return. Defaults to 0.",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "runId",
+        "edgeId"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "runId",
+        "edgeId",
+        "fromRecord",
+        "records"
+      ],
+      "properties": {
+        "fromRecord": {
+          "description": "Zero-based index of the first returned record.",
+          "type": "integer"
+        },
+        "message": {
+          "description": "Explanation when debugNotAvailable is true.",
+          "type": "string"
+        },
+        "records": {
+          "description": "List of data records that flowed through the edge.",
+          "type": "array",
+          "items": {
+            "description": "A single data record \u2014 field name to string value map.",
+            "type": "object",
+            "additionalProperties": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "debugNotAvailable": {
+          "description": "True when edge debugging was not enabled for this run.",
+          "type": "boolean"
+        },
+        "edgeId": {
+          "description": "Edge ID for which the data was fetched.",
+          "type": "string"
+        },
+        "runId": {
+          "description": "Run ID used to fetch the data.",
+          "type": "integer"
+        },
+        "metadata": {
+          "description": "Field metadata \u2014 name, type, nullable, and optional format for each field.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "type",
+              "nullable"
+            ],
+            "properties": {
+              "type": {
+                "description": "Field data type (e.g. integer, string, date, decimal).",
+                "type": "string"
+              },
+              "nullable": {
+                "description": "Whether the field accepts null values.",
+                "type": "boolean"
+              },
+              "format": {
+                "description": "Optional format pattern (e.g. date format string).",
+                "type": "string"
+              },
+              "name": {
+                "description": "Field name.",
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Job Get Edge Debug Data",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_list": {
+    "name": "sandbox_list",
+    "title": null,
+    "description": "List all sandboxes accessible to the current user.\n\nEach entry returns:\n- sandboxCode: unique sandbox identifier \u2014 pass as 'sandboxCode' in other tool calls.\n- name: display name shown in the CloverDX Server UI.\n- description: free-form text from the sandbox properties (may be null when unset).\n- suspended: true if the sandbox is currently suspended \u2014 pre-filter on this if\n  you don't want to interact with disabled sandboxes.\n",
+    "inputSchema": {
+      "type": "object"
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "sandboxes"
+      ],
+      "properties": {
+        "sandboxes": {
+          "items": {
+            "type": "object",
+            "required": [
+              "sandboxCode",
+              "name"
+            ],
+            "properties": {
+              "suspended": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "description": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sandboxCode": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "List Sandboxes",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "server_db_execute_query": {
+    "name": "server_db_execute_query",
+    "title": null,
+    "description": "\tExecutes a read-only SQL SELECT against the CloverDX internal system database. It is for metadata,\n\trun history, users, schedules, and other server-managed records.\n\n\tThis is NOT a query tool for user-defined data sources\n\t(database connections configured in sandboxes for ETL graphs).\n\n\tTypical tables: run_record, sandbox, user, library_repository,\n\tschedule, task, event_listener, sequence_value.\n\n\t## Database dialect\n\tIf you don't already know the dialect from this session, call\n\t`server_deployment` once to identify it and reuse the result.\n\n\tIf table or column structure is unclear, call\n\t`server_db_get_schema`.\n\n\t## Allowed\n\n\t- SELECT only \u2014 INSERT/UPDATE/DELETE/DROP/etc. are rejected\n\t- Joins, WHERE, LIMIT, aggregations\n\t- Single statement (no semicolon-separated batches)\n\n\t## Forbidden\n\n\tQueries touching system/credential tables or password columns are\n\trejected by the server with an explicit error message.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sqlQuery": {
+          "description": "SQL SELECT statement to execute against the system database.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sqlQuery"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Execute Database Query",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": {
+      "purpose": "Execute validated read-only SQL SELECT queries against the CloverDX Server's database"
+    },
+    "execution": null
+  },
+  "db_execute_query": {
+    "name": "db_execute_query",
+    "title": null,
+    "description": "Execute a SQL query against any database reachable by the CloverDX Server via JDBC.\nReturns the result set as JSON (default) or delimited text (CSV).\nUse 'format' to choose output format:\n  \"json\" (default) - array of row objects; column names from the SQL AS-alias or base column name.\n  \"csv\"            - delimited text with a header row; delimiter defaults to \"|\".\nUse 'delimiter' to override the field separator for CSV (single character, default \"|\").\nUse 'max_rows' to limit rows returned (1-1000, default 100);\nresults are truncated at 1000 regardless of the requested value.\nFor DML/DDL queries that produce no result set, 'rows_affected' is returned instead of rows.\n\n## connectionProperties\nOption A (preferred) - config file: pass only 'dbConfig' as a sandbox URL:\n  sandbox://<sandbox_code>/<path-to-cfg> (e.g. \"sandbox://mybox/conn/myDB.cfg\").\n  Use when a saved .cfg exists. The .cfg must not use jndiName.\nOption B (fallback) - inline properties:\n  jdbcSpecific: JDBC driver type identifier (see list below) \u2014 NOT the database name.\n  dbURL: connection URL \u2014 database name is encoded here.\n  user, password: credentials (optional).\n  name: display label only \u2014 omit it.\n  database: database type \u2014 typically matches jdbcSpecific (see exceptions below).\n  Do not pass jndiName \u2014 JNDI is not supported.\n\n## jdbcSpecific values and dbURL formats\n  POSTGRE     jdbc:postgresql://hostname/database\n  ORACLE      jdbc:oracle:thin:@host:1521:SID  |  jdbc:oracle:thin:@host:1521/service_name\n  MSSQL       jdbc:sqlserver://hostname:1433;databaseName=database  (Microsoft driver, recommended)\n              jdbc:jtds:sqlserver://hostname:1433/database  (legacy jTDS driver)\n  MYSQL       jdbc:mysql://hostname:3306/database\n  DB2         jdbc:db2://hostname:50000/database\n  SQLITE      jdbc:sqlite:/path/to/file.db\n  SNOWFLAKE   jdbc:snowflake://account.snowflakecomputing.com/?[params]\n  REDSHIFT    jdbc:redshift://cluster.redshift.amazonaws.com:5439/database\n  VERTICA     jdbc:vertica://hostname:5433/database\n  DERBY       jdbc:derby://hostname:1527/derby.db\n  EXASOLUTION jdbc:exa:hostname:8563;schema=schemaName\n  SYBASE      jdbc:jtds:sybase://hostname:7100/database\n\n## .cfg file generation\nSet both database=<TYPE> and jdbcSpecific=<TYPE> to the same value \u2014 with one exception:\nMSSQL with Microsoft JDBC driver uses database=MSSQLSERVER (not MSSQL), jdbcSpecific=MSSQL.\nMSSQL with legacy jTDS driver uses database=MSSQL, jdbcSpecific=MSSQL.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": [
+            "json",
+            "csv"
+          ],
+          "description": "Output format: \"json\" (default) - object with columns and rows arrays; \"csv\" - delimited text with a header row.",
+          "default": "json"
+        },
+        "delimiter": {
+          "description": "Single-character field delimiter for CSV output. Default \"|\". Ignored for JSON format.",
+          "type": "string"
+        },
+        "maxRows": {
+          "type": "integer",
+          "maximum": 1000,
+          "description": "Maximum rows to return (1-1000). Default 100. Hard cap is always 1000.",
+          "minimum": 1,
+          "default": 100
+        },
+        "sql": {
+          "description": "SQL statement to execute (SELECT, DML, or DDL).",
+          "type": "string"
+        },
+        "connectionProperties": {
+          "description": "DB connection config. Option A (preferred): {\"dbConfig\": \"sandbox://code/path.cfg\"} (must not use jndiName - JNDI is not supported). Option B (inline): {\"jdbcSpecific\": \"POSTGRE\", \"dbURL\": \"jdbc:postgresql://hostname/dbname\", \"user\": \"u\", \"password\": \"p\"}. jdbcSpecific is the JDBC driver type \u2014 NOT the database name (which belongs in dbURL). Supported: POSTGRE, ORACLE, MSSQL, MSSQL2005, MYSQL, DB2, SQLITE, SNOWFLAKE, REDSHIFT, SYBASE, VERTICA, HIVE, INFORMIX, DERBY, EXASOLUTION, FIREBIRD, PERVASIVE, MSACCESSJAVA, GENERIC. When creating a .cfg: set jdbcSpecific=<TYPE> and database=<TYPE> to the same value \u2014 EXCEPT MSSQL with Microsoft driver where database=MSSQLSERVER (not MSSQL).",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "connectionProperties",
+        "sql"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Execute DB Query",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_find_file": {
+    "name": "sandbox_find_file",
+    "title": null,
+    "description": "Recursively find files in a sandbox by shell-style wildcard (* and ?). Client-side filtering.\n\nReturns:\n  - files: array of matched file entries\n    - files[].name: file name (string)\n    - files[].path: full path relative to the sandbox root (string)\n    - files[].size: file size in bytes (number)\n    - files[].lastModified: last modification timestamp in milliseconds (number)\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "description": "Wildcard pattern, for example '*.grf', 'graph/*.grf', or 'data/file?.csv'",
+          "type": "string"
+        },
+        "sandboxPath": {
+          "description": "Optional starting directory within the sandbox (default: root)",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "Sandbox code (e.g. MySandbox)",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "pattern"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "files"
+      ],
+      "properties": {
+        "files": {
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "path"
+            ],
+            "properties": {
+              "size": {
+                "type": "number"
+              },
+              "lastModified": {
+                "type": "number"
+              },
+              "path": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          },
+          "type": "array"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Find File",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_get_workspace_parameters": {
+    "name": "sandbox_get_workspace_parameters",
+    "title": null,
+    "description": "Resolve sandbox workspace parameter values \u2014 the ${DATAIN_DIR}, ${DATAOUT_DIR},\n${CONN_DIR}, and other path placeholders defined in workspace.prm \u2014 with optional\nserver-side overlay from server defaults and system properties.\n\nCall this before writing any file path into a graph to get the correct resolved\nvalues for parameters like ${DATAIN_DIR} rather than hardcoding absolute paths.\n\nNOT for graph-level parameters defined inside a .grf file (those are graph\nexecution parameters passed via `job_run`'s params argument).\nNOT for jobflow token parameters.\n\nReturns resolved values with source provenance for each parameter, any overrides\napplied by the server, and any still-unresolved ${...} placeholder references.\n\nReturns:\n  - sandbox: sandbox code (string)\n  - workspace_param_path: path to the parameter file that was read (string)\n  - resolution_scope: always \"best_effort\" (string)\n  - counts: summary counts for each data source and resolution result (object)\n  - resolved_parameters: fully resolved parameter values keyed by name (object)\n  - parameter_sources: provenance of each parameter (workspace_prm, server_defaults, system_properties) (object)\n  - workspace_descriptions: description text for each parameter from workspace.prm (object)\n  - applied_overrides: parameters whose value were overridden by server defaults or system properties (object)\n  - unresolved_references: remaining ${...} placeholder names per parameter (object)\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "workspaceParamPath": {
+          "description": "Path to workspace parameter file within sandbox (default: 'workspace.prm').",
+          "type": "string"
+        },
+        "includeDefaults": {
+          "description": "Overlay values from the server's GetDefaults operation, which provides server-level default parameter values (default: true).",
+          "type": "boolean"
+        },
+        "sandboxCode": {
+          "description": "Sandbox code to inspect.",
+          "type": "string"
+        },
+        "includeAllServerProperties": {
+          "description": "Also include server properties that have no corresponding entry in workspace.prm. Useful for discovering all available server-side parameter values (default: false).",
+          "type": "boolean"
+        },
+        "includeSystemProperties": {
+          "description": "Overlay matching keys from server system properties \u2014 JVM -D flags or OS environment variables registered as system properties (default: true).",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "sandboxCode"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "sandbox",
+        "workspace_param_path",
+        "resolution_scope",
+        "counts",
+        "resolved_parameters",
+        "parameter_sources",
+        "workspace_descriptions",
+        "applied_overrides",
+        "unresolved_references"
+      ],
+      "properties": {
+        "resolved_parameters": {
+          "type": "object"
+        },
+        "workspace_param_path": {
+          "type": "string"
+        },
+        "unresolved_references": {
+          "type": "object"
+        },
+        "applied_overrides": {
+          "type": "object"
+        },
+        "parameter_sources": {
+          "type": "object"
+        },
+        "counts": {
+          "type": "object"
+        },
+        "workspace_descriptions": {
+          "type": "object"
+        },
+        "sandbox": {
+          "type": "string"
+        },
+        "resolution_scope": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Get Parameters",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "graph_list_elements": {
+    "name": "graph_list_elements",
+    "title": null,
+    "description": "Returns elements of a specific type from a job file (graph/subgraph/jobflow/data_service).\n\nRetrieves lookup tables, dictionaries, sequences, or metadata\ndefinitions from the specified graph/jobflow file. The sandbox\nmust be accessible to the current user.\n\nUse the optional `id` parameter to fetch a single named element.\nA non-matching id returns an empty elements list rather than an error.\n\nElement structure varies by type:\n- lookupTable / dictionary / sequence: name + properties array\n- metadata: id + properties map + fields array\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "jobFile": {
+          "description": "Path to the graph/subgraph/jobflow file within the sandbox (e.g. 'graph/MyGraph.grf').",
+          "type": "string"
+        },
+        "elementType": {
+          "description": "Type of elements to return.",
+          "type": "string",
+          "enum": [
+            "lookupTable",
+            "dictionary",
+            "sequence",
+            "metadata"
+          ]
+        },
+        "sandboxCode": {
+          "description": "Sandbox code containing the job file.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Optional element name (for lookupTable/dictionary/sequence) or id (for metadata). If provided, only the element with an exact match is returned.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "jobFile",
+        "elementType"
+      ]
+    },
+    "outputSchema": {
+      "type": "object",
+      "required": [
+        "elementType",
+        "elements"
+      ],
+      "properties": {
+        "elements": {
+          "description": "List of matching elements. Each item shape depends on elementType: OutlineElement (name, properties, error) for lookupTable/dictionary/sequence; Metadata (id, properties, fields) for metadata.",
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "properties": {
+                    "description": "Configuration properties of the element.",
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "description": "Current configured value.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "defaultValue": {
+                          "description": "Default value when not set.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "displayName": {
+                          "description": "Human-readable property label.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "description": "Internal property name.",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "name": {
+                    "description": "Element name (used as its identifier).",
+                    "type": "string"
+                  },
+                  "error": {
+                    "description": "Error message if the element could not be loaded.",
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "description": "Represents a lookupTable, dictionary, or sequence element.",
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Metadata identifier.",
+                    "type": "string"
+                  },
+                  "properties": {
+                    "description": "Metadata attributes as key-value pairs.",
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "fields": {
+                    "description": "List of field definitions.",
+                    "type": "array",
+                    "items": {
+                      "additionalProperties": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "type": "object"
+                    }
+                  }
+                },
+                "description": "Represents a metadata record definition.",
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "elementType": {
+          "description": "The requested element type: lookupTable, dictionary, sequence, or metadata.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "icons": null,
+    "annotations": {
+      "title": "Job Get Elements",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "knowledge_read_resource": {
+    "name": "knowledge_read_resource",
+    "title": null,
+    "description": "Fetch the content of a CloverDX knowledge resource by its URI. Resources are\nstatic reference documents (text/markdown) or structured data (application/json)\nfrom the CloverDX knowledge library installed on the server.\n\nCall `knowledge_list_resources` first to discover available URIs.\nURI format example: cloverdx://reference/graph-xml\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "uri": {
+          "description": "Full resource URI as returned by `knowledge_list_resources` (e.g. 'cloverdx://reference/graph-xml').",
+          "type": "string"
+        }
+      },
+      "required": [
+        "uri"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Read Resource",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "task_workflow_get": {
+    "name": "task_workflow_get",
+    "title": null,
+    "description": "MUST call at the start of any CloverDX task. Returns step-by-step agent instructions\nwith mandatory phases, XML rules, validation requirements, error fix procedures, and\na completion checklist for the requested task type.\n\nThis is NOT documentation about CloverDX graphs or jobflows \u2014 it returns procedural\ninstructions that guide the agent's own actions for the current task.\n\nTask types:\n- 'create_graph': Design and build a new ETL graph (.grf) \u2014 component selection,\n  metadata definitions, XML structure rules, and validation.\n- 'edit_graph': Modify an existing graph \u2014 read-first protocol, patch vs. rewrite\n  decision, re-read-between-patches rule.\n- 'create_edit_jobflow': Create or edit a jobflow (.jbf) \u2014 token-flow model,\n  child job wiring, branch and routing rules.\n- 'validate_and_run': Validate, execute, and verify a graph \u2014 Stage 1/Stage 2\n  error handling, tracking inspection, log analysis.\n\nDefaults to 'create_graph' if omitted.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "task": {
+          "description": "Task type. Defaults to 'create_graph'.",
+          "type": "string",
+          "enum": [
+            "create_graph",
+            "edit_graph",
+            "create_edit_jobflow",
+            "validate_and_run"
+          ]
+        }
+      },
+      "required": []
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Workflow guide",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_rename_file": {
+    "name": "sandbox_rename_file",
+    "title": null,
+    "description": "Rename a file in a sandbox (same directory only).\nTo move to a different directory, use `sandbox_copy_file` + `sandbox_delete_file`.\n\nReturns:\n  - message: status message confirming the rename operation (string)\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "newName": {
+          "description": "New filename only \u2014 no directory component (e.g. 'MyGraphV2.grf')",
+          "type": "string"
+        },
+        "sandboxPath": {
+          "description": "Full current file path within the sandbox (e.g. 'graph/MyGraph.grf')",
+          "type": "string"
+        },
+        "sandboxCode": {
+          "description": "Sandbox code containing the file (e.g. MySandbox)",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "sandboxPath",
+        "newName"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Rename File",
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "sandbox_delete_file": {
+    "name": "sandbox_delete_file",
+    "title": null,
+    "description": "Delete a file from a CloverDX sandbox. Use with caution \u2014 this is irreversible.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "sandboxCode": {
+          "description": "Sandbox code",
+          "type": "string"
+        },
+        "sandboxPath": {
+          "description": "Full file path to delete (e.g. 'graph/OldGraph.grf')",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sandboxCode",
+        "sandboxPath"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Sandbox Delete File",
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  },
+  "db_get_schema": {
+    "name": "db_get_schema",
+    "title": null,
+    "description": "Query the schema of any database reachable by the CloverDX Server via JDBC -\nnot tied to a specific DB engine; works for any JDBC-compatible database\nthe server can connect to.\nUse 'type' to select what to retrieve:\n  \"schemas\"  - list all schemas available on the connection (no extra params needed)\n  \"tables\"   - list tables; optionally filter by 'schema'\n  \"columns\"  - list columns for a specific 'table'; optionally qualify with 'schema' and 'owner' (no row limit - all columns are always returned).\nAlways includes 'primaryKey' (list of PK column names).\nUse 'detail'=\"full\" to also include 'foreignKeys': each entry has 'column' (local FK column) and\n'foreignSchema'/'foreignTable'/'foreignColumn' (the referenced PK table/column).\nNote: 'primaryKey' and 'foreignKeys' require CloverDX Server 7.5 or later on the target;\nolder versions return columns only.\nResults for \"schemas\" and \"tables\" are capped at 'maxItems' (default 250);\nif the result was capped, the response includes \"truncated\": true.\n\n## connectionProperties\nOption A (preferred) - config file: pass only 'dbConfig' as a sandbox URL:\n  sandbox://<sandbox_code>/<path-to-cfg> (e.g. \"sandbox://mybox/conn/myDB.cfg\").\n  Use when a saved .cfg exists. The .cfg must not use jndiName.\nOption B (fallback) - inline properties:\n  jdbcSpecific: JDBC driver type identifier (see list below) \u2014 NOT the database name.\n  dbURL: connection URL \u2014 database name is encoded here.\n  user, password: credentials (optional).\n  name: display label only \u2014 omit it.\n  database: database type \u2014 typically matches jdbcSpecific (see exceptions below).\n  Do not pass jndiName \u2014 JNDI is not supported.\n\n## jdbcSpecific values and dbURL formats\n  POSTGRE     jdbc:postgresql://hostname/database\n  ORACLE      jdbc:oracle:thin:@host:1521:SID  |  jdbc:oracle:thin:@host:1521/service_name\n  MSSQL       jdbc:sqlserver://hostname:1433;databaseName=database  (Microsoft driver, recommended)\n              jdbc:jtds:sqlserver://hostname:1433/database  (legacy jTDS driver)\n  MYSQL       jdbc:mysql://hostname:3306/database\n  DB2         jdbc:db2://hostname:50000/database\n  SQLITE      jdbc:sqlite:/path/to/file.db\n  SNOWFLAKE   jdbc:snowflake://account.snowflakecomputing.com/?[params]\n  REDSHIFT    jdbc:redshift://cluster.redshift.amazonaws.com:5439/database\n  VERTICA     jdbc:vertica://hostname:5433/database\n  DERBY       jdbc:derby://hostname:1527/derby.db\n  EXASOLUTION jdbc:exa:hostname:8563;schema=schemaName\n  SYBASE      jdbc:jtds:sybase://hostname:7100/database\n\n## .cfg file generation\nSet both database=<TYPE> and jdbcSpecific=<TYPE> to the same value \u2014 with one exception:\nMSSQL with Microsoft JDBC driver uses database=MSSQLSERVER (not MSSQL), jdbcSpecific=MSSQL.\nMSSQL with legacy jTDS driver uses database=MSSQL, jdbcSpecific=MSSQL.\n",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "description": "Schema name: filter for tables, qualifier for columns. Optional.",
+          "type": "string"
+        },
+        "maxItems": {
+          "type": "integer",
+          "default": 250,
+          "minimum": 1,
+          "description": "Maximum number of items to return for type=\"schemas\" or type=\"tables\". No limit for columns. Default 250. If truncated, the response includes \"truncated\": true."
+        },
+        "owner": {
+          "description": "Owner qualifier for columns (Oracle-style). Optional.",
+          "type": "string"
+        },
+        "detail": {
+          "description": "Level of detail for type=\"columns\": \"basic\" (default) returns columns and primary key; \"full\" also includes foreign keys. (primary key and foreign keys info not available prior to CloverDX Server 7.5).",
+          "type": "string"
+        },
+        "type": {
+          "description": "What to query: \"schemas\", \"tables\", or \"columns\".",
+          "type": "string"
+        },
+        "connectionProperties": {
+          "description": "DB connection config. Option A (preferred): {\"dbConfig\": \"sandbox://code/path.cfg\"} (must not use jndiName - JNDI is not supported). Option B (inline): {\"jdbcSpecific\": \"POSTGRE\", \"dbURL\": \"jdbc:postgresql://hostname/dbname\", \"user\": \"u\", \"password\": \"p\"}. jdbcSpecific is the JDBC driver type \u2014 NOT the database name (which belongs in dbURL). Supported: POSTGRE, ORACLE, MSSQL, MSSQL2005, MYSQL, DB2, SQLITE, SNOWFLAKE, REDSHIFT, SYBASE, VERTICA, HIVE, INFORMIX, DERBY, EXASOLUTION, FIREBIRD, PERVASIVE, MSACCESSJAVA, GENERIC. When creating a .cfg: set jdbcSpecific=<TYPE> and database=<TYPE> to the same value \u2014 EXCEPT MSSQL with Microsoft driver where database=MSSQLSERVER (not MSSQL).",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "table": {
+          "description": "Table name. Required when type=\"columns\".",
+          "type": "string"
+        }
+      },
+      "required": [
+        "connectionProperties",
+        "type"
+      ]
+    },
+    "outputSchema": null,
+    "icons": null,
+    "annotations": {
+      "title": "Get DB Schema",
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "returnDirect": false
+    },
+    "meta": null,
+    "execution": null
+  }
+}

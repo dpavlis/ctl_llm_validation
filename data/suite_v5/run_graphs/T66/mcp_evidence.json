@@ -1,0 +1,937 @@
+[
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in",
+      "filename": "T66_input_0.csv",
+      "content": "PAYMENT1|ACME|payment.csv|1|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1||X1|keep:1|REVERSED|false|BAD|BAD|__NULL__|__NULL__|2026-01-01 00:00:00.000\nPAYMENT2|ACME|payment.csv|2|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X2|keep:2|__NULL__|true|BAD|2025-02-30|__NULL__|__NULL__|2026-01-01 00:00:00.000\nPAYMENT3|ACME|payment.csv|3|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X3|keep:3||false|BAD|2025-12-31|URGENT|__NULL__|2026-01-01 00:00:00.000\nPAYMENT4|ACME|payment.csv|4|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X4|keep:4||false|10000|2025-02-30|URGENT|__NULL__|2026-01-01 00:00:00.000\nPAYMENT5|ACME|payment.csv|5|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X5|keep:5||false|10000|2026-1-1|URGENT|__NULL__|2026-01-01 00:00:00.000\nPAYMENT6|ACME|payment.csv|6|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X6|keep:6||false|10000|2026-01-01|URGENT|__NULL__|2026-01-01 00:00:00.000\nPAYMENT7|ACME|payment.csv|7|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X7|keep:7||false|0|__NULL__|URGENT|__NULL__|2026-01-01 00:00:00.000\nPAYMENT8|ACME|payment.csv|8|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X8|keep:8||false|-1| |URGENT|__NULL__|2026-01-01 00:00:00.000\nPAYMENT9|ACME|payment.csv|9|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X9|keep:9| reversed |false|1000000|__NULL__|__NULL__|__NULL__|2026-01-01 00:00:00.000\nPAYMENT10|ACME|payment.csv|10|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X10|keep:10||false|0.01|__NULL__|URGENT|__NULL__|2026-01-01 00:00:00.000\nPAYMENT11|ACME|payment.csv|11|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X11|keep:11||false| |2026-01-02|__NULL__|__NULL__|2026-01-01 00:00:00.000\nPAYMENT12|ACME|payment.csv|12|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X12|keep:12||false|bad|__NULL__|URGENT|__NULL__|2026-01-01 00:00:00.000\n"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/data-in/T66_input_0.csv' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/data-in/T66_input_0.csv' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph",
+      "filename": "T66.grf",
+      "content": "<?xml version='1.0' encoding='utf-8'?>\n<Graph author=\"Codex\" name=\"T66\" id=\"6101300066\" nature=\"etlGraph\" revision=\"1.0\" guiVersion=\"7.5.0\">\n  <Global>\n    <GraphParameters>\n      <GraphParameterFile fileURL=\"workspace.prm\" />\n      <GraphParameter name=\"PROJECT\" value=\".\" />\n    </GraphParameters>\n    <RichTextNote id=\"Note\" x=\"50\" y=\"25\" width=\"1200\" height=\"100\" backgroundColor=\"FAF6D6\" textColor=\"444444\" fontSize=\"medium\" folded=\"false\">\n      <attr name=\"text\">Overdue payment routing bypasses irrelevant amount defects\nAcceptance fixture exercises the business rules and preserves every source field for comparison.</attr>\n    </RichTextNote>\n    <Metadata id=\"In0\">\n      <Record name=\"PaymentRoute\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"due_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawIn0\">\n      <Record name=\"RawInput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"string\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"due_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out0\">\n      <Record name=\"PaymentRoute\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"due_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut0\">\n      <Record name=\"RawOutput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"string\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"due_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out1\">\n      <Record name=\"PaymentRoute\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"due_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut1\">\n      <Record name=\"RawOutput1\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"string\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"due_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out2\">\n      <Record name=\"PaymentRoute\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"due_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut2\">\n      <Record name=\"RawOutput2\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"string\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"due_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out3\">\n      <Record name=\"PaymentRoute\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"due_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut3\">\n      <Record name=\"RawOutput3\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"string\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"due_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out4\">\n      <Record name=\"PaymentRoute\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"due_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut4\">\n      <Record name=\"RawOutput4\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"string\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"due_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out5\">\n      <Record name=\"PaymentRoute\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"due_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut5\">\n      <Record name=\"RawOutput5\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"payment_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"payment_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"payment_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"payment_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"status_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"hold_flag\" type=\"string\" nullable=\"false\" />\n        <Field name=\"amount_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"invoice_day_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"priority_cd\" type=\"string\" nullable=\"true\" />\n        <Field name=\"insured_value\" type=\"string\" nullable=\"true\" />\n        <Field name=\"due_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n      </Record>\n    </Metadata>\n  </Global>\n  <Phase number=\"0\">\n    <Node id=\"Reader0\" type=\"DATA_READER\" enabled=\"enabled\" guiName=\"Reader0\" guiX=\"50\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-in/T66_input_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"dataPolicy\">strict</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"parser\">org.jetel.data.parser.DataParser</attr>\n    </Node>\n    <Node id=\"Decode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Decode0\" guiX=\"275\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.payment_key=$in.0.payment_key;\n$out.0.payment_tenant=$in.0.payment_tenant;\n$out.0.payment_file=$in.0.payment_file;\n$out.0.payment_row=$in.0.payment_row == null ? null : str2long($in.0.payment_row);\n$out.0.payment_received=$in.0.payment_received == null ? null : str2date($in.0.payment_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\n$out.0.payment_team=$in.0.payment_team;\n$out.0.payment_market=$in.0.payment_market;\n$out.0.payment_currency=$in.0.payment_currency;\n$out.0.payment_batch=$in.0.payment_batch;\n$out.0.payment_note=$in.0.payment_note;\n$out.0.payment_trace=$in.0.payment_trace;\n$out.0.payment_unused_archive=$in.0.payment_unused_archive;\n$out.0.status_cd=$in.0.status_cd;\n$out.0.hold_flag=$in.0.hold_flag == null ? null : str2bool($in.0.hold_flag);\n$out.0.amount_txt=$in.0.amount_txt;\n$out.0.invoice_day_txt=$in.0.invoice_day_txt;\n$out.0.priority_cd=$in.0.priority_cd;\n$out.0.insured_value=$in.0.insured_value == null ? null : str2decimal($in.0.insured_value);\n$out.0.due_at=$in.0.due_at == null ? null : str2date($in.0.due_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\nreturn OK;}</attr>\n    </Node>\n    <Edge id=\"Read0\" fromNode=\"Reader0:0\" toNode=\"Decode0:0\" metadata=\"RawIn0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Decoded0\" fromNode=\"Decode0:0\" toNode=\"Test:0\" metadata=\"In0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Test\" type=\"PARTITION\" enabled=\"enabled\" guiName=\"Test\" guiX=\"500\" guiY=\"200\">\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"partitionSource\">//#CTL2\nfunction integer getOutputPort(){\n if($in.0.status_cd==\"REVERSED\")return 0;if($in.0.hold_flag)return 1;\n string dayText=trim(nvl($in.0.invoice_day_txt,\"\"));\n if(dayText!=\"\"){\n  if(!(dayText ~= \"[0-9]{4}-[0-9]{2}-[0-9]{2}\") || !isDate(dayText,\"yyyy-MM-dd\",\"en.US\",\"UTC\",true))return 5;\n  date invoice=str2date(dayText,\"yyyy-MM-dd\",\"en.US\",\"UTC\",true);\n  if(invoice&lt;createDate(2026,1,1,\"UTC\"))return 2;\n }\n string raw=trim(nvl($in.0.amount_txt,\"\"));\n if(raw!=\"\" &amp;&amp; !(raw ~= \"-?[0-9]{1,6}(\\\\.[0-9]{1,2})?\"))return 5;\n decimal amount=raw==\"\" ? 0D : str2decimal(raw);\n if(amount&gt;=10000D || ($in.0.priority_cd==\"URGENT\" &amp;&amp; amount&gt;0D))return 3;\n return 4;\n}\nfunction integer getOutputPortOnError(string message,string stackTrace){printLog(error,message);return 5;}\n</attr>\n    </Node>\n    <Node id=\"Encode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode0\" guiX=\"725\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.payment_key=$in.0.payment_key;\n$out.0.payment_tenant=$in.0.payment_tenant;\n$out.0.payment_file=$in.0.payment_file;\n$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);\n$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.payment_team=$in.0.payment_team;\n$out.0.payment_market=$in.0.payment_market;\n$out.0.payment_currency=$in.0.payment_currency;\n$out.0.payment_batch=$in.0.payment_batch;\n$out.0.payment_note=$in.0.payment_note;\n$out.0.payment_trace=$in.0.payment_trace;\n$out.0.payment_unused_archive=$in.0.payment_unused_archive;\n$out.0.status_cd=$in.0.status_cd;\n$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? \"true\" : \"false\");\n$out.0.amount_txt=$in.0.amount_txt;\n$out.0.invoice_day_txt=$in.0.invoice_day_txt;\n$out.0.priority_cd=$in.0.priority_cd;\n$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,\"0.00\",\"en.US\");\n$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer0\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer0\" guiX=\"950\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-out/T66_out_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result0\" fromNode=\"Test:0\" toNode=\"Encode0:0\" metadata=\"Out0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written0\" fromNode=\"Encode0:0\" toNode=\"Writer0:0\" metadata=\"RawOut0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Encode1\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode1\" guiX=\"725\" guiY=\"375\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.payment_key=$in.0.payment_key;\n$out.0.payment_tenant=$in.0.payment_tenant;\n$out.0.payment_file=$in.0.payment_file;\n$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);\n$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.payment_team=$in.0.payment_team;\n$out.0.payment_market=$in.0.payment_market;\n$out.0.payment_currency=$in.0.payment_currency;\n$out.0.payment_batch=$in.0.payment_batch;\n$out.0.payment_note=$in.0.payment_note;\n$out.0.payment_trace=$in.0.payment_trace;\n$out.0.payment_unused_archive=$in.0.payment_unused_archive;\n$out.0.status_cd=$in.0.status_cd;\n$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? \"true\" : \"false\");\n$out.0.amount_txt=$in.0.amount_txt;\n$out.0.invoice_day_txt=$in.0.invoice_day_txt;\n$out.0.priority_cd=$in.0.priority_cd;\n$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,\"0.00\",\"en.US\");\n$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer1\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer1\" guiX=\"950\" guiY=\"375\">\n      <attr name=\"fileURL\">suite_v5/data-out/T66_out_1.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result1\" fromNode=\"Test:1\" toNode=\"Encode1:0\" metadata=\"Out1\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written1\" fromNode=\"Encode1:0\" toNode=\"Writer1:0\" metadata=\"RawOut1\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Encode2\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode2\" guiX=\"725\" guiY=\"550\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.payment_key=$in.0.payment_key;\n$out.0.payment_tenant=$in.0.payment_tenant;\n$out.0.payment_file=$in.0.payment_file;\n$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);\n$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.payment_team=$in.0.payment_team;\n$out.0.payment_market=$in.0.payment_market;\n$out.0.payment_currency=$in.0.payment_currency;\n$out.0.payment_batch=$in.0.payment_batch;\n$out.0.payment_note=$in.0.payment_note;\n$out.0.payment_trace=$in.0.payment_trace;\n$out.0.payment_unused_archive=$in.0.payment_unused_archive;\n$out.0.status_cd=$in.0.status_cd;\n$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? \"true\" : \"false\");\n$out.0.amount_txt=$in.0.amount_txt;\n$out.0.invoice_day_txt=$in.0.invoice_day_txt;\n$out.0.priority_cd=$in.0.priority_cd;\n$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,\"0.00\",\"en.US\");\n$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer2\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer2\" guiX=\"950\" guiY=\"550\">\n      <attr name=\"fileURL\">suite_v5/data-out/T66_out_2.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result2\" fromNode=\"Test:2\" toNode=\"Encode2:0\" metadata=\"Out2\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written2\" fromNode=\"Encode2:0\" toNode=\"Writer2:0\" metadata=\"RawOut2\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Encode3\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode3\" guiX=\"725\" guiY=\"725\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.payment_key=$in.0.payment_key;\n$out.0.payment_tenant=$in.0.payment_tenant;\n$out.0.payment_file=$in.0.payment_file;\n$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);\n$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.payment_team=$in.0.payment_team;\n$out.0.payment_market=$in.0.payment_market;\n$out.0.payment_currency=$in.0.payment_currency;\n$out.0.payment_batch=$in.0.payment_batch;\n$out.0.payment_note=$in.0.payment_note;\n$out.0.payment_trace=$in.0.payment_trace;\n$out.0.payment_unused_archive=$in.0.payment_unused_archive;\n$out.0.status_cd=$in.0.status_cd;\n$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? \"true\" : \"false\");\n$out.0.amount_txt=$in.0.amount_txt;\n$out.0.invoice_day_txt=$in.0.invoice_day_txt;\n$out.0.priority_cd=$in.0.priority_cd;\n$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,\"0.00\",\"en.US\");\n$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer3\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer3\" guiX=\"950\" guiY=\"725\">\n      <attr name=\"fileURL\">suite_v5/data-out/T66_out_3.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result3\" fromNode=\"Test:3\" toNode=\"Encode3:0\" metadata=\"Out3\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written3\" fromNode=\"Encode3:0\" toNode=\"Writer3:0\" metadata=\"RawOut3\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Encode4\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode4\" guiX=\"725\" guiY=\"900\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.payment_key=$in.0.payment_key;\n$out.0.payment_tenant=$in.0.payment_tenant;\n$out.0.payment_file=$in.0.payment_file;\n$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);\n$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.payment_team=$in.0.payment_team;\n$out.0.payment_market=$in.0.payment_market;\n$out.0.payment_currency=$in.0.payment_currency;\n$out.0.payment_batch=$in.0.payment_batch;\n$out.0.payment_note=$in.0.payment_note;\n$out.0.payment_trace=$in.0.payment_trace;\n$out.0.payment_unused_archive=$in.0.payment_unused_archive;\n$out.0.status_cd=$in.0.status_cd;\n$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? \"true\" : \"false\");\n$out.0.amount_txt=$in.0.amount_txt;\n$out.0.invoice_day_txt=$in.0.invoice_day_txt;\n$out.0.priority_cd=$in.0.priority_cd;\n$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,\"0.00\",\"en.US\");\n$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer4\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer4\" guiX=\"950\" guiY=\"900\">\n      <attr name=\"fileURL\">suite_v5/data-out/T66_out_4.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result4\" fromNode=\"Test:4\" toNode=\"Encode4:0\" metadata=\"Out4\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written4\" fromNode=\"Encode4:0\" toNode=\"Writer4:0\" metadata=\"RawOut4\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Encode5\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode5\" guiX=\"725\" guiY=\"1075\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.payment_key=$in.0.payment_key;\n$out.0.payment_tenant=$in.0.payment_tenant;\n$out.0.payment_file=$in.0.payment_file;\n$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);\n$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.payment_team=$in.0.payment_team;\n$out.0.payment_market=$in.0.payment_market;\n$out.0.payment_currency=$in.0.payment_currency;\n$out.0.payment_batch=$in.0.payment_batch;\n$out.0.payment_note=$in.0.payment_note;\n$out.0.payment_trace=$in.0.payment_trace;\n$out.0.payment_unused_archive=$in.0.payment_unused_archive;\n$out.0.status_cd=$in.0.status_cd;\n$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? \"true\" : \"false\");\n$out.0.amount_txt=$in.0.amount_txt;\n$out.0.invoice_day_txt=$in.0.invoice_day_txt;\n$out.0.priority_cd=$in.0.priority_cd;\n$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,\"0.00\",\"en.US\");\n$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer5\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer5\" guiX=\"950\" guiY=\"1075\">\n      <attr name=\"fileURL\">suite_v5/data-out/T66_out_5.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result5\" fromNode=\"Test:5\" toNode=\"Encode5:0\" metadata=\"Out5\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written5\" fromNode=\"Encode5:0\" toNode=\"Writer5:0\" metadata=\"RawOut5\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n  </Phase>\n</Graph>"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/graph/T66.grf' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/graph/T66.grf' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_validate",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T66.grf",
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"timedOut\":false,\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "timedOut": false,
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_run",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T66.grf",
+      "params": {}
+    },
+    "payload": {
+      "runId": 17972,
+      "message": "Job started. runId: 17972"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17972,\"message\":\"Job started. runId: 17972\"}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17972,
+        "message": "Job started. runId: 17972"
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_await",
+    "arguments": {
+      "runId": 17972,
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "runId": 17972,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T66.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:49:23.959+02:00",
+      "startTime": "2026-10-13T11:49:23.959+02:00",
+      "stopTime": "2026-10-13T11:49:23.986+02:00",
+      "durationMs": 27
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17972,\"sandboxCode\":\"MiscExamples\",\"jobFile\":\"suite_v5/graph/T66.grf\",\"jobType\":\"ETL_GRAPH\",\"status\":\"FINISHED_OK\",\"submitTime\":\"2026-10-13T11:49:23.959+02:00\",\"startTime\":\"2026-10-13T11:49:23.959+02:00\",\"stopTime\":\"2026-10-13T11:49:23.986+02:00\",\"durationMs\":27}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17972,
+        "sandboxCode": "MiscExamples",
+        "jobFile": "suite_v5/graph/T66.grf",
+        "jobType": "ETL_GRAPH",
+        "status": "FINISHED_OK",
+        "submitTime": "2026-10-13T11:49:23.959+02:00",
+        "startTime": "2026-10-13T11:49:23.959+02:00",
+        "stopTime": "2026-10-13T11:49:23.986+02:00",
+        "durationMs": 27
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_tracking",
+    "arguments": {
+      "runId": 17972,
+      "detailed": true
+    },
+    "payload": {
+      "run_id": "17972",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.008,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.006,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 12,
+                  "bytes": 2786
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 12,
+                  "bytes": 2786
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 12,
+                  "bytes": 1870
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "PARTITION",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 12,
+                  "bytes": 1870
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 151
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 1,
+                  "records": 1,
+                  "bytes": 155
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 2,
+                  "records": 1,
+                  "bytes": 161
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 3,
+                  "records": 2,
+                  "bytes": 326
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 4,
+                  "records": 3,
+                  "bytes": 435
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 5,
+                  "records": 4,
+                  "bytes": 642
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 151
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 227
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 227
+                }
+              ]
+            },
+            {
+              "node_id": "Encode1",
+              "node_name": "Encode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 155
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 229
+                }
+              ]
+            },
+            {
+              "node_id": "Writer1",
+              "node_name": "Writer1",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 229
+                }
+              ]
+            },
+            {
+              "node_id": "Encode2",
+              "node_name": "Encode2",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 161
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 237
+                }
+              ]
+            },
+            {
+              "node_id": "Writer2",
+              "node_name": "Writer2",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 1,
+                  "bytes": 237
+                }
+              ]
+            },
+            {
+              "node_id": "Encode3",
+              "node_name": "Encode3",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 326
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 480
+                }
+              ]
+            },
+            {
+              "node_id": "Writer3",
+              "node_name": "Writer3",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 480
+                }
+              ]
+            },
+            {
+              "node_id": "Encode4",
+              "node_name": "Encode4",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 435
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 665
+                }
+              ]
+            },
+            {
+              "node_id": "Writer4",
+              "node_name": "Writer4",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 665
+                }
+              ]
+            },
+            {
+              "node_id": "Encode5",
+              "node_name": "Encode5",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 642
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 948
+                }
+              ]
+            },
+            {
+              "node_id": "Writer5",
+              "node_name": "Writer5",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 4,
+                  "bytes": 948
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 15,
+        "port_count": 28,
+        "total_records": 96,
+        "total_bytes": 18624
+      }
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"run_id\":\"17972\",\"status\":\"FINISHED_OK\",\"exec_seconds\":0.008,\"phases\":[{\"phase_number\":0,\"exec_seconds\":0.006,\"nodes\":[{\"node_id\":\"Reader0\",\"node_name\":\"Reader0\",\"node_type\":\"DATA_READER\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":12,\"bytes\":2786}]},{\"node_id\":\"Decode0\",\"node_name\":\"Decode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":12,\"bytes\":2786},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":12,\"bytes\":1870}]},{\"node_id\":\"Test\",\"node_name\":\"Test\",\"node_type\":\"PARTITION\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":12,\"bytes\":1870},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":1,\"bytes\":151},{\"port_type\":\"OUTPUT\",\"index\":1,\"records\":1,\"bytes\":155},{\"port_type\":\"OUTPUT\",\"index\":2,\"records\":1,\"bytes\":161},{\"port_type\":\"OUTPUT\",\"index\":3,\"records\":2,\"bytes\":326},{\"port_type\":\"OUTPUT\",\"index\":4,\"records\":3,\"bytes\":435},{\"port_type\":\"OUTPUT\",\"index\":5,\"records\":4,\"bytes\":642}]},{\"node_id\":\"Encode0\",\"node_name\":\"Encode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":1,\"bytes\":151},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":1,\"bytes\":227}]},{\"node_id\":\"Writer0\",\"node_name\":\"Writer0\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":1,\"bytes\":227}]},{\"node_id\":\"Encode1\",\"node_name\":\"Encode1\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":1,\"bytes\":155},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":1,\"bytes\":229}]},{\"node_id\":\"Writer1\",\"node_name\":\"Writer1\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":1,\"bytes\":229}]},{\"node_id\":\"Encode2\",\"node_name\":\"Encode2\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":1,\"bytes\":161},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":1,\"bytes\":237}]},{\"node_id\":\"Writer2\",\"node_name\":\"Writer2\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":1,\"bytes\":237}]},{\"node_id\":\"Encode3\",\"node_name\":\"Encode3\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":2,\"bytes\":326},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":2,\"bytes\":480}]},{\"node_id\":\"Writer3\",\"node_name\":\"Writer3\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":2,\"bytes\":480}]},{\"node_id\":\"Encode4\",\"node_name\":\"Encode4\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":3,\"bytes\":435},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":3,\"bytes\":665}]},{\"node_id\":\"Writer4\",\"node_name\":\"Writer4\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":3,\"bytes\":665}]},{\"node_id\":\"Encode5\",\"node_name\":\"Encode5\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":4,\"bytes\":642},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":4,\"bytes\":948}]},{\"node_id\":\"Writer5\",\"node_name\":\"Writer5\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":4,\"bytes\":948}]}]}],\"summary\":{\"phase_count\":1,\"node_count\":15,\"port_count\":28,\"total_records\":96,\"total_bytes\":18624}}"
+        }
+      ],
+      "structuredContent": {
+        "run_id": "17972",
+        "status": "FINISHED_OK",
+        "exec_seconds": 0.008,
+        "phases": [
+          {
+            "phase_number": 0,
+            "exec_seconds": 0.006,
+            "nodes": [
+              {
+                "node_id": "Reader0",
+                "node_name": "Reader0",
+                "node_type": "DATA_READER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 12,
+                    "bytes": 2786
+                  }
+                ]
+              },
+              {
+                "node_id": "Decode0",
+                "node_name": "Decode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 12,
+                    "bytes": 2786
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 12,
+                    "bytes": 1870
+                  }
+                ]
+              },
+              {
+                "node_id": "Test",
+                "node_name": "Test",
+                "node_type": "PARTITION",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 12,
+                    "bytes": 1870
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 151
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 1,
+                    "records": 1,
+                    "bytes": 155
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 2,
+                    "records": 1,
+                    "bytes": 161
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 3,
+                    "records": 2,
+                    "bytes": 326
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 4,
+                    "records": 3,
+                    "bytes": 435
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 5,
+                    "records": 4,
+                    "bytes": 642
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode0",
+                "node_name": "Encode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 151
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 227
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer0",
+                "node_name": "Writer0",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 227
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode1",
+                "node_name": "Encode1",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 155
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 229
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer1",
+                "node_name": "Writer1",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 229
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode2",
+                "node_name": "Encode2",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 161
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 237
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer2",
+                "node_name": "Writer2",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 1,
+                    "bytes": 237
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode3",
+                "node_name": "Encode3",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 2,
+                    "bytes": 326
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 2,
+                    "bytes": 480
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer3",
+                "node_name": "Writer3",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 2,
+                    "bytes": 480
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode4",
+                "node_name": "Encode4",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 435
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 665
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer4",
+                "node_name": "Writer4",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 3,
+                    "bytes": 665
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode5",
+                "node_name": "Encode5",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 4,
+                    "bytes": 642
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 4,
+                    "bytes": 948
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer5",
+                "node_name": "Writer5",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 4,
+                    "bytes": 948
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "phase_count": 1,
+          "node_count": 15,
+          "port_count": 28,
+          "total_records": 96,
+          "total_bytes": 18624
+        }
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_log",
+    "arguments": {
+      "runId": 17972
+    },
+    "payload": {
+      "text": "2026-10-13 11:49:23,961 INFO  17972 [boundedElastic-89] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:49:23,961 INFO  17972 [boundedElastic-89] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:49:23,961 INFO  17972 [boundedElastic-89] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:49:23,965 INFO  17972 [JobStarter_17972] Starting job: MiscExamples/suite_v5/graph/T66.grf\n\t Run ID: \t\t17972\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:49:23,968 INFO  17972 [JobExecutor_17972] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:49:23,972 INFO  17972 [JobExecutor_17972] Initializing metadata\n2026-10-13 11:49:23,972 INFO  17972 [JobExecutor_17972] Initializing phase 0\n2026-10-13 11:49:23,975 INFO  17972 [JobExecutor_17972] Phase 0 initialized successfully.\n2026-10-13 11:49:23,975 INFO  17972 [WatchDog_17972] Job execution type: ETL_GRAPH\n2026-10-13 11:49:23,975 INFO  17972 [WatchDog_17972] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T66.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T66.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17972\nPROJECT=.\nROOT_RUN_ID=17972\nRUN_ID=17972\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:49:23,975 INFO  17972 [WatchDog_17972] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:49:23,979 INFO  17972 [WatchDog_17972] Starting up all nodes in phase [0]\n2026-10-13 11:49:23,980 INFO  17972 [WatchDog_17972] Successfully started all nodes in phase!\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Time: 13/10/2026 11:49:23, JVM heap used: 81 MB\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] ---------------------------------------------------------------------------------\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)            Out:0             12          2    2000      453\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0             12          2    2000      453\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:0             12          1    2000      304\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Test                     Test                                        FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0             12          1    2000      304\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:0              1          0     166       24\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:1              1          0     166       25\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:2              1          0     166       26\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:3              2          0     333       53\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:4              3          0     500       70\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:5              4          0     666      104\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0              1          0     166       24\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:0              1          0     166       36\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0              1          0     166       36\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Encode1                  Encode1                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              1          0     166       25\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:0              1          0     166       37\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Writer1                  Writer1                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              1          0     166       37\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Encode2                  Encode2                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              1          0     166       26\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]                                 Out:0              1          0     166       38\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Writer2                  Writer2                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0              1          0     166       38\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Encode3                  Encode3                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              2          0     333       53\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]                                 Out:0              2          0     333       78\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Writer3                  Writer3                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0              2          0     333       78\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Encode4                  Encode4                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              3          0     500       70\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]                                 Out:0              3          0     500      108\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Writer4                  Writer4                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              3          0     500      108\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Encode5                  Encode5                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              4          0     666      104\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]                                 Out:0              4          0     666      154\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Writer5                  Writer5                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0              4          0     666      154\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] 0                 FINISHED_OK                        0                81\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:49:23,986 INFO  17972 [JobFinalizer_17972] Job finished: MiscExamples/suite_v5/graph/T66.grf\n\t Run ID: \t\t17972\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t27 ms\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "2026-10-13 11:49:23,961 INFO  17972 [boundedElastic-89] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:49:23,961 INFO  17972 [boundedElastic-89] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:49:23,961 INFO  17972 [boundedElastic-89] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:49:23,965 INFO  17972 [JobStarter_17972] Starting job: MiscExamples/suite_v5/graph/T66.grf\n\t Run ID: \t\t17972\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:49:23,968 INFO  17972 [JobExecutor_17972] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:49:23,972 INFO  17972 [JobExecutor_17972] Initializing metadata\n2026-10-13 11:49:23,972 INFO  17972 [JobExecutor_17972] Initializing phase 0\n2026-10-13 11:49:23,975 INFO  17972 [JobExecutor_17972] Phase 0 initialized successfully.\n2026-10-13 11:49:23,975 INFO  17972 [WatchDog_17972] Job execution type: ETL_GRAPH\n2026-10-13 11:49:23,975 INFO  17972 [WatchDog_17972] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T66.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T66.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17972\nPROJECT=.\nROOT_RUN_ID=17972\nRUN_ID=17972\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:49:23,975 INFO  17972 [WatchDog_17972] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:49:23,979 INFO  17972 [WatchDog_17972] Starting up all nodes in phase [0]\n2026-10-13 11:49:23,980 INFO  17972 [WatchDog_17972] Successfully started all nodes in phase!\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Time: 13/10/2026 11:49:23, JVM heap used: 81 MB\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] ---------------------------------------------------------------------------------\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)            Out:0             12          2    2000      453\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0             12          2    2000      453\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:0             12          1    2000      304\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Test                     Test                                        FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0             12          1    2000      304\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:0              1          0     166       24\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:1              1          0     166       25\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:2              1          0     166       26\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:3              2          0     333       53\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:4              3          0     500       70\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:5              4          0     666      104\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0              1          0     166       24\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:0              1          0     166       36\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0              1          0     166       36\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Encode1                  Encode1                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              1          0     166       25\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]                                 Out:0              1          0     166       37\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Writer1                  Writer1                                     FINISHED_OK\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              1          0     166       37\n2026-10-13 11:49:23,984 INFO  17972 [WatchDog_17972] Encode2                  Encode2                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              1          0     166       26\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]                                 Out:0              1          0     166       38\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Writer2                  Writer2                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0              1          0     166       38\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Encode3                  Encode3                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              2          0     333       53\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]                                 Out:0              2          0     333       78\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Writer3                  Writer3                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0              2          0     333       78\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Encode4                  Encode4                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              3          0     500       70\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]                                 Out:0              3          0     500      108\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Writer4                  Writer4                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              3          0     500      108\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Encode5                  Encode5                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:0%)             In:0              4          0     666      104\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]                                 Out:0              4          0     666      154\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Writer5                  Writer5                                     FINISHED_OK\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972]  (alloc:0MB, cpu:16%)            In:0              4          0     666      154\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] 0                 FINISHED_OK                        0                81\n2026-10-13 11:49:23,985 INFO  17972 [WatchDog_17972] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:49:23,986 INFO  17972 [JobFinalizer_17972] Job finished: MiscExamples/suite_v5/graph/T66.grf\n\t Run ID: \t\t17972\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t27 ms\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T66_out_0.csv"
+    },
+    "payload": {
+      "text": "\"PAYMENT1\"|\"ACME\"|\"payment.csv\"|\"1\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"\"|\"X1\"|\"keep:1\"|\"REVERSED\"|\"false\"|\"BAD\"|\"BAD\"|\"__NULL__\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"PAYMENT1\"|\"ACME\"|\"payment.csv\"|\"1\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"\"|\"X1\"|\"keep:1\"|\"REVERSED\"|\"false\"|\"BAD\"|\"BAD\"|\"__NULL__\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T66_out_1.csv"
+    },
+    "payload": {
+      "text": "\"PAYMENT2\"|\"ACME\"|\"payment.csv\"|\"2\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X2\"|\"keep:2\"|\"__NULL__\"|\"true\"|\"BAD\"|\"2025-02-30\"|\"__NULL__\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"PAYMENT2\"|\"ACME\"|\"payment.csv\"|\"2\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X2\"|\"keep:2\"|\"__NULL__\"|\"true\"|\"BAD\"|\"2025-02-30\"|\"__NULL__\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T66_out_2.csv"
+    },
+    "payload": {
+      "text": "\"PAYMENT3\"|\"ACME\"|\"payment.csv\"|\"3\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X3\"|\"keep:3\"|\"\"|\"false\"|\"BAD\"|\"2025-12-31\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"PAYMENT3\"|\"ACME\"|\"payment.csv\"|\"3\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X3\"|\"keep:3\"|\"\"|\"false\"|\"BAD\"|\"2025-12-31\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T66_out_3.csv"
+    },
+    "payload": {
+      "text": "\"PAYMENT6\"|\"ACME\"|\"payment.csv\"|\"6\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X6\"|\"keep:6\"|\"\"|\"false\"|\"10000\"|\"2026-01-01\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT10\"|\"ACME\"|\"payment.csv\"|\"10\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X10\"|\"keep:10\"|\"\"|\"false\"|\"0.01\"|\"__NULL__\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"PAYMENT6\"|\"ACME\"|\"payment.csv\"|\"6\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X6\"|\"keep:6\"|\"\"|\"false\"|\"10000\"|\"2026-01-01\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT10\"|\"ACME\"|\"payment.csv\"|\"10\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X10\"|\"keep:10\"|\"\"|\"false\"|\"0.01\"|\"__NULL__\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T66_out_4.csv"
+    },
+    "payload": {
+      "text": "\"PAYMENT7\"|\"ACME\"|\"payment.csv\"|\"7\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X7\"|\"keep:7\"|\"\"|\"false\"|\"0\"|\"__NULL__\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT8\"|\"ACME\"|\"payment.csv\"|\"8\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X8\"|\"keep:8\"|\"\"|\"false\"|\"-1\"|\" \"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT11\"|\"ACME\"|\"payment.csv\"|\"11\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X11\"|\"keep:11\"|\"\"|\"false\"|\" \"|\"2026-01-02\"|\"__NULL__\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"PAYMENT7\"|\"ACME\"|\"payment.csv\"|\"7\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X7\"|\"keep:7\"|\"\"|\"false\"|\"0\"|\"__NULL__\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT8\"|\"ACME\"|\"payment.csv\"|\"8\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X8\"|\"keep:8\"|\"\"|\"false\"|\"-1\"|\" \"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT11\"|\"ACME\"|\"payment.csv\"|\"11\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X11\"|\"keep:11\"|\"\"|\"false\"|\" \"|\"2026-01-02\"|\"__NULL__\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T66_out_5.csv"
+    },
+    "payload": {
+      "text": "\"PAYMENT4\"|\"ACME\"|\"payment.csv\"|\"4\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X4\"|\"keep:4\"|\"\"|\"false\"|\"10000\"|\"2025-02-30\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT5\"|\"ACME\"|\"payment.csv\"|\"5\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X5\"|\"keep:5\"|\"\"|\"false\"|\"10000\"|\"2026-1-1\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT9\"|\"ACME\"|\"payment.csv\"|\"9\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X9\"|\"keep:9\"|\" reversed \"|\"false\"|\"1000000\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT12\"|\"ACME\"|\"payment.csv\"|\"12\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X12\"|\"keep:12\"|\"\"|\"false\"|\"bad\"|\"__NULL__\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"PAYMENT4\"|\"ACME\"|\"payment.csv\"|\"4\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X4\"|\"keep:4\"|\"\"|\"false\"|\"10000\"|\"2025-02-30\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT5\"|\"ACME\"|\"payment.csv\"|\"5\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X5\"|\"keep:5\"|\"\"|\"false\"|\"10000\"|\"2026-1-1\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT9\"|\"ACME\"|\"payment.csv\"|\"9\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X9\"|\"keep:9\"|\" reversed \"|\"false\"|\"1000000\"|\"__NULL__\"|\"__NULL__\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n\"PAYMENT12\"|\"ACME\"|\"payment.csv\"|\"12\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X12\"|\"keep:12\"|\"\"|\"false\"|\"bad\"|\"__NULL__\"|\"URGENT\"|\"__NULL__\"|\"2026-01-01 00:00:00.000\"\n"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

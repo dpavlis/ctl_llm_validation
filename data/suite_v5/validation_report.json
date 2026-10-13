@@ -1,7 +1,17 @@
 {
-  "status": "generated_with_incomplete_external_validation",
-  "suite_sha256": "271332238a7cc9dd2d1fdd9a96ca88264b8571c5128444fbf6e3599c592ebe02",
-  "scope": "Everything above Internal tracking in attached suite_generate_rw_brief.md. No v5 assembly, evaluation baselines, test.py scoring changes, snapshot/reference edits or self_distill.py rollout changes performed.",
+  "status": "requested_round2_implementation_complete",
+  "requested_delivery_complete": true,
+  "suite_sha256": "5853df353eca32bb1127923891bdcc87ddde3d632d0300054b5792ab5f8166d0",
+  "scope": "PartsA+B and original brief deliverables; internal rollout, reference/snapshot assembly and model baselines were not run.",
+  "server": {
+    "endpoint": "http://localhost:8083/clover/mcp/mcp",
+    "sandbox": "MiscExamples",
+    "folder": "suite_v5/",
+    "DWHExample_present": true,
+    "SuiteV5_present": false,
+    "workflow_and_guides": "round2/research_results.json",
+    "DPOForge_touched": false
+  },
   "delivered": {
     "tests": 30,
     "ids": "T44–T73",
@@ -19,58 +29,33 @@
       "11": 2,
       "12": 2
     },
-    "prompt_word_range": [
-      538,
-      817
+    "actual_components": [
+      "DATA_GENERATOR",
+      "DATA_INTERSECTION",
+      "DENORMALIZER",
+      "EXT_MERGE_JOIN",
+      "NORMALIZER",
+      "PARTITION",
+      "REFORMAT",
+      "ROLLUP"
     ],
-    "record_field_range": [
-      15,
+    "prompt_words": [
+      497,
+      845
+    ],
+    "metadata_fields": [
+      12,
       30
     ],
-    "system_prompt": "T33 generate prompt copied verbatim",
-    "temperature": 0.4,
-    "scoring": {
-      "method": "required_fraction",
-      "forbidden_penalty": 0.2
-    }
-  },
-  "structural_checks": {
-    "passed": true,
-    "errors": [],
-    "details_file": "check_results.json",
-    "checker_mutations_detected": 5,
-    "coverage_method": "Every numbered spec clause maps to at least one required rubric item through clauses arrays; field names, port references and metadata checked statically; three independent reviews check semantic decidability."
+    "required_items": [
+      8,
+      10
+    ]
   },
   "compilation": {
-    "tool": "ctl_validate",
-    "endpoint": "http://localhost:8083/clover/mcp/mcp",
-    "header_mode": "//#CTL2",
-    "clean_passes": 22,
-    "no_diagnostic_ids": [
-      "T44",
-      "T45",
-      "T46",
-      "T47",
+    "standalone_clean_passes": 21,
+    "standalone_scope_exception_ids": [
       "T48",
-      "T49",
-      "T53",
-      "T54",
-      "T55",
-      "T56",
-      "T57",
-      "T58",
-      "T62",
-      "T63",
-      "T64",
-      "T65",
-      "T66",
-      "T67",
-      "T68",
-      "T69",
-      "T70",
-      "T71"
-    ],
-    "unresolved_ids": [
       "T50",
       "T51",
       "T52",
@@ -80,193 +65,542 @@
       "T72",
       "T73"
     ],
-    "evidence_file": "compile_results.json",
-    "no_diagnostics_gate_satisfied": false,
-    "flag_policy": "reference_compiles true only for actual standalone PASS with empty problems; graph-dependent references remain false. Raw tool payload retained verbatim as JSON in compile_result. No skipped/filtered diagnostics are labelled successful.",
-    "known_tool_scope_limit": "ctl_validate tool description explicitly says lookups, sequences and dictionaries are unresolvable without graph context. Input record type names also cannot be assumed registered; ordinary state references use saved scalar fields.",
-    "graph_validation_attempt": {
-      "fixtures": "compile_graphs/*.grf",
-      "evidence_file": "graph_compile_results.json",
-      "result": "All eight job_validate calls returned Sandbox not found: DWHExample. Local server directory existed but registered sandbox discovery could not be performed because the follow-up approval was declined. No graph execution or fixture success is claimed."
-    }
+    "actual_graph_compilation_and_clean_validation": 30,
+    "evidence": "compile_results.json",
+    "policy": "Raw standalone diagnostics retained. reference_compiles=true only after clean graph validation and actual FINISHED_OK execution of the exact reference; standalone_reference_compiles exposes the standalone result. Only known graph-resource/type scope limitations are accepted.",
+    "DataIntersection_standalone_metadata": "joiner family with only physical matched-output metadata in internal CTL output slot0, matching the live transform adapter"
+  },
+  "runtime": {
+    "main_runs_passed": 30,
+    "additional_boundary_and_failure_runs": 10,
+    "additional_runs_passed": 10,
+    "main_output_records_checked": 258,
+    "main_fixture_population": "8–20 records per test, except generators whose8/9 requested rows are checked; additional zero/one/partial fixtures tested separately",
+    "expected_source": "Complete expected rows authored from the acceptance clauses and independently rederived by reviewers; never populated by running a reference.",
+    "graphs": "run_graphs/",
+    "main_evidence": "graph_run_results.json",
+    "boundary_evidence": "round2/extra_run_results.json",
+    "semantic_probes": "round2/runtime_probe_results.json",
+    "expected_STOP_error": "round2/stop_probe_results.json",
+    "server_graph_and_input_files_read_back_verified": 100,
+    "readback_evidence": "round2/readback_verification.json"
+  },
+  "checks": {
+    "passed": true,
+    "errors": [],
+    "report": "check_results.json",
+    "checker": "check_suite_rw.py",
+    "checker_mutation_verification": "checker_verification.json",
+    "independent_reviews": [
+      "round2/review_t44_t53.json",
+      "round2/review_t54_t63.json",
+      "round2/review_t64_t73.json"
+    ],
+    "final_prompt_and_reference_hashes_checked": true
+  },
+  "diversity": {
+    "max_pairwise_full_prompt_5gram_Jaccard": 0.11181434599156118,
+    "maximum_allowed": 0.3,
+    "sentinel_or_group_state_ids": [
+      "T49",
+      "T56",
+      "T57",
+      "T58",
+      "T61",
+      "T62",
+      "T63",
+      "T67",
+      "T70",
+      "T71",
+      "T73"
+    ],
+    "difficulty_expectations": [
+      {
+        "test_id": "T44",
+        "expected_failure_required_ids": [
+          "T44.3",
+          "T44.4"
+        ],
+        "interacting_traps": [
+          "independent validation",
+          "strict date shape",
+          "integer digit cap"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T45",
+        "expected_failure_required_ids": [
+          "T45.3",
+          "T45.6"
+        ],
+        "interacting_traps": [
+          "dependent age validation",
+          "independent consent",
+          "range boundaries"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T47",
+        "expected_failure_required_ids": [
+          "T47.3",
+          "T47.5"
+        ],
+        "interacting_traps": [
+          "null versus empty override",
+          "override precedence",
+          "warnings survive suspension"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T49",
+        "expected_failure_required_ids": [
+          "T49.2",
+          "T49.4"
+        ],
+        "interacting_traps": [
+          "first record sentinel",
+          "blank account identity",
+          "account reset",
+          "null arithmetic"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T50",
+        "expected_failure_required_ids": [
+          "T50.4",
+          "T50.5"
+        ],
+        "interacting_traps": [
+          "stale exact hit",
+          "three stage fallback",
+          "null selected attribute versus miss"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T51",
+        "expected_failure_required_ids": [
+          "T51.3",
+          "T51.4"
+        ],
+        "interacting_traps": [
+          "iterate lookup duplicates",
+          "three part tie break",
+          "half up exact decimal",
+          "miss after hit"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T52",
+        "expected_failure_required_ids": [
+          "T52.3",
+          "T52.6"
+        ],
+        "interacting_traps": [
+          "disable beats fallback",
+          "all syntax defects before queries",
+          "null enabled",
+          "negative half up"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T54",
+        "expected_failure_required_ids": [
+          "T54.3",
+          "T54.4"
+        ],
+        "interacting_traps": [
+          "canonical-set comparison",
+          "decimal tolerance boundary",
+          "duplicate Cartesian pairs"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T55",
+        "expected_failure_required_ids": [
+          "T55.3",
+          "T55.5"
+        ],
+        "interacting_traps": [
+          "full outer null sides",
+          "parse exemption before validation",
+          "negative corrections"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T57",
+        "expected_failure_required_ids": [
+          "T57.3",
+          "T57.5"
+        ],
+        "interacting_traps": [
+          "per-record and group output",
+          "reserve failed IDs",
+          "winner context differs from final input"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T60",
+        "expected_failure_required_ids": [
+          "T60.3",
+          "T60.6"
+        ],
+        "interacting_traps": [
+          "Normalizer close/open/audit expansion",
+          "parse cancellation exemption",
+          "sequence once per prepared opening"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T61",
+        "expected_failure_required_ids": [
+          "T61.2",
+          "T61.4"
+        ],
+        "interacting_traps": [
+          "first key empty sentinel",
+          "ignore stale subsequent seeds",
+          "close saved accepted context"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T62",
+        "expected_failure_required_ids": [
+          "T62.3",
+          "T62.5"
+        ],
+        "interacting_traps": [
+          "null-only override fallback",
+          "adjacent predecessor reset",
+          "amount validity independent from late population",
+          "half-up midpoint average"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T63",
+        "expected_failure_required_ids": [
+          "T63.4",
+          "T63.6"
+        ],
+        "interacting_traps": [
+          "weighted denominator",
+          "parse only eligible currencies",
+          "April fiscal starting year",
+          "first audit flag and empty group suppression"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T64",
+        "expected_failure_required_ids": [
+          "T64.3",
+          "T64.4"
+        ],
+        "interacting_traps": [
+          "Optional variant-map keys",
+          "Null vs empty nested note",
+          "State reset after repeated parent key"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T65",
+        "expected_failure_required_ids": [
+          "T65.3",
+          "T65.5"
+        ],
+        "interacting_traps": [
+          "Sorted map keys",
+          "Suppression with ordinal gaps",
+          "Shape-capped decimal validation"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T66",
+        "expected_failure_required_ids": [
+          "T66.3",
+          "T66.4"
+        ],
+        "interacting_traps": [
+          "Priority bypasses malformed later fields",
+          "Calendar-validity versus date shape",
+          "URGENT requires positive value"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T67",
+        "expected_failure_required_ids": [
+          "T67.3",
+          "T67.5"
+        ],
+        "interacting_traps": [
+          "Previous-valid sentinel",
+          "Malformed/disabled exclusion from state",
+          "Gap precedence and duplicate number"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T68",
+        "expected_failure_required_ids": [
+          "T68.3",
+          "T68.4"
+        ],
+        "interacting_traps": [
+          "Final-only HALF_UP rounding",
+          "Null before zero denominator",
+          "Output-to-function dependency"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T69",
+        "expected_failure_required_ids": [
+          "T69.3",
+          "T69.4"
+        ],
+        "interacting_traps": [
+          "Malformed vs missing public contracts",
+          "Two-argument error precedence",
+          "Regex caps and signed delta"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T70",
+        "expected_failure_required_ids": [
+          "T70.3",
+          "T70.5"
+        ],
+        "interacting_traps": [
+          "Per-customer rather than per-row parity",
+          "Subtotal reset before first line",
+          "Finite zero-count ownership"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T71",
+        "expected_failure_required_ids": [
+          "T71.4",
+          "T71.5"
+        ],
+        "interacting_traps": [
+          "Zero is a valid carried state",
+          "Clipping before recurrence",
+          "Global cycle and exceptional-step precedence"
+        ],
+        "status": "Author expectation, not a measured model score"
+      },
+      {
+        "test_id": "T73",
+        "expected_failure_required_ids": [
+          "T73.2",
+          "T73.6"
+        ],
+        "interacting_traps": [
+          "Run/row bypass before dictionary cutoff parsing",
+          "Accepted-only history with valid empty previous key",
+          "Null contribution and zero running total"
+        ],
+        "status": "Author expectation, not a measured model score"
+      }
+    ],
+    "minimum12_multi_failure_expectations_met": true,
+    "model_separation_measured": false,
+    "notes": "Empirical score/spread gates are explicitly post-delivery work in the brief; no model scores are claimed."
   },
   "deduplication": {
+    "existing_prompts": 12352,
+    "sources": 49,
     "exact_matches": 0,
-    "maximum_external_5gram_jaccard": 0.020833333333333332,
-    "rewrite_threshold": 0.5,
-    "prior_prompts": 1235,
-    "inputs": 17,
-    "views": [
-      "full_prompt",
-      "business_prose"
-    ],
-    "complete": false,
-    "missing_inputs": [
+    "maximum_external_5gram_Jaccard": 0.024390243902439025,
+    "threshold": 0.5,
+    "missing_optional_inputs": [
       "data/genbench/tasks.jsonl"
     ],
-    "evidence_file": "dedup_report.json",
-    "notes": "Scenario comparisons cover supplied v4 suite, all present CTL_LoRAT_*.json files, and hard_cases*.jsonl. Absent genbench tasks cannot be checked or asserted scenario-disjoint."
-  },
-  "independent_review": {
-    "reviews": [
-      "review_t44_t53.json",
-      "review_t54_t63.json",
-      "review_t64_t73.json"
-    ],
-    "final_reference_hashes_verified": true,
-    "remaining_semantic_or_rubric_findings": 0,
-    "resolved_findings": [
-      "join delimiter/list order",
-      "onboarding timestamp output format",
-      "mode_cd destination explicit",
-      "CDC UPDATE requirement and port1 return alternatives",
-      "winner-state equivalent implementations accepted",
-      "optional JSON map access guarded",
-      "pricing ranges bounded within output precision",
-      "audit parameters mapped to exact output fields",
-      "generator constants enumerated",
-      "Unicode framing convention explicit"
-    ],
-    "execution_note": "Expected edge-case vectors are independent review derivations, not CloverDX runtime executions."
+    "evidence": "dedup_report.json",
+    "corpus_scope": "All present CTL_LoRAT_*.json and CTL_LoRA_*.json, v4, hard_cases*.jsonl; benchmark file checked if present"
   },
   "facts_for_judge_reference": [
     {
-      "fact": "DataIntersection inputs A=0/B=1; output0=A-only, output1=matched transform, output2=B-only. Matched CTL writes $out.1 and does not manufacture INSERT/DELETE. Equal NULL true; Allow key duplicates true yields Cartesian pairs.",
-      "tests": [
-        "T53",
-        "T54",
-        "T55"
+      "fact": "str2decimal(\"\") throws CTLException rather than returning null.",
+      "run_ids": [
+        17915
       ],
-      "verification": "Owner-confirmed 2026-10-12 in the attached brief; actual ctl_validate joiner-mode PASS for port1 references. Component runtime routing not exercised.",
-      "in_ctl2_basics": false,
+      "evidence": "run_graphs/P901/data-out/output_0.csv",
+      "tests": [
+        "T64",
+        "T69"
+      ],
+      "verified": true,
       "reference_update_needed": true
     },
     {
-      "fact": "join takes delimiter first, then typed list: join(\";\", failures) and join(\",\", changes).",
+      "fact": "isDate with pattern yyyy-MM-dd and strict=true returns false for both 2025-02-30 and 2025-1-1; str2date with the same strict UTC overload throws for both. Explicit complete-shape validation remains required by the CSV contracts.",
+      "run_ids": [
+        17915
+      ],
+      "evidence": "run_graphs/P901/data-out/output_0.csv",
       "tests": [
         "T44",
         "T45",
-        "T46",
-        "T53",
-        "T54",
-        "T55"
+        "T66"
       ],
-      "verification": "ctl2-basics function table and actual ctl_validate clean PASS after correcting argument order.",
-      "in_ctl2_basics": true
+      "verified": true,
+      "reference_update_needed": true
     },
     {
-      "fact": "Strict UTC overloads isDate/str2date accept (text,pattern,\"en.US\",\"UTC\",true); exact text shape enforced separately by regex. yyyy calendar year, MM month, dd day, HH hour, mm minute, ss second.",
-      "tests": [
-        "T44",
-        "T45",
-        "T46",
-        "T72",
-        "T73"
+      "fact": "DataGenerator recordsNumber=0 never invokes generate(): a callback whose only path raises ZERO_GENERATOR_CALLED completes FINISHED_OK with zero output. Main generators also pass zero and one configured rows.",
+      "run_ids": [
+        17916,
+        17987,
+        17988,
+        17990,
+        17991
       ],
-      "verification": "Documented overloads/date patterns; T44–T46 actual ctl_validate clean PASS. T72/T73 full references have unresolved sequence diagnostics, no reported date diagnostics. No data-level runtime execution.",
-      "in_ctl2_basics": true
+      "verified": true,
+      "reference_update_needed": true
     },
     {
-      "fact": "Composite lookup uses lookup(ServiceRules).get(key1,key2), returns nullable record, ordered key arguments; typed record metadata belongs to graph.",
-      "tests": [
-        "T50",
-        "T51",
-        "T52"
+      "fact": "On this server DataIntersection passes only one output metadata slot to CTL: matched results are written to internal $out.0 and emitted on physical graph output1. Internal $out.1 fails worker initialization. A-only/B-only records pass unchanged on physical outputs0/2. Extra transformLeftOnly/transformRightOnly declarations containing raiseError are not invoked. Their harmless presence alone is not a rubric defect.",
+      "run_ids": [
+        17910,
+        17911,
+        17912,
+        17918,
+        17919,
+        17920,
+        17922
       ],
-      "verification": "ctl2-basics §9 and independent review. Actual ctl_validate fails to resolve lookup and Rules type in standalone scope; full graph validation blocked.",
-      "in_ctl2_basics": true,
-      "verified_in_graph": false
-    },
-    {
-      "fact": "sequence(Name,long).next() returns a long and advances once; first call returns initial value; do not reset/use in lifecycle setup.",
-      "tests": [
-        "T59",
-        "T60",
-        "T61",
-        "T72",
-        "T73"
+      "evidence": [
+        "round2/initial_runtime_probe_results.json",
+        "round2/runtime_probe_results.json"
       ],
-      "verification": "ctl2-basics §9 and Sequence Functions, independent review. Actual ctl_validate cannot resolve graph sequence; full graph validation blocked.",
-      "in_ctl2_basics": true,
-      "verified_in_graph": false
-    },
-    {
-      "fact": "getParamValue(name) reads graph parameters; ${...} is graph interpolation. DataGenerator recordsNumber owns normal count, generate returns OK/ALL; STOP aborts.",
-      "tests": [
-        "T70",
-        "T71",
-        "T72",
-        "T73"
-      ],
-      "verification": "ctl2-basics §§8–9, findings §7 STOP owner ruling. Actual T70/T71 generic-mode ctl_validate PASS; generic checks syntax, not component callback runtime. Parameters and record count described in prompt/context; no runtime rows generated.",
-      "in_ctl2_basics": true
-    },
-    {
-      "fact": "Optional JSON properties are guarded with containsKey on parsed variant objects; count resets current children; variant values use cast to strong string type.",
-      "tests": [
-        "T64",
-        "T65"
-      ],
-      "verification": "Documented functions/variant syntax and actual ctl_validate normalizer PASS. Independent reviewers rederived nested optional behavior.",
-      "in_ctl2_basics": true
-    },
-    {
-      "fact": "Rollup all five callbacks required, explicit per-group zero initialisation, first-row context saved; Denormalizer scalar winners protected by have flag and reset in clean.",
-      "tests": [
-        "T56",
-        "T57",
-        "T58",
-        "T62",
-        "T63"
-      ],
-      "verification": "Owner rulings and ctl2-basics; all actual ctl_validate clean PASS; independent group behavior derivations.",
-      "in_ctl2_basics": true
-    },
-    {
-      "fact": "Half-up decimal round(value,2), fixed numeric formatting num2str(value,\"0.00\",\"en.US\"), explicit UTC date2str, lowerCase(sha256HexString(canonical)).",
-      "tests": [
-        "T62",
-        "T63",
-        "T68",
-        "T69",
-        "T72",
-        "T73"
-      ],
-      "verification": "ctl2-basics signatures and independent math/framing derivations. T62/T63/T68/T69 clean ctl_validate PASS; T72/T73 unresolved sequence only. Hash outputs not runtime tested.",
-      "in_ctl2_basics": true
-    },
-    {
-      "fact": "Audit framing uses CTL length(string) consistently, specified as UTF-16 code units for Unicode.",
-      "tests": [
-        "T72",
-        "T73"
-      ],
-      "verification": "CTL length function compile-resolves; Java-style UTF-16 interpretation has not been runtime verified in this session. Flagged for runtime confirmation rather than asserted as newly compiler-proven.",
-      "in_ctl2_basics": false,
+      "verified": true,
       "reference_update_needed": true,
-      "runtime_verification_pending": true
+      "conflicts_with": "resources/ctl2-basics.md §8.9 and prior owner port-1 CTL ruling. The live worker and component guide agree on internal output0; owner reconciliation is required before snapshotting the judge reference."
+    },
+    {
+      "fact": "DataIntersection OK/0,1 and ALL all emit the match on physical output1; SKIP suppresses only matches. STOP(-2) produces ERROR, so the accepted emit alternative is a successful nonnegative return, not every non-SKIP negative value.",
+      "run_ids": [
+        17918,
+        17919,
+        17920,
+        17922,
+        17993
+      ],
+      "evidence": "round2/stop_probe_results.json",
+      "verified": true,
+      "reference_update_needed": true
+    },
+    {
+      "fact": "Equal NULL=true matches null keys, and duplicate keys produce A-major/B-minor Cartesian pairs in the tested sorted fixtures.",
+      "run_ids": [
+        17918,
+        17919
+      ],
+      "verified": true,
+      "reference_update_needed": true
+    },
+    {
+      "fact": "Denormalizer state reset at the end of transform(), with an empty clean(), produces the same correct outputs across3 groups of sizes3,1,4. Rubrics accept either reset location.",
+      "run_ids": [
+        17917
+      ],
+      "evidence": "run_graphs/P903/data-out/output_0.csv",
+      "verified": true,
+      "reference_update_needed": true
+    },
+    {
+      "fact": "length(\"A😀\") returns3 UTF-16 code units. Receipt hashes also match hand-derived length-framed UTF-8 SHA-256 expectations, including Unicode, null and empty strings.",
+      "run_ids": [
+        17915,
+        17978
+      ],
+      "verified": true,
+      "reference_update_needed": true
+    },
+    {
+      "fact": "Simple lookup duplicate candidate iteration requires keyDuplicates=true on this server. Without it T51 retained the last invalid duplicate and missed eligible earlier candidates; configured duplicate lookup passes the full candidate/tie-break fixture.",
+      "run_ids": [
+        17931,
+        17957
+      ],
+      "verified": true,
+      "reference_update_needed": true
+    },
+    {
+      "fact": "Set timeZone=UTC on reference date metadata to preserve inclusive UTC lookup-date boundaries; input file adapters parse typed dates explicitly in UTC.",
+      "run_ids": [
+        17930,
+        17956
+      ],
+      "verified": true,
+      "reference_update_needed": true
+    },
+    {
+      "fact": "RUN_ID is reserved by CloverDX Server and overrides a graph default with the numeric execution ID. Business run stamping uses AUDIT_RUN_ID, while output metadata still calls its field run_id.",
+      "run_ids": [
+        17949,
+        17978
+      ],
+      "verified": true,
+      "reference_update_needed": true
+    },
+    {
+      "fact": "Use explicit UTC calendar overloads getMonth(date,\"UTC\") and getYear(date,\"UTC\") when the business calendar is UTC but host timezone may differ. 2026-03-31 23:30 UTC remains fiscal2025-Q4; average6.750 and HIGH share25.00 pass on the CET host.",
+      "run_ids": [
+        18000
+      ],
+      "verified": true,
+      "reference_update_needed": false
+    },
+    {
+      "fact": "Full-outer ExtMergeJoin transforms matched and padded-null one-sided records on output0. Its optional output1 is the unjoined-master pass-through and cannot be used as a second transformed repair schema. Normalizer requires exactly one output; SCD CLOSE/OPEN/audit rows therefore share an operation ledger.",
+      "run_ids": [
+        17984,
+        17966
+      ],
+      "verified": true,
+      "reference_update_needed": true
+    },
+    {
+      "fact": "Dictionary primitive defaults use Entry attributes dictval.value; typed boolean/string/integer values and a mutable per-run counter work. An auditEnabled=false run bypasses malformed cutoff parsing.",
+      "run_ids": [
+        17923,
+        17992
+      ],
+      "verified": true,
+      "reference_update_needed": true
     }
   ],
-  "incomplete_gates": [
-    "T50: reference has standalone compiler diagnostics",
-    "T51: reference has standalone compiler diagnostics",
-    "T52: reference has standalone compiler diagnostics",
-    "T59: reference has standalone compiler diagnostics",
-    "T60: reference has standalone compiler diagnostics",
-    "T61: reference has standalone compiler diagnostics",
-    "T72: reference has standalone compiler diagnostics",
-    "T73: reference has standalone compiler diagnostics",
-    "Dedup input unavailable: data/genbench/tasks.jsonl",
-    "Confirm Unicode length convention in actual CTL runtime before asserting it as a newly verified reference fact."
-  ],
-  "ready_for_snapshot": false,
+  "change_log": "change_log.json",
+  "round1_archive": "round1/generate_rw.json",
+  "reference_documentation_reconciliation_required": true,
+  "reference_documentation_note": "Live DataIntersection internal output numbering and negative-return handling conflict with current §8.9 wording. Facts and runIds above are ready for the owner’s post-delivery reference update; this task did not edit ctl2-basics.md.",
   "reproduction": {
-    "build": "python data/suite_v5/build_generate_rw.py (overwrites compiler flags/evidence strings; rerun compilation and dedup afterward)",
-    "compile": "/home/pavlisd/venv/bin/python data/suite_v5/compile_references.py (requires local server network access)",
-    "graph_fixtures": "python data/suite_v5/build_compile_graphs.py",
-    "graph_validate": "/home/pavlisd/venv/bin/python data/suite_v5/validate_compile_graphs.py (requires registered sandbox and permission to write isolated server temporary folder)",
+    "author": "python data/suite_v5/build_generate_rw.py",
+    "build_graphs": "python data/suite_v5/round2/build_round2_graphs.py",
+    "compile": "Use round2/compile_requests.json with round2/mcp_batch.py; retain raw compile_responses.json.",
+    "main_runs": "/home/pavlisd/venv/bin/python data/suite_v5/round2/execute_graphs.py data/suite_v5/round2/main_manifests.json",
+    "boundary_runs": "/home/pavlisd/venv/bin/python data/suite_v5/round2/execute_graphs.py data/suite_v5/round2/extra_manifests.json --report data/suite_v5/round2/extra_run_results.json",
+    "assemble": "python data/suite_v5/round2/finalize_suite.py",
     "dedup": "python data/suite_v5/dedup_suite_rw.py",
-    "check_structure": "python data/suite_v5/check_suite_rw.py --allow-incomplete --report data/suite_v5/check_results.json",
-    "strict_gate": "python data/suite_v5/check_suite_rw.py (intentionally exits 1 while compiler/corpus gates are incomplete)"
+    "check": "python data/suite_v5/check_suite_rw.py --report data/suite_v5/check_results.json"
   }
 }

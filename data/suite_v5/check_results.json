@@ -1,19 +1,416 @@
 {
-  "structural_pass": true,
-  "ready_for_snapshot": false,
+  "passed": true,
   "errors": [],
-  "incomplete_gates": [
-    "T50: reference has standalone compiler diagnostics",
-    "T51: reference has standalone compiler diagnostics",
-    "T52: reference has standalone compiler diagnostics",
-    "T59: reference has standalone compiler diagnostics",
-    "T60: reference has standalone compiler diagnostics",
-    "T61: reference has standalone compiler diagnostics",
-    "T72: reference has standalone compiler diagnostics",
-    "T73: reference has standalone compiler diagnostics",
-    "Dedup input unavailable: data/genbench/tasks.jsonl"
+  "tests": [
+    {
+      "test_id": "T44",
+      "words": 711,
+      "record_field_counts": [
+        23,
+        26,
+        24
+      ],
+      "required_count": 9,
+      "clause_count": 8,
+      "fixture_input_count": 8,
+      "output_count": 8,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T45",
+      "words": 727,
+      "record_field_counts": [
+        23,
+        26,
+        24
+      ],
+      "required_count": 9,
+      "clause_count": 8,
+      "fixture_input_count": 9,
+      "output_count": 9,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T46",
+      "words": 748,
+      "record_field_counts": [
+        23,
+        26,
+        24
+      ],
+      "required_count": 9,
+      "clause_count": 8,
+      "fixture_input_count": 9,
+      "output_count": 9,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T47",
+      "words": 655,
+      "record_field_counts": [
+        30,
+        25
+      ],
+      "required_count": 9,
+      "clause_count": 8,
+      "fixture_input_count": 8,
+      "output_count": 8,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T48",
+      "words": 525,
+      "record_field_counts": [
+        12,
+        15
+      ],
+      "required_count": 9,
+      "clause_count": 8,
+      "fixture_input_count": 8,
+      "output_count": 10,
+      "standalone_compiles": false
+    },
+    {
+      "test_id": "T49",
+      "words": 573,
+      "record_field_counts": [
+        12,
+        16
+      ],
+      "required_count": 9,
+      "clause_count": 8,
+      "fixture_input_count": 10,
+      "output_count": 10,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T50",
+      "words": 634,
+      "record_field_counts": [
+        12,
+        16,
+        12
+      ],
+      "required_count": 9,
+      "clause_count": 8,
+      "fixture_input_count": 10,
+      "output_count": 10,
+      "standalone_compiles": false
+    },
+    {
+      "test_id": "T51",
+      "words": 642,
+      "record_field_counts": [
+        12,
+        15,
+        13
+      ],
+      "required_count": 9,
+      "clause_count": 8,
+      "fixture_input_count": 10,
+      "output_count": 10,
+      "standalone_compiles": false
+    },
+    {
+      "test_id": "T52",
+      "words": 845,
+      "record_field_counts": [
+        12,
+        15,
+        13,
+        12,
+        12
+      ],
+      "required_count": 10,
+      "clause_count": 9,
+      "fixture_input_count": 13,
+      "output_count": 13,
+      "standalone_compiles": false
+    },
+    {
+      "test_id": "T53",
+      "words": 764,
+      "record_field_counts": [
+        12,
+        12,
+        12,
+        14,
+        12
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 18,
+      "output_count": 13,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T54",
+      "words": 816,
+      "record_field_counts": [
+        16,
+        16,
+        16,
+        18,
+        16
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 9,
+      "output_count": 5,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T55",
+      "words": 725,
+      "record_field_counts": [
+        15,
+        15,
+        17
+      ],
+      "required_count": 9,
+      "clause_count": 9,
+      "fixture_input_count": 15,
+      "output_count": 8,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T56",
+      "words": 497,
+      "record_field_counts": [
+        18,
+        20
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 9,
+      "output_count": 4,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T57",
+      "words": 783,
+      "record_field_counts": [
+        15,
+        18,
+        18,
+        15
+      ],
+      "required_count": 9,
+      "clause_count": 9,
+      "fixture_input_count": 8,
+      "output_count": 10,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T58",
+      "words": 623,
+      "record_field_counts": [
+        17,
+        18
+      ],
+      "required_count": 9,
+      "clause_count": 9,
+      "fixture_input_count": 10,
+      "output_count": 3,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T59",
+      "words": 708,
+      "record_field_counts": [
+        24,
+        18,
+        18
+      ],
+      "required_count": 9,
+      "clause_count": 9,
+      "fixture_input_count": 8,
+      "output_count": 8,
+      "standalone_compiles": false
+    },
+    {
+      "test_id": "T60",
+      "words": 694,
+      "record_field_counts": [
+        19,
+        19
+      ],
+      "required_count": 9,
+      "clause_count": 9,
+      "fixture_input_count": 9,
+      "output_count": 13,
+      "standalone_compiles": false
+    },
+    {
+      "test_id": "T61",
+      "words": 750,
+      "record_field_counts": [
+        19,
+        18,
+        18
+      ],
+      "required_count": 9,
+      "clause_count": 9,
+      "fixture_input_count": 9,
+      "output_count": 10,
+      "standalone_compiles": false
+    },
+    {
+      "test_id": "T62",
+      "words": 814,
+      "record_field_counts": [
+        20,
+        21,
+        22
+      ],
+      "required_count": 9,
+      "clause_count": 9,
+      "fixture_input_count": 14,
+      "output_count": 4,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T63",
+      "words": 811,
+      "record_field_counts": [
+        19,
+        19,
+        18
+      ],
+      "required_count": 9,
+      "clause_count": 9,
+      "fixture_input_count": 9,
+      "output_count": 3,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T64",
+      "words": 593,
+      "record_field_counts": [
+        15,
+        18
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 8,
+      "output_count": 4,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T65",
+      "words": 580,
+      "record_field_counts": [
+        15,
+        18
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 8,
+      "output_count": 7,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T66",
+      "words": 527,
+      "record_field_counts": [
+        19
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 12,
+      "output_count": 12,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T67",
+      "words": 556,
+      "record_field_counts": [
+        18
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 12,
+      "output_count": 12,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T68",
+      "words": 626,
+      "record_field_counts": [
+        18,
+        22
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 8,
+      "output_count": 8,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T69",
+      "words": 634,
+      "record_field_counts": [
+        18,
+        22
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 12,
+      "output_count": 12,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T70",
+      "words": 541,
+      "record_field_counts": [
+        22
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 0,
+      "output_count": 8,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T71",
+      "words": 549,
+      "record_field_counts": [
+        21
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 0,
+      "output_count": 9,
+      "standalone_compiles": true
+    },
+    {
+      "test_id": "T72",
+      "words": 602,
+      "record_field_counts": [
+        16,
+        21
+      ],
+      "required_count": 8,
+      "clause_count": 8,
+      "fixture_input_count": 8,
+      "output_count": 8,
+      "standalone_compiles": false
+    },
+    {
+      "test_id": "T73",
+      "words": 666,
+      "record_field_counts": [
+        16,
+        22
+      ],
+      "required_count": 9,
+      "clause_count": 9,
+      "fixture_input_count": 10,
+      "output_count": 10,
+      "standalone_compiles": false
+    }
   ],
-  "archetype_coverage": {
+  "archetypes": {
     "1": 3,
     "2": 3,
     "3": 3,
@@ -27,352 +424,129 @@
     "11": 2,
     "12": 2
   },
-  "tests": [
+  "actual_components": [
+    "DATA_GENERATOR",
+    "DATA_INTERSECTION",
+    "DENORMALIZER",
+    "EXT_MERGE_JOIN",
+    "NORMALIZER",
+    "PARTITION",
+    "REFORMAT",
+    "ROLLUP"
+  ],
+  "stateful_test_ids": [
+    "T49",
+    "T53",
+    "T56",
+    "T57",
+    "T58",
+    "T61",
+    "T62",
+    "T63",
+    "T64",
+    "T67",
+    "T70",
+    "T71",
+    "T73"
+  ],
+  "multi_trap_candidate_ids": [
+    "T44",
+    "T45",
+    "T46",
+    "T47",
+    "T48",
+    "T49",
+    "T50",
+    "T51",
+    "T52",
+    "T53",
+    "T54",
+    "T55",
+    "T56",
+    "T57",
+    "T58",
+    "T59",
+    "T60",
+    "T61",
+    "T62",
+    "T63",
+    "T64",
+    "T65",
+    "T66",
+    "T67",
+    "T68",
+    "T69",
+    "T70",
+    "T71",
+    "T72",
+    "T73"
+  ],
+  "pairwise_max": 0.11181434599156118,
+  "nearest_internal_pairs": [
     {
-      "test_id": "T44",
-      "words": 788,
-      "record_field_counts": [
-        26,
-        29,
-        27
-      ],
-      "clause_count": 7,
-      "required_count": 8,
-      "forbidden_count": 3
+      "a": "T56",
+      "b": "T59",
+      "jaccard": 0.11181434599156118
     },
     {
-      "test_id": "T45",
-      "words": 788,
-      "record_field_counts": [
-        26,
-        29,
-        27
-      ],
-      "clause_count": 7,
-      "required_count": 8,
-      "forbidden_count": 3
+      "a": "T60",
+      "b": "T61",
+      "jaccard": 0.1087866108786611
     },
     {
-      "test_id": "T46",
-      "words": 788,
-      "record_field_counts": [
-        26,
-        29,
-        27
-      ],
-      "clause_count": 7,
-      "required_count": 8,
-      "forbidden_count": 3
+      "a": "T54",
+      "b": "T55",
+      "jaccard": 0.10691244239631337
     },
     {
-      "test_id": "T47",
-      "words": 605,
-      "record_field_counts": [
-        30,
-        25
-      ],
-      "clause_count": 6,
-      "required_count": 7,
-      "forbidden_count": 3
+      "a": "T54",
+      "b": "T61",
+      "jaccard": 0.10521415270018622
     },
     {
-      "test_id": "T48",
-      "words": 605,
-      "record_field_counts": [
-        30,
-        25
-      ],
-      "clause_count": 6,
-      "required_count": 7,
-      "forbidden_count": 3
+      "a": "T54",
+      "b": "T58",
+      "jaccard": 0.10344827586206896
     },
     {
-      "test_id": "T49",
-      "words": 605,
-      "record_field_counts": [
-        30,
-        25
-      ],
-      "clause_count": 6,
-      "required_count": 7,
-      "forbidden_count": 3
+      "a": "T54",
+      "b": "T57",
+      "jaccard": 0.1019644527595884
     },
     {
-      "test_id": "T50",
-      "words": 647,
-      "record_field_counts": [
-        16,
-        19,
-        15
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
+      "a": "T58",
+      "b": "T61",
+      "jaccard": 0.0977112676056338
     },
     {
-      "test_id": "T51",
-      "words": 647,
-      "record_field_counts": [
-        16,
-        19,
-        15
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
+      "a": "T57",
+      "b": "T58",
+      "jaccard": 0.0975177304964539
     },
     {
-      "test_id": "T52",
-      "words": 647,
-      "record_field_counts": [
-        16,
-        19,
-        15
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
+      "a": "T55",
+      "b": "T58",
+      "jaccard": 0.09747606614447346
     },
     {
-      "test_id": "T53",
-      "words": 817,
-      "record_field_counts": [
-        15,
-        15,
-        15,
-        17,
-        15
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T54",
-      "words": 815,
-      "record_field_counts": [
-        15,
-        15,
-        15,
-        17,
-        15
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T55",
-      "words": 817,
-      "record_field_counts": [
-        15,
-        15,
-        15,
-        17,
-        15
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T56",
-      "words": 562,
-      "record_field_counts": [
-        18,
-        20
-      ],
-      "clause_count": 6,
-      "required_count": 8,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T57",
-      "words": 562,
-      "record_field_counts": [
-        18,
-        20
-      ],
-      "clause_count": 6,
-      "required_count": 8,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T58",
-      "words": 562,
-      "record_field_counts": [
-        18,
-        20
-      ],
-      "clause_count": 6,
-      "required_count": 8,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T59",
-      "words": 795,
-      "record_field_counts": [
-        24,
-        18,
-        18
-      ],
-      "clause_count": 7,
-      "required_count": 8,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T60",
-      "words": 795,
-      "record_field_counts": [
-        24,
-        18,
-        18
-      ],
-      "clause_count": 7,
-      "required_count": 8,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T61",
-      "words": 795,
-      "record_field_counts": [
-        24,
-        18,
-        18
-      ],
-      "clause_count": 7,
-      "required_count": 8,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T62",
-      "words": 736,
-      "record_field_counts": [
-        18,
-        19,
-        18
-      ],
-      "clause_count": 7,
-      "required_count": 8,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T63",
-      "words": 757,
-      "record_field_counts": [
-        18,
-        19,
-        18
-      ],
-      "clause_count": 7,
-      "required_count": 8,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T64",
-      "words": 615,
-      "record_field_counts": [
-        15,
-        18
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T65",
-      "words": 615,
-      "record_field_counts": [
-        15,
-        18
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T66",
-      "words": 551,
-      "record_field_counts": [
-        18
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T67",
-      "words": 551,
-      "record_field_counts": [
-        18
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T68",
-      "words": 601,
-      "record_field_counts": [
-        16,
-        20
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T69",
-      "words": 601,
-      "record_field_counts": [
-        16,
-        20
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T70",
-      "words": 538,
-      "record_field_counts": [
-        20
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T71",
-      "words": 538,
-      "record_field_counts": [
-        20
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T72",
-      "words": 650,
-      "record_field_counts": [
-        16,
-        21
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
-    },
-    {
-      "test_id": "T73",
-      "words": 650,
-      "record_field_counts": [
-        16,
-        21
-      ],
-      "clause_count": 7,
-      "required_count": 7,
-      "forbidden_count": 3
+      "a": "T54",
+      "b": "T60",
+      "jaccard": 0.0962566844919786
     }
-  ]
+  ],
+  "dedup_missing_inputs": [
+    "data/genbench/tasks.jsonl"
+  ],
+  "scope_compile_exception_ids": [
+    "T48",
+    "T50",
+    "T51",
+    "T52",
+    "T59",
+    "T60",
+    "T61",
+    "T72",
+    "T73"
+  ],
+  "run_verified_tests": 30
 }

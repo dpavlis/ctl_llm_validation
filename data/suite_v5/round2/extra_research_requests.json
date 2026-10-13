@@ -1,0 +1,1 @@
+[{"tool": "knowledge_base_search", "arguments": {"query": "dictionary", "limit": 20}, "save": "dictionary_search.json", "print": true}, {"tool": "knowledge_base_search", "arguments": {"query": "lookup simple", "limit": 10}, "save": "lookup_search.json", "print": true}]

@@ -1,0 +1,8 @@
+MACHINE1|ACME|machine.csv|1|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1||X1|keep:1|"{""channels"": {""z"": {""value"": "" -1.20 ""}, ""B"": {""enabled"": false, ""value"": ""BAD""}, ""A"": {""value"": ""0""}, ""c"": {""value"": """"}}}"|10.00|2020-06-01 00:00:00.000
+MACHINE1|ACME|machine.csv|2|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X2|keep:2|{}|10.00|2020-06-01 00:00:00.000
+MACHINE3|ACME|machine.csv|3|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X3|keep:3|"{""channels"": null}"|10.00|2020-06-01 00:00:00.000
+MACHINE4|ACME|machine.csv|4|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X4|keep:4| |10.00|2020-06-01 00:00:00.000
+MACHINE5|ACME|machine.csv|5|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X5|keep:5|"{""channels"": {""a"": {""enabled"": null, ""value"": ""12.345""}, ""b"": {}, ""c"": {""value"": ""1000000""}}}"|10.00|2020-06-01 00:00:00.000
+MACHINE6|ACME|machine.csv|6|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X6|keep:6|__NULL__|10.00|2020-06-01 00:00:00.000
+MACHINE7|ACME|machine.csv|7|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X7|keep:7|"{""channels"": {}}"|10.00|2020-06-01 00:00:00.000
+MACHINE8|ACME|machine.csv|8|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X8|keep:8|"{""channels"": {""only"": {""value"": "" 2.50 ""}}}"|10.00|2020-06-01 00:00:00.000

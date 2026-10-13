@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T72" id="6101300072" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+      <GraphParameter name="AUDIT_RUN_ID" value="R2-A" />
+      <GraphParameter name="RUN_TS" value="2026-01-05 08:00:00" />
+      <GraphParameter name="SOURCE_FILE" value="receipts.csv" />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Receipt audit identities use framed business tuples
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="ReceiptSource" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="receipt_key" type="string" nullable="false" />
+        <Field name="receipt_tenant" type="string" nullable="false" />
+        <Field name="receipt_file" type="string" nullable="false" />
+        <Field name="receipt_row" type="long" nullable="false" />
+        <Field name="receipt_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="receipt_team" type="string" nullable="true" />
+        <Field name="receipt_market" type="string" nullable="true" />
+        <Field name="receipt_currency" type="string" nullable="false" />
+        <Field name="receipt_batch" type="string" nullable="false" />
+        <Field name="receipt_note" type="string" nullable="true" />
+        <Field name="receipt_trace" type="string" nullable="true" />
+        <Field name="receipt_unused_archive" type="string" nullable="true" />
+        <Field name="merchant_cd" type="string" nullable="true" />
+        <Field name="transaction_ref" type="string" nullable="true" />
+        <Field name="posted_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="posting_dt" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="receipt_key" type="string" nullable="false" />
+        <Field name="receipt_tenant" type="string" nullable="false" />
+        <Field name="receipt_file" type="string" nullable="false" />
+        <Field name="receipt_row" type="string" nullable="false" />
+        <Field name="receipt_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="receipt_team" type="string" nullable="true" />
+        <Field name="receipt_market" type="string" nullable="true" />
+        <Field name="receipt_currency" type="string" nullable="false" />
+        <Field name="receipt_batch" type="string" nullable="false" />
+        <Field name="receipt_note" type="string" nullable="true" />
+        <Field name="receipt_trace" type="string" nullable="true" />
+        <Field name="receipt_unused_archive" type="string" nullable="true" />
+        <Field name="merchant_cd" type="string" nullable="true" />
+        <Field name="transaction_ref" type="string" nullable="true" />
+        <Field name="posted_amount" type="string" nullable="true" />
+        <Field name="posting_dt" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="ReceiptAudited" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="receipt_key" type="string" nullable="false" />
+        <Field name="receipt_tenant" type="string" nullable="false" />
+        <Field name="receipt_file" type="string" nullable="false" />
+        <Field name="receipt_row" type="long" nullable="false" />
+        <Field name="receipt_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="receipt_team" type="string" nullable="true" />
+        <Field name="receipt_market" type="string" nullable="true" />
+        <Field name="receipt_currency" type="string" nullable="false" />
+        <Field name="receipt_batch" type="string" nullable="false" />
+        <Field name="receipt_note" type="string" nullable="true" />
+        <Field name="receipt_trace" type="string" nullable="true" />
+        <Field name="receipt_unused_archive" type="string" nullable="true" />
+        <Field name="merchant_cd" type="string" nullable="true" />
+        <Field name="transaction_ref" type="string" nullable="true" />
+        <Field name="posted_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="posting_dt" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="run_id" type="string" nullable="false" />
+        <Field name="run_ts" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="audit_seq" type="long" nullable="false" />
+        <Field name="record_digest" type="string" nullable="false" />
+        <Field name="audit_source" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="receipt_key" type="string" nullable="false" />
+        <Field name="receipt_tenant" type="string" nullable="false" />
+        <Field name="receipt_file" type="string" nullable="false" />
+        <Field name="receipt_row" type="string" nullable="false" />
+        <Field name="receipt_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="receipt_team" type="string" nullable="true" />
+        <Field name="receipt_market" type="string" nullable="true" />
+        <Field name="receipt_currency" type="string" nullable="false" />
+        <Field name="receipt_batch" type="string" nullable="false" />
+        <Field name="receipt_note" type="string" nullable="true" />
+        <Field name="receipt_trace" type="string" nullable="true" />
+        <Field name="receipt_unused_archive" type="string" nullable="true" />
+        <Field name="merchant_cd" type="string" nullable="true" />
+        <Field name="transaction_ref" type="string" nullable="true" />
+        <Field name="posted_amount" type="string" nullable="true" />
+        <Field name="posting_dt" type="string" nullable="true" timeZone="UTC" />
+        <Field name="run_id" type="string" nullable="false" />
+        <Field name="run_ts" type="string" nullable="false" timeZone="UTC" />
+        <Field name="audit_seq" type="string" nullable="false" />
+        <Field name="record_digest" type="string" nullable="false" />
+        <Field name="audit_source" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Sequence id="AuditRows" name="AuditRows" start="1" step="1" type="PRIMITIVE_SEQUENCE" />
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T72_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.receipt_key=$in.0.receipt_key;
+$out.0.receipt_tenant=$in.0.receipt_tenant;
+$out.0.receipt_file=$in.0.receipt_file;
+$out.0.receipt_row=$in.0.receipt_row == null ? null : str2long($in.0.receipt_row);
+$out.0.receipt_received=$in.0.receipt_received == null ? null : str2date($in.0.receipt_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.receipt_team=$in.0.receipt_team;
+$out.0.receipt_market=$in.0.receipt_market;
+$out.0.receipt_currency=$in.0.receipt_currency;
+$out.0.receipt_batch=$in.0.receipt_batch;
+$out.0.receipt_note=$in.0.receipt_note;
+$out.0.receipt_trace=$in.0.receipt_trace;
+$out.0.receipt_unused_archive=$in.0.receipt_unused_archive;
+$out.0.merchant_cd=$in.0.merchant_cd;
+$out.0.transaction_ref=$in.0.transaction_ref;
+$out.0.posted_amount=$in.0.posted_amount == null ? null : str2decimal($in.0.posted_amount);
+$out.0.posting_dt=$in.0.posting_dt == null ? null : str2date($in.0.posting_dt,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+function string frame(string v){return num2str(length(v))+":"+v;}
+function string mark(string v){return isnull(v)?"N":"V"+v;}
+function integer transform(){
+ $out.0.*=$in.0.*;$out.0.run_id=getParamValue("AUDIT_RUN_ID");$out.0.audit_source=getParamValue("SOURCE_FILE");
+ $out.0.run_ts=str2date(getParamValue("RUN_TS"),"yyyy-MM-dd HH:mm:ss","en.US","UTC",true);
+ string a=mark($in.0.merchant_cd);string b=mark($in.0.transaction_ref);
+ string c=isnull($in.0.posted_amount)?"N":"V"+num2str(round($in.0.posted_amount,2),"0.00","en.US");
+ string d=isnull($in.0.posting_dt)?"N":"V"+date2str($in.0.posting_dt,"yyyy-MM-dd HH:mm:ss","en.US","UTC");
+ $out.0.record_digest=lowerCase(sha256HexString(frame(a)+frame(b)+frame(c)+frame(d)));
+ $out.0.audit_seq=sequence(AuditRows,long).next();return OK;
+}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.receipt_key=$in.0.receipt_key;
+$out.0.receipt_tenant=$in.0.receipt_tenant;
+$out.0.receipt_file=$in.0.receipt_file;
+$out.0.receipt_row=$in.0.receipt_row == null ? null : num2str($in.0.receipt_row);
+$out.0.receipt_received=$in.0.receipt_received == null ? null : date2str($in.0.receipt_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.receipt_team=$in.0.receipt_team;
+$out.0.receipt_market=$in.0.receipt_market;
+$out.0.receipt_currency=$in.0.receipt_currency;
+$out.0.receipt_batch=$in.0.receipt_batch;
+$out.0.receipt_note=$in.0.receipt_note;
+$out.0.receipt_trace=$in.0.receipt_trace;
+$out.0.receipt_unused_archive=$in.0.receipt_unused_archive;
+$out.0.merchant_cd=$in.0.merchant_cd;
+$out.0.transaction_ref=$in.0.transaction_ref;
+$out.0.posted_amount=$in.0.posted_amount == null ? null : num2str($in.0.posted_amount,"0.00","en.US");
+$out.0.posting_dt=$in.0.posting_dt == null ? null : date2str($in.0.posting_dt,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.run_id=$in.0.run_id;
+$out.0.run_ts=$in.0.run_ts == null ? null : date2str($in.0.run_ts,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.audit_seq=$in.0.audit_seq == null ? null : num2str($in.0.audit_seq);
+$out.0.record_digest=$in.0.record_digest;
+$out.0.audit_source=$in.0.audit_source;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T72_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

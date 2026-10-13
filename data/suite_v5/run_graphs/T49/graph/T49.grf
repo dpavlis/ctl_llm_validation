@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T49" id="6101300049" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Treasury entry migration with carried account balances
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="InputT49" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="treasury_batch" type="string" nullable="false" />
+        <Field name="treasury_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="treasury_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="treasury_unused" type="string" nullable="true" />
+        <Field name="treasury_note" type="string" nullable="true" />
+        <Field name="treasury_row" type="long" nullable="false" />
+        <Field name="old_account" type="string" nullable="false" />
+        <Field name="entry_kind" type="string" nullable="true" />
+        <Field name="opening_balance" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="movement_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="posting_time" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="memo_text" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="treasury_batch" type="string" nullable="false" />
+        <Field name="treasury_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="treasury_ledger" type="string" nullable="true" />
+        <Field name="treasury_unused" type="string" nullable="true" />
+        <Field name="treasury_note" type="string" nullable="true" />
+        <Field name="treasury_row" type="string" nullable="false" />
+        <Field name="old_account" type="string" nullable="false" />
+        <Field name="entry_kind" type="string" nullable="true" />
+        <Field name="opening_balance" type="string" nullable="true" />
+        <Field name="movement_amount" type="string" nullable="true" />
+        <Field name="posting_time" type="string" nullable="true" timeZone="UTC" />
+        <Field name="memo_text" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="TreasuryHistory" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="treasury_batch" type="string" nullable="false" />
+        <Field name="treasury_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="treasury_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="treasury_unused" type="string" nullable="true" />
+        <Field name="treasury_note" type="string" nullable="true" />
+        <Field name="treasury_row" type="long" nullable="false" />
+        <Field name="old_account" type="string" nullable="false" />
+        <Field name="entry_kind" type="string" nullable="true" />
+        <Field name="opening_balance" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="movement_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="posting_time" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="memo_text" type="string" nullable="true" />
+        <Field name="account_key" type="string" nullable="false" />
+        <Field name="migrated_balance" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="migration_status" type="string" nullable="false" />
+        <Field name="account_entry_no" type="integer" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="treasury_batch" type="string" nullable="false" />
+        <Field name="treasury_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="treasury_ledger" type="string" nullable="true" />
+        <Field name="treasury_unused" type="string" nullable="true" />
+        <Field name="treasury_note" type="string" nullable="true" />
+        <Field name="treasury_row" type="string" nullable="false" />
+        <Field name="old_account" type="string" nullable="false" />
+        <Field name="entry_kind" type="string" nullable="true" />
+        <Field name="opening_balance" type="string" nullable="true" />
+        <Field name="movement_amount" type="string" nullable="true" />
+        <Field name="posting_time" type="string" nullable="true" timeZone="UTC" />
+        <Field name="memo_text" type="string" nullable="true" />
+        <Field name="account_key" type="string" nullable="false" />
+        <Field name="migrated_balance" type="string" nullable="false" />
+        <Field name="migration_status" type="string" nullable="false" />
+        <Field name="account_entry_no" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T49_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.treasury_batch=$in.0.treasury_batch;
+$out.0.treasury_loaded=$in.0.treasury_loaded == null ? null : str2date($in.0.treasury_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.treasury_ledger=$in.0.treasury_ledger == null ? null : str2decimal($in.0.treasury_ledger);
+$out.0.treasury_unused=$in.0.treasury_unused;
+$out.0.treasury_note=$in.0.treasury_note;
+$out.0.treasury_row=$in.0.treasury_row == null ? null : str2long($in.0.treasury_row);
+$out.0.old_account=$in.0.old_account;
+$out.0.entry_kind=$in.0.entry_kind;
+$out.0.opening_balance=$in.0.opening_balance == null ? null : str2decimal($in.0.opening_balance);
+$out.0.movement_amount=$in.0.movement_amount == null ? null : str2decimal($in.0.movement_amount);
+$out.0.posting_time=$in.0.posting_time == null ? null : str2date($in.0.posting_time,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.memo_text=$in.0.memo_text;
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+boolean seen=false;string previous;decimal balance;integer ordinal;function integer transform(){string k=trim($in.0.old_account);if(!seen||k!=previous){balance=0D;ordinal=0;previous=k;seen=true;}string kind=upperCase(trim(nvl($in.0.entry_kind,"")));string status="OK";if(kind=="OPEN")balance=nvl($in.0.opening_balance,0D);else if(kind=="MOVE"){if($in.0.movement_amount==null)status="MISSING_AMOUNT";else balance+= $in.0.movement_amount;}else if(kind=="CLOSE"){balance=0D;status="CLOSED";}else status="UNKNOWN_KIND";ordinal++;$out.0.*=$in.0.*;$out.0.account_key=k;$out.0.migrated_balance=balance;$out.0.migration_status=status;$out.0.account_entry_no=ordinal;return OK;}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.treasury_batch=$in.0.treasury_batch;
+$out.0.treasury_loaded=$in.0.treasury_loaded == null ? null : date2str($in.0.treasury_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.treasury_ledger=$in.0.treasury_ledger == null ? null : num2str($in.0.treasury_ledger,"0.00","en.US");
+$out.0.treasury_unused=$in.0.treasury_unused;
+$out.0.treasury_note=$in.0.treasury_note;
+$out.0.treasury_row=$in.0.treasury_row == null ? null : num2str($in.0.treasury_row);
+$out.0.old_account=$in.0.old_account;
+$out.0.entry_kind=$in.0.entry_kind;
+$out.0.opening_balance=$in.0.opening_balance == null ? null : num2str($in.0.opening_balance,"0.00","en.US");
+$out.0.movement_amount=$in.0.movement_amount == null ? null : num2str($in.0.movement_amount,"0.00","en.US");
+$out.0.posting_time=$in.0.posting_time == null ? null : date2str($in.0.posting_time,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.memo_text=$in.0.memo_text;
+$out.0.account_key=$in.0.account_key;
+$out.0.migrated_balance=$in.0.migrated_balance == null ? null : num2str($in.0.migrated_balance,"0.00","en.US");
+$out.0.migration_status=$in.0.migration_status;
+$out.0.account_entry_no=$in.0.account_entry_no == null ? null : num2str($in.0.account_entry_no);
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T49_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

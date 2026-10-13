@@ -1,0 +1,167 @@
+[
+  {
+    "tool": "knowledge_list_resources",
+    "save": "knowledge_resources.json"
+  },
+  {
+    "tool": "knowledge_read_resource",
+    "arguments": {
+      "uri": "cloverdx://reference/graph-xml"
+    },
+    "save": "graph_xml_reference.json"
+  },
+  {
+    "tool": "knowledge_read_resource",
+    "arguments": {
+      "uri": "cloverdx://reference/ctl2"
+    },
+    "save": "ctl2_reference.json"
+  },
+  {
+    "tool": "sandbox_get_workspace_parameters",
+    "arguments": {
+      "sandboxCode": "MiscExamples"
+    },
+    "save": "workspace_parameters.json"
+  },
+  {
+    "tool": "component_get_info",
+    "arguments": {
+      "query": "DATA_READER"
+    },
+    "save": "DATA_READER_info.json"
+  },
+  {
+    "tool": "component_get_guide",
+    "arguments": {
+      "componentType": "DATA_READER"
+    },
+    "save": "DATA_READER_guide.json"
+  },
+  {
+    "tool": "component_get_info",
+    "arguments": {
+      "query": "DATA_WRITER"
+    },
+    "save": "DATA_WRITER_info.json"
+  },
+  {
+    "tool": "component_get_guide",
+    "arguments": {
+      "componentType": "DATA_WRITER"
+    },
+    "save": "DATA_WRITER_guide.json"
+  },
+  {
+    "tool": "component_get_info",
+    "arguments": {
+      "query": "REFORMAT"
+    },
+    "save": "REFORMAT_info.json"
+  },
+  {
+    "tool": "component_get_guide",
+    "arguments": {
+      "componentType": "REFORMAT"
+    },
+    "save": "REFORMAT_guide.json"
+  },
+  {
+    "tool": "component_get_info",
+    "arguments": {
+      "query": "DATA_INTERSECTION"
+    },
+    "save": "DATA_INTERSECTION_info.json"
+  },
+  {
+    "tool": "component_get_guide",
+    "arguments": {
+      "componentType": "DATA_INTERSECTION"
+    },
+    "save": "DATA_INTERSECTION_guide.json"
+  },
+  {
+    "tool": "component_get_info",
+    "arguments": {
+      "query": "EXT_MERGE_JOIN"
+    },
+    "save": "EXT_MERGE_JOIN_info.json"
+  },
+  {
+    "tool": "component_get_guide",
+    "arguments": {
+      "componentType": "EXT_MERGE_JOIN"
+    },
+    "save": "EXT_MERGE_JOIN_guide.json"
+  },
+  {
+    "tool": "component_get_info",
+    "arguments": {
+      "query": "ROLLUP"
+    },
+    "save": "ROLLUP_info.json"
+  },
+  {
+    "tool": "component_get_guide",
+    "arguments": {
+      "componentType": "ROLLUP"
+    },
+    "save": "ROLLUP_guide.json"
+  },
+  {
+    "tool": "component_get_info",
+    "arguments": {
+      "query": "DENORMALIZER"
+    },
+    "save": "DENORMALIZER_info.json"
+  },
+  {
+    "tool": "component_get_guide",
+    "arguments": {
+      "componentType": "DENORMALIZER"
+    },
+    "save": "DENORMALIZER_guide.json"
+  },
+  {
+    "tool": "component_get_info",
+    "arguments": {
+      "query": "NORMALIZER"
+    },
+    "save": "NORMALIZER_info.json"
+  },
+  {
+    "tool": "component_get_guide",
+    "arguments": {
+      "componentType": "NORMALIZER"
+    },
+    "save": "NORMALIZER_guide.json"
+  },
+  {
+    "tool": "component_get_info",
+    "arguments": {
+      "query": "PARTITION"
+    },
+    "save": "PARTITION_info.json"
+  },
+  {
+    "tool": "component_get_guide",
+    "arguments": {
+      "componentType": "PARTITION"
+    },
+    "save": "PARTITION_guide.json"
+  },
+  {
+    "tool": "component_get_info",
+    "arguments": {
+      "query": "DATA_GENERATOR"
+    },
+    "save": "DATA_GENERATOR_info.json"
+  },
+  {
+    "tool": "component_get_guide",
+    "arguments": {
+      "componentType": "DATA_GENERATOR"
+    },
+    "save": "DATA_GENERATOR_guide.json"
+  }
+]

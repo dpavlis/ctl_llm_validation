@@ -1,0 +1,17 @@
+[
+  {
+    "group_key": "A",
+    "rows_seen": 3,
+    "total": 6
+  },
+  {
+    "group_key": "B",
+    "rows_seen": 1,
+    "total": 4
+  },
+  {
+    "group_key": "C",
+    "rows_seen": 4,
+    "total": 6
+  }
+]

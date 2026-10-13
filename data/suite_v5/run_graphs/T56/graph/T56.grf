@@ -1,0 +1,220 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T56" id="6101300056" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Supplier master winner selection
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="Candidate" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="supplier_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="legal_nm" type="string" nullable="true" />
+        <Field name="tax_country" type="string" nullable="true" />
+        <Field name="payment_iban" type="string" nullable="true" />
+        <Field name="revision_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="revision_no" type="long" nullable="false" />
+        <Field name="estimated_value" type="decimal" nullable="true" length="18" scale="2" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="supplier_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="string" nullable="false" />
+        <Field name="source_row_no" type="string" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="legal_nm" type="string" nullable="true" />
+        <Field name="tax_country" type="string" nullable="true" />
+        <Field name="payment_iban" type="string" nullable="true" />
+        <Field name="revision_at" type="string" nullable="true" />
+        <Field name="revision_no" type="string" nullable="false" />
+        <Field name="estimated_value" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="Winner" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="supplier_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="legal_nm" type="string" nullable="true" />
+        <Field name="tax_country" type="string" nullable="true" />
+        <Field name="payment_iban" type="string" nullable="true" />
+        <Field name="revision_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="revision_no" type="long" nullable="false" />
+        <Field name="estimated_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="winner_complete" type="boolean" nullable="false" />
+        <Field name="versions_seen" type="integer" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="supplier_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="string" nullable="false" />
+        <Field name="source_row_no" type="string" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="legal_nm" type="string" nullable="true" />
+        <Field name="tax_country" type="string" nullable="true" />
+        <Field name="payment_iban" type="string" nullable="true" />
+        <Field name="revision_at" type="string" nullable="true" />
+        <Field name="revision_no" type="string" nullable="false" />
+        <Field name="estimated_value" type="string" nullable="true" />
+        <Field name="winner_complete" type="string" nullable="false" />
+        <Field name="versions_seen" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T56_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.supplier_ref_no=$in.0.supplier_ref_no;
+$out.0.tenant_cd=$in.0.tenant_cd;
+$out.0.source_file_nm=$in.0.source_file_nm;
+$out.0.received_at=$in.0.received_at == null ? null : str2date($in.0.received_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.source_row_no=$in.0.source_row_no == null ? null : str2long($in.0.source_row_no);
+$out.0.owner_team_cd=$in.0.owner_team_cd;
+$out.0.market_cd=$in.0.market_cd;
+$out.0.currency_cd=$in.0.currency_cd;
+$out.0.batch_ref=$in.0.batch_ref;
+$out.0.operator_note=$in.0.operator_note;
+$out.0.external_trace_id=$in.0.external_trace_id;
+$out.0.unused_archive_label=$in.0.unused_archive_label;
+$out.0.legal_nm=$in.0.legal_nm;
+$out.0.tax_country=$in.0.tax_country;
+$out.0.payment_iban=$in.0.payment_iban;
+$out.0.revision_at=$in.0.revision_at == null ? null : str2date($in.0.revision_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.revision_no=$in.0.revision_no == null ? null : str2long($in.0.revision_no);
+$out.0.estimated_value=$in.0.estimated_value == null ? null : str2decimal($in.0.estimated_value);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="DENORMALIZER" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="key">supplier_ref_no</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="denormalize">//#CTL2
+string w_supplier_ref_no;
+string w_tenant_cd;
+string w_source_file_nm;
+date w_received_at;
+long w_source_row_no;
+string w_owner_team_cd;
+string w_market_cd;
+string w_currency_cd;
+string w_batch_ref;
+string w_operator_note;
+string w_external_trace_id;
+string w_unused_archive_label;
+string w_legal_nm;
+string w_tax_country;
+string w_payment_iban;
+date w_revision_at;
+long w_revision_no;
+decimal w_estimated_value;
+boolean have=false;
+boolean good=false;
+integer seen=0;
+function integer append() {
+ boolean complete=!isnull($in.0.legal_nm) &amp;&amp; trim($in.0.legal_nm) != "" &amp;&amp; !isnull($in.0.tax_country) &amp;&amp; trim($in.0.tax_country) != "" &amp;&amp; !isnull($in.0.payment_iban) &amp;&amp; trim($in.0.payment_iban) != "";
+ boolean better=!have;
+ if (have) {
+  if (complete &amp;&amp; !good) better=true;
+  else if (complete == good) {
+   if (!isnull($in.0.revision_at) &amp;&amp; isnull(w_revision_at)) better=true;
+   else if (!isnull($in.0.revision_at) &amp;&amp; !isnull(w_revision_at) &amp;&amp; $in.0.revision_at &gt; w_revision_at) better=true;
+   else if ($in.0.revision_at == w_revision_at &amp;&amp; $in.0.revision_no &gt; w_revision_no) better=true;
+  }
+ }
+ if (better) {w_supplier_ref_no=$in.0.supplier_ref_no;w_tenant_cd=$in.0.tenant_cd;w_source_file_nm=$in.0.source_file_nm;w_received_at=$in.0.received_at;w_source_row_no=$in.0.source_row_no;w_owner_team_cd=$in.0.owner_team_cd;w_market_cd=$in.0.market_cd;w_currency_cd=$in.0.currency_cd;w_batch_ref=$in.0.batch_ref;w_operator_note=$in.0.operator_note;w_external_trace_id=$in.0.external_trace_id;w_unused_archive_label=$in.0.unused_archive_label;w_legal_nm=$in.0.legal_nm;w_tax_country=$in.0.tax_country;w_payment_iban=$in.0.payment_iban;w_revision_at=$in.0.revision_at;w_revision_no=$in.0.revision_no;w_estimated_value=$in.0.estimated_value;good=complete;have=true;}
+ seen++;
+ return OK;
+}
+function integer transform() {$out.0.supplier_ref_no=w_supplier_ref_no;$out.0.tenant_cd=w_tenant_cd;$out.0.source_file_nm=w_source_file_nm;$out.0.received_at=w_received_at;$out.0.source_row_no=w_source_row_no;$out.0.owner_team_cd=w_owner_team_cd;$out.0.market_cd=w_market_cd;$out.0.currency_cd=w_currency_cd;$out.0.batch_ref=w_batch_ref;$out.0.operator_note=w_operator_note;$out.0.external_trace_id=w_external_trace_id;$out.0.unused_archive_label=w_unused_archive_label;$out.0.legal_nm=w_legal_nm;$out.0.tax_country=w_tax_country;$out.0.payment_iban=w_payment_iban;$out.0.revision_at=w_revision_at;$out.0.revision_no=w_revision_no;$out.0.estimated_value=w_estimated_value;$out.0.winner_complete=good;$out.0.versions_seen=seen;return OK;}
+function void clean() {have=false;good=false;seen=0;}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.supplier_ref_no=$in.0.supplier_ref_no;
+$out.0.tenant_cd=$in.0.tenant_cd;
+$out.0.source_file_nm=$in.0.source_file_nm;
+$out.0.received_at=$in.0.received_at == null ? null : date2str($in.0.received_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.source_row_no=$in.0.source_row_no == null ? null : num2str($in.0.source_row_no);
+$out.0.owner_team_cd=$in.0.owner_team_cd;
+$out.0.market_cd=$in.0.market_cd;
+$out.0.currency_cd=$in.0.currency_cd;
+$out.0.batch_ref=$in.0.batch_ref;
+$out.0.operator_note=$in.0.operator_note;
+$out.0.external_trace_id=$in.0.external_trace_id;
+$out.0.unused_archive_label=$in.0.unused_archive_label;
+$out.0.legal_nm=$in.0.legal_nm;
+$out.0.tax_country=$in.0.tax_country;
+$out.0.payment_iban=$in.0.payment_iban;
+$out.0.revision_at=$in.0.revision_at == null ? null : date2str($in.0.revision_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.revision_no=$in.0.revision_no == null ? null : num2str($in.0.revision_no);
+$out.0.estimated_value=$in.0.estimated_value == null ? null : num2str($in.0.estimated_value,"0.00","en.US");
+$out.0.winner_complete=$in.0.winner_complete == null ? null : ($in.0.winner_complete ? "true" : "false");
+$out.0.versions_seen=$in.0.versions_seen == null ? null : num2str($in.0.versions_seen);
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T56_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

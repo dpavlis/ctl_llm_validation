@@ -1,0 +1,291 @@
+[
+  {
+    "test_id": "P909",
+    "label": "P909",
+    "graph_file": "suite_v5/graph/P909.grf",
+    "graph_sha256": "f86191055044aabb1bfb5afa06947129f169196dd61c3c16218a04c65f984487",
+    "reference_sha256": "4d701ef2edee7ee0504133408c3e27ae8ce67ab5c867a395afb1005840a1ff1d",
+    "input_files": [
+      "run_graphs/P909/data-in/input_0.csv",
+      "run_graphs/P909/data-in/input_1.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P909/expected/output_0.json",
+      "run_graphs/P909/expected/output_1.json",
+      "run_graphs/P909/expected/output_2.json"
+    ],
+    "reference_runs": false,
+    "run_ids": [
+      17993
+    ],
+    "outputs": {},
+    "row_checks": [],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17993,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P909.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:58:24.344+02:00",
+      "startTime": "2026-10-13T11:58:24.344+02:00",
+      "stopTime": "2026-10-13T11:58:24.428+02:00",
+      "durationMs": 84,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] finished with status ERROR. (In0: 2 recs, In1: 2 recs, Out0: 0 recs, Out1: 0 recs, Out2: 0 recs)\n Message: Transformation for records:\n  #0|key_id|i->__NULL__\n #1|value_cd|S->NA\n and:\n #0|key_id|i->__NULL__\n #1|value_cd|S->NB\n finished with code: -2. Error message: null",
+        "componentType": "DATA_INTERSECTION"
+      }
+    },
+    "tracking": {
+      "run_id": "17993",
+      "status": "ERROR",
+      "exec_seconds": 0.065,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.063,
+          "nodes": [
+            {
+              "node_id": "Reader1",
+              "node_name": "Reader1",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                }
+              ]
+            },
+            {
+              "node_id": "Decode1",
+              "node_name": "Decode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                }
+              ]
+            },
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_INTERSECTION",
+              "result": "ERROR",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "INPUT",
+                  "index": 1,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 1,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 2,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode1",
+              "node_name": "Encode1",
+              "node_type": "REFORMAT",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer1",
+              "node_name": "Writer1",
+              "node_type": "DATA_WRITER",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode2",
+              "node_name": "Encode2",
+              "node_type": "REFORMAT",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer2",
+              "node_name": "Writer2",
+              "node_type": "DATA_WRITER",
+              "result": "ABORTED",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 11,
+        "port_count": 20,
+        "total_records": 34,
+        "total_bytes": 278
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:58:24,347 INFO  17993 [boundedElastic-92] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:58:24,347 INFO  17993 [boundedElastic-92] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:58:24,347 INFO  17993 [boundedElastic-92] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:58:24,353 INFO  17993 [JobStarter_17993] Starting job: MiscExamples/suite_v5/graph/P909.grf\n\t Run ID: \t\t17993\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:58:24,356 INFO  17993 [JobExecutor_17993] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:58:24,359 INFO  17993 [JobExecutor_17993] Initializing metadata\n2026-10-13 11:58:24,359 INFO  17993 [JobExecutor_17993] Initializing phase 0\n2026-10-13 11:58:24,360 INFO  17993 [JobExecutor_17993] Phase 0 initialized successfully.\n2026-10-13 11:58:24,361 INFO  17993 [WatchDog_17993] Job execution type: ETL_GRAPH\n2026-10-13 11:58:24,361 INFO  17993 [WatchDog_17993] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P909.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P909.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17993\nPROJECT=.\nROOT_RUN_ID=17993\nRUN_ID=17993\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:58:24,361 INFO  17993 [WatchDog_17993] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:58:24,363 INFO  17993 [WatchDog_17993] Starting up all nodes in phase [0]\n2026-10-13 11:58:24,363 INFO  17993 [WatchDog_17993] Successfully started all nodes in phase!\n2026-10-13 11:58:24,365 ERROR 17993 [WatchDog_17993] Component [Test:Test] finished with status ERROR. (In0: 2 recs, In1: 2 recs, Out0: 0 recs, Out1: 0 recs, Out2: 0 recs)\n Message: Transformation for records:\n  #0|key_id|i->__NULL__\n #1|value_cd|S->NA\n and:\n #0|key_id|i->__NULL__\n #1|value_cd|S->NB\n finished with code: -2. Error message: null\n2026-10-13 11:58:24,365 ERROR 17993 [WatchDog_17993] Error details:\norg.jetel.exception.JetelRuntimeException: Component [Test:Test] finished with status ERROR. (In0: 2 recs, In1: 2 recs, Out0: 0 recs, Out1: 0 recs, Out2: 0 recs)\n\tat org.jetel.graph.Node.createNodeException(Node.java:685)\n\tat org.jetel.graph.Node.run(Node.java:650)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.TransformException: Message: Transformation for records:\n #0|key_id|i->__NULL__\n#1|value_cd|S->NA\nand:\n#0|key_id|i->__NULL__\n#1|value_cd|S->NB\nfinished with code: -2. Error message: null\n\tat org.jetel.component.DataIntersection.handleException(DataIntersection.java:383)\n\tat org.jetel.component.DataIntersection.flushCombinations(DataIntersection.java:317)\n\tat org.jetel.component.DataIntersection.execute(DataIntersection.java:485)\n\tat org.jetel.graph.Node.run(Node.java:597)\n\t... 3 more\n\n2026-10-13 11:58:24,375 INFO  17993 [WatchDog_17993] Interrupted node: Encode0\n2026-10-13 11:58:24,386 INFO  17993 [WatchDog_17993] Interrupted node: Writer0\n2026-10-13 11:58:24,396 INFO  17993 [WatchDog_17993] Interrupted node: Encode1\n2026-10-13 11:58:24,406 INFO  17993 [WatchDog_17993] Interrupted node: Writer1\n2026-10-13 11:58:24,416 INFO  17993 [WatchDog_17993] Interrupted node: Encode2\n2026-10-13 11:58:24,426 INFO  17993 [WatchDog_17993] Interrupted node: Writer2\n2026-10-13 11:58:24,426 INFO  17993 [WatchDog_17993] Execution of phase [0] finished with error - elapsed time (sec): 0\n2026-10-13 11:58:24,426 ERROR 17993 [WatchDog_17993] Phase finished with error - stopping job run\n2026-10-13 11:58:24,426 INFO  17993 [WatchDog_17993] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:58:24,427 INFO  17993 [WatchDog_17993] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:58:24,427 INFO  17993 [WatchDog_17993] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:58:24,427 INFO  17993 [WatchDog_17993] 0                 ERROR                              0                94\n2026-10-13 11:58:24,427 INFO  17993 [WatchDog_17993] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:58:24,428 INFO  17993 [JobFinalizer_17993] Job finished: MiscExamples/suite_v5/graph/P909.grf\n\t Run ID: \t\t17993\n\t Status: \t\tERROR\n\t Duration: \t\t84 ms\n2026-10-13 11:58:24,428 ERROR 17993 [JobFinalizer_17993] \n---------------------------------------------------- Error details -----------------------------------------------------\n  Component [Test:Test] finished with status ERROR. (In0: 2 recs, In1: 2 recs, Out0: 0 recs, Out1: 0 recs, Out2: 0 recs)\n   Message: Transformation for records:\n    #0|key_id|i->__NULL__\n   #1|value_cd|S->NA\n   and:\n   #0|key_id|i->__NULL__\n   #1|value_cd|S->NB\n   finished with code: -2. Error message: null\n------------------------------------------------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "error": "Graph run status ERROR",
+    "evidence_file": "run_graphs/P909/mcp_evidence.json"
+  }
+]

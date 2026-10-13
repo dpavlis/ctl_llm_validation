@@ -1,0 +1,295 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T57" id="6101300057" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Receipt decisions before the final chosen receipt
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="Receipt" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="long" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="receipt_id" type="string" nullable="true" />
+        <Field name="amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="voided" type="boolean" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="string" nullable="false" />
+        <Field name="received_at" type="string" nullable="false" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="string" nullable="true" />
+        <Field name="receipt_id" type="string" nullable="true" />
+        <Field name="amount" type="string" nullable="true" />
+        <Field name="voided" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="ReceiptDecision" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="long" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="receipt_id" type="string" nullable="true" />
+        <Field name="amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="voided" type="boolean" nullable="false" />
+        <Field name="disposition" type="string" nullable="false" />
+        <Field name="winner_receipt" type="string" nullable="true" />
+        <Field name="rows_seen" type="integer" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="string" nullable="false" />
+        <Field name="received_at" type="string" nullable="false" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="string" nullable="true" />
+        <Field name="receipt_id" type="string" nullable="true" />
+        <Field name="amount" type="string" nullable="true" />
+        <Field name="voided" type="string" nullable="false" />
+        <Field name="disposition" type="string" nullable="false" />
+        <Field name="winner_receipt" type="string" nullable="true" />
+        <Field name="rows_seen" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out1">
+      <Record name="ReceiptDecision" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="long" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="receipt_id" type="string" nullable="true" />
+        <Field name="amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="voided" type="boolean" nullable="false" />
+        <Field name="disposition" type="string" nullable="false" />
+        <Field name="winner_receipt" type="string" nullable="true" />
+        <Field name="rows_seen" type="integer" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut1">
+      <Record name="RawOutput1" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="string" nullable="false" />
+        <Field name="received_at" type="string" nullable="false" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="string" nullable="true" />
+        <Field name="receipt_id" type="string" nullable="true" />
+        <Field name="amount" type="string" nullable="true" />
+        <Field name="voided" type="string" nullable="false" />
+        <Field name="disposition" type="string" nullable="false" />
+        <Field name="winner_receipt" type="string" nullable="true" />
+        <Field name="rows_seen" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Accumulator">
+      <Record name="ReceiptAcc" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="business_ref" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file" type="string" nullable="false" />
+        <Field name="source_row" type="long" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="owner_team" type="string" nullable="true" />
+        <Field name="trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="context_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="n" type="integer" nullable="false" />
+        <Field name="accepted" type="integer" nullable="false" />
+        <Field name="has_winner" type="boolean" nullable="false" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T57_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.business_ref=$in.0.business_ref;
+$out.0.tenant_cd=$in.0.tenant_cd;
+$out.0.source_file=$in.0.source_file;
+$out.0.source_row=$in.0.source_row == null ? null : str2long($in.0.source_row);
+$out.0.received_at=$in.0.received_at == null ? null : str2date($in.0.received_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.currency_cd=$in.0.currency_cd;
+$out.0.operator_note=$in.0.operator_note;
+$out.0.market_cd=$in.0.market_cd;
+$out.0.owner_team=$in.0.owner_team;
+$out.0.trace_id=$in.0.trace_id;
+$out.0.unused_archive_label=$in.0.unused_archive_label;
+$out.0.context_value=$in.0.context_value == null ? null : str2decimal($in.0.context_value);
+$out.0.receipt_id=$in.0.receipt_id;
+$out.0.amount=$in.0.amount == null ? null : str2decimal($in.0.amount);
+$out.0.voided=$in.0.voided == null ? null : str2bool($in.0.voided);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="ROLLUP" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="groupKeyFields">business_ref</attr>
+      <attr name="groupAccumulatorMetadataId">Accumulator</attr>
+      <attr name="transform">//#CTL2
+string w_business_ref;
+string w_tenant_cd;
+string w_source_file;
+long w_source_row;
+date w_received_at;
+string w_currency_cd;
+string w_operator_note;
+string w_market_cd;
+string w_owner_team;
+string w_trace_id;
+string w_unused_archive_label;
+decimal w_context_value;
+string w_receipt_id;
+decimal w_amount;
+boolean w_voided;
+string[] seen_ids;
+string disposition;
+string winner_id;
+function void initGroup(ReceiptAcc acc) {clear(seen_ids);acc.n=0;acc.accepted=0;acc.has_winner=false;winner_id=null;}
+function boolean updateGroup(ReceiptAcc acc) {
+ acc.n++;
+ if(isnull($in.0.receipt_id) || trim($in.0.receipt_id)=="") disposition="INVALID";
+ else if(in($in.0.receipt_id,seen_ids)) disposition="DUPLICATE";
+ else {append(seen_ids,$in.0.receipt_id);
+  if($in.0.voided || isnull($in.0.amount) || $in.0.amount&lt;=0D) disposition="INELIGIBLE";
+  else {acc.accepted++;disposition="ELIGIBLE";if(!acc.has_winner) {w_business_ref=$in.0.business_ref;w_tenant_cd=$in.0.tenant_cd;w_source_file=$in.0.source_file;w_source_row=$in.0.source_row;w_received_at=$in.0.received_at;w_currency_cd=$in.0.currency_cd;w_operator_note=$in.0.operator_note;w_market_cd=$in.0.market_cd;w_owner_team=$in.0.owner_team;w_trace_id=$in.0.trace_id;w_unused_archive_label=$in.0.unused_archive_label;w_context_value=$in.0.context_value;w_receipt_id=$in.0.receipt_id;w_amount=$in.0.amount;w_voided=$in.0.voided;acc.has_winner=true;winner_id=$in.0.receipt_id;disposition="WINNER";}}
+ }
+ return true;
+}
+function integer updateTransform(integer counter,ReceiptAcc acc) {if(counter&gt;0) return SKIP;$out.0.*=$in.0.*;$out.0.disposition=disposition;$out.0.winner_receipt=winner_id;$out.0.rows_seen=acc.n;return 0;}
+function boolean finishGroup(ReceiptAcc acc) {return acc.has_winner;}
+function integer transform(integer counter,ReceiptAcc acc) {if(counter&gt;0) return SKIP;$out.1.business_ref=w_business_ref;$out.1.tenant_cd=w_tenant_cd;$out.1.source_file=w_source_file;$out.1.source_row=w_source_row;$out.1.received_at=w_received_at;$out.1.currency_cd=w_currency_cd;$out.1.operator_note=w_operator_note;$out.1.market_cd=w_market_cd;$out.1.owner_team=w_owner_team;$out.1.trace_id=w_trace_id;$out.1.unused_archive_label=w_unused_archive_label;$out.1.context_value=w_context_value;$out.1.receipt_id=w_receipt_id;$out.1.amount=w_amount;$out.1.voided=w_voided;$out.1.disposition="CHOSEN";$out.1.winner_receipt=winner_id;$out.1.rows_seen=acc.n;return 1;}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.business_ref=$in.0.business_ref;
+$out.0.tenant_cd=$in.0.tenant_cd;
+$out.0.source_file=$in.0.source_file;
+$out.0.source_row=$in.0.source_row == null ? null : num2str($in.0.source_row);
+$out.0.received_at=$in.0.received_at == null ? null : date2str($in.0.received_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.currency_cd=$in.0.currency_cd;
+$out.0.operator_note=$in.0.operator_note;
+$out.0.market_cd=$in.0.market_cd;
+$out.0.owner_team=$in.0.owner_team;
+$out.0.trace_id=$in.0.trace_id;
+$out.0.unused_archive_label=$in.0.unused_archive_label;
+$out.0.context_value=$in.0.context_value == null ? null : num2str($in.0.context_value,"0.00","en.US");
+$out.0.receipt_id=$in.0.receipt_id;
+$out.0.amount=$in.0.amount == null ? null : num2str($in.0.amount,"0.00","en.US");
+$out.0.voided=$in.0.voided == null ? null : ($in.0.voided ? "true" : "false");
+$out.0.disposition=$in.0.disposition;
+$out.0.winner_receipt=$in.0.winner_receipt;
+$out.0.rows_seen=$in.0.rows_seen == null ? null : num2str($in.0.rows_seen);
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T57_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode1" type="REFORMAT" enabled="enabled" guiName="Encode1" guiX="725" guiY="375">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.business_ref=$in.0.business_ref;
+$out.0.tenant_cd=$in.0.tenant_cd;
+$out.0.source_file=$in.0.source_file;
+$out.0.source_row=$in.0.source_row == null ? null : num2str($in.0.source_row);
+$out.0.received_at=$in.0.received_at == null ? null : date2str($in.0.received_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.currency_cd=$in.0.currency_cd;
+$out.0.operator_note=$in.0.operator_note;
+$out.0.market_cd=$in.0.market_cd;
+$out.0.owner_team=$in.0.owner_team;
+$out.0.trace_id=$in.0.trace_id;
+$out.0.unused_archive_label=$in.0.unused_archive_label;
+$out.0.context_value=$in.0.context_value == null ? null : num2str($in.0.context_value,"0.00","en.US");
+$out.0.receipt_id=$in.0.receipt_id;
+$out.0.amount=$in.0.amount == null ? null : num2str($in.0.amount,"0.00","en.US");
+$out.0.voided=$in.0.voided == null ? null : ($in.0.voided ? "true" : "false");
+$out.0.disposition=$in.0.disposition;
+$out.0.winner_receipt=$in.0.winner_receipt;
+$out.0.rows_seen=$in.0.rows_seen == null ? null : num2str($in.0.rows_seen);
+return OK;}</attr>
+    </Node>
+    <Node id="Writer1" type="DATA_WRITER" enabled="enabled" guiName="Writer1" guiX="950" guiY="375">
+      <attr name="fileURL">suite_v5/data-out/T57_out_1.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result1" fromNode="Test:1" toNode="Encode1:0" metadata="Out1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written1" fromNode="Encode1:0" toNode="Writer1:0" metadata="RawOut1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

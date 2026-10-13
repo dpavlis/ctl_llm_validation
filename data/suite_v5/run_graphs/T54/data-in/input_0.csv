@@ -1,0 +1,5 @@
+A|T1|feed.csv|1|2026-01-01 00:00:00.000|EUR||CZ|__NULL__|r1|old-1|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__
+B|T1|feed.csv|2|2026-01-01 00:00:00.000|EUR|__NULL__|CZ|__NULL__|r2|old-2|__NULL__| silver |shoe;SHOE|1.00|__NULL__
+B|T1|feed.csv|3|2026-01-01 00:00:00.000|EUR||CZ|__NULL__|r3|old-3|__NULL__|GOLD|shoe|1.00|__NULL__
+C|T1|feed.csv|4|2026-01-01 00:00:00.000|EUR|__NULL__|CZ|__NULL__|r4|old-4|__NULL__|VIP|BAD:DATE|2.00|2026-01-01 00:00:00.000
+D|T1|feed.csv|5|2026-01-01 00:00:00.000|EUR||CZ|__NULL__|r5|old-5|__NULL__|__NULL__|__NULL__|__NULL__|__NULL__

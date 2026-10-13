@@ -1,0 +1,63 @@
+[
+  {
+    "name": "dictionary",
+    "description": "Dictionary — per-run, type-safe, mutable shared store. dictionary.<name> CTL2 access, list/map/variant + channel types, read/write in different phases, dict: File URLs, job input/output, and how it differs from parameters.",
+    "tags": [
+      "guide",
+      "reference",
+      "dictionary",
+      "dict",
+      "runtime",
+      "mutable",
+      "type-safe",
+      "phases",
+      "variant",
+      "map",
+      "list",
+      "getjobinput",
+      "setjoboutput"
+    ],
+    "source": "static",
+    "category": "guides"
+  },
+  {
+    "name": "jobflow-map-dict-entry-bug-clo8807",
+    "description": "CLO-8807 — writing to a map-typed dictionary entry populated from upstream causes random, intermittent crashes; always copy to a local working entry before writing.",
+    "tags": [
+      "jobflow",
+      "dictionary",
+      "map",
+      "bug",
+      "workaround",
+      "crash",
+      "clo-8807",
+      "dwhexample"
+    ],
+    "source": "static",
+    "category": "recipes"
+  },
+  {
+    "name": "subgraph-xml",
+    "description": "Complete .sgrf reference — structure, boundary components, debug flags, public parameters, parent graph usage, inputMapping/outputMapping, CTL subgraph functions, metadata patterns, and validation failures",
+    "tags": [
+      "guide",
+      "reference",
+      "subgraph",
+      "sgrf",
+      "subgraph-input",
+      "subgraph-output",
+      "debug-input",
+      "debug-output",
+      "public-parameter",
+      "input-mapping",
+      "output-mapping",
+      "dictionary",
+      "validation",
+      "ctl-subgraph",
+      "xml-spec",
+      "reusable"
+    ],
+    "source": "static",
+    "category": "guides"
+  }
+]

@@ -1,0 +1,237 @@
+{
+  "test_id": "T64",
+  "label": "T64_excess_fraction_digits",
+  "graph_file": "suite_v5/graph/T64_excess_fraction_digits.grf",
+  "reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+  "graph_sha256": "48200301d4da3f3523937277494f7b38b2b592a13bd3f8163a0562cd818f5026",
+  "files": [
+    {
+      "local": "run_graphs/T64_excess_fraction_digits/data-in/input_0.csv",
+      "remote": "suite_v5/data-in/T64_excess_fraction_digits_input_0.csv",
+      "sha256": "16441c9d26be48fb33a6ba3b15ec56d26453a951e7e12007671940e8fc649062"
+    },
+    {
+      "local": "run_graphs/T64_excess_fraction_digits/graph/T64_excess_fraction_digits.grf",
+      "remote": "suite_v5/graph/T64_excess_fraction_digits.grf",
+      "sha256": "48200301d4da3f3523937277494f7b38b2b592a13bd3f8163a0562cd818f5026"
+    }
+  ],
+  "output_paths": {
+    "0": "suite_v5/data-out/T64_excess_fraction_digits_out_0.csv"
+  },
+  "output_metadata": [
+    "<Record name=\"BasketLine\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"basket_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"basket_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"basket_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"parent_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"business_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"child_code\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"child_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"child_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n</Record>"
+  ],
+  "fixture": {
+    "inputs": [
+      [
+        {
+          "basket_key": "BASKET1",
+          "basket_tenant": "ACME",
+          "basket_file": "basket.csv",
+          "basket_row": 1,
+          "basket_received": "2026-01-01 00:00:00",
+          "basket_team": null,
+          "basket_market": "CZ",
+          "basket_currency": "EUR",
+          "basket_batch": "B1",
+          "basket_note": "",
+          "basket_trace": "X1",
+          "basket_unused_archive": "keep:1",
+          "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1.234\"}]}",
+          "parent_value": null,
+          "business_dt": "2026-01-01"
+        }
+      ]
+    ],
+    "expected": {
+      "0": [
+        {
+          "basket_key": "BASKET1",
+          "basket_tenant": "ACME",
+          "basket_file": "basket.csv",
+          "basket_row": 1,
+          "basket_received": "2026-01-01 00:00:00",
+          "basket_team": null,
+          "basket_market": "CZ",
+          "basket_currency": "EUR",
+          "basket_batch": "B1",
+          "basket_note": "",
+          "basket_trace": "X1",
+          "basket_unused_archive": "keep:1",
+          "parent_value": null,
+          "business_dt": "2026-01-01",
+          "child_code": " A ",
+          "child_note": "",
+          "ordinal": 1,
+          "child_amount": "1.25"
+        },
+        {
+          "basket_key": "BASKET1",
+          "basket_tenant": "ACME",
+          "basket_file": "basket.csv",
+          "basket_row": 1,
+          "basket_received": "2026-01-01 00:00:00",
+          "basket_team": null,
+          "basket_market": "CZ",
+          "basket_currency": "EUR",
+          "basket_batch": "B1",
+          "basket_note": "",
+          "basket_trace": "X1",
+          "basket_unused_archive": "keep:1",
+          "parent_value": null,
+          "business_dt": "2026-01-01",
+          "child_code": " A ",
+          "child_note": null,
+          "ordinal": 2,
+          "child_amount": null
+        },
+        {
+          "basket_key": "BASKET1",
+          "basket_tenant": "ACME",
+          "basket_file": "basket.csv",
+          "basket_row": 1,
+          "basket_received": "2026-01-01 00:00:00",
+          "basket_team": null,
+          "basket_market": "CZ",
+          "basket_currency": "EUR",
+          "basket_batch": "B1",
+          "basket_note": "",
+          "basket_trace": "X1",
+          "basket_unused_archive": "keep:1",
+          "parent_value": null,
+          "business_dt": "2026-01-01",
+          "child_code": "B",
+          "child_note": " x ",
+          "ordinal": 3,
+          "child_amount": "-2.00"
+        },
+        {
+          "basket_key": "BASKET8",
+          "basket_tenant": "ACME",
+          "basket_file": "basket.csv",
+          "basket_row": 8,
+          "basket_received": "2026-01-01 00:00:00",
+          "basket_team": "OPS",
+          "basket_market": "CZ",
+          "basket_currency": "EUR",
+          "basket_batch": "B1",
+          "basket_note": null,
+          "basket_trace": "X8",
+          "basket_unused_archive": "keep:8",
+          "parent_value": "12.50",
+          "business_dt": "2026-01-01",
+          "child_code": "LAST",
+          "child_note": null,
+          "ordinal": 1,
+          "child_amount": "0.00"
+        }
+      ]
+    },
+    "failure_probes": [
+      {
+        "name": "empty_amount",
+        "inputs": [
+          [
+            {
+              "basket_key": "BASKET1",
+              "basket_tenant": "ACME",
+              "basket_file": "basket.csv",
+              "basket_row": 1,
+              "basket_received": "2026-01-01 00:00:00",
+              "basket_team": null,
+              "basket_market": "CZ",
+              "basket_currency": "EUR",
+              "basket_batch": "B1",
+              "basket_note": "",
+              "basket_trace": "X1",
+              "basket_unused_archive": "keep:1",
+              "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"\"}]}",
+              "parent_value": null,
+              "business_dt": "2026-01-01"
+            }
+          ]
+        ],
+        "expected_failure": true
+      },
+      {
+        "name": "malformed_amount",
+        "inputs": [
+          [
+            {
+              "basket_key": "BASKET1",
+              "basket_tenant": "ACME",
+              "basket_file": "basket.csv",
+              "basket_row": 1,
+              "basket_received": "2026-01-01 00:00:00",
+              "basket_team": null,
+              "basket_market": "CZ",
+              "basket_currency": "EUR",
+              "basket_batch": "B1",
+              "basket_note": "",
+              "basket_trace": "X1",
+              "basket_unused_archive": "keep:1",
+              "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"bad\"}]}",
+              "parent_value": null,
+              "business_dt": "2026-01-01"
+            }
+          ]
+        ],
+        "expected_failure": true
+      },
+      {
+        "name": "excess_integer_digits",
+        "inputs": [
+          [
+            {
+              "basket_key": "BASKET1",
+              "basket_tenant": "ACME",
+              "basket_file": "basket.csv",
+              "basket_row": 1,
+              "basket_received": "2026-01-01 00:00:00",
+              "basket_team": null,
+              "basket_market": "CZ",
+              "basket_currency": "EUR",
+              "basket_batch": "B1",
+              "basket_note": "",
+              "basket_trace": "X1",
+              "basket_unused_archive": "keep:1",
+              "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1000000000\"}]}",
+              "parent_value": null,
+              "business_dt": "2026-01-01"
+            }
+          ]
+        ],
+        "expected_failure": true
+      },
+      {
+        "name": "excess_fraction_digits",
+        "inputs": [
+          [
+            {
+              "basket_key": "BASKET1",
+              "basket_tenant": "ACME",
+              "basket_file": "basket.csv",
+              "basket_row": 1,
+              "basket_received": "2026-01-01 00:00:00",
+              "basket_team": null,
+              "basket_market": "CZ",
+              "basket_currency": "EUR",
+              "basket_batch": "B1",
+              "basket_note": "",
+              "basket_trace": "X1",
+              "basket_unused_archive": "keep:1",
+              "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1.234\"}]}",
+              "parent_value": null,
+              "business_dt": "2026-01-01"
+            }
+          ]
+        ],
+        "expected_failure": true
+      }
+    ],
+    "expected_failure": true
+  },
+  "parameters": {},
+  "expected_failure": true
+}

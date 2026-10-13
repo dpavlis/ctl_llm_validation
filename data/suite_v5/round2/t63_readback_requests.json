@@ -1,0 +1,18 @@
+[
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T63_input_0.csv"
+    },
+    "label": "run_graphs/T63/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T63.grf"
+    },
+    "label": "run_graphs/T63/graph/T63.grf"
+  }
+]

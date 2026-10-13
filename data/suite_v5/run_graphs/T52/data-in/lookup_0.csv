@@ -1,0 +1,6 @@
+batch-calibration_batch|2026-01-01 00:00:00|17.25|opaque-0|__NULL__|1|F1|AB|true|1.25|__NULL__|__NULL__
+batch-calibration_batch|2026-01-01 00:00:00|17.25|opaque-1|__NULL__|2|F2|AB|false|2.00|__NULL__|__NULL__
+batch-calibration_batch|2026-01-01 00:00:00|17.25|opaque-2|__NULL__|3|F3|AB|true|__NULL__|__NULL__|__NULL__
+batch-calibration_batch|2026-01-01 00:00:00|17.25|opaque-3|__NULL__|4|F4|AB|__NULL__|5.00|__NULL__|__NULL__
+batch-calibration_batch|2026-01-01 00:00:00|17.25|opaque-4|__NULL__|5|F1|ZZ|true|0.00|__NULL__|__NULL__
+batch-calibration_batch|2026-01-01 00:00:00|17.25|opaque-5|__NULL__|6|F5|AB|true|1000001.00|__NULL__|__NULL__

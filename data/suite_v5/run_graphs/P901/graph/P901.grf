@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="P901" id="6101300901" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">P901 runtime contract probe
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="Out0">
+      <Record name="ConversionProbe" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="case_id" type="integer" nullable="false" />
+        <Field name="raw_date" type="string" nullable="true" />
+        <Field name="decimal_threw" type="boolean" nullable="false" />
+        <Field name="decimal_null" type="boolean" nullable="false" />
+        <Field name="is_date" type="boolean" nullable="false" />
+        <Field name="parse_threw" type="boolean" nullable="false" />
+        <Field name="parsed_date" type="string" nullable="true" />
+        <Field name="unicode_length" type="integer" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="case_id" type="string" nullable="false" />
+        <Field name="raw_date" type="string" nullable="true" />
+        <Field name="decimal_threw" type="string" nullable="false" />
+        <Field name="decimal_null" type="string" nullable="false" />
+        <Field name="is_date" type="string" nullable="false" />
+        <Field name="parse_threw" type="string" nullable="false" />
+        <Field name="parsed_date" type="string" nullable="true" />
+        <Field name="unicode_length" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Test" type="DATA_GENERATOR" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="recordsNumber">8</attr>
+      <attr name="generate">//#CTL2
+integer i=0;
+function integer generate(){
+ i++;$out.0.case_id=i;
+ string text=i%2==1 ? "2025-02-30" : "2025-1-1";
+ $out.0.raw_date=text;$out.0.decimal_threw=false;$out.0.decimal_null=false;
+ try {decimal d=str2decimal("");$out.0.decimal_null=isnull(d);} catch(CTLException e){$out.0.decimal_threw=true;}
+ $out.0.is_date=isDate(text,"yyyy-MM-dd","en.US","UTC",true);
+ $out.0.parse_threw=false;$out.0.parsed_date=null;
+ try {date dt=str2date(text,"yyyy-MM-dd","en.US","UTC",true);$out.0.parsed_date=date2str(dt,"yyyy-MM-dd HH:mm:ss","en.US","UTC");}catch(CTLException e){$out.0.parse_threw=true;}
+ $out.0.unicode_length=length("A😀");
+ return OK;
+}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.case_id=$in.0.case_id == null ? null : num2str($in.0.case_id);
+$out.0.raw_date=$in.0.raw_date;
+$out.0.decimal_threw=$in.0.decimal_threw == null ? null : ($in.0.decimal_threw ? "true" : "false");
+$out.0.decimal_null=$in.0.decimal_null == null ? null : ($in.0.decimal_null ? "true" : "false");
+$out.0.is_date=$in.0.is_date == null ? null : ($in.0.is_date ? "true" : "false");
+$out.0.parse_threw=$in.0.parse_threw == null ? null : ($in.0.parse_threw ? "true" : "false");
+$out.0.parsed_date=$in.0.parsed_date;
+$out.0.unicode_length=$in.0.unicode_length == null ? null : num2str($in.0.unicode_length);
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/P901_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

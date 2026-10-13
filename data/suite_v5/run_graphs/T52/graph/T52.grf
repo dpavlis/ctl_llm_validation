@@ -1,0 +1,249 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T52" id="6101300052" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Laboratory calibration with authoritative disable and fallback
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="InputT52" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="lab_batch" type="string" nullable="false" />
+        <Field name="lab_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="lab_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="lab_unused" type="string" nullable="true" />
+        <Field name="lab_note" type="string" nullable="true" />
+        <Field name="lab_row" type="long" nullable="false" />
+        <Field name="sample_id" type="string" nullable="false" />
+        <Field name="facility_txt" type="string" nullable="true" />
+        <Field name="assay_txt" type="string" nullable="true" />
+        <Field name="result_txt" type="string" nullable="true" />
+        <Field name="sampled_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="billing_amount" type="decimal" nullable="true" length="18" scale="2" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="lab_batch" type="string" nullable="false" />
+        <Field name="lab_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="lab_ledger" type="string" nullable="true" />
+        <Field name="lab_unused" type="string" nullable="true" />
+        <Field name="lab_note" type="string" nullable="true" />
+        <Field name="lab_row" type="string" nullable="false" />
+        <Field name="sample_id" type="string" nullable="false" />
+        <Field name="facility_txt" type="string" nullable="true" />
+        <Field name="assay_txt" type="string" nullable="true" />
+        <Field name="result_txt" type="string" nullable="true" />
+        <Field name="sampled_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="billing_amount" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="CalibratedSamples" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="lab_batch" type="string" nullable="false" />
+        <Field name="lab_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="lab_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="lab_unused" type="string" nullable="true" />
+        <Field name="lab_note" type="string" nullable="true" />
+        <Field name="lab_row" type="long" nullable="false" />
+        <Field name="sample_id" type="string" nullable="false" />
+        <Field name="facility_txt" type="string" nullable="true" />
+        <Field name="assay_txt" type="string" nullable="true" />
+        <Field name="result_txt" type="string" nullable="true" />
+        <Field name="sampled_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="billing_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="calibrated_result" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="factor_used" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="factor_source" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="lab_batch" type="string" nullable="false" />
+        <Field name="lab_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="lab_ledger" type="string" nullable="true" />
+        <Field name="lab_unused" type="string" nullable="true" />
+        <Field name="lab_note" type="string" nullable="true" />
+        <Field name="lab_row" type="string" nullable="false" />
+        <Field name="sample_id" type="string" nullable="false" />
+        <Field name="facility_txt" type="string" nullable="true" />
+        <Field name="assay_txt" type="string" nullable="true" />
+        <Field name="result_txt" type="string" nullable="true" />
+        <Field name="sampled_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="billing_amount" type="string" nullable="true" />
+        <Field name="calibrated_result" type="string" nullable="false" />
+        <Field name="factor_used" type="string" nullable="false" />
+        <Field name="factor_source" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out1">
+      <Record name="CalibrationCorrections" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="lab_batch" type="string" nullable="false" />
+        <Field name="lab_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="lab_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="lab_unused" type="string" nullable="true" />
+        <Field name="lab_note" type="string" nullable="true" />
+        <Field name="lab_row" type="long" nullable="false" />
+        <Field name="sample_id" type="string" nullable="false" />
+        <Field name="facility_txt" type="string" nullable="true" />
+        <Field name="assay_txt" type="string" nullable="true" />
+        <Field name="result_txt" type="string" nullable="true" />
+        <Field name="sampled_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="billing_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="correction_reason" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut1">
+      <Record name="RawOutput1" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="lab_batch" type="string" nullable="false" />
+        <Field name="lab_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="lab_ledger" type="string" nullable="true" />
+        <Field name="lab_unused" type="string" nullable="true" />
+        <Field name="lab_note" type="string" nullable="true" />
+        <Field name="lab_row" type="string" nullable="false" />
+        <Field name="sample_id" type="string" nullable="false" />
+        <Field name="facility_txt" type="string" nullable="true" />
+        <Field name="assay_txt" type="string" nullable="true" />
+        <Field name="result_txt" type="string" nullable="true" />
+        <Field name="sampled_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="billing_amount" type="string" nullable="true" />
+        <Field name="correction_reason" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="Lookup0">
+      <Record name="FacilityFactor" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="calibration_batch" type="string" nullable="false" />
+        <Field name="calibration_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="calibration_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="calibration_unused" type="string" nullable="true" />
+        <Field name="calibration_note" type="string" nullable="true" />
+        <Field name="calibration_row" type="long" nullable="false" />
+        <Field name="facility_code" type="string" nullable="false" />
+        <Field name="assay_code" type="string" nullable="false" />
+        <Field name="enabled" type="boolean" nullable="true" />
+        <Field name="factor" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="calibration_scope" type="string" nullable="true" />
+        <Field name="certified_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <LookupTable id="FacilityFactors" name="FacilityFactors" type="simpleLookup" charset="UTF-8" metadata="Lookup0" key="facility_code;assay_code" initialSize="64" keyDuplicates="true" allowKeyDuplicates="true">
+      <attr name="fileURL">suite_v5/data-in/T52_lookup_0.csv</attr>
+    </LookupTable>
+    <Metadata id="Lookup1">
+      <Record name="AssayDefault" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="standard_batch" type="string" nullable="false" />
+        <Field name="standard_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="standard_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="standard_unused" type="string" nullable="true" />
+        <Field name="standard_note" type="string" nullable="true" />
+        <Field name="standard_row" type="long" nullable="false" />
+        <Field name="assay_code" type="string" nullable="false" />
+        <Field name="factor" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="standard_label" type="string" nullable="true" />
+        <Field name="reviewed_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="standard_scope" type="string" nullable="true" />
+        <Field name="revision_no" type="integer" nullable="false" />
+      </Record>
+    </Metadata>
+    <LookupTable id="AssayDefaults" name="AssayDefaults" type="simpleLookup" charset="UTF-8" metadata="Lookup1" key="assay_code" initialSize="64" keyDuplicates="true" allowKeyDuplicates="true">
+      <attr name="fileURL">suite_v5/data-in/T52_lookup_1.csv</attr>
+    </LookupTable>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T52_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.lab_batch=$in.0.lab_batch;
+$out.0.lab_loaded=$in.0.lab_loaded == null ? null : str2date($in.0.lab_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.lab_ledger=$in.0.lab_ledger == null ? null : str2decimal($in.0.lab_ledger);
+$out.0.lab_unused=$in.0.lab_unused;
+$out.0.lab_note=$in.0.lab_note;
+$out.0.lab_row=$in.0.lab_row == null ? null : str2long($in.0.lab_row);
+$out.0.sample_id=$in.0.sample_id;
+$out.0.facility_txt=$in.0.facility_txt;
+$out.0.assay_txt=$in.0.assay_txt;
+$out.0.result_txt=$in.0.result_txt;
+$out.0.sampled_at=$in.0.sampled_at == null ? null : str2date($in.0.sampled_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.billing_amount=$in.0.billing_amount == null ? null : str2decimal($in.0.billing_amount);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+function integer transform(){string a=upperCase(trim(nvl($in.0.facility_txt,"")));string b=upperCase(trim(nvl($in.0.assay_txt,"")));string v=trim(nvl($in.0.result_txt,""));string[] e=[];if(a=="")append(e,"FACILITY");if(!(b ~= "[A-Z][A-Z0-9]{1,5}"))append(e,"ASSAY");if(!(v ~= "-?[0-9]{1,6}(\\.[0-9]{1,3})?"))append(e,"VALUE");decimal factor=0D;string source="";if(length(e)==0){FacilityFactor f=lookup(FacilityFactors).get(a,b);if(f!=null&amp;&amp;f.enabled==false)append(e,"BLOCKED");else if(f!=null&amp;&amp;f.enabled==true&amp;&amp;f.factor!=null&amp;&amp;f.factor&gt;0D&amp;&amp;f.factor&lt;=1000000D){factor=f.factor;source="FACILITY";}else{AssayDefault g=lookup(AssayDefaults).get(b);if(g!=null&amp;&amp;g.factor!=null&amp;&amp;g.factor&gt;0D&amp;&amp;g.factor&lt;=1000000D){factor=g.factor;source="DEFAULT";}else append(e,"NO_FACTOR");}}if(length(e)&gt;0){$out.1.*=$in.0.*;$out.1.correction_reason=join(";",e);return 1;}$out.0.*=$in.0.*;$out.0.factor_used=factor;$out.0.factor_source=source;$out.0.calibrated_result=round(str2decimal(v)*factor,2);return 0;}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.lab_batch=$in.0.lab_batch;
+$out.0.lab_loaded=$in.0.lab_loaded == null ? null : date2str($in.0.lab_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.lab_ledger=$in.0.lab_ledger == null ? null : num2str($in.0.lab_ledger,"0.00","en.US");
+$out.0.lab_unused=$in.0.lab_unused;
+$out.0.lab_note=$in.0.lab_note;
+$out.0.lab_row=$in.0.lab_row == null ? null : num2str($in.0.lab_row);
+$out.0.sample_id=$in.0.sample_id;
+$out.0.facility_txt=$in.0.facility_txt;
+$out.0.assay_txt=$in.0.assay_txt;
+$out.0.result_txt=$in.0.result_txt;
+$out.0.sampled_at=$in.0.sampled_at == null ? null : date2str($in.0.sampled_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.billing_amount=$in.0.billing_amount == null ? null : num2str($in.0.billing_amount,"0.00","en.US");
+$out.0.calibrated_result=$in.0.calibrated_result == null ? null : num2str($in.0.calibrated_result,"0.00","en.US");
+$out.0.factor_used=$in.0.factor_used == null ? null : num2str($in.0.factor_used,"0.00","en.US");
+$out.0.factor_source=$in.0.factor_source;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T52_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode1" type="REFORMAT" enabled="enabled" guiName="Encode1" guiX="725" guiY="375">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.lab_batch=$in.0.lab_batch;
+$out.0.lab_loaded=$in.0.lab_loaded == null ? null : date2str($in.0.lab_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.lab_ledger=$in.0.lab_ledger == null ? null : num2str($in.0.lab_ledger,"0.00","en.US");
+$out.0.lab_unused=$in.0.lab_unused;
+$out.0.lab_note=$in.0.lab_note;
+$out.0.lab_row=$in.0.lab_row == null ? null : num2str($in.0.lab_row);
+$out.0.sample_id=$in.0.sample_id;
+$out.0.facility_txt=$in.0.facility_txt;
+$out.0.assay_txt=$in.0.assay_txt;
+$out.0.result_txt=$in.0.result_txt;
+$out.0.sampled_at=$in.0.sampled_at == null ? null : date2str($in.0.sampled_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.billing_amount=$in.0.billing_amount == null ? null : num2str($in.0.billing_amount,"0.00","en.US");
+$out.0.correction_reason=$in.0.correction_reason;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer1" type="DATA_WRITER" enabled="enabled" guiName="Writer1" guiX="950" guiY="375">
+      <attr name="fileURL">suite_v5/data-out/T52_out_1.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result1" fromNode="Test:1" toNode="Encode1:0" metadata="Out1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written1" fromNode="Encode1:0" toNode="Writer1:0" metadata="RawOut1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

@@ -1,0 +1,311 @@
+[
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph",
+      "filename": "P908.grf",
+      "content": "<?xml version='1.0' encoding='utf-8'?>\n<Graph author=\"Codex\" name=\"P908\" id=\"6101300908\" nature=\"etlGraph\" revision=\"1.0\" guiVersion=\"7.5.0\">\n  <Global>\n    <GraphParameters>\n      <GraphParameterFile fileURL=\"workspace.prm\" />\n      <GraphParameter name=\"PROJECT\" value=\".\" />\n    </GraphParameters>\n    <RichTextNote id=\"Note\" x=\"50\" y=\"25\" width=\"1200\" height=\"100\" backgroundColor=\"FAF6D6\" textColor=\"444444\" fontSize=\"medium\" folded=\"false\">\n      <attr name=\"text\">P908 runtime contract probe\nAcceptance fixture exercises the business rules and preserves every source field for comparison.</attr>\n    </RichTextNote>\n    <Metadata id=\"Out0\">\n      <Record name=\"DictResult\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"flag\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"label\" type=\"string\" nullable=\"false\" />\n        <Field name=\"counter\" type=\"integer\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut0\">\n      <Record name=\"RawOutput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"flag\" type=\"string\" nullable=\"false\" />\n        <Field name=\"label\" type=\"string\" nullable=\"false\" />\n        <Field name=\"counter\" type=\"string\" nullable=\"false\" />\n      </Record>\n    </Metadata>\n    <Dictionary>\n      <Entry name=\"Enabled\" type=\"boolean\" input=\"true\" dictval.value=\"true\" />\n      <Entry name=\"RunLabel\" type=\"string\" input=\"true\" dictval.value=\"RW2\" />\n      <Entry name=\"Count\" type=\"integer\" input=\"true\" dictval.value=\"0\" />\n    </Dictionary>\n  </Global>\n  <Phase number=\"0\">\n    <Node id=\"Test\" type=\"DATA_GENERATOR\" enabled=\"enabled\" guiName=\"Test\" guiX=\"500\" guiY=\"200\">\n      <attr name=\"recordsNumber\">8</attr>\n      <attr name=\"generate\">//#CTL2\nfunction integer generate(){$out.0.flag=dictionary.Enabled;$out.0.label=dictionary.RunLabel;dictionary.Count=dictionary.Count+1;$out.0.counter=dictionary.Count;return OK;}</attr>\n    </Node>\n    <Node id=\"Encode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode0\" guiX=\"725\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.flag=$in.0.flag == null ? null : ($in.0.flag ? \"true\" : \"false\");\n$out.0.label=$in.0.label;\n$out.0.counter=$in.0.counter == null ? null : num2str($in.0.counter);\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer0\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer0\" guiX=\"950\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-out/P908_out_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result0\" fromNode=\"Test:0\" toNode=\"Encode0:0\" metadata=\"Out0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written0\" fromNode=\"Encode0:0\" toNode=\"Writer0:0\" metadata=\"RawOut0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n  </Phase>\n</Graph>"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/graph/P908.grf' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/graph/P908.grf' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_validate",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P908.grf",
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"timedOut\":false,\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "timedOut": false,
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_run",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P908.grf",
+      "params": {}
+    },
+    "payload": {
+      "runId": 17923,
+      "message": "Job started. runId: 17923"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17923,\"message\":\"Job started. runId: 17923\"}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17923,
+        "message": "Job started. runId: 17923"
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_await",
+    "arguments": {
+      "runId": 17923,
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "runId": 17923,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P908.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:40:07.532+02:00",
+      "startTime": "2026-10-13T11:40:07.532+02:00",
+      "stopTime": "2026-10-13T11:40:07.550+02:00",
+      "durationMs": 18
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17923,\"sandboxCode\":\"MiscExamples\",\"jobFile\":\"suite_v5/graph/P908.grf\",\"jobType\":\"ETL_GRAPH\",\"status\":\"FINISHED_OK\",\"submitTime\":\"2026-10-13T11:40:07.532+02:00\",\"startTime\":\"2026-10-13T11:40:07.532+02:00\",\"stopTime\":\"2026-10-13T11:40:07.550+02:00\",\"durationMs\":18}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17923,
+        "sandboxCode": "MiscExamples",
+        "jobFile": "suite_v5/graph/P908.grf",
+        "jobType": "ETL_GRAPH",
+        "status": "FINISHED_OK",
+        "submitTime": "2026-10-13T11:40:07.532+02:00",
+        "startTime": "2026-10-13T11:40:07.532+02:00",
+        "stopTime": "2026-10-13T11:40:07.550+02:00",
+        "durationMs": 18
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_tracking",
+    "arguments": {
+      "runId": 17923,
+      "detailed": true
+    },
+    "payload": {
+      "run_id": "17923",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.005,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.002,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 96
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 96
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 152
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 152
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 32,
+        "total_bytes": 496
+      }
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"run_id\":\"17923\",\"status\":\"FINISHED_OK\",\"exec_seconds\":0.005,\"phases\":[{\"phase_number\":0,\"exec_seconds\":0.002,\"nodes\":[{\"node_id\":\"Test\",\"node_name\":\"Test\",\"node_type\":\"DATA_GENERATOR\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":8,\"bytes\":96}]},{\"node_id\":\"Encode0\",\"node_name\":\"Encode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":8,\"bytes\":96},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":8,\"bytes\":152}]},{\"node_id\":\"Writer0\",\"node_name\":\"Writer0\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":8,\"bytes\":152}]}]}],\"summary\":{\"phase_count\":1,\"node_count\":3,\"port_count\":4,\"total_records\":32,\"total_bytes\":496}}"
+        }
+      ],
+      "structuredContent": {
+        "run_id": "17923",
+        "status": "FINISHED_OK",
+        "exec_seconds": 0.005,
+        "phases": [
+          {
+            "phase_number": 0,
+            "exec_seconds": 0.002,
+            "nodes": [
+              {
+                "node_id": "Test",
+                "node_name": "Test",
+                "node_type": "DATA_GENERATOR",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 96
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode0",
+                "node_name": "Encode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 96
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 152
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer0",
+                "node_name": "Writer0",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 8,
+                    "bytes": 152
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "phase_count": 1,
+          "node_count": 3,
+          "port_count": 4,
+          "total_records": 32,
+          "total_bytes": 496
+        }
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_log",
+    "arguments": {
+      "runId": 17923
+    },
+    "payload": {
+      "text": "2026-10-13 11:40:07,534 INFO  17923 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:40:07,534 INFO  17923 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:40:07,534 INFO  17923 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:40:07,537 INFO  17923 [JobStarter_17923] Starting job: MiscExamples/suite_v5/graph/P908.grf\n\t Run ID: \t\t17923\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:40:07,540 INFO  17923 [JobExecutor_17923] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:40:07,543 INFO  17923 [JobExecutor_17923] Initializing metadata\n2026-10-13 11:40:07,543 INFO  17923 [JobExecutor_17923] Initializing phase 0\n2026-10-13 11:40:07,544 INFO  17923 [JobExecutor_17923] Phase 0 initialized successfully.\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Job execution type: ETL_GRAPH\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P908.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P908.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17923\nPROJECT=.\nROOT_RUN_ID=17923\nRUN_ID=17923\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Initial dictionary content:\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] DictEntry:Enabled:boolean:{value=true}\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] DictEntry:RunLabel:string:{value=RW2}\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] DictEntry:Count:integer:{value=0}\n2026-10-13 11:40:07,546 INFO  17923 [WatchDog_17923] Starting up all nodes in phase [0]\n2026-10-13 11:40:07,546 INFO  17923 [WatchDog_17923] Successfully started all nodes in phase!\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Time: 13/10/2026 11:40:07, JVM heap used: 120 MB\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ---------------------------------------------------------------------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Test                     Test                                        FINISHED_OK\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]  (alloc:0MB, cpu:50%)           Out:0              8          0    4000       46\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]  (alloc:0MB, cpu:0%)             In:0              8          0    4000       46\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]                                 Out:0              8          0    4000       74\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]  (alloc:0MB, cpu:50%)            In:0              8          0    4000       74\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Final dictionary content:\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] DictEntry:Enabled:boolean:{value=true}\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] DictEntry:RunLabel:string:{value=RW2}\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] DictEntry:Count:integer:{value=8}\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] 0                 FINISHED_OK                        0               120\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:40:07,550 INFO  17923 [JobFinalizer_17923] Job finished: MiscExamples/suite_v5/graph/P908.grf\n\t Run ID: \t\t17923\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t18 ms\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "2026-10-13 11:40:07,534 INFO  17923 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:40:07,534 INFO  17923 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:40:07,534 INFO  17923 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:40:07,537 INFO  17923 [JobStarter_17923] Starting job: MiscExamples/suite_v5/graph/P908.grf\n\t Run ID: \t\t17923\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:40:07,540 INFO  17923 [JobExecutor_17923] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:40:07,543 INFO  17923 [JobExecutor_17923] Initializing metadata\n2026-10-13 11:40:07,543 INFO  17923 [JobExecutor_17923] Initializing phase 0\n2026-10-13 11:40:07,544 INFO  17923 [JobExecutor_17923] Phase 0 initialized successfully.\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Job execution type: ETL_GRAPH\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P908.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P908.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17923\nPROJECT=.\nROOT_RUN_ID=17923\nRUN_ID=17923\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Initial dictionary content:\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] DictEntry:Enabled:boolean:{value=true}\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] DictEntry:RunLabel:string:{value=RW2}\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] DictEntry:Count:integer:{value=0}\n2026-10-13 11:40:07,546 INFO  17923 [WatchDog_17923] Starting up all nodes in phase [0]\n2026-10-13 11:40:07,546 INFO  17923 [WatchDog_17923] Successfully started all nodes in phase!\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Time: 13/10/2026 11:40:07, JVM heap used: 120 MB\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ---------------------------------------------------------------------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Test                     Test                                        FINISHED_OK\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]  (alloc:0MB, cpu:50%)           Out:0              8          0    4000       46\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]  (alloc:0MB, cpu:0%)             In:0              8          0    4000       46\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]                                 Out:0              8          0    4000       74\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]  (alloc:0MB, cpu:50%)            In:0              8          0    4000       74\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Final dictionary content:\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] DictEntry:Enabled:boolean:{value=true}\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] DictEntry:RunLabel:string:{value=RW2}\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] DictEntry:Count:integer:{value=8}\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] 0                 FINISHED_OK                        0               120\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:40:07,550 INFO  17923 [JobFinalizer_17923] Job finished: MiscExamples/suite_v5/graph/P908.grf\n\t Run ID: \t\t17923\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t18 ms\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/P908_out_0.csv"
+    },
+    "payload": {
+      "text": "\"true\"|\"RW2\"|\"1\"\n\"true\"|\"RW2\"|\"2\"\n\"true\"|\"RW2\"|\"3\"\n\"true\"|\"RW2\"|\"4\"\n\"true\"|\"RW2\"|\"5\"\n\"true\"|\"RW2\"|\"6\"\n\"true\"|\"RW2\"|\"7\"\n\"true\"|\"RW2\"|\"8\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"true\"|\"RW2\"|\"1\"\n\"true\"|\"RW2\"|\"2\"\n\"true\"|\"RW2\"|\"3\"\n\"true\"|\"RW2\"|\"4\"\n\"true\"|\"RW2\"|\"5\"\n\"true\"|\"RW2\"|\"6\"\n\"true\"|\"RW2\"|\"7\"\n\"true\"|\"RW2\"|\"8\"\n"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

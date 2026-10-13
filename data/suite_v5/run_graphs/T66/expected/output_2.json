@@ -1,0 +1,23 @@
+[
+  {
+    "payment_key": "PAYMENT3",
+    "payment_tenant": "ACME",
+    "payment_file": "payment.csv",
+    "payment_row": 3,
+    "payment_received": "2026-01-01 00:00:00",
+    "payment_team": null,
+    "payment_market": "CZ",
+    "payment_currency": "EUR",
+    "payment_batch": "B1",
+    "payment_note": null,
+    "payment_trace": "X3",
+    "payment_unused_archive": "keep:3",
+    "status_cd": "",
+    "hold_flag": false,
+    "amount_txt": "BAD",
+    "invoice_day_txt": "2025-12-31",
+    "priority_cd": "URGENT",
+    "insured_value": null,
+    "due_at": "2026-01-01"
+  }
+]

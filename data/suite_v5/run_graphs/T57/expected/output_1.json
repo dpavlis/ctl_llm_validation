@@ -1,0 +1,42 @@
+[
+  {
+    "business_ref": "A",
+    "tenant_cd": "T1",
+    "source_file": "feed.csv",
+    "source_row": 4,
+    "received_at": "2026-01-01 00:00:00",
+    "currency_cd": "EUR",
+    "operator_note": null,
+    "market_cd": "CZ",
+    "owner_team": null,
+    "trace_id": "r4",
+    "unused_archive_label": "old-4",
+    "context_value": null,
+    "receipt_id": " R ",
+    "amount": "2.00",
+    "voided": false,
+    "disposition": "CHOSEN",
+    "winner_receipt": " R ",
+    "rows_seen": 5
+  },
+  {
+    "business_ref": "C",
+    "tenant_cd": "T1",
+    "source_file": "feed.csv",
+    "source_row": 8,
+    "received_at": "2026-01-01 00:00:00",
+    "currency_cd": "EUR",
+    "operator_note": null,
+    "market_cd": "CZ",
+    "owner_team": null,
+    "trace_id": "r8",
+    "unused_archive_label": "old-8",
+    "context_value": null,
+    "receipt_id": "BAD:DATE",
+    "amount": "1.00",
+    "voided": false,
+    "disposition": "CHOSEN",
+    "winner_receipt": "BAD:DATE",
+    "rows_seen": 1
+  }
+]

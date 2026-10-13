@@ -1,0 +1,55 @@
+[
+  {
+    "name": "lookup-table",
+    "description": "Authoritative lookup table reference — types, XML skeletons, attributes, data sources, CTL usage, two-phase population, generation rules, common mistakes.",
+    "tags": [
+      "guide",
+      "reference",
+      "lookup-table",
+      "simpleLookup",
+      "dbLookup",
+      "rangeLookup",
+      "persistentLookup",
+      "ctl",
+      "two-phase"
+    ],
+    "source": "static",
+    "category": "guides"
+  },
+  {
+    "name": "jobflow-combine-parallel-branch-deadlock",
+    "description": "COMBINE deadlocks when a parallel branch fails and its token doesn't reach COMBINE — use incompleteTuples=true and SIMPLE_GATHER for errors",
+    "tags": [
+      "jobflow",
+      "combine",
+      "deadlock",
+      "parallel",
+      "simple_gather",
+      "antipattern"
+    ],
+    "source": "static",
+    "category": "recipes"
+  },
+  {
+    "name": "multi-phase",
+    "description": "Phase semantics — strict ascending execution; edges may cross phase boundaries from lower to higher; DDL before DML; SLEEP before HTTP; in-place/same-file rewrite via a tmp file + MOVE_FILES (two-phase tmp merge).",
+    "tags": [
+      "guide",
+      "phases",
+      "multi-phase",
+      "execution-order",
+      "ddl-dml",
+      "lookup-load",
+      "atomic-write",
+      "two-phase-tmp-merge",
+      "same-file",
+      "in-place",
+      "idempotency",
+      "tmp-file",
+      "rewrite",
+      "move-files"
+    ],
+    "source": "static",
+    "category": "guides"
+  }
+]

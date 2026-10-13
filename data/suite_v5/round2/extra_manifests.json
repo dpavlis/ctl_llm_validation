@@ -1,0 +1,2797 @@
+[
+  {
+    "test_id": "T64",
+    "label": "T64_empty_amount",
+    "graph_file": "suite_v5/graph/T64_empty_amount.grf",
+    "reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+    "graph_sha256": "07d192172f4950da820bbed93b5514b6c8da8e90303f3af8ac88d9ae692c5661",
+    "files": [
+      {
+        "local": "run_graphs/T64_empty_amount/data-in/input_0.csv",
+        "remote": "suite_v5/data-in/T64_empty_amount_input_0.csv",
+        "sha256": "cdd2759edded1778061e9d0c4bb54f81f1dcb4c2f5e6dfd02650dfae0fd042a1"
+      },
+      {
+        "local": "run_graphs/T64_empty_amount/graph/T64_empty_amount.grf",
+        "remote": "suite_v5/graph/T64_empty_amount.grf",
+        "sha256": "07d192172f4950da820bbed93b5514b6c8da8e90303f3af8ac88d9ae692c5661"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/T64_empty_amount_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"BasketLine\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"basket_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"basket_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"basket_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"parent_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"business_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"child_code\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"child_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"child_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [
+        [
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"\"}]}",
+            "parent_value": null,
+            "business_dt": "2026-01-01"
+          }
+        ]
+      ],
+      "expected": {
+        "0": [
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": " A ",
+            "child_note": "",
+            "ordinal": 1,
+            "child_amount": "1.25"
+          },
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": " A ",
+            "child_note": null,
+            "ordinal": 2,
+            "child_amount": null
+          },
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": "B",
+            "child_note": " x ",
+            "ordinal": 3,
+            "child_amount": "-2.00"
+          },
+          {
+            "basket_key": "BASKET8",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 8,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": "OPS",
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": null,
+            "basket_trace": "X8",
+            "basket_unused_archive": "keep:8",
+            "parent_value": "12.50",
+            "business_dt": "2026-01-01",
+            "child_code": "LAST",
+            "child_note": null,
+            "ordinal": 1,
+            "child_amount": "0.00"
+          }
+        ]
+      },
+      "failure_probes": [
+        {
+          "name": "empty_amount",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "malformed_amount",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"bad\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "excess_integer_digits",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1000000000\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "excess_fraction_digits",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1.234\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        }
+      ],
+      "expected_failure": true
+    },
+    "parameters": {},
+    "expected_failure": true
+  },
+  {
+    "test_id": "T64",
+    "label": "T64_malformed_amount",
+    "graph_file": "suite_v5/graph/T64_malformed_amount.grf",
+    "reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+    "graph_sha256": "4138f9d84f0ce8498fa8190cc363cbc649b94eaaa708309183340f23f62615c5",
+    "files": [
+      {
+        "local": "run_graphs/T64_malformed_amount/data-in/input_0.csv",
+        "remote": "suite_v5/data-in/T64_malformed_amount_input_0.csv",
+        "sha256": "9a816fc647cad5c2553a1beda4bc657a066b4d5fc3720a12d68b3d7f34dd6d9e"
+      },
+      {
+        "local": "run_graphs/T64_malformed_amount/graph/T64_malformed_amount.grf",
+        "remote": "suite_v5/graph/T64_malformed_amount.grf",
+        "sha256": "4138f9d84f0ce8498fa8190cc363cbc649b94eaaa708309183340f23f62615c5"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/T64_malformed_amount_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"BasketLine\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"basket_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"basket_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"basket_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"parent_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"business_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"child_code\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"child_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"child_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [
+        [
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"bad\"}]}",
+            "parent_value": null,
+            "business_dt": "2026-01-01"
+          }
+        ]
+      ],
+      "expected": {
+        "0": [
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": " A ",
+            "child_note": "",
+            "ordinal": 1,
+            "child_amount": "1.25"
+          },
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": " A ",
+            "child_note": null,
+            "ordinal": 2,
+            "child_amount": null
+          },
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": "B",
+            "child_note": " x ",
+            "ordinal": 3,
+            "child_amount": "-2.00"
+          },
+          {
+            "basket_key": "BASKET8",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 8,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": "OPS",
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": null,
+            "basket_trace": "X8",
+            "basket_unused_archive": "keep:8",
+            "parent_value": "12.50",
+            "business_dt": "2026-01-01",
+            "child_code": "LAST",
+            "child_note": null,
+            "ordinal": 1,
+            "child_amount": "0.00"
+          }
+        ]
+      },
+      "failure_probes": [
+        {
+          "name": "empty_amount",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "malformed_amount",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"bad\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "excess_integer_digits",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1000000000\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "excess_fraction_digits",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1.234\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        }
+      ],
+      "expected_failure": true
+    },
+    "parameters": {},
+    "expected_failure": true
+  },
+  {
+    "test_id": "T64",
+    "label": "T64_excess_integer_digits",
+    "graph_file": "suite_v5/graph/T64_excess_integer_digits.grf",
+    "reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+    "graph_sha256": "055251de47596b3653a02fe6d3c706ea0d5bb36dc900554da09f12ef3dcb394d",
+    "files": [
+      {
+        "local": "run_graphs/T64_excess_integer_digits/data-in/input_0.csv",
+        "remote": "suite_v5/data-in/T64_excess_integer_digits_input_0.csv",
+        "sha256": "e94be7c2facadd4bbb69f90966fb40e703a1a24765d630dec4777b4b2658f2ff"
+      },
+      {
+        "local": "run_graphs/T64_excess_integer_digits/graph/T64_excess_integer_digits.grf",
+        "remote": "suite_v5/graph/T64_excess_integer_digits.grf",
+        "sha256": "055251de47596b3653a02fe6d3c706ea0d5bb36dc900554da09f12ef3dcb394d"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/T64_excess_integer_digits_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"BasketLine\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"basket_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"basket_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"basket_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"parent_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"business_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"child_code\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"child_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"child_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [
+        [
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1000000000\"}]}",
+            "parent_value": null,
+            "business_dt": "2026-01-01"
+          }
+        ]
+      ],
+      "expected": {
+        "0": [
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": " A ",
+            "child_note": "",
+            "ordinal": 1,
+            "child_amount": "1.25"
+          },
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": " A ",
+            "child_note": null,
+            "ordinal": 2,
+            "child_amount": null
+          },
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": "B",
+            "child_note": " x ",
+            "ordinal": 3,
+            "child_amount": "-2.00"
+          },
+          {
+            "basket_key": "BASKET8",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 8,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": "OPS",
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": null,
+            "basket_trace": "X8",
+            "basket_unused_archive": "keep:8",
+            "parent_value": "12.50",
+            "business_dt": "2026-01-01",
+            "child_code": "LAST",
+            "child_note": null,
+            "ordinal": 1,
+            "child_amount": "0.00"
+          }
+        ]
+      },
+      "failure_probes": [
+        {
+          "name": "empty_amount",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "malformed_amount",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"bad\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "excess_integer_digits",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1000000000\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "excess_fraction_digits",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1.234\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        }
+      ],
+      "expected_failure": true
+    },
+    "parameters": {},
+    "expected_failure": true
+  },
+  {
+    "test_id": "T64",
+    "label": "T64_excess_fraction_digits",
+    "graph_file": "suite_v5/graph/T64_excess_fraction_digits.grf",
+    "reference_sha256": "51b72ab9e41289f22e9959859bb5ccaf047a364b2dd055871e8ccb042adf18cf",
+    "graph_sha256": "48200301d4da3f3523937277494f7b38b2b592a13bd3f8163a0562cd818f5026",
+    "files": [
+      {
+        "local": "run_graphs/T64_excess_fraction_digits/data-in/input_0.csv",
+        "remote": "suite_v5/data-in/T64_excess_fraction_digits_input_0.csv",
+        "sha256": "16441c9d26be48fb33a6ba3b15ec56d26453a951e7e12007671940e8fc649062"
+      },
+      {
+        "local": "run_graphs/T64_excess_fraction_digits/graph/T64_excess_fraction_digits.grf",
+        "remote": "suite_v5/graph/T64_excess_fraction_digits.grf",
+        "sha256": "48200301d4da3f3523937277494f7b38b2b592a13bd3f8163a0562cd818f5026"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/T64_excess_fraction_digits_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"BasketLine\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"basket_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"basket_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"basket_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"basket_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"basket_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"parent_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"business_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"child_code\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"child_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"child_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [
+        [
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1.234\"}]}",
+            "parent_value": null,
+            "business_dt": "2026-01-01"
+          }
+        ]
+      ],
+      "expected": {
+        "0": [
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": " A ",
+            "child_note": "",
+            "ordinal": 1,
+            "child_amount": "1.25"
+          },
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": " A ",
+            "child_note": null,
+            "ordinal": 2,
+            "child_amount": null
+          },
+          {
+            "basket_key": "BASKET1",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 1,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": null,
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": "",
+            "basket_trace": "X1",
+            "basket_unused_archive": "keep:1",
+            "parent_value": null,
+            "business_dt": "2026-01-01",
+            "child_code": "B",
+            "child_note": " x ",
+            "ordinal": 3,
+            "child_amount": "-2.00"
+          },
+          {
+            "basket_key": "BASKET8",
+            "basket_tenant": "ACME",
+            "basket_file": "basket.csv",
+            "basket_row": 8,
+            "basket_received": "2026-01-01 00:00:00",
+            "basket_team": "OPS",
+            "basket_market": "CZ",
+            "basket_currency": "EUR",
+            "basket_batch": "B1",
+            "basket_note": null,
+            "basket_trace": "X8",
+            "basket_unused_archive": "keep:8",
+            "parent_value": "12.50",
+            "business_dt": "2026-01-01",
+            "child_code": "LAST",
+            "child_note": null,
+            "ordinal": 1,
+            "child_amount": "0.00"
+          }
+        ]
+      },
+      "failure_probes": [
+        {
+          "name": "empty_amount",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "malformed_amount",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"bad\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "excess_integer_digits",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1000000000\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        },
+        {
+          "name": "excess_fraction_digits",
+          "inputs": [
+            [
+              {
+                "basket_key": "BASKET1",
+                "basket_tenant": "ACME",
+                "basket_file": "basket.csv",
+                "basket_row": 1,
+                "basket_received": "2026-01-01 00:00:00",
+                "basket_team": null,
+                "basket_market": "CZ",
+                "basket_currency": "EUR",
+                "basket_batch": "B1",
+                "basket_note": "",
+                "basket_trace": "X1",
+                "basket_unused_archive": "keep:1",
+                "payload_json": "{\"lines\":[{\"sku\":\"X\",\"amount\":\"1.234\"}]}",
+                "parent_value": null,
+                "business_dt": "2026-01-01"
+              }
+            ]
+          ],
+          "expected_failure": true
+        }
+      ],
+      "expected_failure": true
+    },
+    "parameters": {},
+    "expected_failure": true
+  },
+  {
+    "test_id": "T70",
+    "label": "T70_zero_rows",
+    "graph_file": "suite_v5/graph/T70_zero_rows.grf",
+    "reference_sha256": "c9e7584c5543b55d215c15c9ec1ee9d89d032e877b3a0069fe99956ed3f46a24",
+    "graph_sha256": "d8d531dd8a30e8a03e5005c9134a1150bed38aa5fd203a99a4efae869050e42b",
+    "files": [
+      {
+        "local": "run_graphs/T70_zero_rows/graph/T70_zero_rows.grf",
+        "remote": "suite_v5/graph/T70_zero_rows.grf",
+        "sha256": "d8d531dd8a30e8a03e5005c9134a1150bed38aa5fd203a99a4efae869050e42b"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/T70_zero_rows_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"OrderFixture\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"fixture_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"fixture_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"fixture_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"customer_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"line_no\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"unit_price\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"quantity\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"line_total\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"customer_total\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"discount_pct\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"event_dt\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"fixture_state\" type=\"string\" nullable=\"false\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [],
+      "expected": {
+        "0": []
+      },
+      "rows_count": 0,
+      "parameters": {
+        "FIXTURE_ROWS": "8"
+      },
+      "boundary_probes": [
+        {
+          "name": "zero_rows",
+          "parameters": {
+            "FIXTURE_ROWS": "0"
+          },
+          "resources": {
+            "parameters": {
+              "FIXTURE_ROWS": "0"
+            }
+          },
+          "rows_count": 0,
+          "inputs": [],
+          "expected": {
+            "0": []
+          }
+        },
+        {
+          "name": "one_row",
+          "parameters": {
+            "FIXTURE_ROWS": "1"
+          },
+          "resources": {
+            "parameters": {
+              "FIXTURE_ROWS": "1"
+            }
+          },
+          "rows_count": 1,
+          "inputs": [],
+          "expected": {
+            "0": [
+              {
+                "fixture_key": "FIX-100001",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 1,
+                "fixture_received": "2026-01-01 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100001,
+                "customer_id": 1000,
+                "line_no": 1,
+                "unit_price": "13.50",
+                "quantity": 1,
+                "line_total": "13.50",
+                "customer_total": "13.50",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-01",
+                "fixture_state": "OPEN"
+              }
+            ]
+          }
+        },
+        {
+          "name": "partial_customer",
+          "parameters": {
+            "FIXTURE_ROWS": "4"
+          },
+          "resources": {
+            "parameters": {
+              "FIXTURE_ROWS": "4"
+            }
+          },
+          "rows_count": 4,
+          "inputs": [],
+          "expected": {
+            "0": [
+              {
+                "fixture_key": "FIX-100001",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 1,
+                "fixture_received": "2026-01-01 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100001,
+                "customer_id": 1000,
+                "line_no": 1,
+                "unit_price": "13.50",
+                "quantity": 1,
+                "line_total": "13.50",
+                "customer_total": "13.50",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-01",
+                "fixture_state": "OPEN"
+              },
+              {
+                "fixture_key": "FIX-100002",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 2,
+                "fixture_received": "2026-01-02 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100002,
+                "customer_id": 1000,
+                "line_no": 2,
+                "unit_price": "14.50",
+                "quantity": 2,
+                "line_total": "29.00",
+                "customer_total": "42.50",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-02",
+                "fixture_state": "CLOSED"
+              },
+              {
+                "fixture_key": "FIX-100003",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 3,
+                "fixture_received": "2026-01-03 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100003,
+                "customer_id": 1000,
+                "line_no": 3,
+                "unit_price": "15.50",
+                "quantity": 3,
+                "line_total": "46.50",
+                "customer_total": "89.00",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-03",
+                "fixture_state": "OPEN"
+              },
+              {
+                "fixture_key": "FIX-100004",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 4,
+                "fixture_received": "2026-01-04 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1001",
+                "fixture_unused_archive": null,
+                "fixture_id": 100004,
+                "customer_id": 1001,
+                "line_no": 1,
+                "unit_price": "13.50",
+                "quantity": 1,
+                "line_total": "12.15",
+                "customer_total": "12.15",
+                "discount_pct": "10.00",
+                "event_dt": "2026-01-04",
+                "fixture_state": "CLOSED"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "T70",
+    "label": "T70_one_row",
+    "graph_file": "suite_v5/graph/T70_one_row.grf",
+    "reference_sha256": "c9e7584c5543b55d215c15c9ec1ee9d89d032e877b3a0069fe99956ed3f46a24",
+    "graph_sha256": "6f39b5abcb14ad8a042c9545cd52080ff146854f11f8365ae787656c8bae2cea",
+    "files": [
+      {
+        "local": "run_graphs/T70_one_row/graph/T70_one_row.grf",
+        "remote": "suite_v5/graph/T70_one_row.grf",
+        "sha256": "6f39b5abcb14ad8a042c9545cd52080ff146854f11f8365ae787656c8bae2cea"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/T70_one_row_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"OrderFixture\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"fixture_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"fixture_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"fixture_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"customer_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"line_no\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"unit_price\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"quantity\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"line_total\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"customer_total\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"discount_pct\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"event_dt\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"fixture_state\" type=\"string\" nullable=\"false\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [],
+      "expected": {
+        "0": [
+          {
+            "fixture_key": "FIX-100001",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 1,
+            "fixture_received": "2026-01-01 00:00:00",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100001,
+            "customer_id": 1000,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "quantity": 1,
+            "line_total": "13.50",
+            "customer_total": "13.50",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-01",
+            "fixture_state": "OPEN"
+          }
+        ]
+      },
+      "rows_count": 1,
+      "parameters": {
+        "FIXTURE_ROWS": "8"
+      },
+      "boundary_probes": [
+        {
+          "name": "zero_rows",
+          "parameters": {
+            "FIXTURE_ROWS": "0"
+          },
+          "resources": {
+            "parameters": {
+              "FIXTURE_ROWS": "0"
+            }
+          },
+          "rows_count": 0,
+          "inputs": [],
+          "expected": {
+            "0": []
+          }
+        },
+        {
+          "name": "one_row",
+          "parameters": {
+            "FIXTURE_ROWS": "1"
+          },
+          "resources": {
+            "parameters": {
+              "FIXTURE_ROWS": "1"
+            }
+          },
+          "rows_count": 1,
+          "inputs": [],
+          "expected": {
+            "0": [
+              {
+                "fixture_key": "FIX-100001",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 1,
+                "fixture_received": "2026-01-01 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100001,
+                "customer_id": 1000,
+                "line_no": 1,
+                "unit_price": "13.50",
+                "quantity": 1,
+                "line_total": "13.50",
+                "customer_total": "13.50",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-01",
+                "fixture_state": "OPEN"
+              }
+            ]
+          }
+        },
+        {
+          "name": "partial_customer",
+          "parameters": {
+            "FIXTURE_ROWS": "4"
+          },
+          "resources": {
+            "parameters": {
+              "FIXTURE_ROWS": "4"
+            }
+          },
+          "rows_count": 4,
+          "inputs": [],
+          "expected": {
+            "0": [
+              {
+                "fixture_key": "FIX-100001",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 1,
+                "fixture_received": "2026-01-01 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100001,
+                "customer_id": 1000,
+                "line_no": 1,
+                "unit_price": "13.50",
+                "quantity": 1,
+                "line_total": "13.50",
+                "customer_total": "13.50",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-01",
+                "fixture_state": "OPEN"
+              },
+              {
+                "fixture_key": "FIX-100002",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 2,
+                "fixture_received": "2026-01-02 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100002,
+                "customer_id": 1000,
+                "line_no": 2,
+                "unit_price": "14.50",
+                "quantity": 2,
+                "line_total": "29.00",
+                "customer_total": "42.50",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-02",
+                "fixture_state": "CLOSED"
+              },
+              {
+                "fixture_key": "FIX-100003",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 3,
+                "fixture_received": "2026-01-03 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100003,
+                "customer_id": 1000,
+                "line_no": 3,
+                "unit_price": "15.50",
+                "quantity": 3,
+                "line_total": "46.50",
+                "customer_total": "89.00",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-03",
+                "fixture_state": "OPEN"
+              },
+              {
+                "fixture_key": "FIX-100004",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 4,
+                "fixture_received": "2026-01-04 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1001",
+                "fixture_unused_archive": null,
+                "fixture_id": 100004,
+                "customer_id": 1001,
+                "line_no": 1,
+                "unit_price": "13.50",
+                "quantity": 1,
+                "line_total": "12.15",
+                "customer_total": "12.15",
+                "discount_pct": "10.00",
+                "event_dt": "2026-01-04",
+                "fixture_state": "CLOSED"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "T70",
+    "label": "T70_partial_customer",
+    "graph_file": "suite_v5/graph/T70_partial_customer.grf",
+    "reference_sha256": "c9e7584c5543b55d215c15c9ec1ee9d89d032e877b3a0069fe99956ed3f46a24",
+    "graph_sha256": "c8d25e54d01b18dd6011cab463dea2949913d4957aea76697e7bfc13e7368a17",
+    "files": [
+      {
+        "local": "run_graphs/T70_partial_customer/graph/T70_partial_customer.grf",
+        "remote": "suite_v5/graph/T70_partial_customer.grf",
+        "sha256": "c8d25e54d01b18dd6011cab463dea2949913d4957aea76697e7bfc13e7368a17"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/T70_partial_customer_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"OrderFixture\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"fixture_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"fixture_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"fixture_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"customer_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"line_no\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"unit_price\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"quantity\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"line_total\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"customer_total\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"discount_pct\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"event_dt\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"fixture_state\" type=\"string\" nullable=\"false\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [],
+      "expected": {
+        "0": [
+          {
+            "fixture_key": "FIX-100001",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 1,
+            "fixture_received": "2026-01-01 00:00:00",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100001,
+            "customer_id": 1000,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "quantity": 1,
+            "line_total": "13.50",
+            "customer_total": "13.50",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-01",
+            "fixture_state": "OPEN"
+          },
+          {
+            "fixture_key": "FIX-100002",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 2,
+            "fixture_received": "2026-01-02 00:00:00",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100002,
+            "customer_id": 1000,
+            "line_no": 2,
+            "unit_price": "14.50",
+            "quantity": 2,
+            "line_total": "29.00",
+            "customer_total": "42.50",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-02",
+            "fixture_state": "CLOSED"
+          },
+          {
+            "fixture_key": "FIX-100003",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 3,
+            "fixture_received": "2026-01-03 00:00:00",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1000",
+            "fixture_unused_archive": null,
+            "fixture_id": 100003,
+            "customer_id": 1000,
+            "line_no": 3,
+            "unit_price": "15.50",
+            "quantity": 3,
+            "line_total": "46.50",
+            "customer_total": "89.00",
+            "discount_pct": "0.00",
+            "event_dt": "2026-01-03",
+            "fixture_state": "OPEN"
+          },
+          {
+            "fixture_key": "FIX-100004",
+            "fixture_tenant": "TEST",
+            "fixture_file": "synthetic",
+            "fixture_row": 4,
+            "fixture_received": "2026-01-04 00:00:00",
+            "fixture_team": null,
+            "fixture_market": null,
+            "fixture_currency": "EUR",
+            "fixture_batch": "FIXTURE",
+            "fixture_note": null,
+            "fixture_trace": "CUST-1001",
+            "fixture_unused_archive": null,
+            "fixture_id": 100004,
+            "customer_id": 1001,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "quantity": 1,
+            "line_total": "12.15",
+            "customer_total": "12.15",
+            "discount_pct": "10.00",
+            "event_dt": "2026-01-04",
+            "fixture_state": "CLOSED"
+          }
+        ]
+      },
+      "rows_count": 4,
+      "parameters": {
+        "FIXTURE_ROWS": "8"
+      },
+      "boundary_probes": [
+        {
+          "name": "zero_rows",
+          "parameters": {
+            "FIXTURE_ROWS": "0"
+          },
+          "resources": {
+            "parameters": {
+              "FIXTURE_ROWS": "0"
+            }
+          },
+          "rows_count": 0,
+          "inputs": [],
+          "expected": {
+            "0": []
+          }
+        },
+        {
+          "name": "one_row",
+          "parameters": {
+            "FIXTURE_ROWS": "1"
+          },
+          "resources": {
+            "parameters": {
+              "FIXTURE_ROWS": "1"
+            }
+          },
+          "rows_count": 1,
+          "inputs": [],
+          "expected": {
+            "0": [
+              {
+                "fixture_key": "FIX-100001",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 1,
+                "fixture_received": "2026-01-01 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100001,
+                "customer_id": 1000,
+                "line_no": 1,
+                "unit_price": "13.50",
+                "quantity": 1,
+                "line_total": "13.50",
+                "customer_total": "13.50",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-01",
+                "fixture_state": "OPEN"
+              }
+            ]
+          }
+        },
+        {
+          "name": "partial_customer",
+          "parameters": {
+            "FIXTURE_ROWS": "4"
+          },
+          "resources": {
+            "parameters": {
+              "FIXTURE_ROWS": "4"
+            }
+          },
+          "rows_count": 4,
+          "inputs": [],
+          "expected": {
+            "0": [
+              {
+                "fixture_key": "FIX-100001",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 1,
+                "fixture_received": "2026-01-01 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100001,
+                "customer_id": 1000,
+                "line_no": 1,
+                "unit_price": "13.50",
+                "quantity": 1,
+                "line_total": "13.50",
+                "customer_total": "13.50",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-01",
+                "fixture_state": "OPEN"
+              },
+              {
+                "fixture_key": "FIX-100002",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 2,
+                "fixture_received": "2026-01-02 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100002,
+                "customer_id": 1000,
+                "line_no": 2,
+                "unit_price": "14.50",
+                "quantity": 2,
+                "line_total": "29.00",
+                "customer_total": "42.50",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-02",
+                "fixture_state": "CLOSED"
+              },
+              {
+                "fixture_key": "FIX-100003",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 3,
+                "fixture_received": "2026-01-03 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1000",
+                "fixture_unused_archive": null,
+                "fixture_id": 100003,
+                "customer_id": 1000,
+                "line_no": 3,
+                "unit_price": "15.50",
+                "quantity": 3,
+                "line_total": "46.50",
+                "customer_total": "89.00",
+                "discount_pct": "0.00",
+                "event_dt": "2026-01-03",
+                "fixture_state": "OPEN"
+              },
+              {
+                "fixture_key": "FIX-100004",
+                "fixture_tenant": "TEST",
+                "fixture_file": "synthetic",
+                "fixture_row": 4,
+                "fixture_received": "2026-01-04 00:00:00",
+                "fixture_team": null,
+                "fixture_market": null,
+                "fixture_currency": "EUR",
+                "fixture_batch": "FIXTURE",
+                "fixture_note": null,
+                "fixture_trace": "CUST-1001",
+                "fixture_unused_archive": null,
+                "fixture_id": 100004,
+                "customer_id": 1001,
+                "line_no": 1,
+                "unit_price": "13.50",
+                "quantity": 1,
+                "line_total": "12.15",
+                "customer_total": "12.15",
+                "discount_pct": "10.00",
+                "event_dt": "2026-01-04",
+                "fixture_state": "CLOSED"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "T71",
+    "label": "T71_zero_steps",
+    "graph_file": "suite_v5/graph/T71_zero_steps.grf",
+    "reference_sha256": "2ede2e7b673deb9fb339f56c7823f5fa4650cadc9f9ca9cfd108b7d426e6ca27",
+    "graph_sha256": "b81a9c2238a8592de89ac6fc9b3b7fe8f08b493578b74f10114e3485d566fbbd",
+    "files": [
+      {
+        "local": "run_graphs/T71_zero_steps/graph/T71_zero_steps.grf",
+        "remote": "suite_v5/graph/T71_zero_steps.grf",
+        "sha256": "b81a9c2238a8592de89ac6fc9b3b7fe8f08b493578b74f10114e3485d566fbbd"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/T71_zero_steps_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"ReservoirFixture\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"tank_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"tank_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"tank_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"step_no\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"prior_level\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"inflow\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"withdrawal\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"stored_level\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"spill_amount\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"total_spill\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"simulation_day\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"level_band\" type=\"string\" nullable=\"false\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [],
+      "expected": {
+        "0": []
+      },
+      "rows_count": 0,
+      "parameters": {
+        "STEPS": "9"
+      },
+      "boundary_probes": [
+        {
+          "name": "zero_steps",
+          "parameters": {
+            "STEPS": "0"
+          },
+          "resources": {
+            "parameters": {
+              "STEPS": "0"
+            }
+          },
+          "rows_count": 0,
+          "inputs": [],
+          "expected": {
+            "0": []
+          }
+        },
+        {
+          "name": "one_step",
+          "parameters": {
+            "STEPS": "1"
+          },
+          "resources": {
+            "parameters": {
+              "STEPS": "1"
+            }
+          },
+          "rows_count": 1,
+          "inputs": [],
+          "expected": {
+            "0": [
+              {
+                "tank_key": "SIM-1",
+                "tank_tenant": "LAB",
+                "tank_file": "reservoir",
+                "tank_row": 1,
+                "tank_received": "2026-02-01 00:00:00",
+                "tank_team": null,
+                "tank_market": null,
+                "tank_currency": "UNIT",
+                "tank_batch": "SIM",
+                "tank_note": null,
+                "tank_trace": "STEP-1",
+                "tank_unused_archive": null,
+                "step_no": 1,
+                "prior_level": "5.00",
+                "inflow": "7.00",
+                "withdrawal": "3.00",
+                "stored_level": "9.00",
+                "spill_amount": "0.00",
+                "total_spill": "0.00",
+                "simulation_day": "2026-02-01",
+                "level_band": "PARTIAL"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "T71",
+    "label": "T71_one_step",
+    "graph_file": "suite_v5/graph/T71_one_step.grf",
+    "reference_sha256": "2ede2e7b673deb9fb339f56c7823f5fa4650cadc9f9ca9cfd108b7d426e6ca27",
+    "graph_sha256": "3c4696b3bc50b3a6e06d7df5e0669d3c39af332b7bbb9d8c7407c1c18a0b35cf",
+    "files": [
+      {
+        "local": "run_graphs/T71_one_step/graph/T71_one_step.grf",
+        "remote": "suite_v5/graph/T71_one_step.grf",
+        "sha256": "3c4696b3bc50b3a6e06d7df5e0669d3c39af332b7bbb9d8c7407c1c18a0b35cf"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/T71_one_step_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"ReservoirFixture\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"tank_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"tank_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"tank_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"tank_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tank_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"step_no\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"prior_level\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"inflow\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"withdrawal\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"stored_level\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"spill_amount\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"total_spill\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"simulation_day\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"level_band\" type=\"string\" nullable=\"false\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [],
+      "expected": {
+        "0": [
+          {
+            "tank_key": "SIM-1",
+            "tank_tenant": "LAB",
+            "tank_file": "reservoir",
+            "tank_row": 1,
+            "tank_received": "2026-02-01 00:00:00",
+            "tank_team": null,
+            "tank_market": null,
+            "tank_currency": "UNIT",
+            "tank_batch": "SIM",
+            "tank_note": null,
+            "tank_trace": "STEP-1",
+            "tank_unused_archive": null,
+            "step_no": 1,
+            "prior_level": "5.00",
+            "inflow": "7.00",
+            "withdrawal": "3.00",
+            "stored_level": "9.00",
+            "spill_amount": "0.00",
+            "total_spill": "0.00",
+            "simulation_day": "2026-02-01",
+            "level_band": "PARTIAL"
+          }
+        ]
+      },
+      "rows_count": 1,
+      "parameters": {
+        "STEPS": "9"
+      },
+      "boundary_probes": [
+        {
+          "name": "zero_steps",
+          "parameters": {
+            "STEPS": "0"
+          },
+          "resources": {
+            "parameters": {
+              "STEPS": "0"
+            }
+          },
+          "rows_count": 0,
+          "inputs": [],
+          "expected": {
+            "0": []
+          }
+        },
+        {
+          "name": "one_step",
+          "parameters": {
+            "STEPS": "1"
+          },
+          "resources": {
+            "parameters": {
+              "STEPS": "1"
+            }
+          },
+          "rows_count": 1,
+          "inputs": [],
+          "expected": {
+            "0": [
+              {
+                "tank_key": "SIM-1",
+                "tank_tenant": "LAB",
+                "tank_file": "reservoir",
+                "tank_row": 1,
+                "tank_received": "2026-02-01 00:00:00",
+                "tank_team": null,
+                "tank_market": null,
+                "tank_currency": "UNIT",
+                "tank_batch": "SIM",
+                "tank_note": null,
+                "tank_trace": "STEP-1",
+                "tank_unused_archive": null,
+                "step_no": 1,
+                "prior_level": "5.00",
+                "inflow": "7.00",
+                "withdrawal": "3.00",
+                "stored_level": "9.00",
+                "spill_amount": "0.00",
+                "total_spill": "0.00",
+                "simulation_day": "2026-02-01",
+                "level_band": "PARTIAL"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "parameters": {},
+    "expected_failure": false
+  },
+  {
+    "test_id": "T73",
+    "label": "T73_disabled_invalid_cutoff",
+    "graph_file": "suite_v5/graph/T73_disabled_invalid_cutoff.grf",
+    "reference_sha256": "1cb954e9b2864dc220e9254fa44b14ea35b925bbcbb4ae4a6a5483f8d4935942",
+    "graph_sha256": "f27691353c90ddf68920d8d7dccf272e73337bedfa98a168969b79b4653fd085",
+    "files": [
+      {
+        "local": "run_graphs/T73_disabled_invalid_cutoff/data-in/input_0.csv",
+        "remote": "suite_v5/data-in/T73_disabled_invalid_cutoff_input_0.csv",
+        "sha256": "65a73d858178d7f0f6aad17097f682def2bba8cf1449336f14afc05d271aa634"
+      },
+      {
+        "local": "run_graphs/T73_disabled_invalid_cutoff/graph/T73_disabled_invalid_cutoff.grf",
+        "remote": "suite_v5/graph/T73_disabled_invalid_cutoff.grf",
+        "sha256": "f27691353c90ddf68920d8d7dccf272e73337bedfa98a168969b79b4653fd085"
+      }
+    ],
+    "output_paths": {
+      "0": "suite_v5/data-out/T73_disabled_invalid_cutoff_out_0.csv"
+    },
+    "output_metadata": [
+      "<Record name=\"ClaimAuditDecision\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"claim_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"claim_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"claim_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"claim_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"claim_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"claim_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"claim_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"claim_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"claim_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"claim_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"claim_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"claim_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"audit_requested\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"submitted_txt\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"claimed_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"claim_class\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"audit_state\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"audit_label\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"accepted_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"accepted_index\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"accepted_running\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"previous_claim_key\" type=\"string\" nullable=\"true\"/>\n</Record>"
+    ],
+    "fixture": {
+      "inputs": [
+        [
+          {
+            "claim_key": "claim1",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 1,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": "",
+            "claim_trace": "X1",
+            "claim_unused_archive": "keep:1",
+            "audit_requested": false,
+            "submitted_txt": "bad",
+            "claimed_amount": "100.00",
+            "claim_class": "HEALTH"
+          },
+          {
+            "claim_key": "",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 2,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X2",
+            "claim_unused_archive": "keep:2",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-01 00:00:00",
+            "claimed_amount": "0.00",
+            "claim_class": "HEALTH"
+          },
+          {
+            "claim_key": "claim3",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 3,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X3",
+            "claim_unused_archive": "keep:3",
+            "audit_requested": true,
+            "submitted_txt": "2025-02-30 00:00:00",
+            "claimed_amount": "1.00",
+            "claim_class": "HEALTH"
+          },
+          {
+            "claim_key": "claim4",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 4,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X4",
+            "claim_unused_archive": "keep:4",
+            "audit_requested": true,
+            "submitted_txt": "2025-12-31 23:59:59",
+            "claimed_amount": "1.00",
+            "claim_class": "HEALTH"
+          },
+          {
+            "claim_key": "claim5",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 5,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X5",
+            "claim_unused_archive": "keep:5",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-02 00:00:00",
+            "claimed_amount": "-2.00",
+            "claim_class": "HEALTH"
+          },
+          {
+            "claim_key": "claim6",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 6,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X6",
+            "claim_unused_archive": "keep:6",
+            "audit_requested": false,
+            "submitted_txt": "not-time",
+            "claimed_amount": "5.00",
+            "claim_class": "HEALTH"
+          },
+          {
+            "claim_key": "claim7",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 7,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X7",
+            "claim_unused_archive": "keep:7",
+            "audit_requested": true,
+            "submitted_txt": null,
+            "claimed_amount": null,
+            "claim_class": "HEALTH"
+          },
+          {
+            "claim_key": "claim8",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 8,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X8",
+            "claim_unused_archive": "keep:8",
+            "audit_requested": true,
+            "submitted_txt": "2026-1-3 00:00:00",
+            "claimed_amount": "2.00",
+            "claim_class": "HEALTH"
+          },
+          {
+            "claim_key": "claim9",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 9,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X9",
+            "claim_unused_archive": "keep:9",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-01 00:00:00",
+            "claimed_amount": null,
+            "claim_class": "HEALTH"
+          },
+          {
+            "claim_key": "claim10",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 10,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X10",
+            "claim_unused_archive": "keep:10",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-04 12:00:00",
+            "claimed_amount": "3.00",
+            "claim_class": "HEALTH"
+          }
+        ]
+      ],
+      "expected": {
+        "0": [
+          {
+            "claim_key": "claim1",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 1,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": "",
+            "claim_trace": "X1",
+            "claim_unused_archive": "keep:1",
+            "audit_requested": false,
+            "submitted_txt": "bad",
+            "claimed_amount": "100.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 2,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X2",
+            "claim_unused_archive": "keep:2",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-01 00:00:00",
+            "claimed_amount": "0.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim3",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 3,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X3",
+            "claim_unused_archive": "keep:3",
+            "audit_requested": true,
+            "submitted_txt": "2025-02-30 00:00:00",
+            "claimed_amount": "1.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim4",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 4,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X4",
+            "claim_unused_archive": "keep:4",
+            "audit_requested": true,
+            "submitted_txt": "2025-12-31 23:59:59",
+            "claimed_amount": "1.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim5",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 5,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X5",
+            "claim_unused_archive": "keep:5",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-02 00:00:00",
+            "claimed_amount": "-2.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim6",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 6,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X6",
+            "claim_unused_archive": "keep:6",
+            "audit_requested": false,
+            "submitted_txt": "not-time",
+            "claimed_amount": "5.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim7",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 7,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X7",
+            "claim_unused_archive": "keep:7",
+            "audit_requested": true,
+            "submitted_txt": null,
+            "claimed_amount": null,
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim8",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 8,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X8",
+            "claim_unused_archive": "keep:8",
+            "audit_requested": true,
+            "submitted_txt": "2026-1-3 00:00:00",
+            "claimed_amount": "2.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim9",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 9,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": null,
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X9",
+            "claim_unused_archive": "keep:9",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-01 00:00:00",
+            "claimed_amount": null,
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          },
+          {
+            "claim_key": "claim10",
+            "claim_tenant": "ACME",
+            "claim_file": "claim.csv",
+            "claim_row": 10,
+            "claim_received": "2026-01-01 00:00:00",
+            "claim_team": "OPS",
+            "claim_market": "CZ",
+            "claim_currency": "EUR",
+            "claim_batch": "B1",
+            "claim_note": null,
+            "claim_trace": "X10",
+            "claim_unused_archive": "keep:10",
+            "audit_requested": true,
+            "submitted_txt": "2026-01-04 12:00:00",
+            "claimed_amount": "3.00",
+            "claim_class": "HEALTH",
+            "audit_state": "BYPASS",
+            "audit_label": null,
+            "accepted_at": null,
+            "accepted_index": 0,
+            "accepted_running": "0.00",
+            "previous_claim_key": null
+          }
+        ]
+      },
+      "dictionary_probes": [
+        {
+          "name": "disabled_invalid_cutoff",
+          "resources": {
+            "dictionary": [
+              {
+                "name": "auditEnabled",
+                "type": "boolean",
+                "value": false
+              },
+              {
+                "name": "auditLabel",
+                "type": "string",
+                "value": "OFF"
+              },
+              {
+                "name": "cutoffText",
+                "type": "string",
+                "value": "NOT A DATE"
+              }
+            ]
+          },
+          "inputs": [
+            [
+              {
+                "claim_key": "claim1",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 1,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": null,
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": "",
+                "claim_trace": "X1",
+                "claim_unused_archive": "keep:1",
+                "audit_requested": false,
+                "submitted_txt": "bad",
+                "claimed_amount": "100.00",
+                "claim_class": "HEALTH"
+              },
+              {
+                "claim_key": "",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 2,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": "OPS",
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X2",
+                "claim_unused_archive": "keep:2",
+                "audit_requested": true,
+                "submitted_txt": "2026-01-01 00:00:00",
+                "claimed_amount": "0.00",
+                "claim_class": "HEALTH"
+              },
+              {
+                "claim_key": "claim3",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 3,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": null,
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X3",
+                "claim_unused_archive": "keep:3",
+                "audit_requested": true,
+                "submitted_txt": "2025-02-30 00:00:00",
+                "claimed_amount": "1.00",
+                "claim_class": "HEALTH"
+              },
+              {
+                "claim_key": "claim4",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 4,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": "OPS",
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X4",
+                "claim_unused_archive": "keep:4",
+                "audit_requested": true,
+                "submitted_txt": "2025-12-31 23:59:59",
+                "claimed_amount": "1.00",
+                "claim_class": "HEALTH"
+              },
+              {
+                "claim_key": "claim5",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 5,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": null,
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X5",
+                "claim_unused_archive": "keep:5",
+                "audit_requested": true,
+                "submitted_txt": "2026-01-02 00:00:00",
+                "claimed_amount": "-2.00",
+                "claim_class": "HEALTH"
+              },
+              {
+                "claim_key": "claim6",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 6,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": "OPS",
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X6",
+                "claim_unused_archive": "keep:6",
+                "audit_requested": false,
+                "submitted_txt": "not-time",
+                "claimed_amount": "5.00",
+                "claim_class": "HEALTH"
+              },
+              {
+                "claim_key": "claim7",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 7,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": null,
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X7",
+                "claim_unused_archive": "keep:7",
+                "audit_requested": true,
+                "submitted_txt": null,
+                "claimed_amount": null,
+                "claim_class": "HEALTH"
+              },
+              {
+                "claim_key": "claim8",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 8,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": "OPS",
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X8",
+                "claim_unused_archive": "keep:8",
+                "audit_requested": true,
+                "submitted_txt": "2026-1-3 00:00:00",
+                "claimed_amount": "2.00",
+                "claim_class": "HEALTH"
+              },
+              {
+                "claim_key": "claim9",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 9,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": null,
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X9",
+                "claim_unused_archive": "keep:9",
+                "audit_requested": true,
+                "submitted_txt": "2026-01-01 00:00:00",
+                "claimed_amount": null,
+                "claim_class": "HEALTH"
+              },
+              {
+                "claim_key": "claim10",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 10,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": "OPS",
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X10",
+                "claim_unused_archive": "keep:10",
+                "audit_requested": true,
+                "submitted_txt": "2026-01-04 12:00:00",
+                "claimed_amount": "3.00",
+                "claim_class": "HEALTH"
+              }
+            ]
+          ],
+          "expected": {
+            "0": [
+              {
+                "claim_key": "claim1",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 1,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": null,
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": "",
+                "claim_trace": "X1",
+                "claim_unused_archive": "keep:1",
+                "audit_requested": false,
+                "submitted_txt": "bad",
+                "claimed_amount": "100.00",
+                "claim_class": "HEALTH",
+                "audit_state": "BYPASS",
+                "audit_label": null,
+                "accepted_at": null,
+                "accepted_index": 0,
+                "accepted_running": "0.00",
+                "previous_claim_key": null
+              },
+              {
+                "claim_key": "",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 2,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": "OPS",
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X2",
+                "claim_unused_archive": "keep:2",
+                "audit_requested": true,
+                "submitted_txt": "2026-01-01 00:00:00",
+                "claimed_amount": "0.00",
+                "claim_class": "HEALTH",
+                "audit_state": "BYPASS",
+                "audit_label": null,
+                "accepted_at": null,
+                "accepted_index": 0,
+                "accepted_running": "0.00",
+                "previous_claim_key": null
+              },
+              {
+                "claim_key": "claim3",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 3,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": null,
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X3",
+                "claim_unused_archive": "keep:3",
+                "audit_requested": true,
+                "submitted_txt": "2025-02-30 00:00:00",
+                "claimed_amount": "1.00",
+                "claim_class": "HEALTH",
+                "audit_state": "BYPASS",
+                "audit_label": null,
+                "accepted_at": null,
+                "accepted_index": 0,
+                "accepted_running": "0.00",
+                "previous_claim_key": null
+              },
+              {
+                "claim_key": "claim4",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 4,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": "OPS",
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X4",
+                "claim_unused_archive": "keep:4",
+                "audit_requested": true,
+                "submitted_txt": "2025-12-31 23:59:59",
+                "claimed_amount": "1.00",
+                "claim_class": "HEALTH",
+                "audit_state": "BYPASS",
+                "audit_label": null,
+                "accepted_at": null,
+                "accepted_index": 0,
+                "accepted_running": "0.00",
+                "previous_claim_key": null
+              },
+              {
+                "claim_key": "claim5",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 5,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": null,
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X5",
+                "claim_unused_archive": "keep:5",
+                "audit_requested": true,
+                "submitted_txt": "2026-01-02 00:00:00",
+                "claimed_amount": "-2.00",
+                "claim_class": "HEALTH",
+                "audit_state": "BYPASS",
+                "audit_label": null,
+                "accepted_at": null,
+                "accepted_index": 0,
+                "accepted_running": "0.00",
+                "previous_claim_key": null
+              },
+              {
+                "claim_key": "claim6",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 6,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": "OPS",
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X6",
+                "claim_unused_archive": "keep:6",
+                "audit_requested": false,
+                "submitted_txt": "not-time",
+                "claimed_amount": "5.00",
+                "claim_class": "HEALTH",
+                "audit_state": "BYPASS",
+                "audit_label": null,
+                "accepted_at": null,
+                "accepted_index": 0,
+                "accepted_running": "0.00",
+                "previous_claim_key": null
+              },
+              {
+                "claim_key": "claim7",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 7,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": null,
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X7",
+                "claim_unused_archive": "keep:7",
+                "audit_requested": true,
+                "submitted_txt": null,
+                "claimed_amount": null,
+                "claim_class": "HEALTH",
+                "audit_state": "BYPASS",
+                "audit_label": null,
+                "accepted_at": null,
+                "accepted_index": 0,
+                "accepted_running": "0.00",
+                "previous_claim_key": null
+              },
+              {
+                "claim_key": "claim8",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 8,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": "OPS",
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X8",
+                "claim_unused_archive": "keep:8",
+                "audit_requested": true,
+                "submitted_txt": "2026-1-3 00:00:00",
+                "claimed_amount": "2.00",
+                "claim_class": "HEALTH",
+                "audit_state": "BYPASS",
+                "audit_label": null,
+                "accepted_at": null,
+                "accepted_index": 0,
+                "accepted_running": "0.00",
+                "previous_claim_key": null
+              },
+              {
+                "claim_key": "claim9",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 9,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": null,
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X9",
+                "claim_unused_archive": "keep:9",
+                "audit_requested": true,
+                "submitted_txt": "2026-01-01 00:00:00",
+                "claimed_amount": null,
+                "claim_class": "HEALTH",
+                "audit_state": "BYPASS",
+                "audit_label": null,
+                "accepted_at": null,
+                "accepted_index": 0,
+                "accepted_running": "0.00",
+                "previous_claim_key": null
+              },
+              {
+                "claim_key": "claim10",
+                "claim_tenant": "ACME",
+                "claim_file": "claim.csv",
+                "claim_row": 10,
+                "claim_received": "2026-01-01 00:00:00",
+                "claim_team": "OPS",
+                "claim_market": "CZ",
+                "claim_currency": "EUR",
+                "claim_batch": "B1",
+                "claim_note": null,
+                "claim_trace": "X10",
+                "claim_unused_archive": "keep:10",
+                "audit_requested": true,
+                "submitted_txt": "2026-01-04 12:00:00",
+                "claimed_amount": "3.00",
+                "claim_class": "HEALTH",
+                "audit_state": "BYPASS",
+                "audit_label": null,
+                "accepted_at": null,
+                "accepted_index": 0,
+                "accepted_running": "0.00",
+                "previous_claim_key": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "parameters": {},
+    "expected_failure": false
+  }
+]

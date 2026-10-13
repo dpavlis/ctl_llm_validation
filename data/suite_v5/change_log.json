@@ -1,0 +1,152 @@
+[
+  {
+    "test_id": "T44",
+    "action": "kept",
+    "reason": "A CSV reader preserving explicit empty strings feeds this two-destination Reformat. Vendor support reviews the raw source values on output 1, while output 0 loads a typed onboarding application. The receiving teams reconcile using vendor_row, so every source submission must remain traceable."
+  },
+  {
+    "test_id": "T45",
+    "action": "replaced",
+    "reason": "A community clinic receives enrollment CSV files from several partner practices. The Reformat separates appointments from corrections. Guardianship and program eligibility depend on the same age, but malformed age must not provoke a parsing exception or a fictitious missing-guardian complaint."
+  },
+  {
+    "test_id": "T46",
+    "action": "replaced",
+    "reason": "A bonded warehouse submits textual manifests to this Reformat before declaring goods. Output 0 posts signed customs values and output 1 retains evidence for the broker. Reversal requests can be incomplete independently of their numeric fields, and excessive digit counts must be rejected before conversion."
+  },
+  {
+    "test_id": "T47",
+    "action": "hardened",
+    "reason": "A policy administration replacement receives legacy records through this Reformat. Its output schema removes obsolete billing columns. The business must distinguish absence of an override from an intentionally blank override, while warnings continue to describe source defects even when suspension wins."
+  },
+  {
+    "test_id": "T48",
+    "action": "replaced",
+    "reason": "Land records from an older application contain all owners in one field. This Normalizer supplies a new ownership ledger with one record per retained owner. Missing ownership still needs a placeholder so the parcel cannot disappear during migration; all data arrives in its original order."
+  },
+  {
+    "test_id": "T49",
+    "action": "replaced",
+    "reason": "An obsolete treasury ledger stores opening and movement entries differently. This Reformat builds the destination balance history from a sorted stream. The graph guarantees account ordering but does not precompute balances; a row containing an invalid kind must remain visible without corrupting later entries."
+  },
+  {
+    "test_id": "T50",
+    "action": "hardened",
+    "reason": "A freight reader feeds this Reformat before scheduling. The in-memory ServiceRules table is supplied with metadata RouteRule and ordered key carrier_cd;service_cd. Expired exact matches are normal business data, so reference presence alone cannot determine whether the shipment has a usable commitment."
+  },
+  {
+    "test_id": "T51",
+    "action": "replaced",
+    "reason": "Claims arrive unsorted at this Reformat. The graph supplies ClaimTariffs with ClaimTariff metadata and provider_id;region_id lookup key, allowing repeated reference keys. A new tariff can supersede an earlier tariff without deleting it, and the adjudicator needs a deterministic winner rather than whichever candidate the table returns first."
+  },
+  {
+    "test_id": "T52",
+    "action": "replaced",
+    "reason": "An instrument export feeds this two-output Reformat before the clinical warehouse. FacilityFactors and AssayDefaults carry different reference metadata. Local disabling is a safety decision that overrides the general assay standard; a partially configured local factor, however, should use a valid general standard rather than block the measurement."
+  },
+  {
+    "test_id": "T53",
+    "action": "kept",
+    "reason": "Retains the reviewed CDC representative and resolves the owner/documentation mismatch using live graph runs 17918/17919/17920: internal CTL output 0 emits physical port 1; internal output 1 fails graph initialization. SKIP run 17922 drops matches only. resources/ctl2-basics.md still carries the contradicted owner port-number fact and needs correction."
+  },
+  {
+    "test_id": "T54",
+    "action": "replaced",
+    "reason": "Distinct business mechanism and edge cases."
+  },
+  {
+    "test_id": "T55",
+    "action": "replaced",
+    "reason": "ExtMergeJoin full outer with absent sides, parse exemption and one-output business dispositions; runtime supports one transform output."
+  },
+  {
+    "test_id": "T56",
+    "action": "kept",
+    "reason": "Best-reviewed quality/recency winner representative; adds explicit null-null and exact-tie fixture coverage."
+  },
+  {
+    "test_id": "T57",
+    "action": "replaced",
+    "reason": "Distinct business mechanism and edge cases."
+  },
+  {
+    "test_id": "T58",
+    "action": "replaced",
+    "reason": "Distinct business mechanism and edge cases."
+  },
+  {
+    "test_id": "T59",
+    "action": "kept",
+    "reason": "Reviewed per-event account SCD representative; broadens first all-null and final null-to-empty fixture."
+  },
+  {
+    "test_id": "T60",
+    "action": "replaced",
+    "reason": "Normalizer close/open/audit expansion on one operation ledger, with parse precedence and sequence allocation per opening; runtime requires exactly one output."
+  },
+  {
+    "test_id": "T61",
+    "action": "replaced",
+    "reason": "Distinct business mechanism and edge cases."
+  },
+  {
+    "test_id": "T62",
+    "action": "hardened",
+    "reason": "Preserves claim month aggregation and adds null-only textual fallback, invalid override exclusion, waiver interplay and adjacent-status state."
+  },
+  {
+    "test_id": "T63",
+    "action": "replaced",
+    "reason": "Distinct business mechanism and edge cases."
+  },
+  {
+    "test_id": "T64",
+    "action": "kept",
+    "reason": "Preserved reviewed basket extraction; removed callback hints and made blank amounts fail explicitly."
+  },
+  {
+    "test_id": "T65",
+    "action": "replaced",
+    "reason": "Replaces inspection-array clone with equipment map traversal, sorted dynamic keys and suppression before parsing."
+  },
+  {
+    "test_id": "T66",
+    "action": "hardened",
+    "reason": "Retains payment priority representative and adds date-shape/calendar guards plus overdue bypass and capped amount grammar."
+  },
+  {
+    "test_id": "T67",
+    "action": "replaced",
+    "reason": "Shipment monetary clone becomes cold-chain history routing; different domain, state mechanism and gap/error edge cases."
+  },
+  {
+    "test_id": "T68",
+    "action": "hardened",
+    "reason": "Keeps invoice utility representative with chained net-budget output, final-only rounding and null-versus-zero precedence."
+  },
+  {
+    "test_id": "T69",
+    "action": "replaced",
+    "reason": "Consignment pricing clone becomes bounded meter-text parsing with precedence-based error statuses and negative deltas."
+  },
+  {
+    "test_id": "T70",
+    "action": "hardened",
+    "reason": "Preserves order triples; adds alternating customer discount and rounded running subtotal with boundary reset."
+  },
+  {
+    "test_id": "T71",
+    "action": "replaced",
+    "reason": "Maintenance order clone replaced with clipped reservoir recurrence, overflow accumulation and scheduled exceptional step."
+  },
+  {
+    "test_id": "T72",
+    "action": "kept",
+    "reason": "Preserves collision-safe receipt audit representative with full runtime fixture and parameter/sequence resources."
+  },
+  {
+    "test_id": "T73",
+    "action": "replaced",
+    "reason": "Meter hash clone becomes dictionary-controlled claims audit, conditional parsing and accepted-only previous-record state."
+  }
+]

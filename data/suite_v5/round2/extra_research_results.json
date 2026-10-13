@@ -1,0 +1,152 @@
+[
+  {
+    "tool": "knowledge_base_search",
+    "arguments": {
+      "query": "dictionary",
+      "limit": 20
+    },
+    "payload": [
+      {
+        "name": "dictionary",
+        "description": "Dictionary — per-run, type-safe, mutable shared store. dictionary.<name> CTL2 access, list/map/variant + channel types, read/write in different phases, dict: File URLs, job input/output, and how it differs from parameters.",
+        "tags": [
+          "guide",
+          "reference",
+          "dictionary",
+          "dict",
+          "runtime",
+          "mutable",
+          "type-safe",
+          "phases",
+          "variant",
+          "map",
+          "list",
+          "getjobinput",
+          "setjoboutput"
+        ],
+        "source": "static",
+        "category": "guides"
+      },
+      {
+        "name": "jobflow-map-dict-entry-bug-clo8807",
+        "description": "CLO-8807 — writing to a map-typed dictionary entry populated from upstream causes random, intermittent crashes; always copy to a local working entry before writing.",
+        "tags": [
+          "jobflow",
+          "dictionary",
+          "map",
+          "bug",
+          "workaround",
+          "crash",
+          "clo-8807",
+          "dwhexample"
+        ],
+        "source": "static",
+        "category": "recipes"
+      },
+      {
+        "name": "subgraph-xml",
+        "description": "Complete .sgrf reference — structure, boundary components, debug flags, public parameters, parent graph usage, inputMapping/outputMapping, CTL subgraph functions, metadata patterns, and validation failures",
+        "tags": [
+          "guide",
+          "reference",
+          "subgraph",
+          "sgrf",
+          "subgraph-input",
+          "subgraph-output",
+          "debug-input",
+          "debug-output",
+          "public-parameter",
+          "input-mapping",
+          "output-mapping",
+          "dictionary",
+          "validation",
+          "ctl-subgraph",
+          "xml-spec",
+          "reusable"
+        ],
+        "source": "static",
+        "category": "guides"
+      }
+    ],
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[{\"name\":\"dictionary\",\"description\":\"Dictionary — per-run, type-safe, mutable shared store. dictionary.<name> CTL2 access, list/map/variant + channel types, read/write in different phases, dict: File URLs, job input/output, and how it differs from parameters.\",\"tags\":[\"guide\",\"reference\",\"dictionary\",\"dict\",\"runtime\",\"mutable\",\"type-safe\",\"phases\",\"variant\",\"map\",\"list\",\"getjobinput\",\"setjoboutput\"],\"source\":\"static\",\"category\":\"guides\"},{\"name\":\"jobflow-map-dict-entry-bug-clo8807\",\"description\":\"CLO-8807 — writing to a map-typed dictionary entry populated from upstream causes random, intermittent crashes; always copy to a local working entry before writing.\",\"tags\":[\"jobflow\",\"dictionary\",\"map\",\"bug\",\"workaround\",\"crash\",\"clo-8807\",\"dwhexample\"],\"source\":\"static\",\"category\":\"recipes\"},{\"name\":\"subgraph-xml\",\"description\":\"Complete .sgrf reference — structure, boundary components, debug flags, public parameters, parent graph usage, inputMapping/outputMapping, CTL subgraph functions, metadata patterns, and validation failures\",\"tags\":[\"guide\",\"reference\",\"subgraph\",\"sgrf\",\"subgraph-input\",\"subgraph-output\",\"debug-input\",\"debug-output\",\"public-parameter\",\"input-mapping\",\"output-mapping\",\"dictionary\",\"validation\",\"ctl-subgraph\",\"xml-spec\",\"reusable\"],\"source\":\"static\",\"category\":\"guides\"}]"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "knowledge_base_search",
+    "arguments": {
+      "query": "lookup simple",
+      "limit": 10
+    },
+    "payload": [
+      {
+        "name": "lookup-table",
+        "description": "Authoritative lookup table reference — types, XML skeletons, attributes, data sources, CTL usage, two-phase population, generation rules, common mistakes.",
+        "tags": [
+          "guide",
+          "reference",
+          "lookup-table",
+          "simpleLookup",
+          "dbLookup",
+          "rangeLookup",
+          "persistentLookup",
+          "ctl",
+          "two-phase"
+        ],
+        "source": "static",
+        "category": "guides"
+      },
+      {
+        "name": "jobflow-combine-parallel-branch-deadlock",
+        "description": "COMBINE deadlocks when a parallel branch fails and its token doesn't reach COMBINE — use incompleteTuples=true and SIMPLE_GATHER for errors",
+        "tags": [
+          "jobflow",
+          "combine",
+          "deadlock",
+          "parallel",
+          "simple_gather",
+          "antipattern"
+        ],
+        "source": "static",
+        "category": "recipes"
+      },
+      {
+        "name": "multi-phase",
+        "description": "Phase semantics — strict ascending execution; edges may cross phase boundaries from lower to higher; DDL before DML; SLEEP before HTTP; in-place/same-file rewrite via a tmp file + MOVE_FILES (two-phase tmp merge).",
+        "tags": [
+          "guide",
+          "phases",
+          "multi-phase",
+          "execution-order",
+          "ddl-dml",
+          "lookup-load",
+          "atomic-write",
+          "two-phase-tmp-merge",
+          "same-file",
+          "in-place",
+          "idempotency",
+          "tmp-file",
+          "rewrite",
+          "move-files"
+        ],
+        "source": "static",
+        "category": "guides"
+      }
+    ],
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "[{\"name\":\"lookup-table\",\"description\":\"Authoritative lookup table reference — types, XML skeletons, attributes, data sources, CTL usage, two-phase population, generation rules, common mistakes.\",\"tags\":[\"guide\",\"reference\",\"lookup-table\",\"simpleLookup\",\"dbLookup\",\"rangeLookup\",\"persistentLookup\",\"ctl\",\"two-phase\"],\"source\":\"static\",\"category\":\"guides\"},{\"name\":\"jobflow-combine-parallel-branch-deadlock\",\"description\":\"COMBINE deadlocks when a parallel branch fails and its token doesn't reach COMBINE — use incompleteTuples=true and SIMPLE_GATHER for errors\",\"tags\":[\"jobflow\",\"combine\",\"deadlock\",\"parallel\",\"simple_gather\",\"antipattern\"],\"source\":\"static\",\"category\":\"recipes\"},{\"name\":\"multi-phase\",\"description\":\"Phase semantics — strict ascending execution; edges may cross phase boundaries from lower to higher; DDL before DML; SLEEP before HTTP; in-place/same-file rewrite via a tmp file + MOVE_FILES (two-phase tmp merge).\",\"tags\":[\"guide\",\"phases\",\"multi-phase\",\"execution-order\",\"ddl-dml\",\"lookup-load\",\"atomic-write\",\"two-phase-tmp-merge\",\"same-file\",\"in-place\",\"idempotency\",\"tmp-file\",\"rewrite\",\"move-files\"],\"source\":\"static\",\"category\":\"guides\"}]"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

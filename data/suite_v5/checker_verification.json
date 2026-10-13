@@ -1,27 +1,35 @@
-[
-  {
-    "mutation": "wrong_temperature",
-    "detected": true,
-    "expected_diagnostic": "wrong category or temperature"
-  },
-  {
-    "mutation": "missing_clause_coverage",
-    "detected": true,
-    "expected_diagnostic": "every spec clause"
-  },
-  {
-    "mutation": "unknown_prose_field",
-    "detected": true,
-    "expected_diagnostic": "spec/rubric fields absent"
-  },
-  {
-    "mutation": "wrong_output_field_port",
-    "detected": true,
-    "expected_diagnostic": "reference field not on specified port"
-  },
-  {
-    "mutation": "stale_reference_compilation",
-    "detected": true,
-    "expected_diagnostic": "stale compiler code evidence"
-  }
-]
+{
+  "passed": true,
+  "cases": [
+    {
+      "mutation": "temperature",
+      "expected_diagnostic": "category/temperature",
+      "detected": true
+    },
+    {
+      "mutation": "execution",
+      "expected_diagnostic": "reference did not run successfully",
+      "detected": true
+    },
+    {
+      "mutation": "duplicate",
+      "expected_diagnostic": "Cross-prompt5gram Jaccard",
+      "detected": true
+    },
+    {
+      "mutation": "coverage",
+      "expected_diagnostic": "clause/rubric coverage",
+      "detected": true
+    },
+    {
+      "mutation": "reference",
+      "expected_diagnostic": "stale compiler code",
+      "detected": true
+    },
+    {
+      "mutation": "standalone",
+      "expected_diagnostic": "incorrect standalone flag",
+      "detected": true
+    }
+  ]
+}

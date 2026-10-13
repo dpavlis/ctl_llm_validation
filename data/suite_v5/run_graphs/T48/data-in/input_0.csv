@@ -1,0 +1,8 @@
+batch-property_batch|2026-01-01 00:00:00.000|17.25|opaque-0|__NULL__|1| P1 | Ann ;bob;ANN; ;Bob;|f|__NULL__|2026-01-01 13:00:00.000|-1.00
+batch-property_batch|2026-01-01 00:00:00.000|17.25|opaque-1|__NULL__|2|P2|__NULL__|L||__NULL__|__NULL__
+batch-property_batch|2026-01-01 00:00:00.000|17.25|opaque-2|__NULL__|3|P1|Bob|?|__NULL__|__NULL__|__NULL__
+batch-property_batch|2026-01-01 00:00:00.000|17.25|opaque-3|__NULL__|4| | ; ; | |__NULL__|__NULL__|__NULL__
+batch-property_batch|2026-01-01 00:00:00.000|17.25|opaque-4|__NULL__|5|P4| Eve ; Max ; Eve |__NULL__|__NULL__|__NULL__|__NULL__
+batch-property_batch|2026-01-01 00:00:00.000|17.25|opaque-5|__NULL__|6|P5||F|__NULL__|__NULL__|__NULL__
+batch-property_batch|2026-01-01 00:00:00.000|17.25|opaque-6|__NULL__|7|P6|X.Y|l|__NULL__|__NULL__|__NULL__
+batch-property_batch|2026-01-01 00:00:00.000|17.25|opaque-7|__NULL__|8|P7|   |?|__NULL__|__NULL__|__NULL__

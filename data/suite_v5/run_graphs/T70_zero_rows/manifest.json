@@ -1,0 +1,204 @@
+{
+  "test_id": "T70",
+  "label": "T70_zero_rows",
+  "graph_file": "suite_v5/graph/T70_zero_rows.grf",
+  "reference_sha256": "c9e7584c5543b55d215c15c9ec1ee9d89d032e877b3a0069fe99956ed3f46a24",
+  "graph_sha256": "d8d531dd8a30e8a03e5005c9134a1150bed38aa5fd203a99a4efae869050e42b",
+  "files": [
+    {
+      "local": "run_graphs/T70_zero_rows/graph/T70_zero_rows.grf",
+      "remote": "suite_v5/graph/T70_zero_rows.grf",
+      "sha256": "d8d531dd8a30e8a03e5005c9134a1150bed38aa5fd203a99a4efae869050e42b"
+    }
+  ],
+  "output_paths": {
+    "0": "suite_v5/data-out/T70_zero_rows_out_0.csv"
+  },
+  "output_metadata": [
+    "<Record name=\"OrderFixture\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"fixture_key\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_tenant\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_file\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_row\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"fixture_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"fixture_team\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_market\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_currency\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_batch\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"fixture_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_trace\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_unused_archive\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fixture_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"customer_id\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"line_no\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"unit_price\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"quantity\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"line_total\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"customer_total\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"discount_pct\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\"/>\n  <Field name=\"event_dt\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" timeZone=\"UTC\"/>\n  <Field name=\"fixture_state\" type=\"string\" nullable=\"false\"/>\n</Record>"
+  ],
+  "fixture": {
+    "inputs": [],
+    "expected": {
+      "0": []
+    },
+    "rows_count": 0,
+    "parameters": {
+      "FIXTURE_ROWS": "8"
+    },
+    "boundary_probes": [
+      {
+        "name": "zero_rows",
+        "parameters": {
+          "FIXTURE_ROWS": "0"
+        },
+        "resources": {
+          "parameters": {
+            "FIXTURE_ROWS": "0"
+          }
+        },
+        "rows_count": 0,
+        "inputs": [],
+        "expected": {
+          "0": []
+        }
+      },
+      {
+        "name": "one_row",
+        "parameters": {
+          "FIXTURE_ROWS": "1"
+        },
+        "resources": {
+          "parameters": {
+            "FIXTURE_ROWS": "1"
+          }
+        },
+        "rows_count": 1,
+        "inputs": [],
+        "expected": {
+          "0": [
+            {
+              "fixture_key": "FIX-100001",
+              "fixture_tenant": "TEST",
+              "fixture_file": "synthetic",
+              "fixture_row": 1,
+              "fixture_received": "2026-01-01 00:00:00",
+              "fixture_team": null,
+              "fixture_market": null,
+              "fixture_currency": "EUR",
+              "fixture_batch": "FIXTURE",
+              "fixture_note": null,
+              "fixture_trace": "CUST-1000",
+              "fixture_unused_archive": null,
+              "fixture_id": 100001,
+              "customer_id": 1000,
+              "line_no": 1,
+              "unit_price": "13.50",
+              "quantity": 1,
+              "line_total": "13.50",
+              "customer_total": "13.50",
+              "discount_pct": "0.00",
+              "event_dt": "2026-01-01",
+              "fixture_state": "OPEN"
+            }
+          ]
+        }
+      },
+      {
+        "name": "partial_customer",
+        "parameters": {
+          "FIXTURE_ROWS": "4"
+        },
+        "resources": {
+          "parameters": {
+            "FIXTURE_ROWS": "4"
+          }
+        },
+        "rows_count": 4,
+        "inputs": [],
+        "expected": {
+          "0": [
+            {
+              "fixture_key": "FIX-100001",
+              "fixture_tenant": "TEST",
+              "fixture_file": "synthetic",
+              "fixture_row": 1,
+              "fixture_received": "2026-01-01 00:00:00",
+              "fixture_team": null,
+              "fixture_market": null,
+              "fixture_currency": "EUR",
+              "fixture_batch": "FIXTURE",
+              "fixture_note": null,
+              "fixture_trace": "CUST-1000",
+              "fixture_unused_archive": null,
+              "fixture_id": 100001,
+              "customer_id": 1000,
+              "line_no": 1,
+              "unit_price": "13.50",
+              "quantity": 1,
+              "line_total": "13.50",
+              "customer_total": "13.50",
+              "discount_pct": "0.00",
+              "event_dt": "2026-01-01",
+              "fixture_state": "OPEN"
+            },
+            {
+              "fixture_key": "FIX-100002",
+              "fixture_tenant": "TEST",
+              "fixture_file": "synthetic",
+              "fixture_row": 2,
+              "fixture_received": "2026-01-02 00:00:00",
+              "fixture_team": null,
+              "fixture_market": null,
+              "fixture_currency": "EUR",
+              "fixture_batch": "FIXTURE",
+              "fixture_note": null,
+              "fixture_trace": "CUST-1000",
+              "fixture_unused_archive": null,
+              "fixture_id": 100002,
+              "customer_id": 1000,
+              "line_no": 2,
+              "unit_price": "14.50",
+              "quantity": 2,
+              "line_total": "29.00",
+              "customer_total": "42.50",
+              "discount_pct": "0.00",
+              "event_dt": "2026-01-02",
+              "fixture_state": "CLOSED"
+            },
+            {
+              "fixture_key": "FIX-100003",
+              "fixture_tenant": "TEST",
+              "fixture_file": "synthetic",
+              "fixture_row": 3,
+              "fixture_received": "2026-01-03 00:00:00",
+              "fixture_team": null,
+              "fixture_market": null,
+              "fixture_currency": "EUR",
+              "fixture_batch": "FIXTURE",
+              "fixture_note": null,
+              "fixture_trace": "CUST-1000",
+              "fixture_unused_archive": null,
+              "fixture_id": 100003,
+              "customer_id": 1000,
+              "line_no": 3,
+              "unit_price": "15.50",
+              "quantity": 3,
+              "line_total": "46.50",
+              "customer_total": "89.00",
+              "discount_pct": "0.00",
+              "event_dt": "2026-01-03",
+              "fixture_state": "OPEN"
+            },
+            {
+              "fixture_key": "FIX-100004",
+              "fixture_tenant": "TEST",
+              "fixture_file": "synthetic",
+              "fixture_row": 4,
+              "fixture_received": "2026-01-04 00:00:00",
+              "fixture_team": null,
+              "fixture_market": null,
+              "fixture_currency": "EUR",
+              "fixture_batch": "FIXTURE",
+              "fixture_note": null,
+              "fixture_trace": "CUST-1001",
+              "fixture_unused_archive": null,
+              "fixture_id": 100004,
+              "customer_id": 1001,
+              "line_no": 1,
+              "unit_price": "13.50",
+              "quantity": 1,
+              "line_total": "12.15",
+              "customer_total": "12.15",
+              "discount_pct": "10.00",
+              "event_dt": "2026-01-04",
+              "fixture_state": "CLOSED"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "parameters": {},
+  "expected_failure": false
+}

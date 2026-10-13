@@ -1,0 +1,26 @@
+[
+  {
+    "fixture_key": "FIX-100001",
+    "fixture_tenant": "TEST",
+    "fixture_file": "synthetic",
+    "fixture_row": 1,
+    "fixture_received": "2026-01-01 00:00:00",
+    "fixture_team": null,
+    "fixture_market": null,
+    "fixture_currency": "EUR",
+    "fixture_batch": "FIXTURE",
+    "fixture_note": null,
+    "fixture_trace": "CUST-1000",
+    "fixture_unused_archive": null,
+    "fixture_id": 100001,
+    "customer_id": 1000,
+    "line_no": 1,
+    "unit_price": "13.50",
+    "quantity": 1,
+    "line_total": "13.50",
+    "customer_total": "13.50",
+    "discount_pct": "0.00",
+    "event_dt": "2026-01-01",
+    "fixture_state": "OPEN"
+  }
+]

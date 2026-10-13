@@ -1,0 +1,417 @@
+[
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in",
+      "filename": "T73_disabled_invalid_cutoff_input_0.csv",
+      "content": "claim1|ACME|claim.csv|1|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1||X1|keep:1|false|bad|100.00|HEALTH\n|ACME|claim.csv|2|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X2|keep:2|true|2026-01-01 00:00:00|0.00|HEALTH\nclaim3|ACME|claim.csv|3|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X3|keep:3|true|2025-02-30 00:00:00|1.00|HEALTH\nclaim4|ACME|claim.csv|4|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X4|keep:4|true|2025-12-31 23:59:59|1.00|HEALTH\nclaim5|ACME|claim.csv|5|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X5|keep:5|true|2026-01-02 00:00:00|-2.00|HEALTH\nclaim6|ACME|claim.csv|6|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X6|keep:6|false|not-time|5.00|HEALTH\nclaim7|ACME|claim.csv|7|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X7|keep:7|true|__NULL__|__NULL__|HEALTH\nclaim8|ACME|claim.csv|8|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X8|keep:8|true|2026-1-3 00:00:00|2.00|HEALTH\nclaim9|ACME|claim.csv|9|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X9|keep:9|true|2026-01-01 00:00:00|__NULL__|HEALTH\nclaim10|ACME|claim.csv|10|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X10|keep:10|true|2026-01-04 12:00:00|3.00|HEALTH\n"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/data-in/T73_disabled_invalid_cutoff_input_0.csv' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/data-in/T73_disabled_invalid_cutoff_input_0.csv' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_write_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph",
+      "filename": "T73_disabled_invalid_cutoff.grf",
+      "content": "<?xml version='1.0' encoding='utf-8'?>\n<Graph author=\"Codex\" name=\"T73_disabled_invalid_cutoff\" id=\"6101300073\" nature=\"etlGraph\" revision=\"1.0\" guiVersion=\"7.5.0\">\n  <Global>\n    <GraphParameters>\n      <GraphParameterFile fileURL=\"workspace.prm\" />\n      <GraphParameter name=\"PROJECT\" value=\".\" />\n    </GraphParameters>\n    <RichTextNote id=\"Note\" x=\"50\" y=\"25\" width=\"1200\" height=\"100\" backgroundColor=\"FAF6D6\" textColor=\"444444\" fontSize=\"medium\" folded=\"false\">\n      <attr name=\"text\">Claims audit keeps history only for accepted requests\nAcceptance fixture exercises the business rules and preserves every source field for comparison.</attr>\n    </RichTextNote>\n    <Metadata id=\"In0\">\n      <Record name=\"ClaimAuditSource\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"claim_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"claim_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"claim_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"audit_requested\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"submitted_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claimed_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"claim_class\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawIn0\">\n      <Record name=\"RawInput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"claim_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"claim_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"audit_requested\" type=\"string\" nullable=\"false\" />\n        <Field name=\"submitted_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claimed_amount\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_class\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"Out0\">\n      <Record name=\"ClaimAuditDecision\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n        <Field name=\"claim_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_row\" type=\"long\" nullable=\"false\" />\n        <Field name=\"claim_received\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"claim_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"audit_requested\" type=\"boolean\" nullable=\"false\" />\n        <Field name=\"submitted_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claimed_amount\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\" />\n        <Field name=\"claim_class\" type=\"string\" nullable=\"true\" />\n        <Field name=\"audit_state\" type=\"string\" nullable=\"false\" />\n        <Field name=\"audit_label\" type=\"string\" nullable=\"true\" />\n        <Field name=\"accepted_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\" />\n        <Field name=\"accepted_index\" type=\"long\" nullable=\"false\" />\n        <Field name=\"accepted_running\" type=\"decimal\" nullable=\"false\" length=\"18\" scale=\"2\" />\n        <Field name=\"previous_claim_key\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Metadata id=\"RawOut0\">\n      <Record name=\"RawOutput0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\" locale=\"en.US\">\n        <Field name=\"claim_key\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_tenant\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_file\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_row\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_received\" type=\"string\" nullable=\"false\" timeZone=\"UTC\" />\n        <Field name=\"claim_team\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_market\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_currency\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_batch\" type=\"string\" nullable=\"false\" />\n        <Field name=\"claim_note\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_trace\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_unused_archive\" type=\"string\" nullable=\"true\" />\n        <Field name=\"audit_requested\" type=\"string\" nullable=\"false\" />\n        <Field name=\"submitted_txt\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claimed_amount\" type=\"string\" nullable=\"true\" />\n        <Field name=\"claim_class\" type=\"string\" nullable=\"true\" />\n        <Field name=\"audit_state\" type=\"string\" nullable=\"false\" />\n        <Field name=\"audit_label\" type=\"string\" nullable=\"true\" />\n        <Field name=\"accepted_at\" type=\"string\" nullable=\"true\" timeZone=\"UTC\" />\n        <Field name=\"accepted_index\" type=\"string\" nullable=\"false\" />\n        <Field name=\"accepted_running\" type=\"string\" nullable=\"false\" />\n        <Field name=\"previous_claim_key\" type=\"string\" nullable=\"true\" />\n      </Record>\n    </Metadata>\n    <Dictionary>\n      <Entry name=\"auditEnabled\" type=\"boolean\" input=\"true\" dictval.value=\"false\" />\n      <Entry name=\"auditLabel\" type=\"string\" input=\"true\" dictval.value=\"OFF\" />\n      <Entry name=\"cutoffText\" type=\"string\" input=\"true\" dictval.value=\"NOT A DATE\" />\n    </Dictionary>\n  </Global>\n  <Phase number=\"0\">\n    <Node id=\"Reader0\" type=\"DATA_READER\" enabled=\"enabled\" guiName=\"Reader0\" guiX=\"50\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-in/T73_disabled_invalid_cutoff_input_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"dataPolicy\">strict</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"parser\">org.jetel.data.parser.DataParser</attr>\n    </Node>\n    <Node id=\"Decode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Decode0\" guiX=\"275\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.claim_key=$in.0.claim_key;\n$out.0.claim_tenant=$in.0.claim_tenant;\n$out.0.claim_file=$in.0.claim_file;\n$out.0.claim_row=$in.0.claim_row == null ? null : str2long($in.0.claim_row);\n$out.0.claim_received=$in.0.claim_received == null ? null : str2date($in.0.claim_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\",true);\n$out.0.claim_team=$in.0.claim_team;\n$out.0.claim_market=$in.0.claim_market;\n$out.0.claim_currency=$in.0.claim_currency;\n$out.0.claim_batch=$in.0.claim_batch;\n$out.0.claim_note=$in.0.claim_note;\n$out.0.claim_trace=$in.0.claim_trace;\n$out.0.claim_unused_archive=$in.0.claim_unused_archive;\n$out.0.audit_requested=$in.0.audit_requested == null ? null : str2bool($in.0.audit_requested);\n$out.0.submitted_txt=$in.0.submitted_txt;\n$out.0.claimed_amount=$in.0.claimed_amount == null ? null : str2decimal($in.0.claimed_amount);\n$out.0.claim_class=$in.0.claim_class;\nreturn OK;}</attr>\n    </Node>\n    <Edge id=\"Read0\" fromNode=\"Reader0:0\" toNode=\"Decode0:0\" metadata=\"RawIn0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Decoded0\" fromNode=\"Decode0:0\" toNode=\"Test:0\" metadata=\"In0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Node id=\"Test\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Test\" guiX=\"500\" guiY=\"200\">\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"transform\">//#CTL2\nlong acceptedCount=0L;decimal total=0D;boolean seenAccepted=false;string previous;\nfunction integer transform(){\n $out.0.*=$in.0.*;$out.0.accepted_at=null;$out.0.accepted_index=0L;$out.0.previous_claim_key=null;\n $out.0.accepted_running=total;$out.0.audit_label=null;\n if(!dictionary.auditEnabled || !$in.0.audit_requested){$out.0.audit_state=\"BYPASS\";return OK;}\n $out.0.audit_label=dictionary.auditLabel;\n string raw=nvl($in.0.submitted_txt,\"\");\n if(!(raw ~= \"[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}\") || !isDate(raw,\"yyyy-MM-dd HH:mm:ss\",\"en.US\",\"UTC\",true)){$out.0.audit_state=\"BAD_TIME\";return OK;}\n date submitted=str2date(raw,\"yyyy-MM-dd HH:mm:ss\",\"en.US\",\"UTC\",true);\n date cutoff=str2date(dictionary.cutoffText,\"yyyy-MM-dd HH:mm:ss\",\"en.US\",\"UTC\",true);\n if(submitted&lt;cutoff){$out.0.audit_state=\"TOO_OLD\";return OK;}\n acceptedCount++;total=total+nvl($in.0.claimed_amount,0D);\n $out.0.audit_state=\"ACCEPTED\";$out.0.accepted_at=submitted;$out.0.accepted_index=acceptedCount;$out.0.accepted_running=total;\n if(seenAccepted)$out.0.previous_claim_key=previous;previous=$in.0.claim_key;seenAccepted=true;return OK;\n}\n</attr>\n    </Node>\n    <Node id=\"Encode0\" type=\"REFORMAT\" enabled=\"enabled\" guiName=\"Encode0\" guiX=\"725\" guiY=\"200\">\n      <attr name=\"transform\">//#CTL2\nfunction integer transform(){\n$out.0.claim_key=$in.0.claim_key;\n$out.0.claim_tenant=$in.0.claim_tenant;\n$out.0.claim_file=$in.0.claim_file;\n$out.0.claim_row=$in.0.claim_row == null ? null : num2str($in.0.claim_row);\n$out.0.claim_received=$in.0.claim_received == null ? null : date2str($in.0.claim_received,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.claim_team=$in.0.claim_team;\n$out.0.claim_market=$in.0.claim_market;\n$out.0.claim_currency=$in.0.claim_currency;\n$out.0.claim_batch=$in.0.claim_batch;\n$out.0.claim_note=$in.0.claim_note;\n$out.0.claim_trace=$in.0.claim_trace;\n$out.0.claim_unused_archive=$in.0.claim_unused_archive;\n$out.0.audit_requested=$in.0.audit_requested == null ? null : ($in.0.audit_requested ? \"true\" : \"false\");\n$out.0.submitted_txt=$in.0.submitted_txt;\n$out.0.claimed_amount=$in.0.claimed_amount == null ? null : num2str($in.0.claimed_amount,\"0.00\",\"en.US\");\n$out.0.claim_class=$in.0.claim_class;\n$out.0.audit_state=$in.0.audit_state;\n$out.0.audit_label=$in.0.audit_label;\n$out.0.accepted_at=$in.0.accepted_at == null ? null : date2str($in.0.accepted_at,\"yyyy-MM-dd HH:mm:ss.SSS\",\"en.US\",\"UTC\");\n$out.0.accepted_index=$in.0.accepted_index == null ? null : num2str($in.0.accepted_index);\n$out.0.accepted_running=$in.0.accepted_running == null ? null : num2str($in.0.accepted_running,\"0.00\",\"en.US\");\n$out.0.previous_claim_key=$in.0.previous_claim_key;\nreturn OK;}</attr>\n    </Node>\n    <Node id=\"Writer0\" type=\"DATA_WRITER\" enabled=\"enabled\" guiName=\"Writer0\" guiX=\"950\" guiY=\"200\">\n      <attr name=\"fileURL\">suite_v5/data-out/T73_disabled_invalid_cutoff_out_0.csv</attr>\n      <attr name=\"charset\">UTF-8</attr>\n      <attr name=\"makeDirs\">true</attr>\n      <attr name=\"quotedStrings\">true</attr>\n      <attr name=\"quoteCharacter\">\"</attr>\n      <attr name=\"createEmptyFiles\">true</attr>\n      <attr name=\"append\">false</attr>\n    </Node>\n    <Edge id=\"Result0\" fromNode=\"Test:0\" toNode=\"Encode0:0\" metadata=\"Out0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n    <Edge id=\"Written0\" fromNode=\"Encode0:0\" toNode=\"Writer0:0\" metadata=\"RawOut0\" guiRouter=\"Manhattan\" inPort=\"Port 0 (in)\" outPort=\"Port 0 (out)\" />\n  </Phase>\n</Graph>"
+    },
+    "payload": {
+      "text": "OK: File 'suite_v5/graph/T73_disabled_invalid_cutoff.grf' written to sandbox 'MiscExamples'.",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "OK: File 'suite_v5/graph/T73_disabled_invalid_cutoff.grf' written to sandbox 'MiscExamples'."
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_validate",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T73_disabled_invalid_cutoff.grf",
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"timedOut\":false,\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "timedOut": false,
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_run",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T73_disabled_invalid_cutoff.grf",
+      "params": {}
+    },
+    "payload": {
+      "runId": 17992,
+      "message": "Job started. runId: 17992"
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17992,\"message\":\"Job started. runId: 17992\"}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17992,
+        "message": "Job started. runId: 17992"
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_await",
+    "arguments": {
+      "runId": 17992,
+      "timeoutSeconds": 60
+    },
+    "payload": {
+      "runId": 17992,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/T73_disabled_invalid_cutoff.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:55:26.897+02:00",
+      "startTime": "2026-10-13T11:55:26.897+02:00",
+      "stopTime": "2026-10-13T11:55:26.916+02:00",
+      "durationMs": 19
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"runId\":17992,\"sandboxCode\":\"MiscExamples\",\"jobFile\":\"suite_v5/graph/T73_disabled_invalid_cutoff.grf\",\"jobType\":\"ETL_GRAPH\",\"status\":\"FINISHED_OK\",\"submitTime\":\"2026-10-13T11:55:26.897+02:00\",\"startTime\":\"2026-10-13T11:55:26.897+02:00\",\"stopTime\":\"2026-10-13T11:55:26.916+02:00\",\"durationMs\":19}"
+        }
+      ],
+      "structuredContent": {
+        "runId": 17992,
+        "sandboxCode": "MiscExamples",
+        "jobFile": "suite_v5/graph/T73_disabled_invalid_cutoff.grf",
+        "jobType": "ETL_GRAPH",
+        "status": "FINISHED_OK",
+        "submitTime": "2026-10-13T11:55:26.897+02:00",
+        "startTime": "2026-10-13T11:55:26.897+02:00",
+        "stopTime": "2026-10-13T11:55:26.916+02:00",
+        "durationMs": 19
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_tracking",
+    "arguments": {
+      "runId": 17992,
+      "detailed": true
+    },
+    "payload": {
+      "run_id": "17992",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.004,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.002,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1904
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1904
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1478
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1478
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1868
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 1868
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 2184
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 10,
+                  "bytes": 2184
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 80,
+        "total_bytes": 14868
+      }
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"run_id\":\"17992\",\"status\":\"FINISHED_OK\",\"exec_seconds\":0.004,\"phases\":[{\"phase_number\":0,\"exec_seconds\":0.002,\"nodes\":[{\"node_id\":\"Reader0\",\"node_name\":\"Reader0\",\"node_type\":\"DATA_READER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":10,\"bytes\":1904}]},{\"node_id\":\"Decode0\",\"node_name\":\"Decode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":10,\"bytes\":1904},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":10,\"bytes\":1478}]},{\"node_id\":\"Test\",\"node_name\":\"Test\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":10,\"bytes\":1478},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":10,\"bytes\":1868}]},{\"node_id\":\"Encode0\",\"node_name\":\"Encode0\",\"node_type\":\"REFORMAT\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":10,\"bytes\":1868},{\"port_type\":\"OUTPUT\",\"index\":0,\"records\":10,\"bytes\":2184}]},{\"node_id\":\"Writer0\",\"node_name\":\"Writer0\",\"node_type\":\"DATA_WRITER\",\"result\":\"FINISHED_OK\",\"cpu_seconds\":0.001,\"ports\":[{\"port_type\":\"INPUT\",\"index\":0,\"records\":10,\"bytes\":2184}]}]}],\"summary\":{\"phase_count\":1,\"node_count\":5,\"port_count\":8,\"total_records\":80,\"total_bytes\":14868}}"
+        }
+      ],
+      "structuredContent": {
+        "run_id": "17992",
+        "status": "FINISHED_OK",
+        "exec_seconds": 0.004,
+        "phases": [
+          {
+            "phase_number": 0,
+            "exec_seconds": 0.002,
+            "nodes": [
+              {
+                "node_id": "Reader0",
+                "node_name": "Reader0",
+                "node_type": "DATA_READER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1904
+                  }
+                ]
+              },
+              {
+                "node_id": "Decode0",
+                "node_name": "Decode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1904
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1478
+                  }
+                ]
+              },
+              {
+                "node_id": "Test",
+                "node_name": "Test",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": null,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1478
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1868
+                  }
+                ]
+              },
+              {
+                "node_id": "Encode0",
+                "node_name": "Encode0",
+                "node_type": "REFORMAT",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 1868
+                  },
+                  {
+                    "port_type": "OUTPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 2184
+                  }
+                ]
+              },
+              {
+                "node_id": "Writer0",
+                "node_name": "Writer0",
+                "node_type": "DATA_WRITER",
+                "result": "FINISHED_OK",
+                "cpu_seconds": 0.001,
+                "ports": [
+                  {
+                    "port_type": "INPUT",
+                    "index": 0,
+                    "records": 10,
+                    "bytes": 2184
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "summary": {
+          "phase_count": 1,
+          "node_count": 5,
+          "port_count": 8,
+          "total_records": 80,
+          "total_bytes": 14868
+        }
+      },
+      "isError": false
+    }
+  },
+  {
+    "tool": "job_get_log",
+    "arguments": {
+      "runId": 17992
+    },
+    "payload": {
+      "text": "2026-10-13 11:55:26,899 INFO  17992 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:55:26,899 INFO  17992 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:55:26,899 INFO  17992 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:55:26,902 INFO  17992 [JobStarter_17992] Starting job: MiscExamples/suite_v5/graph/T73_disabled_invalid_cutoff.grf\n\t Run ID: \t\t17992\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:55:26,905 INFO  17992 [JobExecutor_17992] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:55:26,908 INFO  17992 [JobExecutor_17992] Initializing metadata\n2026-10-13 11:55:26,908 INFO  17992 [JobExecutor_17992] Initializing phase 0\n2026-10-13 11:55:26,910 INFO  17992 [JobExecutor_17992] Phase 0 initialized successfully.\n2026-10-13 11:55:26,910 INFO  17992 [WatchDog_17992] Job execution type: ETL_GRAPH\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T73_disabled_invalid_cutoff.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T73_disabled_invalid_cutoff.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17992\nPROJECT=.\nROOT_RUN_ID=17992\nRUN_ID=17992\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] Initial dictionary content:\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] DictEntry:auditEnabled:boolean:{value=false}\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] DictEntry:auditLabel:string:{value=OFF}\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] DictEntry:cutoffText:string:{value=NOT A DATE}\n2026-10-13 11:55:26,912 INFO  17992 [WatchDog_17992] Starting up all nodes in phase [0]\n2026-10-13 11:55:26,912 INFO  17992 [WatchDog_17992] Successfully started all nodes in phase!\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Time: 13/10/2026 11:55:26, JVM heap used: 134 MB\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ---------------------------------------------------------------------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)           Out:0             10          1    5000      929\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)            In:0             10          1    5000      929\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]                                 Out:0             10          1    5000      721\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Test                     Test                                        FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:0%)             In:0             10          1    5000      721\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]                                 Out:0             10          1    5000      912\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)            In:0             10          1    5000      912\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]                                 Out:0             10          2    5000     1066\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)            In:0             10          2    5000     1066\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Final dictionary content:\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] DictEntry:auditEnabled:boolean:{value=false}\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] DictEntry:auditLabel:string:{value=OFF}\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] DictEntry:cutoffText:string:{value=NOT A DATE}\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] 0                 FINISHED_OK                        0               134\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:55:26,916 INFO  17992 [JobFinalizer_17992] Job finished: MiscExamples/suite_v5/graph/T73_disabled_invalid_cutoff.grf\n\t Run ID: \t\t17992\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t19 ms\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "2026-10-13 11:55:26,899 INFO  17992 [boundedElastic-91] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:55:26,899 INFO  17992 [boundedElastic-91] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:55:26,899 INFO  17992 [boundedElastic-91] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:55:26,902 INFO  17992 [JobStarter_17992] Starting job: MiscExamples/suite_v5/graph/T73_disabled_invalid_cutoff.grf\n\t Run ID: \t\t17992\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:55:26,905 INFO  17992 [JobExecutor_17992] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:55:26,908 INFO  17992 [JobExecutor_17992] Initializing metadata\n2026-10-13 11:55:26,908 INFO  17992 [JobExecutor_17992] Initializing phase 0\n2026-10-13 11:55:26,910 INFO  17992 [JobExecutor_17992] Phase 0 initialized successfully.\n2026-10-13 11:55:26,910 INFO  17992 [WatchDog_17992] Job execution type: ETL_GRAPH\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/T73_disabled_invalid_cutoff.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/T73_disabled_invalid_cutoff.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17992\nPROJECT=.\nROOT_RUN_ID=17992\nRUN_ID=17992\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] Initial dictionary content:\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] DictEntry:auditEnabled:boolean:{value=false}\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] DictEntry:auditLabel:string:{value=OFF}\n2026-10-13 11:55:26,911 INFO  17992 [WatchDog_17992] DictEntry:cutoffText:string:{value=NOT A DATE}\n2026-10-13 11:55:26,912 INFO  17992 [WatchDog_17992] Starting up all nodes in phase [0]\n2026-10-13 11:55:26,912 INFO  17992 [WatchDog_17992] Successfully started all nodes in phase!\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Time: 13/10/2026 11:55:26, JVM heap used: 134 MB\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ---------------------------------------------------------------------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)           Out:0             10          1    5000      929\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)            In:0             10          1    5000      929\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]                                 Out:0             10          1    5000      721\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Test                     Test                                        FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:0%)             In:0             10          1    5000      721\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]                                 Out:0             10          1    5000      912\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)            In:0             10          1    5000      912\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]                                 Out:0             10          2    5000     1066\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992]  (alloc:0MB, cpu:50%)            In:0             10          2    5000     1066\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Final dictionary content:\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] DictEntry:auditEnabled:boolean:{value=false}\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] DictEntry:auditLabel:string:{value=OFF}\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] DictEntry:cutoffText:string:{value=NOT A DATE}\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] 0                 FINISHED_OK                        0               134\n2026-10-13 11:55:26,915 INFO  17992 [WatchDog_17992] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:55:26,916 INFO  17992 [JobFinalizer_17992] Job finished: MiscExamples/suite_v5/graph/T73_disabled_invalid_cutoff.grf\n\t Run ID: \t\t17992\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t19 ms\n"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-out/T73_disabled_invalid_cutoff_out_0.csv"
+    },
+    "payload": {
+      "text": "\"claim1\"|\"ACME\"|\"claim.csv\"|\"1\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"\"|\"X1\"|\"keep:1\"|\"false\"|\"bad\"|\"100.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"\"|\"ACME\"|\"claim.csv\"|\"2\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X2\"|\"keep:2\"|\"true\"|\"2026-01-01 00:00:00\"|\"0.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim3\"|\"ACME\"|\"claim.csv\"|\"3\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X3\"|\"keep:3\"|\"true\"|\"2025-02-30 00:00:00\"|\"1.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim4\"|\"ACME\"|\"claim.csv\"|\"4\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X4\"|\"keep:4\"|\"true\"|\"2025-12-31 23:59:59\"|\"1.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim5\"|\"ACME\"|\"claim.csv\"|\"5\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X5\"|\"keep:5\"|\"true\"|\"2026-01-02 00:00:00\"|\"-2.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim6\"|\"ACME\"|\"claim.csv\"|\"6\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X6\"|\"keep:6\"|\"false\"|\"not-time\"|\"5.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim7\"|\"ACME\"|\"claim.csv\"|\"7\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X7\"|\"keep:7\"|\"true\"|\"__NULL__\"|\"__NULL__\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim8\"|\"ACME\"|\"claim.csv\"|\"8\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X8\"|\"keep:8\"|\"true\"|\"2026-1-3 00:00:00\"|\"2.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim9\"|\"ACME\"|\"claim.csv\"|\"9\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X9\"|\"keep:9\"|\"true\"|\"2026-01-01 00:00:00\"|\"__NULL__\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim10\"|\"ACME\"|\"claim.csv\"|\"10\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X10\"|\"keep:10\"|\"true\"|\"2026-01-04 12:00:00\"|\"3.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n",
+      "isError": false
+    },
+    "response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "\"claim1\"|\"ACME\"|\"claim.csv\"|\"1\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"\"|\"X1\"|\"keep:1\"|\"false\"|\"bad\"|\"100.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"\"|\"ACME\"|\"claim.csv\"|\"2\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X2\"|\"keep:2\"|\"true\"|\"2026-01-01 00:00:00\"|\"0.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim3\"|\"ACME\"|\"claim.csv\"|\"3\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X3\"|\"keep:3\"|\"true\"|\"2025-02-30 00:00:00\"|\"1.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim4\"|\"ACME\"|\"claim.csv\"|\"4\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X4\"|\"keep:4\"|\"true\"|\"2025-12-31 23:59:59\"|\"1.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim5\"|\"ACME\"|\"claim.csv\"|\"5\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X5\"|\"keep:5\"|\"true\"|\"2026-01-02 00:00:00\"|\"-2.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim6\"|\"ACME\"|\"claim.csv\"|\"6\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X6\"|\"keep:6\"|\"false\"|\"not-time\"|\"5.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim7\"|\"ACME\"|\"claim.csv\"|\"7\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X7\"|\"keep:7\"|\"true\"|\"__NULL__\"|\"__NULL__\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim8\"|\"ACME\"|\"claim.csv\"|\"8\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X8\"|\"keep:8\"|\"true\"|\"2026-1-3 00:00:00\"|\"2.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim9\"|\"ACME\"|\"claim.csv\"|\"9\"|\"2026-01-01 00:00:00.000\"|\"__NULL__\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X9\"|\"keep:9\"|\"true\"|\"2026-01-01 00:00:00\"|\"__NULL__\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n\"claim10\"|\"ACME\"|\"claim.csv\"|\"10\"|\"2026-01-01 00:00:00.000\"|\"OPS\"|\"CZ\"|\"EUR\"|\"B1\"|\"__NULL__\"|\"X10\"|\"keep:10\"|\"true\"|\"2026-01-04 12:00:00\"|\"3.00\"|\"HEALTH\"|\"BYPASS\"|\"__NULL__\"|\"__NULL__\"|\"0\"|\"0.00\"|\"__NULL__\"\n"
+        }
+      ],
+      "isError": false
+    }
+  }
+]

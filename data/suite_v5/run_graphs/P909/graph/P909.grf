@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="P909" id="6101300909" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">DataIntersection STOP interpretation probe
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="Side" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="key_id" type="integer" nullable="true" />
+        <Field name="value_cd" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="key_id" type="string" nullable="true" />
+        <Field name="value_cd" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="In1">
+      <Record name="Side" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="key_id" type="integer" nullable="true" />
+        <Field name="value_cd" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn1">
+      <Record name="RawInput1" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="key_id" type="string" nullable="true" />
+        <Field name="value_cd" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="Side" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="key_id" type="integer" nullable="true" />
+        <Field name="value_cd" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="key_id" type="string" nullable="true" />
+        <Field name="value_cd" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out1">
+      <Record name="Both" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="key_id" type="integer" nullable="true" />
+        <Field name="pair_txt" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut1">
+      <Record name="RawOutput1" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="key_id" type="string" nullable="true" />
+        <Field name="pair_txt" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out2">
+      <Record name="Side" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="key_id" type="integer" nullable="true" />
+        <Field name="value_cd" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut2">
+      <Record name="RawOutput2" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="key_id" type="string" nullable="true" />
+        <Field name="value_cd" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/P909_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.key_id=$in.0.key_id == null ? null : str2integer($in.0.key_id);
+$out.0.value_cd=$in.0.value_cd;
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Reader1" type="DATA_READER" enabled="enabled" guiName="Reader1" guiX="50" guiY="375">
+      <attr name="fileURL">suite_v5/data-in/P909_input_1.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode1" type="REFORMAT" enabled="enabled" guiName="Decode1" guiX="275" guiY="375">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.key_id=$in.0.key_id == null ? null : str2integer($in.0.key_id);
+$out.0.value_cd=$in.0.value_cd;
+return OK;}</attr>
+    </Node>
+    <Edge id="Read1" fromNode="Reader1:0" toNode="Decode1:0" metadata="RawIn1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded1" fromNode="Decode1:0" toNode="Test:1" metadata="In1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="DATA_INTERSECTION" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="joinKey">$key_id=$key_id</attr>
+      <attr name="equalNULL">true</attr>
+      <attr name="keyDuplicates">true</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+function integer transform(){$out.0.key_id=$in.1.key_id;$out.0.pair_txt=$in.0.value_cd+":"+$in.1.value_cd;return STOP;}
+function integer transformLeftOnly(){raiseError("LEFT_HOOK_CALLED");}
+function integer transformRightOnly(){raiseError("RIGHT_HOOK_CALLED");}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.key_id=$in.0.key_id == null ? null : num2str($in.0.key_id);
+$out.0.value_cd=$in.0.value_cd;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/P909_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode1" type="REFORMAT" enabled="enabled" guiName="Encode1" guiX="725" guiY="375">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.key_id=$in.0.key_id == null ? null : num2str($in.0.key_id);
+$out.0.pair_txt=$in.0.pair_txt;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer1" type="DATA_WRITER" enabled="enabled" guiName="Writer1" guiX="950" guiY="375">
+      <attr name="fileURL">suite_v5/data-out/P909_out_1.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result1" fromNode="Test:1" toNode="Encode1:0" metadata="Out1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written1" fromNode="Encode1:0" toNode="Writer1:0" metadata="RawOut1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode2" type="REFORMAT" enabled="enabled" guiName="Encode2" guiX="725" guiY="550">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.key_id=$in.0.key_id == null ? null : num2str($in.0.key_id);
+$out.0.value_cd=$in.0.value_cd;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer2" type="DATA_WRITER" enabled="enabled" guiName="Writer2" guiX="950" guiY="550">
+      <attr name="fileURL">suite_v5/data-out/P909_out_2.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result2" fromNode="Test:2" toNode="Encode2:0" metadata="Out2" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written2" fromNode="Encode2:0" toNode="Writer2:0" metadata="RawOut2" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

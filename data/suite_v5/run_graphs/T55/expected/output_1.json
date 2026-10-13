@@ -1,0 +1,21 @@
+[
+  {
+    "business_ref": "C",
+    "tenant_cd": "T1",
+    "source_file": "feed.csv",
+    "source_row": 2,
+    "received_at": "2026-01-01 00:00:00",
+    "currency_cd": "EUR",
+    "operator_note": null,
+    "market_cd": "CZ",
+    "owner_team": null,
+    "trace_id": "r2",
+    "unused_archive_label": "old-2",
+    "context_value": null,
+    "expected_amount": null,
+    "settled_amount": null,
+    "remaining_amount": null,
+    "reconcile_kind": "REPAIR",
+    "error_reason": "AMOUNT_TEXT"
+  }
+]

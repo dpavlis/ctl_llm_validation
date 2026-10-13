@@ -1,0 +1,70 @@
+{
+  "test_id": "P908",
+  "label": "P908",
+  "graph_file": "suite_v5/graph/P908.grf",
+  "reference_sha256": "c4897fddaeff3e25d9cf860cbd740a03c277db6d2ebe5c56e27def499b93e24a",
+  "graph_sha256": "d027cca75e12eb77dea0d600b4935e0fad4f514f96f6e234d1b9855e80984810",
+  "files": [
+    {
+      "local": "run_graphs/P908/graph/P908.grf",
+      "remote": "suite_v5/graph/P908.grf",
+      "sha256": "d027cca75e12eb77dea0d600b4935e0fad4f514f96f6e234d1b9855e80984810"
+    }
+  ],
+  "output_paths": {
+    "0": "suite_v5/data-out/P908_out_0.csv"
+  },
+  "output_metadata": [
+    "<Record name=\"DictResult\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"flag\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"label\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"counter\" type=\"integer\" nullable=\"false\"/>\n</Record>"
+  ],
+  "fixture": {
+    "inputs": [],
+    "expected": {
+      "0": [
+        {
+          "flag": true,
+          "label": "RW2",
+          "counter": 1
+        },
+        {
+          "flag": true,
+          "label": "RW2",
+          "counter": 2
+        },
+        {
+          "flag": true,
+          "label": "RW2",
+          "counter": 3
+        },
+        {
+          "flag": true,
+          "label": "RW2",
+          "counter": 4
+        },
+        {
+          "flag": true,
+          "label": "RW2",
+          "counter": 5
+        },
+        {
+          "flag": true,
+          "label": "RW2",
+          "counter": 6
+        },
+        {
+          "flag": true,
+          "label": "RW2",
+          "counter": 7
+        },
+        {
+          "flag": true,
+          "label": "RW2",
+          "counter": 8
+        }
+      ]
+    },
+    "rows_count": 8
+  },
+  "parameters": {},
+  "expected_failure": false
+}

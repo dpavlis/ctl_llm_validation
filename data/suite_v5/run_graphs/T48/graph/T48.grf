@@ -1,0 +1,151 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T48" id="6101300048" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Property owner migration with ordered local deduplication
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="InputT48" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="property_batch" type="string" nullable="false" />
+        <Field name="property_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="property_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="property_unused" type="string" nullable="true" />
+        <Field name="property_note" type="string" nullable="true" />
+        <Field name="property_row" type="long" nullable="false" />
+        <Field name="old_parcel_id" type="string" nullable="false" />
+        <Field name="owners_txt" type="string" nullable="true" />
+        <Field name="tenure_txt" type="string" nullable="true" />
+        <Field name="street_label" type="string" nullable="true" />
+        <Field name="registered_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="assessed_value" type="decimal" nullable="true" length="18" scale="2" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="property_batch" type="string" nullable="false" />
+        <Field name="property_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="property_ledger" type="string" nullable="true" />
+        <Field name="property_unused" type="string" nullable="true" />
+        <Field name="property_note" type="string" nullable="true" />
+        <Field name="property_row" type="string" nullable="false" />
+        <Field name="old_parcel_id" type="string" nullable="false" />
+        <Field name="owners_txt" type="string" nullable="true" />
+        <Field name="tenure_txt" type="string" nullable="true" />
+        <Field name="street_label" type="string" nullable="true" />
+        <Field name="registered_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="assessed_value" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="PropertyOwners" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="property_batch" type="string" nullable="false" />
+        <Field name="property_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="property_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="property_unused" type="string" nullable="true" />
+        <Field name="property_note" type="string" nullable="true" />
+        <Field name="property_row" type="long" nullable="false" />
+        <Field name="street_label" type="string" nullable="true" />
+        <Field name="registered_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="assessed_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="parcel_number" type="string" nullable="false" />
+        <Field name="owner_name" type="string" nullable="false" />
+        <Field name="owner_ordinal" type="integer" nullable="false" />
+        <Field name="owner_total" type="integer" nullable="false" />
+        <Field name="tenure_code" type="string" nullable="false" />
+        <Field name="owner_missing" type="boolean" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="property_batch" type="string" nullable="false" />
+        <Field name="property_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="property_ledger" type="string" nullable="true" />
+        <Field name="property_unused" type="string" nullable="true" />
+        <Field name="property_note" type="string" nullable="true" />
+        <Field name="property_row" type="string" nullable="false" />
+        <Field name="street_label" type="string" nullable="true" />
+        <Field name="registered_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="assessed_value" type="string" nullable="true" />
+        <Field name="parcel_number" type="string" nullable="false" />
+        <Field name="owner_name" type="string" nullable="false" />
+        <Field name="owner_ordinal" type="string" nullable="false" />
+        <Field name="owner_total" type="string" nullable="false" />
+        <Field name="tenure_code" type="string" nullable="false" />
+        <Field name="owner_missing" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T48_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.property_batch=$in.0.property_batch;
+$out.0.property_loaded=$in.0.property_loaded == null ? null : str2date($in.0.property_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.property_ledger=$in.0.property_ledger == null ? null : str2decimal($in.0.property_ledger);
+$out.0.property_unused=$in.0.property_unused;
+$out.0.property_note=$in.0.property_note;
+$out.0.property_row=$in.0.property_row == null ? null : str2long($in.0.property_row);
+$out.0.old_parcel_id=$in.0.old_parcel_id;
+$out.0.owners_txt=$in.0.owners_txt;
+$out.0.tenure_txt=$in.0.tenure_txt;
+$out.0.street_label=$in.0.street_label;
+$out.0.registered_at=$in.0.registered_at == null ? null : str2date($in.0.registered_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.assessed_value=$in.0.assessed_value == null ? null : str2decimal($in.0.assessed_value);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="NORMALIZER" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="normalize">//#CTL2
+string[] owners;map[string,boolean] seen;string tenure;string parcel;boolean missing;InputT48 parent;
+ function integer count(){parent=$in.0;clear(owners);clear(seen);string raw=nvl($in.0.owners_txt,"");string[] parts=split(raw,";");foreach(string part:parts){string v=trim(part);string k=upperCase(v);if(v!=""&amp;&amp;!containsKey(seen,k)){append(owners,v);seen[k]=true;}}missing=length(owners)==0;if(missing)append(owners,"UNKNOWN_OWNER");parcel=trim($in.0.old_parcel_id);if(parcel=="")parcel="UNKNOWN_PARCEL";string t=upperCase(trim(nvl($in.0.tenure_txt,"")));tenure=t=="F"?"FREEHOLD":t=="L"?"LEASEHOLD":"UNVERIFIED";return length(owners);}
+ function integer transform(integer idx){$out.0.*=parent.*;$out.0.parcel_number=parcel;$out.0.owner_name=owners[idx];$out.0.owner_ordinal=idx+1;$out.0.owner_total=length(owners);$out.0.tenure_code=tenure;$out.0.owner_missing=missing;return OK;}
+ function void clean(){clear(owners);clear(seen);}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.property_batch=$in.0.property_batch;
+$out.0.property_loaded=$in.0.property_loaded == null ? null : date2str($in.0.property_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.property_ledger=$in.0.property_ledger == null ? null : num2str($in.0.property_ledger,"0.00","en.US");
+$out.0.property_unused=$in.0.property_unused;
+$out.0.property_note=$in.0.property_note;
+$out.0.property_row=$in.0.property_row == null ? null : num2str($in.0.property_row);
+$out.0.street_label=$in.0.street_label;
+$out.0.registered_at=$in.0.registered_at == null ? null : date2str($in.0.registered_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.assessed_value=$in.0.assessed_value == null ? null : num2str($in.0.assessed_value,"0.00","en.US");
+$out.0.parcel_number=$in.0.parcel_number;
+$out.0.owner_name=$in.0.owner_name;
+$out.0.owner_ordinal=$in.0.owner_ordinal == null ? null : num2str($in.0.owner_ordinal);
+$out.0.owner_total=$in.0.owner_total == null ? null : num2str($in.0.owner_total);
+$out.0.tenure_code=$in.0.tenure_code;
+$out.0.owner_missing=$in.0.owner_missing == null ? null : ($in.0.owner_missing ? "true" : "false");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T48_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

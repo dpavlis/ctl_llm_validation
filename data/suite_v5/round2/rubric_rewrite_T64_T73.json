@@ -1,0 +1,1124 @@
+{
+ "T64": {
+  "required": [
+   {
+    "id": "T64.1",
+    "check": "Normalizer contract: `count()` parses the current `payload_json` and returns the number of elements of its `lines` array (0 when there are none), and `transform(integer idx)` builds the child from element `idx` with `ordinal = idx + 1` and the current parent's fields copied (e.g. `$out.0.* = $in.0.*`).",
+    "rationale": "Returning a fixed count or numbering from 0 breaks the one-to-one position-to-ordinal mapping of the writer key.",
+    "clauses": [
+     1,
+     3,
+     6,
+     8
+    ]
+   },
+   {
+    "id": "T64.2",
+    "check": "A null, empty or whitespace-only `payload_json` makes `count()` return 0 without parsing it (either `isBlank(...)`, `trim(nvl(x,\"\")) == \"\"`, or `x == null || trim(x) == \"\"`).",
+    "rationale": "parseJson on blank text is not a valid object root, so unguarded parsing fails or misreports the parent.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T64.3",
+    "check": "A missing or null `lines` member makes `count()` return 0 (either `containsKey(root,\"lines\")` plus a null test on the value, or a null test on `root[\"lines\"]` alone).",
+    "rationale": "Calling length() on an absent or null lines value fails or emits phantom children.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T64.4",
+    "check": "The per-parent array is replaced on every input record before any early return: assigned (or set null) at the start of `count()`, cleared in `clean()`, or not kept globally at all (re-parsed in `transform`).",
+    "rationale": "With a stale global array, a missing-lines basket that follows a populated one with the same basket_key re-emits the old children.",
+    "clauses": [
+     7
+    ]
+   },
+   {
+    "id": "T64.5",
+    "check": "`child_code` is the `sku` value cast to string exactly as read, with no `trim`, case change or de-duplication.",
+    "rationale": "Trimming ' A ' to 'A' changes the stored code the clause says must keep surrounding whitespace.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T64.6",
+    "check": "When `details` is missing or null, `child_note` is null, and the code tests `details` for null before calling `containsKey`/indexing on it (`containsKey` on a null map fails).",
+    "rationale": "`containsKey(details,\"note\")` on details:null throws instead of yielding a null note.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T64.7",
+    "check": "When `details` is an object but `note` is missing or null, `child_note` is null.",
+    "rationale": "Casting a missing note to string or defaulting it to \"\" invents an empty note the source never had.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T64.8",
+    "check": "An explicitly empty note `\"\"` is emitted as `\"\"` (not null) and a non-empty note is copied without trimming (no `isBlank`/`nvl`/`trim` collapse).",
+    "rationale": "Collapsing empty to null loses the null-vs-empty distinction that is the test's main trap.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T64.9",
+    "check": "When `amount` is missing or null, `child_amount` is set to null for that child (not 0, and not left holding a previous child's value).",
+    "rationale": "Defaulting to 0 turns an absent amount into a real zero line value.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T64.10",
+    "check": "A present blank amount (`\"\"` or whitespace-only) makes the component fail visibly: either a grammar check followed by `raiseError(...)`, or passing the text to `str2decimal`, which throws on `\"\"` (verified); it is never mapped to null, 0 or SKIP.",
+    "rationale": "Mapping a blank amount to null makes it indistinguishable from a legitimately absent amount, which the spec forbids.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T64.11",
+    "check": "Before conversion, the amount text is checked against the full grammar optional minus, 1–9 integer digits, optionally a dot and 1–2 fractional digits (e.g. regex `-?[0-9]{1,9}(\\.[0-9]{1,2})?`), and a mismatch fails visibly (raiseError or equivalent throw); relying on `str2decimal` alone is not enough because it accepts out-of-grammar text such as `1.234` or `1234567890`.",
+    "rationale": "Without an explicit check, 1.234 is silently rounded and 10-digit integers are stored instead of failing.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T64.12",
+    "check": "The grammar check is applied to the untrimmed text, so surrounding whitespace and a leading `+` fail rather than being trimmed or accepted.",
+    "rationale": "Trimming before validation accepts ' 1.25 ', which the clause explicitly rejects.",
+    "clauses": [
+     5
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T64.F1",
+    "check": "Caches parsed children (or any per-parent result) in a map keyed by `basket_key` or another parent field, or reuses a previously parsed array when the key repeats.",
+    "rationale": "Parent references repeat across distinct baskets, so a key cache emits another basket's children."
+   },
+   {
+    "id": "T64.F2",
+    "check": "Supplies `transformOnError`/`countOnError` that swallows an amount failure by returning OK, SKIP or an emitted child (with or without logging) instead of propagating it.",
+    "rationale": "Clause 5/8 require the failure to remain visible; a swallowing hook acknowledges a partial basket as successful."
+   }
+  ],
+  "notes": "Old T64.3/.6/.8 (ordinal/order, copy-through, one-output-per-position) were free; ordinal folded into .1, copy-through and output count dropped. The null-test-on-`v[\"k\"]` form for a missing JSON key (accepted in .3) is not runtime-verified; containsKey is. Amount failure probes (empty, malformed, excess integer/fraction digits) all fail as expected with the reference."
+ },
+ "T65": {
+  "required": [
+   {
+    "id": "T65.1",
+    "check": "Normalizer contract: `count()` returns the number of channel keys of the current envelope (or the number of enabled ones when suppression is done there) and `transform(integer idx)` builds the observation for sorted key `idx`.",
+    "rationale": "A count unrelated to the key list emits too few or too many observations.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T65.2",
+    "check": "A null or blank `channels_json`, or a missing or null `channels` member, makes `count()` return 0 (missing key: `containsKey(...)` or a null test on the value; blank: `isBlank`, `trim(nvl(x,\"\")) == \"\"` or equivalent).",
+    "rationale": "`getKeys` on a null channels value fails instead of producing zero observations.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T65.3",
+    "check": "The key list (and channel map) is rebuilt for every envelope: cleared/replaced at the start of `count()`, in `clean()`, or held in fresh locals, so keys of a previous envelope never accumulate.",
+    "rationale": "Appending to a global list without clearing re-emits the previous machine's channels for a later envelope with a missing map.",
+    "clauses": [
+     7,
+     8
+    ]
+   },
+   {
+    "id": "T65.4",
+    "check": "Channel names are obtained with `getKeys(...)` and ordered with `sort(...)` on the exact strings (no `lowerCase`/`upperCase` in the comparison); `sort()` on strings is case-sensitive by UTF-16 code unit, so `Z` precedes `a`.",
+    "rationale": "Using JSON insertion order or a case-folded sort produces the wrong sequence and positions.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T65.5",
+    "check": "`position` is the one-based index in the sorted list of ALL keys, so a suppressed channel keeps its number and leaves a gap: either `transform(idx)` returns SKIP for a suppressed channel with `position = idx + 1`, or `count()` filters suppressed channels while keeping each emitted channel's original sorted position number.",
+    "rationale": "Renumbering after suppression shifts every later position by one.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T65.6",
+    "check": "Only an explicit `enabled == false` suppresses; a missing or null `enabled` means enabled (the code tests presence/null before casting to boolean).",
+    "rationale": "Casting a missing or null enabled to boolean either fails or treats the channel as disabled.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T65.7",
+    "check": "The enabled test happens before the code reads, trims, regex-checks or parses the channel's `value`.",
+    "rationale": "Parsing first lets arbitrary malformed text in a disabled channel trigger a failure or a BAD_TEXT row.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T65.8",
+    "check": "For an enabled channel whose `value` is missing, null or empty after trim, the output has `reading_value` null and `quality_cd` MISSING.",
+    "rationale": "Defaulting missing to 0 conflates it with a genuine zero reading.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T65.9",
+    "check": "The trimmed value is checked against the full grammar optional minus, 1–6 integer digits, optionally a dot and 1–2 fractional digits (e.g. regex `-?[0-9]{1,6}(\\.[0-9]{1,2})?`) before conversion; `str2decimal` alone is not enough because it accepts out-of-grammar text such as `1.234` or `1234567`.",
+    "rationale": "Without the explicit check, over-precise or over-long readings are reported GOOD.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T65.10",
+    "check": "A nonblank value that fails the grammar still emits the observation with `reading_value` null and `quality_cd` BAD_TEXT, and no conversion is attempted on it (so nothing throws).",
+    "rationale": "Calling str2decimal on unchecked text aborts the graph on firmware garbage.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T65.11",
+    "check": "A value that passes the grammar gets `quality_cd` GOOD and `reading_value` = `str2decimal` of the trimmed text (decimal conversion, keeping sign and zero).",
+    "rationale": "Converting through double or treating 0 as absent alters an exact valid reading.",
+    "clauses": [
+     4,
+     5
+    ]
+   },
+   {
+    "id": "T65.12",
+    "check": "`channel_name` is the map key exactly as read (no case change or trim), and parent fields come from the current input record (e.g. `$out.0.* = $in.0.*`).",
+    "rationale": "Uppercasing the key changes the channel identity analytics joins on.",
+    "clauses": [
+     6
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T65.F1",
+    "check": "Obtains channel names by `foreach` over the channels map/variant (which yields values, not keys) instead of `getKeys(...)`.",
+    "rationale": "Map foreach yields the channel objects, so names and sort order are wrong."
+   },
+   {
+    "id": "T65.F2",
+    "check": "Detects the first envelope (or a new envelope) by testing an uninitialized global string/date for null.",
+    "rationale": "Declared strings start as \"\" and dates at epoch, never null, so the test never fires (clause 8 names this trap)."
+   }
+  ],
+  "notes": "Both suppression forms are accepted in .5. Fixture lacks explicit null and whitespace-only values (reviewer advisory)."
+ },
+ "T66": {
+  "required": [
+   {
+    "id": "T66.1",
+    "check": "Partition contract: `getOutputPort()` returns exactly one port index 0–5 for every record and leaves the record unchanged (no SKIP, ALL or output construction).",
+    "rationale": "Returning SKIP or ALL drops or duplicates a payment that must reach exactly one queue.",
+    "clauses": [
+     1,
+     8
+    ]
+   },
+   {
+    "id": "T66.2",
+    "check": "Status test first, exactly: `status_cd == \"REVERSED\"` (null-safe, no trim or case folding) returns 0; then `hold_flag` true returns 1; both are decided before `invoice_day_txt` or `amount_txt` is read.",
+    "rationale": "Trimming/upper-casing sends ' reversed ' to terminal; reading text first lets defects displace the decision.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T66.3",
+    "check": "A null, empty or whitespace-only `invoice_day_txt` is treated as unknown: not defective (not 5), not overdue, and the row continues to the amount rules.",
+    "rationale": "Routing blank dates to 5 sends ordinary rows to the defect queue.",
+    "clauses": [
+     3,
+     4
+    ]
+   },
+   {
+    "id": "T66.4",
+    "check": "A nonblank date is trimmed and checked for exact `yyyy-MM-dd` shape with two-digit month and day by an explicit full-string check (e.g. regex `[0-9]{4}-[0-9]{2}-[0-9]{2}`); any other shape (e.g. `2026-1-1`) returns 5.",
+    "rationale": "Lenient parsing accepts single-digit month/day or trailing text that the clause sends to the defect queue.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T66.5",
+    "check": "An impossible calendar date (e.g. `2025-02-30`) returns 5: either strict `isDate(s,\"yyyy-MM-dd\",...,true)` false → 5, or strict `str2date(...,true)` throwing into a `getOutputPortOnError` that logs and returns 5.",
+    "rationale": "Lenient parsing rolls 2025-02-30 into March and misroutes it as overdue.",
+    "clauses": [
+     3,
+     7
+    ]
+   },
+   {
+    "id": "T66.6",
+    "check": "The invoice date is fully classified before `amount_txt` is examined: a defective date returns 5 even with a high or urgent amount, and an overdue date returns 2 even when the amount text is malformed.",
+    "rationale": "Checking the amount first lets a lower-priority defect displace the overdue or defect decision.",
+    "clauses": [
+     3,
+     4
+    ]
+   },
+   {
+    "id": "T66.7",
+    "check": "A valid date strictly before 2026-01-01 returns 2, comparing both dates in the same timezone (e.g. UTC parse vs `createDate(2026,1,1,\"UTC\")`, or comparing the `yyyy-MM-dd` text); 2026-01-01 itself is not overdue.",
+    "rationale": "Using <= or mixed timezones moves the January 1 boundary.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T66.8",
+    "check": "After the date rules, a null or blank `amount_txt` (after trim) is treated as zero, not as a defect.",
+    "rationale": "Routing blank amounts to 5 sends ordinary rows to the defect queue.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T66.9",
+    "check": "A nonblank trimmed amount must match optional minus, 1–6 integer digits, optionally a dot and 1–2 fractional digits (e.g. `-?[0-9]{1,6}(\\.[0-9]{1,2})?`), checked explicitly before conversion; otherwise return 5 (e.g. `1000000`, `1.234`).",
+    "rationale": "str2decimal accepts seven-digit or three-decimal text, so without a shape check those rows reach the value queues.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T66.10",
+    "check": "An interpreted amount `>= 10000` returns 3 (10000 inclusive); negative amounts never qualify by value.",
+    "rationale": "Using > misses the 10000 boundary row.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T66.11",
+    "check": "Exact `priority_cd == \"URGENT\"` with amount strictly greater than 0 returns 3; zero or negative urgent amounts and null/empty priority return 4.",
+    "rationale": "Ignoring the positivity condition sends zero-value urgent rows to review.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T66.12",
+    "check": "`getOutputPortOnError(string, string)` is implemented, logs the error (e.g. `printLog(error, ...)`), and returns 5.",
+    "rationale": "Without it an unexpected error aborts the component; without logging it is silently routed.",
+    "clauses": [
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T66.F1",
+    "check": "Parses `invoice_day_txt` and builds the 2026-01-01 cutoff in different timezones (e.g. `str2date` without \"UTC\" vs `createDate(...,\"UTC\")`), or uses `today()` as the cutoff.",
+    "rationale": "A CET-parsed 2026-01-01 is 2025-12-31T23:00Z and lands in the overdue queue."
+   },
+   {
+    "id": "T66.F2",
+    "check": "Writes to `$out`/modifies `$in` fields or keeps cross-row state to make the routing decision.",
+    "rationale": "Every edge must carry the original record, and routing is per-row (clause 8)."
+   }
+  ],
+  "notes": "Clause 5 says 'at most six integer digits' but the reference requires 1–6 (so '.5' is rejected); graded per the reference — consider rewording the prompt to 'one through six'. Fixture has no duplicate payment_key (reviewer advisory)."
+ },
+ "T67": {
+  "required": [
+   {
+    "id": "T67.1",
+    "check": "Partition contract: `getOutputPort()` returns exactly one port 0–4 per record, keeping per-trip state in global variables.",
+    "rationale": "Returning SKIP or keeping no state cannot implement gap and delta rules.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T67.2",
+    "check": "On a change of `trip_id` (exact, case-sensitive `!=` against the stored trip; with or without an extra first-record flag) the seen-valid state is reset so the trip starts with no predecessor, tracked by an explicit boolean (or equivalent explicit indicator, not a value of the temperature or sample number).",
+    "rationale": "Carrying the previous trip's baseline creates false gaps and delta alarms on the first sample of a new trip.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T67.3",
+    "check": "`sensor_off` true returns 0 before `temperature_txt` is read.",
+    "rationale": "Parsing first sends a disabled sensor with bad text to the faulty queue.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T67.4",
+    "check": "For an active sensor, null, empty or whitespace-only `temperature_txt` returns 1.",
+    "rationale": "Treating blank as 0 degrees produces a valid baseline from no data.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T67.5",
+    "check": "Nonblank text must match optional minus, 1–2 integer digits, optionally one fractional digit (e.g. `-?[0-9]{1,2}(\\.[0-9])?` on the trimmed text), else 1; the check runs before conversion.",
+    "rationale": "str2decimal accepts '8.25' or '100', which the grammar sends to faulty.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T67.6",
+    "check": "A parsed temperature outside -50..50 inclusive returns 1.",
+    "rationale": "Missing the range check lets out-of-range readings become alarms and baselines.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T67.7",
+    "check": "With a predecessor, `sample_no - prevNo > 1` returns 2, decided before any alarm test; a duplicate sample number (difference 0) or the next number is not a gap.",
+    "rationale": "Testing alarms first sends a gap sample with an alarm temperature to queue 3.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T67.8",
+    "check": "Absolute alarm: temperature `> 8` or `< -20` returns 3 (strict, so 8 and -20 are normal); it applies also to the first valid sample of a trip.",
+    "rationale": "Using >= alarms on the safe threshold values.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T67.9",
+    "check": "Delta alarm: only when a predecessor exists, `abs(t - prevTemp) > 5` returns 3 (a 5-degree change is normal).",
+    "rationale": "Comparing against an unset baseline (0) raises a false delta alarm on the trip's first sample.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T67.10",
+    "check": "Every valid active sample (including those routed to 2 or 3) updates the baseline number, temperature and seen-valid flag after the port is decided, so the next sample compares with the immediately preceding valid one.",
+    "rationale": "Updating before comparing compares a sample with itself; skipping the update on gap/alarm compares with a stale sample.",
+    "clauses": [
+     7
+    ]
+   },
+   {
+    "id": "T67.11",
+    "check": "`getOutputPortOnError(string, string)` is implemented, logs the error, returns 1, and does not update the baseline.",
+    "rationale": "An unlogged or missing error port either aborts the graph or advances history on a broken row.",
+    "clauses": [
+     8
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T67.F1",
+    "check": "Uses a null test (`== null`/`isnull`) on a declared integer/decimal, or the value 0, as the 'no previous valid sample' sentinel.",
+    "rationale": "Declared scalars start at 0, never null, and 0 degrees / sample 0 are valid baselines."
+   },
+   {
+    "id": "T67.F2",
+    "check": "Updates the previous-valid baseline (number, temperature or flag) on a disabled (port 0) or faulty (port 1) row.",
+    "rationale": "Disabled and faulty rows must leave the baseline unchanged (clauses 3–4)."
+   }
+  ],
+  "notes": "Trip-change detection by direct comparison with a stored string (initially \"\") is accepted: no clause says trip_id can be \"\". Fixture lacks null/whitespace temperatures (reviewer advisory)."
+ },
+ "T68": {
+  "required": [
+   {
+    "id": "T68.1",
+    "check": "Defines exactly the four functions `canonicalCode(string)`, `pricedAmount(decimal, decimal, decimal)`, `budgetShare(decimal, decimal)` and `businessToken(string, date)` without port access inside them, plus a Reformat `transform()` that copies the input and returns OK.",
+    "rationale": "Wrong names or signatures break reuse from the library.",
+    "clauses": [
+     1,
+     7,
+     8
+    ]
+   },
+   {
+    "id": "T68.2",
+    "check": "`canonicalCode` returns null for null, otherwise `upperCase(trim(value))`; whitespace-only becomes \"\".",
+    "rationale": "Coalescing null to \"\" (nvl) returns empty where the contract says null.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T68.3",
+    "check": "`pricedAmount` returns null when gross or pct is null.",
+    "rationale": "Defaulting a missing gross or pct to 0 prices an unknown invoice.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T68.4",
+    "check": "A null surcharge is treated as zero (e.g. `nvl(surcharge, 0D)`), independently of the null rule for gross and pct.",
+    "rationale": "Adding a null surcharge makes the whole result null.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T68.5",
+    "check": "`pricedAmount` rounds exactly once, at the end: `round(gross*(100-pct)/100 + surcharge, 2)` (CTL `round(decimal, 2)` rounds half away from zero, so -0.005 → -0.01); the discounted subtotal is not rounded before adding the surcharge, and no clamping or abs is applied (negative gross/pct and pct > 100 are computed as is).",
+    "rationale": "Rounding the subtotal first changes results such as 0.005 + surcharge.",
+    "clauses": [
+     3,
+     4
+    ]
+   },
+   {
+    "id": "T68.6",
+    "check": "`budgetShare` returns null when amount or budget is null, tested before the zero-budget rule.",
+    "rationale": "Testing zero first returns 0.00 for a null amount.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T68.7",
+    "check": "A non-null zero budget returns `0.00` (or `0D`) without dividing.",
+    "rationale": "Dividing by a zero decimal throws.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T68.8",
+    "check": "Otherwise `budgetShare` returns `round(amount/budget*100, 2)` (or `amount*100/budget`), in decimal arithmetic, keeping the sign.",
+    "rationale": "Taking abs or rounding the ratio before multiplying by 100 loses precision or sign.",
+    "clauses": [
+     4,
+     5
+    ]
+   },
+   {
+    "id": "T68.9",
+    "check": "`businessToken` returns null when code or date is null, otherwise `canonicalCode(code) + \"/\" + date`; an empty canonical code still yields a leading slash.",
+    "rationale": "Treating empty code as missing drops valid tokens.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T68.10",
+    "check": "The token's date part is formatted `yyyy-MM-dd` with the \"UTC\" timezone argument (e.g. `date2str(value, \"yyyy-MM-dd\", \"en.US\", \"UTC\")`); without it the host timezone (CET) is used and a UTC midnight-adjacent value can shift a day.",
+    "rationale": "date2str without UTC formats 2026-01-01 23:30 UTC as 2026-01-02 on the CET host.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T68.11",
+    "check": "The wrapper sets `clean_code` from `raw_code`, `net_amount` from `pricedAmount(gross_amount, discount_percent, surcharge_amount)`, `budget_pct` from `budgetShare(net_amount, budget_amount)` (the computed net, not gross), and `business_token` from `raw_code`/`document_dt`.",
+    "rationale": "Feeding gross into budgetShare gives the wrong share whenever a discount or surcharge applies.",
+    "clauses": [
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T68.F1",
+    "check": "Keeps mutable global state (counters, caches, last values) read or written by the four functions.",
+    "rationale": "Clause 1 requires pure, history-free functions."
+   },
+   {
+    "id": "T68.F2",
+    "check": "Computes monetary results through double/number conversion (e.g. `str2double`, `cast(...,number)`) or integer division.",
+    "rationale": "Floating point or integer division changes the rounded two-place result."
+   }
+  ],
+  "notes": "Prompt says 'half-up'; CTL round(decimal,n) is half away from zero (verified) and the fixture's first row needs -0.005 → -0.01, so .5 states the CTL behaviour explicitly. Fixture has no duplicate invoice keys (reviewer advisory)."
+ },
+ "T69": {
+  "required": [
+   {
+    "id": "T69.1",
+    "check": "Defines exactly `readingValue(string)`, `readingDelta(string, string)`, `deltaStatus(string, string)` and `readingLabel(string, string)` without port access or global history, plus a Reformat `transform()` that copies the input and returns OK.",
+    "rationale": "Wrong signatures or hidden state break reuse from other graphs.",
+    "clauses": [
+     1,
+     8
+    ]
+   },
+   {
+    "id": "T69.2",
+    "check": "`readingValue` returns null for null, empty and whitespace-only input.",
+    "rationale": "str2decimal on blank text throws instead of returning null.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T69.3",
+    "check": "`readingValue` trims and checks the full grammar optional minus, 1–5 integer digits, optionally a dot and 1–2 fractional digits (e.g. regex `-?[0-9]{1,5}(\\.[0-9]{1,2})?`) before `str2decimal`, returning null without throwing on a mismatch (`+1`, `1,5`, `1e3`, `123456`, `1.234`).",
+    "rationale": "str2decimal alone accepts out-of-grammar text or throws on garbage.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T69.4",
+    "check": "`readingDelta` returns null when either side has no valid reading, otherwise `newer - older` unrounded, keeping negative values.",
+    "rationale": "Defaulting a missing old reading to 0 reports the whole reading as consumption.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T69.5",
+    "check": "`deltaStatus` returns NEW_BAD when newer is nonblank but fails the grammar, tested first (before OLD_BAD and MISSING).",
+    "rationale": "Checking older first reports OLD_BAD when both sides are malformed.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T69.6",
+    "check": "Otherwise, `deltaStatus` returns OLD_BAD when older is nonblank but invalid, even when newer is missing (tested before MISSING).",
+    "rationale": "Testing MISSING first reports MISSING for a blank newer with a malformed older.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T69.7",
+    "check": "Only after both malformed checks, MISSING when either side is null or blank after trim (blank test e.g. `isBlank(x)` or `trim(nvl(x,\"\")) == \"\"`).",
+    "rationale": "Classifying malformed text as MISSING loses the malformed-vs-absent distinction.",
+    "clauses": [
+     4,
+     5
+    ]
+   },
+   {
+    "id": "T69.8",
+    "check": "With two valid readings, RESET for a negative delta, SAME for zero, ADVANCE for positive; a valid 0 reading is a value, not missing.",
+    "rationale": "Using 0 as the missing sentinel marks a genuine zero reading as MISSING.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T69.9",
+    "check": "`readingLabel` returns null when unit is null or the text has no valid reading.",
+    "rationale": "Formatting a null value produces 'KWH:null' instead of null.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T69.10",
+    "check": "The label unit part is `upperCase(trim(unit))` (whitespace-only becomes \"\", internal spaces kept) followed by `:`.",
+    "rationale": "Coalescing null unit to \"\" or not trimming produces the wrong label.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T69.11",
+    "check": "The label number is formatted with exactly two fractional digits, no grouping and an explicit en.US locale (e.g. `num2str(value, \"0.00\", \"en.US\")`).",
+    "rationale": "Default-locale or grouped formatting renders 1234.5 as '1,234.50' or '1234,50'.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T69.12",
+    "check": "The wrapper passes `current_text` as newer and `previous_text` as older to `readingDelta`/`deltaStatus`, `current_text` to `readingValue`, and `unit_code`/`current_text` to `readingLabel`.",
+    "rationale": "Swapping arguments inverts delta signs and NEW_BAD/OLD_BAD.",
+    "clauses": [
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T69.F1",
+    "check": "Uses `meter_status`, `calibration_factor` or `captured_at` in any value, delta, status or label computation.",
+    "rationale": "Clause 7 states they are informational and must not affect interpretation."
+   },
+   {
+    "id": "T69.F2",
+    "check": "Keeps mutable global state (last reading, counters, caches) read by the public functions.",
+    "rationale": "Functions must return the same result for the same arguments regardless of call history."
+   }
+  ],
+  "notes": "Old T69.8 ('same result when invoked by a different graph') dropped as undecidable; purity is covered by .1 and F2. NEW_BAD > OLD_BAD > MISSING precedence split into .5–.7."
+ },
+ "T70": {
+  "required": [
+   {
+    "id": "T70.1",
+    "check": "DataGenerator contract: `generate()` fills `$out.0` and returns OK (or ALL/0) on every call; the row count is left to the component's `recordsNumber` (no CTL reading of FIXTURE_ROWS to limit output).",
+    "rationale": "Implementing the count in CTL needs STOP/SKIP, which aborts or loses rows.",
+    "clauses": [
+     1,
+     8
+    ]
+   },
+   {
+    "id": "T70.2",
+    "check": "A global row counter starts at 0 and is incremented once per `generate()` call (one-based n), never reset at customer boundaries.",
+    "rationale": "Resetting at customer boundaries repeats fixture_id values.",
+    "clauses": [
+     2,
+     8
+    ]
+   },
+   {
+    "id": "T70.3",
+    "check": "`fixture_id = 100000 + n` and `fixture_row = n` as long.",
+    "rationale": "Zero-based n shifts every identifier by one.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T70.4",
+    "check": "`customer_id = 1000 + (n-1)/3` with integer division, and `line_no = (n-1)%3 + 1`.",
+    "rationale": "Using n/3 or n%3 misplaces customer boundaries.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T70.5",
+    "check": "`unit_price = 12.50 + line_no` (decimal) and `quantity = line_no`.",
+    "rationale": "Integer price arithmetic loses the .50.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T70.6",
+    "check": "`discount_pct` alternates by zero-based customer index: 0 when `((n-1)/3) % 2 == 0`, else 10.",
+    "rationale": "Alternating by row parity changes discounts within one customer.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T70.7",
+    "check": "`line_total = round(unit_price*quantity*(100-discount_pct)/100, 2)` in decimal arithmetic.",
+    "rationale": "Integer percentage division or text parsing gives wrong totals.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T70.8",
+    "check": "`customer_total` is a global decimal subtotal reset to 0 when `line_no == 1` (or after line 3) and then increased by the rounded `line_total`, so the first row shows 13.50.",
+    "rationale": "Not resetting carries a previous customer's subtotal; adding the unrounded value drifts.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T70.9",
+    "check": "`event_dt = dateAdd(createDate(2026,1,1,\"UTC\"), n-1, day)` (UTC midnight; or `str2date(\"2026-01-01\",\"yyyy-MM-dd\",...,\"UTC\")`), and `fixture_received` is the same instant.",
+    "rationale": "createDate without \"UTC\" is CET midnight, which the UTC writer shows as 2025-12-31 23:00.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T70.10",
+    "check": "`fixture_state` is OPEN for odd n and CLOSED for even n.",
+    "rationale": "Using customer parity or zero-based n inverts the state.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T70.11",
+    "check": "`fixture_key = \"FIX-\"` + fixture_id and `fixture_trace = \"CUST-\"` + customer_id in plain base-10 (e.g. `num2str` or string concatenation, no grouping or padding).",
+    "rationale": "Formatted numbers with grouping separators break the keys.",
+    "clauses": [
+     7
+    ]
+   },
+   {
+    "id": "T70.12",
+    "check": "Constants tenant TEST, file synthetic, currency EUR, batch FIXTURE, and `fixture_team`, `fixture_market`, `fixture_note`, `fixture_unused_archive` assigned null on every row.",
+    "rationale": "Leaving placeholder text in nullable context fields breaks the collector comparison.",
+    "clauses": [
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T70.F1",
+    "check": "Returns STOP from `generate()` (in any branch, including to end after a count).",
+    "rationale": "STOP aborts the component and the graph fails (ERROR), even on the last row."
+   },
+   {
+    "id": "T70.F2",
+    "check": "Returns SKIP to suppress a generated row, or stops producing after an internal limit.",
+    "rationale": "recordsNumber requests an exact population; skipped calls lose rows."
+   },
+   {
+    "id": "T70.F3",
+    "check": "Uses a null test on a declared integer/decimal (counter or subtotal) to detect first use.",
+    "rationale": "Declared scalars start at 0, never null, so the branch never fires."
+   }
+  ],
+  "notes": "Comment/documentation requirement (old T70.8 'explain in a code comment') dropped; the prompt clause 8 still asks for it — consider removing it from the prompt. Runs: 8 rows, plus zero-row, one-row and partial-customer probes all pass."
+ },
+ "T71": {
+  "required": [
+   {
+    "id": "T71.1",
+    "check": "DataGenerator contract: `generate()` fills `$out.0` and returns OK (or ALL/0) on every call; termination is left to `recordsNumber` (STEPS), with no CTL count logic.",
+    "rationale": "CTL-driven termination needs STOP, which aborts the graph.",
+    "clauses": [
+     1,
+     8
+    ]
+   },
+   {
+    "id": "T71.2",
+    "check": "Global state starts at step 0, stored level 5.00 and total spill 0, and the step counter increments once per call (one-based `step_no`, `tank_row`).",
+    "rationale": "Starting at 0.00 storage or zero-based steps shifts the whole simulation.",
+    "clauses": [
+     2,
+     8
+    ]
+   },
+   {
+    "id": "T71.3",
+    "check": "`prior_level` is the carried stored level before this step's update (5.00 on step 1).",
+    "rationale": "Writing prior_level after the update reports the new level as the prior.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T71.4",
+    "check": "Inflow follows the global cycle by `(step-1)%3`: 7.00, 0.00, 4.00, with step 4 overridden to 10.00.",
+    "rationale": "Restarting the cycle or missing the step 4 override changes every later level.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T71.5",
+    "check": "Withdrawal is 3.00 on odd steps and 8.00 on even steps, with step 4 overridden to 0.00.",
+    "rationale": "Applying parity before the step 4 exception withdraws 8.00 on the flush step.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T71.6",
+    "check": "A negative unclipped value (`prior + inflow - withdrawal`) stores 0 with spill 0.",
+    "rationale": "Storing a negative level breaks the next step's balance.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T71.7",
+    "check": "An unclipped value above 10 stores 10.00 with `spill_amount = raw - 10` (step 4 spills 2.00); within [0,10] spill is 0.",
+    "rationale": "Missing the upper clip loses the spill and overstates storage.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T71.8",
+    "check": "The next step's prior is the clipped stored level, not the unclipped value.",
+    "rationale": "Carrying the raw value lets overflow or deficit leak into the following step.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T71.9",
+    "check": "`total_spill` accumulates `spill_amount` across the whole run, including the current step, never reset when the level is empty or full.",
+    "rationale": "Resetting at a boundary loses the earlier spill (the fixture keeps 2.00 to the end).",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T71.10",
+    "check": "`level_band` is EMPTY when stored level `== 0`, FULL when `== 10`, else PARTIAL.",
+    "rationale": "Testing < or > misses the boundary bands.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T71.11",
+    "check": "`simulation_day = dateAdd(createDate(2026,2,1,\"UTC\"), step-1, day)` (UTC midnight), and `tank_received` is the same instant.",
+    "rationale": "createDate without \"UTC\" is CET midnight, written as the previous day 23:00 UTC.",
+    "clauses": [
+     7
+    ]
+   },
+   {
+    "id": "T71.12",
+    "check": "`tank_key = \"SIM-\"` + step and `tank_trace = \"STEP-\"` + step in plain base-10, constants LAB/reservoir/UNIT/SIM, and team, market, note, archive assigned null.",
+    "rationale": "Wrong key text breaks the assertion collector's join.",
+    "clauses": [
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T71.F1",
+    "check": "Returns STOP from `generate()` (in any branch).",
+    "rationale": "STOP aborts the component and the graph fails (ERROR)."
+   },
+   {
+    "id": "T71.F2",
+    "check": "Reinitialises the stored level to 5.00 when it is 0, or detects first use by a null/zero test on the level.",
+    "rationale": "A stored 0 is real state; reinitialising breaks the recurrence after an empty step (step 8)."
+   }
+  ],
+  "notes": "Comment requirement in clause 8 dropped from the rubric (prompt still asks for it). Recurrence graded atomically in .6–.9 (lower clip, upper clip/spill, clipped carry, cumulative spill). Runs: 9 steps plus zero-step and one-step probes pass."
+ },
+ "T72": {
+  "required": [
+   {
+    "id": "T72.1",
+    "check": "Reformat contract: `transform()` copies the input (e.g. `$out.0.* = $in.0.*`), adds the audit fields and returns OK for every record.",
+    "rationale": "Returning SKIP for a duplicate tuple drops a separate arrival.",
+    "clauses": [
+     7,
+     8
+    ]
+   },
+   {
+    "id": "T72.2",
+    "check": "`run_id` reads AUDIT_RUN_ID and `audit_source` reads SOURCE_FILE (either `getParamValue(\"P\")` or `\"${P}\"`), with `receipt_file` left as read.",
+    "rationale": "Writing SOURCE_FILE into receipt_file overwrites the original attribute.",
+    "clauses": [
+     1,
+     7
+    ]
+   },
+   {
+    "id": "T72.3",
+    "check": "`run_ts` parses RUN_TS with pattern `yyyy-MM-dd HH:mm:ss` and the \"UTC\" timezone argument (strict flag as the prompt asks).",
+    "rationale": "Without \"UTC\" the host (CET) parses 08:00 as 07:00 UTC.",
+    "clauses": [
+     1
+    ]
+   },
+   {
+    "id": "T72.4",
+    "check": "A null tuple component is represented as `N`, and a non-null string as `V` + the exact original text (no trim or case change), so null and empty give different parts.",
+    "rationale": "Coalescing null to \"\" makes null and empty merchant collide.",
+    "clauses": [
+     2
+    ]
+   },
+   {
+    "id": "T72.5",
+    "check": "A non-null amount is `V` + fixed two-decimal en.US text without grouping (e.g. `num2str(x, \"0.00\", \"en.US\")`).",
+    "rationale": "Default formatting can emit '1234.5' or grouped/locale-specific text, changing the digest.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T72.6",
+    "check": "A non-null posting date is `V` + `date2str(dt, \"yyyy-MM-dd HH:mm:ss\", <locale>, \"UTC\")`.",
+    "rationale": "Without \"UTC\" the date text is the CET representation, one hour off.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T72.7",
+    "check": "Each part is framed as `num2str(length(part)) + \":\" + part`, where the length includes the N/V marker (`length()` counts UTF-16 units).",
+    "rationale": "Measuring the value without the marker or using a separator instead of a length frame breaks injectivity.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T72.8",
+    "check": "The four frames are concatenated in the order merchant_cd, transaction_ref, posted_amount, posting_dt, with no separator between frames.",
+    "rationale": "A different order or extra separator yields a different digest.",
+    "clauses": [
+     2,
+     4
+    ]
+   },
+   {
+    "id": "T72.9",
+    "check": "`record_digest` is the lowercase hex SHA-256 of the framed string: `sha256HexString(s)` (optionally `lowerCase`) or an equivalent hex conversion of `sha256(s)` (hashes the UTF-8 bytes).",
+    "rationale": "MD5/SHA-1 or uppercase hex does not match the comparison tool.",
+    "clauses": [
+     5
+    ]
+   },
+   {
+    "id": "T72.10",
+    "check": "`audit_seq = sequence(AuditRows, long).next()` called exactly once per record inside `transform()`.",
+    "rationale": "Integer access or calling next() twice desynchronises audit_seq.",
+    "clauses": [
+     6,
+     8
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T72.F1",
+    "check": "Calls the sequence's `next()`/`reset()` in `init()`, `preExecute()` or `postExecute()`.",
+    "rationale": "Consuming or resetting outside transformation shifts every audit_seq."
+   },
+   {
+    "id": "T72.F2",
+    "check": "Uses the current clock (`today()`) for `run_ts` instead of RUN_TS.",
+    "rationale": "run_ts must be the orchestration timestamp so reruns compare."
+   },
+   {
+    "id": "T72.F3",
+    "check": "Caches digests and skips rows or sequence consumption for a repeated tuple.",
+    "rationale": "Duplicate tuples are separate arrivals and each consumes one sequence value (clause 8)."
+   }
+  ],
+  "notes": "Fixture tuples are ASCII-only, so UTF-16 vs code-point/byte framing is not exercised by the run (reviewer advisory); the item text states the UTF-16 rule."
+ },
+ "T73": {
+  "required": [
+   {
+    "id": "T73.1",
+    "check": "Reformat contract: `transform()` copies the input (e.g. `$out.0.* = $in.0.*`), sets the audit fields and returns OK for every record (no SKIP, no reordering).",
+    "rationale": "Dropping BAD_TIME rows loses audit evidence the spec keeps as ordinary output.",
+    "clauses": [
+     3,
+     8
+    ]
+   },
+   {
+    "id": "T73.2",
+    "check": "The bypass test `!dictionary.auditEnabled || !$in.0.audit_requested` → BYPASS comes before any read of `submitted_txt` or parse of `cutoffText` on that row.",
+    "rationale": "Parsing first fails on a malformed timestamp or cutoff when auditing is off.",
+    "clauses": [
+     1,
+     2
+    ]
+   },
+   {
+    "id": "T73.3",
+    "check": "Every non-accepted row (BYPASS, BAD_TIME, TOO_OLD) emits `accepted_at` null, `accepted_index` 0, `previous_claim_key` null and `accepted_running` = the current total.",
+    "rationale": "Emitting null or 0 for the running total on rejected rows loses the accumulated sum.",
+    "clauses": [
+     2,
+     3,
+     4,
+     6
+    ]
+   },
+   {
+    "id": "T73.4",
+    "check": "`audit_label` = `dictionary.auditLabel` on enabled+requested rows (including BAD_TIME and TOO_OLD) and null on BYPASS.",
+    "rationale": "Setting the label only on ACCEPTED rows drops it from rejected audits.",
+    "clauses": [
+     2,
+     8
+    ]
+   },
+   {
+    "id": "T73.5",
+    "check": "`submitted_txt` null, blank or not exactly `yyyy-MM-dd HH:mm:ss` (explicit full-string shape check, e.g. a regex) → BAD_TIME, without throwing.",
+    "rationale": "Lenient or unshaped parsing accepts single-digit fields or trailing text, or throws on null.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T73.6",
+    "check": "An impossible calendar timestamp → BAD_TIME, detected by strict `isDate(...,\"UTC\",true)` or the conditional-fail `str2date(...,true) : null` form, and a valid value is parsed in UTC.",
+    "rationale": "Strict str2date without a guard throws on 2025-02-30; lenient parsing rolls it over.",
+    "clauses": [
+     3
+    ]
+   },
+   {
+    "id": "T73.7",
+    "check": "`cutoffText` is parsed strictly in UTC either on the valid-submission path of each row or once in `init()` guarded by `dictionary.auditEnabled`; submitted `<` cutoff → TOO_OLD, equality accepted.",
+    "rationale": "Using <= rejects the cutoff instant; parsing in CET shifts the boundary by an hour.",
+    "clauses": [
+     4
+    ]
+   },
+   {
+    "id": "T73.8",
+    "check": "An accepted row emits ACCEPTED, `accepted_at` = the parsed submission time, and `accepted_index` = a global counter incremented only on accepted rows (one-based).",
+    "rationale": "Counting every row or every requested row gives wrong indices.",
+    "clauses": [
+     5,
+     9
+    ]
+   },
+   {
+    "id": "T73.9",
+    "check": "On an accepted row the running total adds `nvl(claimed_amount, 0)` before `accepted_running` is emitted; non-accepted rows do not change it.",
+    "rationale": "Adding a null amount makes the total null; emitting before adding is one row behind.",
+    "clauses": [
+     6
+    ]
+   },
+   {
+    "id": "T73.10",
+    "check": "`previous_claim_key` is null on the first accepted row and otherwise the exact `claim_key` of the previous accepted row, with existence tracked by an explicit boolean or the accepted count (so an empty \"\" key is a valid previous key), updated only on accepted rows.",
+    "rationale": "Using \"\" as the 'no previous' marker treats an accepted empty key as absent.",
+    "clauses": [
+     7
+    ]
+   }
+  ],
+  "forbidden": [
+   {
+    "id": "T73.F1",
+    "check": "Assigns to any dictionary entry (e.g. `dictionary.x = ...`) to store counters, totals or keys.",
+    "rationale": "Clause 9: dictionary entries are read-only configuration."
+   },
+   {
+    "id": "T73.F2",
+    "check": "Parses `cutoffText` (in `init()` or per row) without the `auditEnabled` guard or before the bypass test.",
+    "rationale": "A malformed cutoff must be safe when auditing is disabled (probe T73_disabled_invalid_cutoff)."
+   }
+  ],
+  "notes": "Parsing the cutoff once in init() guarded by dictionary.auditEnabled is accepted (prompt guarantees validity when enabled). Dictionary entries are read as dictionary.x. Fixture has no duplicate claim_key (reviewer advisory)."
+ }
+}

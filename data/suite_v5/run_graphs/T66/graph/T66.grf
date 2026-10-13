@@ -1,0 +1,601 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T66" id="6101300066" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Overdue payment routing bypasses irrelevant amount defects
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="PaymentRoute" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="long" nullable="false" />
+        <Field name="payment_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="boolean" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="due_at" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="string" nullable="false" />
+        <Field name="payment_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="string" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="string" nullable="true" />
+        <Field name="due_at" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="PaymentRoute" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="long" nullable="false" />
+        <Field name="payment_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="boolean" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="due_at" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="string" nullable="false" />
+        <Field name="payment_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="string" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="string" nullable="true" />
+        <Field name="due_at" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out1">
+      <Record name="PaymentRoute" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="long" nullable="false" />
+        <Field name="payment_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="boolean" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="due_at" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut1">
+      <Record name="RawOutput1" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="string" nullable="false" />
+        <Field name="payment_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="string" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="string" nullable="true" />
+        <Field name="due_at" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out2">
+      <Record name="PaymentRoute" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="long" nullable="false" />
+        <Field name="payment_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="boolean" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="due_at" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut2">
+      <Record name="RawOutput2" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="string" nullable="false" />
+        <Field name="payment_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="string" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="string" nullable="true" />
+        <Field name="due_at" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out3">
+      <Record name="PaymentRoute" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="long" nullable="false" />
+        <Field name="payment_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="boolean" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="due_at" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut3">
+      <Record name="RawOutput3" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="string" nullable="false" />
+        <Field name="payment_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="string" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="string" nullable="true" />
+        <Field name="due_at" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out4">
+      <Record name="PaymentRoute" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="long" nullable="false" />
+        <Field name="payment_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="boolean" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="due_at" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut4">
+      <Record name="RawOutput4" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="string" nullable="false" />
+        <Field name="payment_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="string" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="string" nullable="true" />
+        <Field name="due_at" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out5">
+      <Record name="PaymentRoute" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="long" nullable="false" />
+        <Field name="payment_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="boolean" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="due_at" type="date" nullable="true" format="yyyy-MM-dd" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut5">
+      <Record name="RawOutput5" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="payment_key" type="string" nullable="false" />
+        <Field name="payment_tenant" type="string" nullable="false" />
+        <Field name="payment_file" type="string" nullable="false" />
+        <Field name="payment_row" type="string" nullable="false" />
+        <Field name="payment_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="payment_team" type="string" nullable="true" />
+        <Field name="payment_market" type="string" nullable="true" />
+        <Field name="payment_currency" type="string" nullable="false" />
+        <Field name="payment_batch" type="string" nullable="false" />
+        <Field name="payment_note" type="string" nullable="true" />
+        <Field name="payment_trace" type="string" nullable="true" />
+        <Field name="payment_unused_archive" type="string" nullable="true" />
+        <Field name="status_cd" type="string" nullable="true" />
+        <Field name="hold_flag" type="string" nullable="false" />
+        <Field name="amount_txt" type="string" nullable="true" />
+        <Field name="invoice_day_txt" type="string" nullable="true" />
+        <Field name="priority_cd" type="string" nullable="true" />
+        <Field name="insured_value" type="string" nullable="true" />
+        <Field name="due_at" type="string" nullable="true" timeZone="UTC" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T66_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.payment_key=$in.0.payment_key;
+$out.0.payment_tenant=$in.0.payment_tenant;
+$out.0.payment_file=$in.0.payment_file;
+$out.0.payment_row=$in.0.payment_row == null ? null : str2long($in.0.payment_row);
+$out.0.payment_received=$in.0.payment_received == null ? null : str2date($in.0.payment_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.payment_team=$in.0.payment_team;
+$out.0.payment_market=$in.0.payment_market;
+$out.0.payment_currency=$in.0.payment_currency;
+$out.0.payment_batch=$in.0.payment_batch;
+$out.0.payment_note=$in.0.payment_note;
+$out.0.payment_trace=$in.0.payment_trace;
+$out.0.payment_unused_archive=$in.0.payment_unused_archive;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.hold_flag=$in.0.hold_flag == null ? null : str2bool($in.0.hold_flag);
+$out.0.amount_txt=$in.0.amount_txt;
+$out.0.invoice_day_txt=$in.0.invoice_day_txt;
+$out.0.priority_cd=$in.0.priority_cd;
+$out.0.insured_value=$in.0.insured_value == null ? null : str2decimal($in.0.insured_value);
+$out.0.due_at=$in.0.due_at == null ? null : str2date($in.0.due_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="PARTITION" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="partitionSource">//#CTL2
+function integer getOutputPort(){
+ if($in.0.status_cd=="REVERSED")return 0;if($in.0.hold_flag)return 1;
+ string dayText=trim(nvl($in.0.invoice_day_txt,""));
+ if(dayText!=""){
+  if(!(dayText ~= "[0-9]{4}-[0-9]{2}-[0-9]{2}") || !isDate(dayText,"yyyy-MM-dd","en.US","UTC",true))return 5;
+  date invoice=str2date(dayText,"yyyy-MM-dd","en.US","UTC",true);
+  if(invoice&lt;createDate(2026,1,1,"UTC"))return 2;
+ }
+ string raw=trim(nvl($in.0.amount_txt,""));
+ if(raw!="" &amp;&amp; !(raw ~= "-?[0-9]{1,6}(\\.[0-9]{1,2})?"))return 5;
+ decimal amount=raw=="" ? 0D : str2decimal(raw);
+ if(amount&gt;=10000D || ($in.0.priority_cd=="URGENT" &amp;&amp; amount&gt;0D))return 3;
+ return 4;
+}
+function integer getOutputPortOnError(string message,string stackTrace){printLog(error,message);return 5;}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.payment_key=$in.0.payment_key;
+$out.0.payment_tenant=$in.0.payment_tenant;
+$out.0.payment_file=$in.0.payment_file;
+$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);
+$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.payment_team=$in.0.payment_team;
+$out.0.payment_market=$in.0.payment_market;
+$out.0.payment_currency=$in.0.payment_currency;
+$out.0.payment_batch=$in.0.payment_batch;
+$out.0.payment_note=$in.0.payment_note;
+$out.0.payment_trace=$in.0.payment_trace;
+$out.0.payment_unused_archive=$in.0.payment_unused_archive;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? "true" : "false");
+$out.0.amount_txt=$in.0.amount_txt;
+$out.0.invoice_day_txt=$in.0.invoice_day_txt;
+$out.0.priority_cd=$in.0.priority_cd;
+$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,"0.00","en.US");
+$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T66_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode1" type="REFORMAT" enabled="enabled" guiName="Encode1" guiX="725" guiY="375">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.payment_key=$in.0.payment_key;
+$out.0.payment_tenant=$in.0.payment_tenant;
+$out.0.payment_file=$in.0.payment_file;
+$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);
+$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.payment_team=$in.0.payment_team;
+$out.0.payment_market=$in.0.payment_market;
+$out.0.payment_currency=$in.0.payment_currency;
+$out.0.payment_batch=$in.0.payment_batch;
+$out.0.payment_note=$in.0.payment_note;
+$out.0.payment_trace=$in.0.payment_trace;
+$out.0.payment_unused_archive=$in.0.payment_unused_archive;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? "true" : "false");
+$out.0.amount_txt=$in.0.amount_txt;
+$out.0.invoice_day_txt=$in.0.invoice_day_txt;
+$out.0.priority_cd=$in.0.priority_cd;
+$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,"0.00","en.US");
+$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer1" type="DATA_WRITER" enabled="enabled" guiName="Writer1" guiX="950" guiY="375">
+      <attr name="fileURL">suite_v5/data-out/T66_out_1.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result1" fromNode="Test:1" toNode="Encode1:0" metadata="Out1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written1" fromNode="Encode1:0" toNode="Writer1:0" metadata="RawOut1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode2" type="REFORMAT" enabled="enabled" guiName="Encode2" guiX="725" guiY="550">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.payment_key=$in.0.payment_key;
+$out.0.payment_tenant=$in.0.payment_tenant;
+$out.0.payment_file=$in.0.payment_file;
+$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);
+$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.payment_team=$in.0.payment_team;
+$out.0.payment_market=$in.0.payment_market;
+$out.0.payment_currency=$in.0.payment_currency;
+$out.0.payment_batch=$in.0.payment_batch;
+$out.0.payment_note=$in.0.payment_note;
+$out.0.payment_trace=$in.0.payment_trace;
+$out.0.payment_unused_archive=$in.0.payment_unused_archive;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? "true" : "false");
+$out.0.amount_txt=$in.0.amount_txt;
+$out.0.invoice_day_txt=$in.0.invoice_day_txt;
+$out.0.priority_cd=$in.0.priority_cd;
+$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,"0.00","en.US");
+$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer2" type="DATA_WRITER" enabled="enabled" guiName="Writer2" guiX="950" guiY="550">
+      <attr name="fileURL">suite_v5/data-out/T66_out_2.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result2" fromNode="Test:2" toNode="Encode2:0" metadata="Out2" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written2" fromNode="Encode2:0" toNode="Writer2:0" metadata="RawOut2" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode3" type="REFORMAT" enabled="enabled" guiName="Encode3" guiX="725" guiY="725">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.payment_key=$in.0.payment_key;
+$out.0.payment_tenant=$in.0.payment_tenant;
+$out.0.payment_file=$in.0.payment_file;
+$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);
+$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.payment_team=$in.0.payment_team;
+$out.0.payment_market=$in.0.payment_market;
+$out.0.payment_currency=$in.0.payment_currency;
+$out.0.payment_batch=$in.0.payment_batch;
+$out.0.payment_note=$in.0.payment_note;
+$out.0.payment_trace=$in.0.payment_trace;
+$out.0.payment_unused_archive=$in.0.payment_unused_archive;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? "true" : "false");
+$out.0.amount_txt=$in.0.amount_txt;
+$out.0.invoice_day_txt=$in.0.invoice_day_txt;
+$out.0.priority_cd=$in.0.priority_cd;
+$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,"0.00","en.US");
+$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer3" type="DATA_WRITER" enabled="enabled" guiName="Writer3" guiX="950" guiY="725">
+      <attr name="fileURL">suite_v5/data-out/T66_out_3.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result3" fromNode="Test:3" toNode="Encode3:0" metadata="Out3" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written3" fromNode="Encode3:0" toNode="Writer3:0" metadata="RawOut3" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode4" type="REFORMAT" enabled="enabled" guiName="Encode4" guiX="725" guiY="900">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.payment_key=$in.0.payment_key;
+$out.0.payment_tenant=$in.0.payment_tenant;
+$out.0.payment_file=$in.0.payment_file;
+$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);
+$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.payment_team=$in.0.payment_team;
+$out.0.payment_market=$in.0.payment_market;
+$out.0.payment_currency=$in.0.payment_currency;
+$out.0.payment_batch=$in.0.payment_batch;
+$out.0.payment_note=$in.0.payment_note;
+$out.0.payment_trace=$in.0.payment_trace;
+$out.0.payment_unused_archive=$in.0.payment_unused_archive;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? "true" : "false");
+$out.0.amount_txt=$in.0.amount_txt;
+$out.0.invoice_day_txt=$in.0.invoice_day_txt;
+$out.0.priority_cd=$in.0.priority_cd;
+$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,"0.00","en.US");
+$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer4" type="DATA_WRITER" enabled="enabled" guiName="Writer4" guiX="950" guiY="900">
+      <attr name="fileURL">suite_v5/data-out/T66_out_4.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result4" fromNode="Test:4" toNode="Encode4:0" metadata="Out4" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written4" fromNode="Encode4:0" toNode="Writer4:0" metadata="RawOut4" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode5" type="REFORMAT" enabled="enabled" guiName="Encode5" guiX="725" guiY="1075">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.payment_key=$in.0.payment_key;
+$out.0.payment_tenant=$in.0.payment_tenant;
+$out.0.payment_file=$in.0.payment_file;
+$out.0.payment_row=$in.0.payment_row == null ? null : num2str($in.0.payment_row);
+$out.0.payment_received=$in.0.payment_received == null ? null : date2str($in.0.payment_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.payment_team=$in.0.payment_team;
+$out.0.payment_market=$in.0.payment_market;
+$out.0.payment_currency=$in.0.payment_currency;
+$out.0.payment_batch=$in.0.payment_batch;
+$out.0.payment_note=$in.0.payment_note;
+$out.0.payment_trace=$in.0.payment_trace;
+$out.0.payment_unused_archive=$in.0.payment_unused_archive;
+$out.0.status_cd=$in.0.status_cd;
+$out.0.hold_flag=$in.0.hold_flag == null ? null : ($in.0.hold_flag ? "true" : "false");
+$out.0.amount_txt=$in.0.amount_txt;
+$out.0.invoice_day_txt=$in.0.invoice_day_txt;
+$out.0.priority_cd=$in.0.priority_cd;
+$out.0.insured_value=$in.0.insured_value == null ? null : num2str($in.0.insured_value,"0.00","en.US");
+$out.0.due_at=$in.0.due_at == null ? null : date2str($in.0.due_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer5" type="DATA_WRITER" enabled="enabled" guiName="Writer5" guiX="950" guiY="1075">
+      <attr name="fileURL">suite_v5/data-out/T66_out_5.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result5" fromNode="Test:5" toNode="Encode5:0" metadata="Out5" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written5" fromNode="Encode5:0" toNode="Writer5:0" metadata="RawOut5" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

@@ -1,0 +1,310 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T46" id="6101300046" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Customs shipment and reversal validation
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="InputT46" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="cargo_batch" type="string" nullable="false" />
+        <Field name="cargo_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="cargo_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="cargo_unused" type="string" nullable="true" />
+        <Field name="cargo_note" type="string" nullable="true" />
+        <Field name="cargo_row" type="long" nullable="false" />
+        <Field name="manifest_id" type="string" nullable="false" />
+        <Field name="movement_txt" type="string" nullable="true" />
+        <Field name="quantity_txt" type="string" nullable="true" />
+        <Field name="unit_value_txt" type="string" nullable="true" />
+        <Field name="original_manifest" type="string" nullable="true" />
+        <Field name="dispatch_txt" type="string" nullable="true" />
+        <Field name="cargo_consignee_name" type="string" nullable="true" />
+        <Field name="cargo_shipper_name" type="string" nullable="true" />
+        <Field name="cargo_origin_country" type="string" nullable="true" />
+        <Field name="cargo_border_office" type="string" nullable="true" />
+        <Field name="cargo_seal_no" type="string" nullable="true" />
+        <Field name="cargo_container_no" type="string" nullable="true" />
+        <Field name="cargo_product_desc" type="string" nullable="true" />
+        <Field name="cargo_tariff_ref" type="string" nullable="true" />
+        <Field name="cargo_driver_phone" type="string" nullable="true" />
+        <Field name="cargo_broker_note" type="string" nullable="true" />
+        <Field name="cargo_transport_mode" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="cargo_batch" type="string" nullable="false" />
+        <Field name="cargo_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="cargo_ledger" type="string" nullable="true" />
+        <Field name="cargo_unused" type="string" nullable="true" />
+        <Field name="cargo_note" type="string" nullable="true" />
+        <Field name="cargo_row" type="string" nullable="false" />
+        <Field name="manifest_id" type="string" nullable="false" />
+        <Field name="movement_txt" type="string" nullable="true" />
+        <Field name="quantity_txt" type="string" nullable="true" />
+        <Field name="unit_value_txt" type="string" nullable="true" />
+        <Field name="original_manifest" type="string" nullable="true" />
+        <Field name="dispatch_txt" type="string" nullable="true" />
+        <Field name="cargo_consignee_name" type="string" nullable="true" />
+        <Field name="cargo_shipper_name" type="string" nullable="true" />
+        <Field name="cargo_origin_country" type="string" nullable="true" />
+        <Field name="cargo_border_office" type="string" nullable="true" />
+        <Field name="cargo_seal_no" type="string" nullable="true" />
+        <Field name="cargo_container_no" type="string" nullable="true" />
+        <Field name="cargo_product_desc" type="string" nullable="true" />
+        <Field name="cargo_tariff_ref" type="string" nullable="true" />
+        <Field name="cargo_driver_phone" type="string" nullable="true" />
+        <Field name="cargo_broker_note" type="string" nullable="true" />
+        <Field name="cargo_transport_mode" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="CustomsPosting" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="cargo_batch" type="string" nullable="false" />
+        <Field name="cargo_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="cargo_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="cargo_unused" type="string" nullable="true" />
+        <Field name="cargo_note" type="string" nullable="true" />
+        <Field name="cargo_row" type="long" nullable="false" />
+        <Field name="manifest_id" type="string" nullable="false" />
+        <Field name="movement_txt" type="string" nullable="true" />
+        <Field name="quantity_txt" type="string" nullable="true" />
+        <Field name="unit_value_txt" type="string" nullable="true" />
+        <Field name="original_manifest" type="string" nullable="true" />
+        <Field name="dispatch_txt" type="string" nullable="true" />
+        <Field name="cargo_consignee_name" type="string" nullable="true" />
+        <Field name="cargo_shipper_name" type="string" nullable="true" />
+        <Field name="cargo_origin_country" type="string" nullable="true" />
+        <Field name="cargo_border_office" type="string" nullable="true" />
+        <Field name="cargo_seal_no" type="string" nullable="true" />
+        <Field name="cargo_container_no" type="string" nullable="true" />
+        <Field name="cargo_product_desc" type="string" nullable="true" />
+        <Field name="cargo_tariff_ref" type="string" nullable="true" />
+        <Field name="cargo_driver_phone" type="string" nullable="true" />
+        <Field name="cargo_broker_note" type="string" nullable="true" />
+        <Field name="cargo_transport_mode" type="string" nullable="true" />
+        <Field name="signed_quantity" type="integer" nullable="false" />
+        <Field name="declared_value" type="decimal" nullable="false" length="18" scale="2" />
+        <Field name="dispatch_day" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="cargo_batch" type="string" nullable="false" />
+        <Field name="cargo_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="cargo_ledger" type="string" nullable="true" />
+        <Field name="cargo_unused" type="string" nullable="true" />
+        <Field name="cargo_note" type="string" nullable="true" />
+        <Field name="cargo_row" type="string" nullable="false" />
+        <Field name="manifest_id" type="string" nullable="false" />
+        <Field name="movement_txt" type="string" nullable="true" />
+        <Field name="quantity_txt" type="string" nullable="true" />
+        <Field name="unit_value_txt" type="string" nullable="true" />
+        <Field name="original_manifest" type="string" nullable="true" />
+        <Field name="dispatch_txt" type="string" nullable="true" />
+        <Field name="cargo_consignee_name" type="string" nullable="true" />
+        <Field name="cargo_shipper_name" type="string" nullable="true" />
+        <Field name="cargo_origin_country" type="string" nullable="true" />
+        <Field name="cargo_border_office" type="string" nullable="true" />
+        <Field name="cargo_seal_no" type="string" nullable="true" />
+        <Field name="cargo_container_no" type="string" nullable="true" />
+        <Field name="cargo_product_desc" type="string" nullable="true" />
+        <Field name="cargo_tariff_ref" type="string" nullable="true" />
+        <Field name="cargo_driver_phone" type="string" nullable="true" />
+        <Field name="cargo_broker_note" type="string" nullable="true" />
+        <Field name="cargo_transport_mode" type="string" nullable="true" />
+        <Field name="signed_quantity" type="string" nullable="false" />
+        <Field name="declared_value" type="string" nullable="false" />
+        <Field name="dispatch_day" type="string" nullable="false" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out1">
+      <Record name="BrokerExceptions" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="cargo_batch" type="string" nullable="false" />
+        <Field name="cargo_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="cargo_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="cargo_unused" type="string" nullable="true" />
+        <Field name="cargo_note" type="string" nullable="true" />
+        <Field name="cargo_row" type="long" nullable="false" />
+        <Field name="manifest_id" type="string" nullable="false" />
+        <Field name="movement_txt" type="string" nullable="true" />
+        <Field name="quantity_txt" type="string" nullable="true" />
+        <Field name="unit_value_txt" type="string" nullable="true" />
+        <Field name="original_manifest" type="string" nullable="true" />
+        <Field name="dispatch_txt" type="string" nullable="true" />
+        <Field name="cargo_consignee_name" type="string" nullable="true" />
+        <Field name="cargo_shipper_name" type="string" nullable="true" />
+        <Field name="cargo_origin_country" type="string" nullable="true" />
+        <Field name="cargo_border_office" type="string" nullable="true" />
+        <Field name="cargo_seal_no" type="string" nullable="true" />
+        <Field name="cargo_container_no" type="string" nullable="true" />
+        <Field name="cargo_product_desc" type="string" nullable="true" />
+        <Field name="cargo_tariff_ref" type="string" nullable="true" />
+        <Field name="cargo_driver_phone" type="string" nullable="true" />
+        <Field name="cargo_broker_note" type="string" nullable="true" />
+        <Field name="cargo_transport_mode" type="string" nullable="true" />
+        <Field name="defect_list" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut1">
+      <Record name="RawOutput1" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="cargo_batch" type="string" nullable="false" />
+        <Field name="cargo_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="cargo_ledger" type="string" nullable="true" />
+        <Field name="cargo_unused" type="string" nullable="true" />
+        <Field name="cargo_note" type="string" nullable="true" />
+        <Field name="cargo_row" type="string" nullable="false" />
+        <Field name="manifest_id" type="string" nullable="false" />
+        <Field name="movement_txt" type="string" nullable="true" />
+        <Field name="quantity_txt" type="string" nullable="true" />
+        <Field name="unit_value_txt" type="string" nullable="true" />
+        <Field name="original_manifest" type="string" nullable="true" />
+        <Field name="dispatch_txt" type="string" nullable="true" />
+        <Field name="cargo_consignee_name" type="string" nullable="true" />
+        <Field name="cargo_shipper_name" type="string" nullable="true" />
+        <Field name="cargo_origin_country" type="string" nullable="true" />
+        <Field name="cargo_border_office" type="string" nullable="true" />
+        <Field name="cargo_seal_no" type="string" nullable="true" />
+        <Field name="cargo_container_no" type="string" nullable="true" />
+        <Field name="cargo_product_desc" type="string" nullable="true" />
+        <Field name="cargo_tariff_ref" type="string" nullable="true" />
+        <Field name="cargo_driver_phone" type="string" nullable="true" />
+        <Field name="cargo_broker_note" type="string" nullable="true" />
+        <Field name="cargo_transport_mode" type="string" nullable="true" />
+        <Field name="defect_list" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T46_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.cargo_batch=$in.0.cargo_batch;
+$out.0.cargo_loaded=$in.0.cargo_loaded == null ? null : str2date($in.0.cargo_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.cargo_ledger=$in.0.cargo_ledger == null ? null : str2decimal($in.0.cargo_ledger);
+$out.0.cargo_unused=$in.0.cargo_unused;
+$out.0.cargo_note=$in.0.cargo_note;
+$out.0.cargo_row=$in.0.cargo_row == null ? null : str2long($in.0.cargo_row);
+$out.0.manifest_id=$in.0.manifest_id;
+$out.0.movement_txt=$in.0.movement_txt;
+$out.0.quantity_txt=$in.0.quantity_txt;
+$out.0.unit_value_txt=$in.0.unit_value_txt;
+$out.0.original_manifest=$in.0.original_manifest;
+$out.0.dispatch_txt=$in.0.dispatch_txt;
+$out.0.cargo_consignee_name=$in.0.cargo_consignee_name;
+$out.0.cargo_shipper_name=$in.0.cargo_shipper_name;
+$out.0.cargo_origin_country=$in.0.cargo_origin_country;
+$out.0.cargo_border_office=$in.0.cargo_border_office;
+$out.0.cargo_seal_no=$in.0.cargo_seal_no;
+$out.0.cargo_container_no=$in.0.cargo_container_no;
+$out.0.cargo_product_desc=$in.0.cargo_product_desc;
+$out.0.cargo_tariff_ref=$in.0.cargo_tariff_ref;
+$out.0.cargo_driver_phone=$in.0.cargo_driver_phone;
+$out.0.cargo_broker_note=$in.0.cargo_broker_note;
+$out.0.cargo_transport_mode=$in.0.cargo_transport_mode;
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+function integer transform(){string[] e=[];string m=upperCase(trim(nvl($in.0.movement_txt,"")));boolean mode=m=="SHIP"||m=="REVERSE";if(!mode)append(e,"MOVEMENT");string q=trim(nvl($in.0.quantity_txt,""));boolean qOK=q ~= "-?[0-9]{1,6}";integer qty=0;if(qOK){qty=str2integer(q);qOK=qty!=0&amp;&amp;(m!="SHIP"||qty&gt;0)&amp;&amp;(m!="REVERSE"||qty&lt;0);}if(!qOK)append(e,"QTY");string v=trim(nvl($in.0.unit_value_txt,""));if(!(v ~= "[0-9]{1,8}(\\.[0-9]{1,2})?"))append(e,"VALUE");string orig=trim(nvl($in.0.original_manifest,""));if(m=="REVERSE"&amp;&amp;(orig==""||orig==trim($in.0.manifest_id)))append(e,"ORIGINAL");string d=nvl($in.0.dispatch_txt,"");boolean dOK=d ~= "[0-9]{8}";if(dOK)dOK=isDate(d,"yyyyMMdd","en.US","UTC",true);if(!dOK)append(e,"DISPATCH");if(length(e)&gt;0){$out.1.*=$in.0.*;$out.1.defect_list=join("|",e);return 1;}$out.0.*=$in.0.*;$out.0.signed_quantity=qty;$out.0.declared_value=qty*str2decimal(v);$out.0.dispatch_day=str2date(d,"yyyyMMdd","en.US","UTC",true);return 0;}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.cargo_batch=$in.0.cargo_batch;
+$out.0.cargo_loaded=$in.0.cargo_loaded == null ? null : date2str($in.0.cargo_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.cargo_ledger=$in.0.cargo_ledger == null ? null : num2str($in.0.cargo_ledger,"0.00","en.US");
+$out.0.cargo_unused=$in.0.cargo_unused;
+$out.0.cargo_note=$in.0.cargo_note;
+$out.0.cargo_row=$in.0.cargo_row == null ? null : num2str($in.0.cargo_row);
+$out.0.manifest_id=$in.0.manifest_id;
+$out.0.movement_txt=$in.0.movement_txt;
+$out.0.quantity_txt=$in.0.quantity_txt;
+$out.0.unit_value_txt=$in.0.unit_value_txt;
+$out.0.original_manifest=$in.0.original_manifest;
+$out.0.dispatch_txt=$in.0.dispatch_txt;
+$out.0.cargo_consignee_name=$in.0.cargo_consignee_name;
+$out.0.cargo_shipper_name=$in.0.cargo_shipper_name;
+$out.0.cargo_origin_country=$in.0.cargo_origin_country;
+$out.0.cargo_border_office=$in.0.cargo_border_office;
+$out.0.cargo_seal_no=$in.0.cargo_seal_no;
+$out.0.cargo_container_no=$in.0.cargo_container_no;
+$out.0.cargo_product_desc=$in.0.cargo_product_desc;
+$out.0.cargo_tariff_ref=$in.0.cargo_tariff_ref;
+$out.0.cargo_driver_phone=$in.0.cargo_driver_phone;
+$out.0.cargo_broker_note=$in.0.cargo_broker_note;
+$out.0.cargo_transport_mode=$in.0.cargo_transport_mode;
+$out.0.signed_quantity=$in.0.signed_quantity == null ? null : num2str($in.0.signed_quantity);
+$out.0.declared_value=$in.0.declared_value == null ? null : num2str($in.0.declared_value,"0.00","en.US");
+$out.0.dispatch_day=$in.0.dispatch_day == null ? null : date2str($in.0.dispatch_day,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T46_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode1" type="REFORMAT" enabled="enabled" guiName="Encode1" guiX="725" guiY="375">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.cargo_batch=$in.0.cargo_batch;
+$out.0.cargo_loaded=$in.0.cargo_loaded == null ? null : date2str($in.0.cargo_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.cargo_ledger=$in.0.cargo_ledger == null ? null : num2str($in.0.cargo_ledger,"0.00","en.US");
+$out.0.cargo_unused=$in.0.cargo_unused;
+$out.0.cargo_note=$in.0.cargo_note;
+$out.0.cargo_row=$in.0.cargo_row == null ? null : num2str($in.0.cargo_row);
+$out.0.manifest_id=$in.0.manifest_id;
+$out.0.movement_txt=$in.0.movement_txt;
+$out.0.quantity_txt=$in.0.quantity_txt;
+$out.0.unit_value_txt=$in.0.unit_value_txt;
+$out.0.original_manifest=$in.0.original_manifest;
+$out.0.dispatch_txt=$in.0.dispatch_txt;
+$out.0.cargo_consignee_name=$in.0.cargo_consignee_name;
+$out.0.cargo_shipper_name=$in.0.cargo_shipper_name;
+$out.0.cargo_origin_country=$in.0.cargo_origin_country;
+$out.0.cargo_border_office=$in.0.cargo_border_office;
+$out.0.cargo_seal_no=$in.0.cargo_seal_no;
+$out.0.cargo_container_no=$in.0.cargo_container_no;
+$out.0.cargo_product_desc=$in.0.cargo_product_desc;
+$out.0.cargo_tariff_ref=$in.0.cargo_tariff_ref;
+$out.0.cargo_driver_phone=$in.0.cargo_driver_phone;
+$out.0.cargo_broker_note=$in.0.cargo_broker_note;
+$out.0.cargo_transport_mode=$in.0.cargo_transport_mode;
+$out.0.defect_list=$in.0.defect_list;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer1" type="DATA_WRITER" enabled="enabled" guiName="Writer1" guiX="950" guiY="375">
+      <attr name="fileURL">suite_v5/data-out/T46_out_1.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result1" fromNode="Test:1" toNode="Encode1:0" metadata="Out1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written1" fromNode="Encode1:0" toNode="Writer1:0" metadata="RawOut1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

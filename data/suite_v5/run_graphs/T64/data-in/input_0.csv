@@ -1,0 +1,8 @@
+BASKET1|ACME|basket.csv|1|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1||X1|keep:1|"{""lines"": [{""sku"": "" A "", ""details"": {""note"": """"}, ""amount"": ""1.25""}, {""sku"": "" A "", ""details"": null, ""amount"": null}, {""sku"": ""B"", ""details"": {""note"": "" x ""}, ""amount"": ""-2.00""}]}"|__NULL__|2026-01-01 00:00:00.000
+BASKET1|ACME|basket.csv|2|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X2|keep:2|{}|12.50|2026-01-01 00:00:00.000
+BASKET3|ACME|basket.csv|3|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X3|keep:3|__NULL__|__NULL__|__NULL__
+BASKET4|ACME|basket.csv|4|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X4|keep:4||12.50|2026-01-01 00:00:00.000
+BASKET5|ACME|basket.csv|5|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X5|keep:5|   |__NULL__|2026-01-01 00:00:00.000
+BASKET6|ACME|basket.csv|6|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X6|keep:6|"{""lines"": null}"|12.50|2026-01-01 00:00:00.000
+BASKET7|ACME|basket.csv|7|2026-01-01 00:00:00.000|__NULL__|CZ|EUR|B1|__NULL__|X7|keep:7|"{""lines"": []}"|__NULL__|2026-01-01 00:00:00.000
+BASKET8|ACME|basket.csv|8|2026-01-01 00:00:00.000|OPS|CZ|EUR|B1|__NULL__|X8|keep:8|"{""lines"": [{""sku"": ""LAST"", ""details"": {}, ""amount"": ""0.00""}]}"|12.50|2026-01-01 00:00:00.000

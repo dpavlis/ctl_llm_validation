@@ -1,0 +1,1409 @@
+[
+  {
+    "test_id": "P901",
+    "label": "P901",
+    "graph_file": "suite_v5/graph/P901.grf",
+    "graph_sha256": "cf8a271021d642c0566b779c25533dbbe5e79e6c474142218df901f1b44d1766",
+    "reference_sha256": "f96dd40fb5ee9fad411d2e9f9bc5d59ff913d2a6417d175014526a7bc7cedf92",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/P901/expected/output_0.json"
+    ],
+    "reference_runs": false,
+    "run_ids": [
+      17907
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "case_id": 1,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 2,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 3,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 4,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 5,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 6,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 7,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 8,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          }
+        ],
+        "expected": [
+          {
+            "case_id": 1,
+            "raw_date": "2025-02-30",
+            "decimal_threw": false,
+            "decimal_null": true,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 2,
+            "raw_date": "2025-1-1",
+            "decimal_threw": false,
+            "decimal_null": true,
+            "is_date": true,
+            "parse_threw": false,
+            "parsed_date": "2025-01-01 00:00:00",
+            "unicode_length": 3
+          },
+          {
+            "case_id": 3,
+            "raw_date": "2025-02-30",
+            "decimal_threw": false,
+            "decimal_null": true,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 4,
+            "raw_date": "2025-1-1",
+            "decimal_threw": false,
+            "decimal_null": true,
+            "is_date": true,
+            "parse_threw": false,
+            "parsed_date": "2025-01-01 00:00:00",
+            "unicode_length": 3
+          },
+          {
+            "case_id": 5,
+            "raw_date": "2025-02-30",
+            "decimal_threw": false,
+            "decimal_null": true,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 6,
+            "raw_date": "2025-1-1",
+            "decimal_threw": false,
+            "decimal_null": true,
+            "is_date": true,
+            "parse_threw": false,
+            "parsed_date": "2025-01-01 00:00:00",
+            "unicode_length": 3
+          },
+          {
+            "case_id": 7,
+            "raw_date": "2025-02-30",
+            "decimal_threw": false,
+            "decimal_null": true,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 8,
+            "raw_date": "2025-1-1",
+            "decimal_threw": false,
+            "decimal_null": true,
+            "is_date": true,
+            "parse_threw": false,
+            "parsed_date": "2025-01-01 00:00:00",
+            "unicode_length": 3
+          }
+        ],
+        "actual_file": "run_graphs/P901/data-out/output_0.csv",
+        "pass_count": 0
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": false,
+        "actual": {
+          "case_id": 1,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 1,
+          "raw_date": "2025-02-30",
+          "decimal_threw": false,
+          "decimal_null": true,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": false,
+        "actual": {
+          "case_id": 2,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 2,
+          "raw_date": "2025-1-1",
+          "decimal_threw": false,
+          "decimal_null": true,
+          "is_date": true,
+          "parse_threw": false,
+          "parsed_date": "2025-01-01 00:00:00",
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 2,
+        "passed": false,
+        "actual": {
+          "case_id": 3,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 3,
+          "raw_date": "2025-02-30",
+          "decimal_threw": false,
+          "decimal_null": true,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 3,
+        "passed": false,
+        "actual": {
+          "case_id": 4,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 4,
+          "raw_date": "2025-1-1",
+          "decimal_threw": false,
+          "decimal_null": true,
+          "is_date": true,
+          "parse_threw": false,
+          "parsed_date": "2025-01-01 00:00:00",
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 4,
+        "passed": false,
+        "actual": {
+          "case_id": 5,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 5,
+          "raw_date": "2025-02-30",
+          "decimal_threw": false,
+          "decimal_null": true,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 5,
+        "passed": false,
+        "actual": {
+          "case_id": 6,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 6,
+          "raw_date": "2025-1-1",
+          "decimal_threw": false,
+          "decimal_null": true,
+          "is_date": true,
+          "parse_threw": false,
+          "parsed_date": "2025-01-01 00:00:00",
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 6,
+        "passed": false,
+        "actual": {
+          "case_id": 7,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 7,
+          "raw_date": "2025-02-30",
+          "decimal_threw": false,
+          "decimal_null": true,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 7,
+        "passed": false,
+        "actual": {
+          "case_id": 8,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 8,
+          "raw_date": "2025-1-1",
+          "decimal_threw": false,
+          "decimal_null": true,
+          "is_date": true,
+          "parse_threw": false,
+          "parsed_date": "2025-01-01 00:00:00",
+          "unicode_length": 3
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17907,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P901.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:38:19.201+02:00",
+      "startTime": "2026-10-13T11:38:19.201+02:00",
+      "stopTime": "2026-10-13T11:38:19.514+02:00",
+      "durationMs": 313
+    },
+    "tracking": {
+      "run_id": "17907",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.103,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.05,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.011,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 256
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.004,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 256
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 528
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.012,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 528
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 32,
+        "total_bytes": 1568
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:38:19,218 INFO  17907 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:38:19,219 INFO  17907 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:38:19,219 INFO  17907 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:38:19,295 INFO  17907 [JobStarter_17907] Starting job: MiscExamples/suite_v5/graph/P901.grf\n\t Run ID: \t\t17907\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:38:19,337 INFO  17907 [JobExecutor_17907] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:38:19,360 INFO  17907 [JobExecutor_17907] Initializing metadata\n2026-10-13 11:38:19,360 INFO  17907 [JobExecutor_17907] Initializing phase 0\n2026-10-13 11:38:19,384 INFO  17907 [JobExecutor_17907] Phase 0 initialized successfully.\n2026-10-13 11:38:19,397 INFO  17907 [WatchDog_17907] Job execution type: ETL_GRAPH\n2026-10-13 11:38:19,397 INFO  17907 [WatchDog_17907] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P901.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P901.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17907\nPROJECT=.\nROOT_RUN_ID=17907\nRUN_ID=17907\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:38:19,397 INFO  17907 [WatchDog_17907] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:38:19,431 INFO  17907 [WatchDog_17907] Starting up all nodes in phase [0]\n2026-10-13 11:38:19,437 INFO  17907 [WatchDog_17907] Successfully started all nodes in phase!\n2026-10-13 11:38:19,495 INFO  17907 [WatchDog_17907] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:38:19,503 INFO  17907 [WatchDog_17907] Time: 13/10/2026 11:38:19, JVM heap used: 100 MB\n2026-10-13 11:38:19,503 INFO  17907 [WatchDog_17907] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:38:19,503 INFO  17907 [WatchDog_17907] ---------------------------------------------------------------------------------\n2026-10-13 11:38:19,503 INFO  17907 [WatchDog_17907] Test                     Test                                        FINISHED_OK\n2026-10-13 11:38:19,504 INFO  17907 [WatchDog_17907]  (alloc:1MB, cpu:22%)           Out:0              8          0     160        5\n2026-10-13 11:38:19,504 INFO  17907 [WatchDog_17907] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:38:19,504 INFO  17907 [WatchDog_17907]  (alloc:0MB, cpu:8%)             In:0              8          0     160        5\n2026-10-13 11:38:19,504 INFO  17907 [WatchDog_17907]                                 Out:0              8          0     160       10\n2026-10-13 11:38:19,504 INFO  17907 [WatchDog_17907] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:38:19,504 INFO  17907 [WatchDog_17907]  (alloc:2MB, cpu:24%)            In:0              8          0     160       10\n2026-10-13 11:38:19,504 INFO  17907 [WatchDog_17907] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:38:19,504 INFO  17907 [WatchDog_17907] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:38:19,505 INFO  17907 [WatchDog_17907] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:38:19,509 INFO  17907 [WatchDog_17907] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:38:19,509 INFO  17907 [WatchDog_17907] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:38:19,509 INFO  17907 [WatchDog_17907] 0                 FINISHED_OK                        0               100\n2026-10-13 11:38:19,509 INFO  17907 [WatchDog_17907] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:38:19,516 INFO  17907 [JobFinalizer_17907] Job finished: MiscExamples/suite_v5/graph/P901.grf\n\t Run ID: \t\t17907\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t313 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P901/mcp_evidence.json"
+  },
+  {
+    "test_id": "P902",
+    "label": "P902",
+    "graph_file": "suite_v5/graph/P902.grf",
+    "graph_sha256": "ddb7b07e3847f504a1034ef62c71c14c1bbe7d6cd679e6ccb12aa13984c0a620",
+    "reference_sha256": "22e560c865b87ef3ed979ff771122daa1803bc4b7ae74b4a0f00d1032b299b34",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/P902/expected/output_0.json"
+    ],
+    "reference_runs": false,
+    "run_ids": [
+      17908
+    ],
+    "outputs": {},
+    "row_checks": [],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": [
+        {
+          "severity": "WARNING",
+          "priority": "NORMAL",
+          "elementId": "Test",
+          "elementName": "Test",
+          "attributeName": null,
+          "exceptionStackTrace": "org.jetel.exception.LoadClassException: CTL code compilation finished with 1 errors.\nError: Line 2 column 65 - Line 2 column 73: Unreachable code!\n\tat org.jetel.component.TransformFactory.createTransformFromCode(TransformFactory.java:304)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:205)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:262)\n\tat org.jetel.component.TransformFactory.checkConfig(TransformFactory.java:180)\n\tat org.jetel.component.ExtDataGenerator.checkConfig(ExtDataGenerator.java:269)\n\tat org.jetel.graph.Phase.checkConfig(Phase.java:364)\n\tat org.jetel.graph.TransformationGraph.checkConfig(TransformationGraph.java:1417)\n\tat com.cloveretl.server.worker.runtime.d.getCheckConfigResult(Main:146)\n\tat com.cloveretl.server.worker.runtime.d.a(Main:113)\n\tat com.cloveretl.server.worker.runtime.d.a(Main:44)\n\tat com.cloveretl.server.worker.runtime.b.s(Main:76)\n\tat com.cloveretl.server.worker.runtime.b.call(Main:71)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+          "message": "CTL code compilation finished with 1 errors.\nError: Line 2 column 65 - Line 2 column 73: Unreachable code!"
+        }
+      ]
+    },
+    "completion": {
+      "runId": 17908,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P902.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:38:24.338+02:00",
+      "startTime": "2026-10-13T11:38:24.338+02:00",
+      "stopTime": "2026-10-13T11:38:24.382+02:00",
+      "durationMs": 44,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] - Component initialization failed.\n CTL code compilation finished with 1 errors.\n Error: Line 2 column 65 - Line 2 column 73: Unreachable code!",
+        "componentType": "DATA_GENERATOR"
+      }
+    },
+    "tracking": {
+      "run_id": "17908",
+      "status": "UNKNOWN",
+      "exec_seconds": null,
+      "phases": [],
+      "summary": {
+        "phase_count": 0,
+        "node_count": 0,
+        "port_count": 0,
+        "total_records": 0,
+        "total_bytes": 0
+      },
+      "warning": "No tracking data available — the job may not have started or tracking was not recorded."
+    },
+    "log": {
+      "text": "2026-10-13 11:38:24,341 INFO  17908 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:38:24,341 INFO  17908 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:38:24,341 INFO  17908 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:38:24,346 INFO  17908 [JobStarter_17908] Starting job: MiscExamples/suite_v5/graph/P902.grf\n\t Run ID: \t\t17908\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:38:24,353 INFO  17908 [JobExecutor_17908] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:38:24,374 INFO  17908 [JobExecutor_17908] Initializing metadata\n2026-10-13 11:38:24,374 INFO  17908 [JobExecutor_17908] Initializing phase 0\n2026-10-13 11:38:24,377 ERROR 17908 [JobExecutor_17908] Job execution failed during initialization.\norg.jetel.exception.ComponentNotReadyException: Component [Test:Test] - Component initialization failed.\n\tat org.jetel.graph.Phase.init(Phase.java:180)\n\tat org.jetel.graph.TransformationGraph.init(TransformationGraph.java:565)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:262)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:243)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:233)\n\tat com.cloveretl.server.worker.runtime.h.a(Main:146)\n\tat com.cloveretl.server.worker.runtime.h.b(Main:102)\n\tat com.cloveretl.server.commons.c.b.run(Main:51)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.LoadClassException: CTL code compilation finished with 1 errors.\nError: Line 2 column 65 - Line 2 column 73: Unreachable code!\n\tat org.jetel.component.TransformFactory.createTransformFromCode(TransformFactory.java:304)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:205)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:262)\n\tat org.jetel.component.ExtDataGenerator.init(ExtDataGenerator.java:206)\n\tat org.jetel.graph.Phase.lambda$init$0(Phase.java:171)\n\tat org.jetel.util.classloader.ContextClassLoaderHelper.doInContext(ContextClassLoaderHelper.java:71)\n\tat org.jetel.graph.Phase.init(Phase.java:170)\n\t... 12 more\n2026-10-13 11:38:24,388 INFO  17908 [JobFinalizer_17908] Job finished: MiscExamples/suite_v5/graph/P902.grf\n\t Run ID: \t\t17908\n\t Status: \t\tERROR\n\t Duration: \t\t44 ms\n2026-10-13 11:38:24,388 ERROR 17908 [JobFinalizer_17908] \n--------------------------------- Error details ----------------------------------\n  Component [Test:Test] - Component initialization failed.\n   CTL code compilation finished with 1 errors.\n   Error: Line 2 column 65 - Line 2 column 73: Unreachable code!\n----------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "error": "Graph run status ERROR",
+    "evidence_file": "run_graphs/P902/mcp_evidence.json"
+  },
+  {
+    "test_id": "P903",
+    "label": "P903",
+    "graph_file": "suite_v5/graph/P903.grf",
+    "graph_sha256": "13c1fc33813f8d0d960f1df2937fb4c06815db6e0c0d25d49600fe6ac6f5e6e0",
+    "reference_sha256": "90dcc0f0635be9efed885bcd495308d80b32c08da169a7307ca60194354f4497",
+    "input_files": [
+      "run_graphs/P903/data-in/input_0.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P903/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17909
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "group_key": "A",
+            "rows_seen": 3,
+            "total": 6
+          },
+          {
+            "group_key": "B",
+            "rows_seen": 1,
+            "total": 4
+          },
+          {
+            "group_key": "C",
+            "rows_seen": 4,
+            "total": 6
+          }
+        ],
+        "expected": [
+          {
+            "group_key": "A",
+            "rows_seen": 3,
+            "total": 6
+          },
+          {
+            "group_key": "B",
+            "rows_seen": 1,
+            "total": 4
+          },
+          {
+            "group_key": "C",
+            "rows_seen": 4,
+            "total": 6
+          }
+        ],
+        "actual_file": "run_graphs/P903/data-out/output_0.csv",
+        "pass_count": 3
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "group_key": "A",
+          "rows_seen": 3,
+          "total": 6
+        },
+        "expected": {
+          "group_key": "A",
+          "rows_seen": 3,
+          "total": 6
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "group_key": "B",
+          "rows_seen": 1,
+          "total": 4
+        },
+        "expected": {
+          "group_key": "B",
+          "rows_seen": 1,
+          "total": 4
+        }
+      },
+      {
+        "port": 0,
+        "index": 2,
+        "passed": true,
+        "actual": {
+          "group_key": "C",
+          "rows_seen": 4,
+          "total": 6
+        },
+        "expected": {
+          "group_key": "C",
+          "rows_seen": 4,
+          "total": 6
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17909,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P903.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:38:29.464+02:00",
+      "startTime": "2026-10-13T11:38:29.464+02:00",
+      "stopTime": "2026-10-13T11:38:29.519+02:00",
+      "durationMs": 55
+    },
+    "tracking": {
+      "run_id": "17909",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.021,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.012,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.002,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 50
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 50
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 56
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DENORMALIZER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 56
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 33
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 33
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 27
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.003,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 27
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 44,
+        "total_bytes": 332
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:38:29,467 INFO  17909 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:38:29,467 INFO  17909 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:38:29,467 INFO  17909 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:38:29,474 INFO  17909 [JobStarter_17909] Starting job: MiscExamples/suite_v5/graph/P903.grf\n\t Run ID: \t\t17909\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:38:29,479 INFO  17909 [JobExecutor_17909] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:38:29,489 INFO  17909 [JobExecutor_17909] Initializing metadata\n2026-10-13 11:38:29,489 INFO  17909 [JobExecutor_17909] Initializing phase 0\n2026-10-13 11:38:29,493 INFO  17909 [JobExecutor_17909] Phase 0 initialized successfully.\n2026-10-13 11:38:29,494 INFO  17909 [WatchDog_17909] Job execution type: ETL_GRAPH\n2026-10-13 11:38:29,494 INFO  17909 [WatchDog_17909] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P903.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P903.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17909\nPROJECT=.\nROOT_RUN_ID=17909\nRUN_ID=17909\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:38:29,494 INFO  17909 [WatchDog_17909] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:38:29,499 INFO  17909 [WatchDog_17909] Starting up all nodes in phase [0]\n2026-10-13 11:38:29,500 INFO  17909 [WatchDog_17909] Successfully started all nodes in phase!\n2026-10-13 11:38:29,514 INFO  17909 [WatchDog_17909] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:38:29,514 INFO  17909 [WatchDog_17909] Time: 13/10/2026 11:38:29, JVM heap used: 40 MB\n2026-10-13 11:38:29,514 INFO  17909 [WatchDog_17909] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:38:29,514 INFO  17909 [WatchDog_17909] ---------------------------------------------------------------------------------\n2026-10-13 11:38:29,514 INFO  17909 [WatchDog_17909] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909]  (alloc:0MB, cpu:18%)           Out:0              8          0     666        4\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909]  (alloc:0MB, cpu:8%)             In:0              8          0     666        4\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909]                                 Out:0              8          0     666        4\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909] Test                     Test                                        FINISHED_OK\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909]  (alloc:0MB, cpu:8%)             In:0              8          0     666        4\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909]                                 Out:0              3          0     250        2\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909]  (alloc:0MB, cpu:0%)             In:0              3          0     250        2\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909]                                 Out:0              3          0     250        2\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909]  (alloc:0MB, cpu:25%)            In:0              3          0     250        2\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:38:29,515 INFO  17909 [WatchDog_17909] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:38:29,518 INFO  17909 [WatchDog_17909] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:38:29,518 INFO  17909 [WatchDog_17909] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:38:29,518 INFO  17909 [WatchDog_17909] 0                 FINISHED_OK                        0                40\n2026-10-13 11:38:29,518 INFO  17909 [WatchDog_17909] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:38:29,519 INFO  17909 [JobFinalizer_17909] Job finished: MiscExamples/suite_v5/graph/P903.grf\n\t Run ID: \t\t17909\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t55 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P903/mcp_evidence.json"
+  },
+  {
+    "test_id": "P904",
+    "label": "P904",
+    "graph_file": "suite_v5/graph/P904.grf",
+    "graph_sha256": "43076453ec54872e34802b68b15c44761a26a3c2abe91ecfb74e0848fb60752c",
+    "reference_sha256": "3d54b467170140a186585b69a685b6bde1da6930f75b024cafaf7d630c4922a2",
+    "input_files": [
+      "run_graphs/P904/data-in/input_0.csv",
+      "run_graphs/P904/data-in/input_1.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P904/expected/output_0.json",
+      "run_graphs/P904/expected/output_1.json",
+      "run_graphs/P904/expected/output_2.json"
+    ],
+    "reference_runs": false,
+    "run_ids": [
+      17910
+    ],
+    "outputs": {},
+    "row_checks": [],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": [
+        {
+          "severity": "WARNING",
+          "priority": "NORMAL",
+          "elementId": "Test",
+          "elementName": "Test",
+          "attributeName": null,
+          "exceptionStackTrace": "org.jetel.exception.LoadClassException: CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n\tat org.jetel.component.TransformFactory.createTransformFromCode(TransformFactory.java:304)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:205)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:262)\n\tat org.jetel.component.TransformFactory.checkConfig(TransformFactory.java:180)\n\tat org.jetel.component.DataIntersection.checkConfig(DataIntersection.java:799)\n\tat org.jetel.graph.Phase.checkConfig(Phase.java:364)\n\tat org.jetel.graph.TransformationGraph.checkConfig(TransformationGraph.java:1417)\n\tat com.cloveretl.server.worker.runtime.d.getCheckConfigResult(Main:146)\n\tat com.cloveretl.server.worker.runtime.d.a(Main:113)\n\tat com.cloveretl.server.worker.runtime.d.a(Main:44)\n\tat com.cloveretl.server.worker.runtime.b.s(Main:76)\n\tat com.cloveretl.server.worker.runtime.b.call(Main:71)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+          "message": "CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]"
+        }
+      ]
+    },
+    "completion": {
+      "runId": 17910,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P904.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:38:34.561+02:00",
+      "startTime": "2026-10-13T11:38:34.561+02:00",
+      "stopTime": "2026-10-13T11:38:34.594+02:00",
+      "durationMs": 33,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] - Component initialization failed.\n CTL code compilation finished with 2 errors.\n Error: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n Error: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]",
+        "componentType": "DATA_INTERSECTION"
+      }
+    },
+    "tracking": {
+      "run_id": "17910",
+      "status": "UNKNOWN",
+      "exec_seconds": null,
+      "phases": [],
+      "summary": {
+        "phase_count": 0,
+        "node_count": 0,
+        "port_count": 0,
+        "total_records": 0,
+        "total_bytes": 0
+      },
+      "warning": "No tracking data available — the job may not have started or tracking was not recorded."
+    },
+    "log": {
+      "text": "2026-10-13 11:38:34,563 INFO  17910 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:38:34,563 INFO  17910 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:38:34,563 INFO  17910 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:38:34,572 INFO  17910 [JobStarter_17910] Starting job: MiscExamples/suite_v5/graph/P904.grf\n\t Run ID: \t\t17910\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:38:34,578 INFO  17910 [JobExecutor_17910] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:38:34,588 INFO  17910 [JobExecutor_17910] Initializing metadata\n2026-10-13 11:38:34,588 INFO  17910 [JobExecutor_17910] Initializing phase 0\n2026-10-13 11:38:34,592 ERROR 17910 [JobExecutor_17910] Job execution failed during initialization.\norg.jetel.exception.ComponentNotReadyException: Component [Test:Test] - Component initialization failed.\n\tat org.jetel.graph.Phase.init(Phase.java:180)\n\tat org.jetel.graph.TransformationGraph.init(TransformationGraph.java:565)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:262)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:243)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:233)\n\tat com.cloveretl.server.worker.runtime.h.a(Main:146)\n\tat com.cloveretl.server.worker.runtime.h.b(Main:102)\n\tat com.cloveretl.server.commons.c.b.run(Main:51)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.LoadClassException: CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n\tat org.jetel.component.TransformFactory.createTransformFromCode(TransformFactory.java:304)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:205)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:262)\n\tat org.jetel.component.DataIntersection.init(DataIntersection.java:639)\n\tat org.jetel.graph.Phase.lambda$init$0(Phase.java:171)\n\tat org.jetel.util.classloader.ContextClassLoaderHelper.doInContext(ContextClassLoaderHelper.java:71)\n\tat org.jetel.graph.Phase.init(Phase.java:170)\n\t... 12 more\n2026-10-13 11:38:34,595 INFO  17910 [JobFinalizer_17910] Job finished: MiscExamples/suite_v5/graph/P904.grf\n\t Run ID: \t\t17910\n\t Status: \t\tERROR\n\t Duration: \t\t33 ms\n2026-10-13 11:38:34,595 ERROR 17910 [JobFinalizer_17910] \n--------------------------------------------------------------------- Error details -----------------------------------------------------------------------\n  Component [Test:Test] - Component initialization failed.\n   CTL code compilation finished with 2 errors.\n   Error: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n   Error: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n-----------------------------------------------------------------------------------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "error": "Graph run status ERROR",
+    "evidence_file": "run_graphs/P904/mcp_evidence.json"
+  },
+  {
+    "test_id": "P905",
+    "label": "P905",
+    "graph_file": "suite_v5/graph/P905.grf",
+    "graph_sha256": "756748467fcee616b26a62334d4deade9b0c5d729bb49d924f04e750b2f5f77c",
+    "reference_sha256": "120aaa910fd9c4d24b52ce7f856f8466fdaaf748b16fcc40cd22c6cbec577efe",
+    "input_files": [
+      "run_graphs/P905/data-in/input_0.csv",
+      "run_graphs/P905/data-in/input_1.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P905/expected/output_0.json",
+      "run_graphs/P905/expected/output_1.json",
+      "run_graphs/P905/expected/output_2.json"
+    ],
+    "reference_runs": false,
+    "run_ids": [
+      17911
+    ],
+    "outputs": {},
+    "row_checks": [],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": [
+        {
+          "severity": "WARNING",
+          "priority": "NORMAL",
+          "elementId": "Test",
+          "elementName": "Test",
+          "attributeName": null,
+          "exceptionStackTrace": "org.jetel.exception.LoadClassException: CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n\tat org.jetel.component.TransformFactory.createTransformFromCode(TransformFactory.java:304)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:205)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:262)\n\tat org.jetel.component.TransformFactory.checkConfig(TransformFactory.java:180)\n\tat org.jetel.component.DataIntersection.checkConfig(DataIntersection.java:799)\n\tat org.jetel.graph.Phase.checkConfig(Phase.java:364)\n\tat org.jetel.graph.TransformationGraph.checkConfig(TransformationGraph.java:1417)\n\tat com.cloveretl.server.worker.runtime.d.getCheckConfigResult(Main:146)\n\tat com.cloveretl.server.worker.runtime.d.a(Main:113)\n\tat com.cloveretl.server.worker.runtime.d.a(Main:44)\n\tat com.cloveretl.server.worker.runtime.b.s(Main:76)\n\tat com.cloveretl.server.worker.runtime.b.call(Main:71)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+          "message": "CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]"
+        }
+      ]
+    },
+    "completion": {
+      "runId": 17911,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P905.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:38:39.639+02:00",
+      "startTime": "2026-10-13T11:38:39.639+02:00",
+      "stopTime": "2026-10-13T11:38:39.667+02:00",
+      "durationMs": 28,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] - Component initialization failed.\n CTL code compilation finished with 2 errors.\n Error: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n Error: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]",
+        "componentType": "DATA_INTERSECTION"
+      }
+    },
+    "tracking": {
+      "run_id": "17911",
+      "status": "UNKNOWN",
+      "exec_seconds": null,
+      "phases": [],
+      "summary": {
+        "phase_count": 0,
+        "node_count": 0,
+        "port_count": 0,
+        "total_records": 0,
+        "total_bytes": 0
+      },
+      "warning": "No tracking data available — the job may not have started or tracking was not recorded."
+    },
+    "log": {
+      "text": "2026-10-13 11:38:39,641 INFO  17911 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:38:39,641 INFO  17911 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:38:39,641 INFO  17911 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:38:39,647 INFO  17911 [JobStarter_17911] Starting job: MiscExamples/suite_v5/graph/P905.grf\n\t Run ID: \t\t17911\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:38:39,652 INFO  17911 [JobExecutor_17911] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:38:39,662 INFO  17911 [JobExecutor_17911] Initializing metadata\n2026-10-13 11:38:39,662 INFO  17911 [JobExecutor_17911] Initializing phase 0\n2026-10-13 11:38:39,665 ERROR 17911 [JobExecutor_17911] Job execution failed during initialization.\norg.jetel.exception.ComponentNotReadyException: Component [Test:Test] - Component initialization failed.\n\tat org.jetel.graph.Phase.init(Phase.java:180)\n\tat org.jetel.graph.TransformationGraph.init(TransformationGraph.java:565)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:262)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:243)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:233)\n\tat com.cloveretl.server.worker.runtime.h.a(Main:146)\n\tat com.cloveretl.server.worker.runtime.h.b(Main:102)\n\tat com.cloveretl.server.commons.c.b.run(Main:51)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.LoadClassException: CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n\tat org.jetel.component.TransformFactory.createTransformFromCode(TransformFactory.java:304)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:205)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:262)\n\tat org.jetel.component.DataIntersection.init(DataIntersection.java:639)\n\tat org.jetel.graph.Phase.lambda$init$0(Phase.java:171)\n\tat org.jetel.util.classloader.ContextClassLoaderHelper.doInContext(ContextClassLoaderHelper.java:71)\n\tat org.jetel.graph.Phase.init(Phase.java:170)\n\t... 12 more\n2026-10-13 11:38:39,668 INFO  17911 [JobFinalizer_17911] Job finished: MiscExamples/suite_v5/graph/P905.grf\n\t Run ID: \t\t17911\n\t Status: \t\tERROR\n\t Duration: \t\t28 ms\n2026-10-13 11:38:39,668 ERROR 17911 [JobFinalizer_17911] \n--------------------------------------------------------------------- Error details -----------------------------------------------------------------------\n  Component [Test:Test] - Component initialization failed.\n   CTL code compilation finished with 2 errors.\n   Error: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n   Error: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n-----------------------------------------------------------------------------------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "error": "Graph run status ERROR",
+    "evidence_file": "run_graphs/P905/mcp_evidence.json"
+  },
+  {
+    "test_id": "P906",
+    "label": "P906",
+    "graph_file": "suite_v5/graph/P906.grf",
+    "graph_sha256": "c53e5a4bedbba3915c75f1ddaed3f130d6baead542fec8321730ccbfc0510f2e",
+    "reference_sha256": "3d39426a29d2928f45b1b652cda01743544e00f864edbed2bd112f693b76924a",
+    "input_files": [
+      "run_graphs/P906/data-in/input_0.csv",
+      "run_graphs/P906/data-in/input_1.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P906/expected/output_0.json",
+      "run_graphs/P906/expected/output_1.json",
+      "run_graphs/P906/expected/output_2.json"
+    ],
+    "reference_runs": false,
+    "run_ids": [
+      17912
+    ],
+    "outputs": {},
+    "row_checks": [],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": [
+        {
+          "severity": "WARNING",
+          "priority": "NORMAL",
+          "elementId": "Test",
+          "elementName": "Test",
+          "attributeName": null,
+          "exceptionStackTrace": "org.jetel.exception.LoadClassException: CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n\tat org.jetel.component.TransformFactory.createTransformFromCode(TransformFactory.java:304)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:205)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:262)\n\tat org.jetel.component.TransformFactory.checkConfig(TransformFactory.java:180)\n\tat org.jetel.component.DataIntersection.checkConfig(DataIntersection.java:799)\n\tat org.jetel.graph.Phase.checkConfig(Phase.java:364)\n\tat org.jetel.graph.TransformationGraph.checkConfig(TransformationGraph.java:1417)\n\tat com.cloveretl.server.worker.runtime.d.getCheckConfigResult(Main:146)\n\tat com.cloveretl.server.worker.runtime.d.a(Main:113)\n\tat com.cloveretl.server.worker.runtime.d.a(Main:44)\n\tat com.cloveretl.server.worker.runtime.b.s(Main:76)\n\tat com.cloveretl.server.worker.runtime.b.call(Main:71)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+          "message": "CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]"
+        }
+      ]
+    },
+    "completion": {
+      "runId": 17912,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P906.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:38:44.730+02:00",
+      "startTime": "2026-10-13T11:38:44.730+02:00",
+      "stopTime": "2026-10-13T11:38:44.752+02:00",
+      "durationMs": 22,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] - Component initialization failed.\n CTL code compilation finished with 2 errors.\n Error: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n Error: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]",
+        "componentType": "DATA_INTERSECTION"
+      }
+    },
+    "tracking": {
+      "run_id": "17912",
+      "status": "UNKNOWN",
+      "exec_seconds": null,
+      "phases": [],
+      "summary": {
+        "phase_count": 0,
+        "node_count": 0,
+        "port_count": 0,
+        "total_records": 0,
+        "total_bytes": 0
+      },
+      "warning": "No tracking data available — the job may not have started or tracking was not recorded."
+    },
+    "log": {
+      "text": "2026-10-13 11:38:44,733 INFO  17912 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:38:44,733 INFO  17912 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:38:44,733 INFO  17912 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:38:44,738 INFO  17912 [JobStarter_17912] Starting job: MiscExamples/suite_v5/graph/P906.grf\n\t Run ID: \t\t17912\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:38:44,742 INFO  17912 [JobExecutor_17912] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:38:44,748 INFO  17912 [JobExecutor_17912] Initializing metadata\n2026-10-13 11:38:44,748 INFO  17912 [JobExecutor_17912] Initializing phase 0\n2026-10-13 11:38:44,751 ERROR 17912 [JobExecutor_17912] Job execution failed during initialization.\norg.jetel.exception.ComponentNotReadyException: Component [Test:Test] - Component initialization failed.\n\tat org.jetel.graph.Phase.init(Phase.java:180)\n\tat org.jetel.graph.TransformationGraph.init(TransformationGraph.java:565)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:262)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:243)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:233)\n\tat com.cloveretl.server.worker.runtime.h.a(Main:146)\n\tat com.cloveretl.server.worker.runtime.h.b(Main:102)\n\tat com.cloveretl.server.commons.c.b.run(Main:51)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.LoadClassException: CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n\tat org.jetel.component.TransformFactory.createTransformFromCode(TransformFactory.java:304)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:205)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:262)\n\tat org.jetel.component.DataIntersection.init(DataIntersection.java:639)\n\tat org.jetel.graph.Phase.lambda$init$0(Phase.java:171)\n\tat org.jetel.util.classloader.ContextClassLoaderHelper.doInContext(ContextClassLoaderHelper.java:71)\n\tat org.jetel.graph.Phase.init(Phase.java:170)\n\t... 12 more\n2026-10-13 11:38:44,754 INFO  17912 [JobFinalizer_17912] Job finished: MiscExamples/suite_v5/graph/P906.grf\n\t Run ID: \t\t17912\n\t Status: \t\tERROR\n\t Duration: \t\t22 ms\n2026-10-13 11:38:44,754 ERROR 17912 [JobFinalizer_17912] \n--------------------------------------------------------------------- Error details -----------------------------------------------------------------------\n  Component [Test:Test] - Component initialization failed.\n   CTL code compilation finished with 2 errors.\n   Error: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n   Error: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n-----------------------------------------------------------------------------------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "error": "Graph run status ERROR",
+    "evidence_file": "run_graphs/P906/mcp_evidence.json"
+  },
+  {
+    "test_id": "P907",
+    "label": "P907",
+    "graph_file": "suite_v5/graph/P907.grf",
+    "graph_sha256": "55ca52bb86376f8cc65271043ccd7e3e4f8c3d5353d087fc91daf2d14541d8c0",
+    "reference_sha256": "599712ecf8470e0501f1c4cf7464b75fd71ad08868d4278caf439565d2dd59f4",
+    "input_files": [
+      "run_graphs/P907/data-in/input_0.csv",
+      "run_graphs/P907/data-in/input_1.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P907/expected/output_0.json",
+      "run_graphs/P907/expected/output_1.json",
+      "run_graphs/P907/expected/output_2.json"
+    ],
+    "reference_runs": false,
+    "run_ids": [
+      17913
+    ],
+    "outputs": {},
+    "row_checks": [],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": [
+        {
+          "severity": "WARNING",
+          "priority": "NORMAL",
+          "elementId": "Test",
+          "elementName": "Test",
+          "attributeName": null,
+          "exceptionStackTrace": "org.jetel.exception.LoadClassException: CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n\tat org.jetel.component.TransformFactory.createTransformFromCode(TransformFactory.java:304)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:205)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:262)\n\tat org.jetel.component.TransformFactory.checkConfig(TransformFactory.java:180)\n\tat org.jetel.component.DataIntersection.checkConfig(DataIntersection.java:799)\n\tat org.jetel.graph.Phase.checkConfig(Phase.java:364)\n\tat org.jetel.graph.TransformationGraph.checkConfig(TransformationGraph.java:1417)\n\tat com.cloveretl.server.worker.runtime.d.getCheckConfigResult(Main:146)\n\tat com.cloveretl.server.worker.runtime.d.a(Main:113)\n\tat com.cloveretl.server.worker.runtime.d.a(Main:44)\n\tat com.cloveretl.server.worker.runtime.b.s(Main:76)\n\tat com.cloveretl.server.worker.runtime.b.call(Main:71)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\n",
+          "message": "CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]"
+        }
+      ]
+    },
+    "completion": {
+      "runId": 17913,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P907.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "ERROR",
+      "submitTime": "2026-10-13T11:38:49.814+02:00",
+      "startTime": "2026-10-13T11:38:49.814+02:00",
+      "stopTime": "2026-10-13T11:38:49.838+02:00",
+      "durationMs": 24,
+      "error": {
+        "componentId": "Test",
+        "message": "Component [Test:Test] - Component initialization failed.\n CTL code compilation finished with 2 errors.\n Error: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n Error: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]",
+        "componentType": "DATA_INTERSECTION"
+      }
+    },
+    "tracking": {
+      "run_id": "17913",
+      "status": "UNKNOWN",
+      "exec_seconds": null,
+      "phases": [],
+      "summary": {
+        "phase_count": 0,
+        "node_count": 0,
+        "port_count": 0,
+        "total_records": 0,
+        "total_bytes": 0
+      },
+      "warning": "No tracking data available — the job may not have started or tracking was not recorded."
+    },
+    "log": {
+      "text": "2026-10-13 11:38:49,816 INFO  17913 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:38:49,816 INFO  17913 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:38:49,816 INFO  17913 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:38:49,823 INFO  17913 [JobStarter_17913] Starting job: MiscExamples/suite_v5/graph/P907.grf\n\t Run ID: \t\t17913\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:38:49,827 INFO  17913 [JobExecutor_17913] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:38:49,832 INFO  17913 [JobExecutor_17913] Initializing metadata\n2026-10-13 11:38:49,833 INFO  17913 [JobExecutor_17913] Initializing phase 0\n2026-10-13 11:38:49,837 ERROR 17913 [JobExecutor_17913] Job execution failed during initialization.\norg.jetel.exception.ComponentNotReadyException: Component [Test:Test] - Component initialization failed.\n\tat org.jetel.graph.Phase.init(Phase.java:180)\n\tat org.jetel.graph.TransformationGraph.init(TransformationGraph.java:565)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:262)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:243)\n\tat org.jetel.graph.runtime.EngineInitializer.initGraph(EngineInitializer.java:233)\n\tat com.cloveretl.server.worker.runtime.h.a(Main:146)\n\tat com.cloveretl.server.worker.runtime.h.b(Main:102)\n\tat com.cloveretl.server.commons.c.b.run(Main:51)\n\tat java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)\n\tat java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)\n\tat java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)\n\tat java.base/java.lang.Thread.run(Thread.java:1583)\nCaused by: org.jetel.exception.LoadClassException: CTL code compilation finished with 2 errors.\nError: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\nError: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n\tat org.jetel.component.TransformFactory.createTransformFromCode(TransformFactory.java:304)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:205)\n\tat org.jetel.component.TransformFactory.createTransform(TransformFactory.java:262)\n\tat org.jetel.component.DataIntersection.init(DataIntersection.java:639)\n\tat org.jetel.graph.Phase.lambda$init$0(Phase.java:171)\n\tat org.jetel.util.classloader.ContextClassLoaderHelper.doInContext(ContextClassLoaderHelper.java:71)\n\tat org.jetel.graph.Phase.init(Phase.java:170)\n\t... 12 more\n2026-10-13 11:38:49,840 INFO  17913 [JobFinalizer_17913] Job finished: MiscExamples/suite_v5/graph/P907.grf\n\t Run ID: \t\t17913\n\t Status: \t\tERROR\n\t Duration: \t\t24 ms\n2026-10-13 11:38:49,840 ERROR 17913 [JobFinalizer_17913] \n--------------------------------------------------------------------- Error details -----------------------------------------------------------------------\n  Component [Test:Test] - Component initialization failed.\n   CTL code compilation finished with 2 errors.\n   Error: Line 2 column 30 - Line 2 column 42: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n   Error: Line 2 column 57 - Line 2 column 71: Cannot write to output port '1'! [Either the port has no edge connected or the operation is not permitted..]\n-----------------------------------------------------------------------------------------------------------------------------------------------------------\n",
+      "isError": false
+    },
+    "error": "Graph run status ERROR",
+    "evidence_file": "run_graphs/P907/mcp_evidence.json"
+  },
+  {
+    "test_id": "P908",
+    "label": "P908",
+    "graph_file": "suite_v5/graph/P908.grf",
+    "graph_sha256": "d027cca75e12eb77dea0d600b4935e0fad4f514f96f6e234d1b9855e80984810",
+    "reference_sha256": "c4897fddaeff3e25d9cf860cbd740a03c277db6d2ebe5c56e27def499b93e24a",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/P908/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17914
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 1
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 2
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 3
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 4
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 5
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 6
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 7
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 8
+          }
+        ],
+        "expected": [
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 1
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 2
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 3
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 4
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 5
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 6
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 7
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 8
+          }
+        ],
+        "actual_file": "run_graphs/P908/data-out/output_0.csv",
+        "pass_count": 8
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 1
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 1
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 2
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 2
+        }
+      },
+      {
+        "port": 0,
+        "index": 2,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 3
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 3,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 4
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 4
+        }
+      },
+      {
+        "port": 0,
+        "index": 4,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 5
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 5
+        }
+      },
+      {
+        "port": 0,
+        "index": 5,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 6
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 6
+        }
+      },
+      {
+        "port": 0,
+        "index": 6,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 7
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 7
+        }
+      },
+      {
+        "port": 0,
+        "index": 7,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 8
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 8
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17914,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P908.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:38:54.894+02:00",
+      "startTime": "2026-10-13T11:38:54.894+02:00",
+      "stopTime": "2026-10-13T11:38:54.927+02:00",
+      "durationMs": 33
+    },
+    "tracking": {
+      "run_id": "17914",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.009,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.004,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 96
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 96
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 152
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.002,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 152
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 32,
+        "total_bytes": 496
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:38:54,896 INFO  17914 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:38:54,896 INFO  17914 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:38:54,896 INFO  17914 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:38:54,902 INFO  17914 [JobStarter_17914] Starting job: MiscExamples/suite_v5/graph/P908.grf\n\t Run ID: \t\t17914\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:38:54,906 INFO  17914 [JobExecutor_17914] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:38:54,912 INFO  17914 [JobExecutor_17914] Initializing metadata\n2026-10-13 11:38:54,912 INFO  17914 [JobExecutor_17914] Initializing phase 0\n2026-10-13 11:38:54,913 INFO  17914 [JobExecutor_17914] Phase 0 initialized successfully.\n2026-10-13 11:38:54,913 INFO  17914 [WatchDog_17914] Job execution type: ETL_GRAPH\n2026-10-13 11:38:54,913 INFO  17914 [WatchDog_17914] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P908.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P908.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17914\nPROJECT=.\nROOT_RUN_ID=17914\nRUN_ID=17914\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:38:54,913 INFO  17914 [WatchDog_17914] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:38:54,914 INFO  17914 [WatchDog_17914] Initial dictionary content:\n2026-10-13 11:38:54,915 INFO  17914 [WatchDog_17914] DictEntry:Enabled:boolean:{value=true}\n2026-10-13 11:38:54,915 INFO  17914 [WatchDog_17914] DictEntry:RunLabel:string:{value=RW2}\n2026-10-13 11:38:54,915 INFO  17914 [WatchDog_17914] DictEntry:Count:integer:{value=0}\n2026-10-13 11:38:54,917 INFO  17914 [WatchDog_17914] Starting up all nodes in phase [0]\n2026-10-13 11:38:54,917 INFO  17914 [WatchDog_17914] Successfully started all nodes in phase!\n2026-10-13 11:38:54,923 INFO  17914 [WatchDog_17914] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] Time: 13/10/2026 11:38:54, JVM heap used: 88 MB\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] ---------------------------------------------------------------------------------\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] Test                     Test                                        FINISHED_OK\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914]  (alloc:0MB, cpu:25%)           Out:0              8          0    2000       23\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914]  (alloc:0MB, cpu:0%)             In:0              8          0    2000       23\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914]                                 Out:0              8          0    2000       37\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914]  (alloc:0MB, cpu:50%)            In:0              8          0    2000       37\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] Final dictionary content:\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] DictEntry:Enabled:boolean:{value=true}\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] DictEntry:RunLabel:string:{value=RW2}\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] DictEntry:Count:integer:{value=8}\n2026-10-13 11:38:54,924 INFO  17914 [WatchDog_17914] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:38:54,925 INFO  17914 [WatchDog_17914] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:38:54,925 INFO  17914 [WatchDog_17914] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:38:54,925 INFO  17914 [WatchDog_17914] 0                 FINISHED_OK                        0                88\n2026-10-13 11:38:54,925 INFO  17914 [WatchDog_17914] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:38:54,927 INFO  17914 [JobFinalizer_17914] Job finished: MiscExamples/suite_v5/graph/P908.grf\n\t Run ID: \t\t17914\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t33 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P908/mcp_evidence.json"
+  }
+]

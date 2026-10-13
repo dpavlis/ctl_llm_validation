@@ -1,0 +1,139 @@
+{
+  "reviewer_role": "Independent extra review; this agent did not author T44-T53.",
+  "scope": "T44-T53",
+  "sources": [
+    "data/suite_v5/round2/shard_t44_t53.json",
+    "spec/suite_generate_rw2_brief.md",
+    "resources/ctl2-basics.md",
+    "root live DataIntersection facts 17918-17922"
+  ],
+  "findings": [],
+  "tests": [
+    {
+      "test_id": "T44",
+      "reference_sha256": "6aa195d30bed2008326c494ed97fafebc13d10c98e886dbc4d3ba39dc3376291",
+      "fixture_rederivation": "pass",
+      "metadata_duplicate_fields": [],
+      "rubric_decidable": true,
+      "reference_semantic_review": "pass",
+      "expected_output_rows": {
+        "0": 3,
+        "1": 5
+      },
+      "special_note": "Independent Python business-rule derivation compared every expected output field; CTL reference not executed."
+    },
+    {
+      "test_id": "T45",
+      "reference_sha256": "38c9b3b95c07c52692fd9e5d5579cadf884ea43074c5dfe5cd31a19f3e12066b",
+      "fixture_rederivation": "pass",
+      "metadata_duplicate_fields": [],
+      "rubric_decidable": true,
+      "reference_semantic_review": "pass",
+      "expected_output_rows": {
+        "0": 3,
+        "1": 6
+      },
+      "special_note": "Independent Python business-rule derivation compared every expected output field; CTL reference not executed."
+    },
+    {
+      "test_id": "T46",
+      "reference_sha256": "571791aafdcaacecf32c747fc9ddaf910414b9bc805f36e45c121e51738a5c42",
+      "fixture_rederivation": "pass",
+      "metadata_duplicate_fields": [],
+      "rubric_decidable": true,
+      "reference_semantic_review": "pass",
+      "expected_output_rows": {
+        "0": 3,
+        "1": 6
+      },
+      "special_note": "Independent Python business-rule derivation compared every expected output field; CTL reference not executed."
+    },
+    {
+      "test_id": "T47",
+      "reference_sha256": "1f6f5f2d3bd6190bf3e650efdb7c7db0d0ba843e235d63c59135cc86bf028a7c",
+      "fixture_rederivation": "pass",
+      "metadata_duplicate_fields": [],
+      "rubric_decidable": true,
+      "reference_semantic_review": "pass",
+      "expected_output_rows": {
+        "0": 8
+      },
+      "special_note": "Independent Python business-rule derivation compared every expected output field; CTL reference not executed."
+    },
+    {
+      "test_id": "T48",
+      "reference_sha256": "7b733899a9452030072381d9a253b024f5ca61e1f8d968327b5ec65ec470fc62",
+      "fixture_rederivation": "pass",
+      "metadata_duplicate_fields": [],
+      "rubric_decidable": true,
+      "reference_semantic_review": "pass",
+      "expected_output_rows": {
+        "0": 10
+      },
+      "special_note": "Independent Python business-rule derivation compared every expected output field; CTL reference not executed."
+    },
+    {
+      "test_id": "T49",
+      "reference_sha256": "939038d1b9d8052f739d069eb509c31232517683a98c2e315adda56a2d4a5c12",
+      "fixture_rederivation": "pass",
+      "metadata_duplicate_fields": [],
+      "rubric_decidable": true,
+      "reference_semantic_review": "pass",
+      "expected_output_rows": {
+        "0": 10
+      },
+      "special_note": "Independent Python business-rule derivation compared every expected output field; CTL reference not executed."
+    },
+    {
+      "test_id": "T50",
+      "reference_sha256": "5a636a8dc4dd279c25275785217baff27cbd34b63ff20ed0778ad4a70e1872a5",
+      "fixture_rederivation": "pass",
+      "metadata_duplicate_fields": [],
+      "rubric_decidable": true,
+      "reference_semantic_review": "pass",
+      "expected_output_rows": {
+        "0": 10
+      },
+      "special_note": "Independent Python business-rule derivation compared every expected output field; CTL reference not executed."
+    },
+    {
+      "test_id": "T51",
+      "reference_sha256": "0d5347f4234bdee21d560a49fd9ad0c414bd2581959527a3889b5c5e66069d00",
+      "fixture_rederivation": "pass",
+      "metadata_duplicate_fields": [],
+      "rubric_decidable": true,
+      "reference_semantic_review": "pass",
+      "expected_output_rows": {
+        "0": 10
+      },
+      "special_note": "Independent Python business-rule derivation compared every expected output field; CTL reference not executed."
+    },
+    {
+      "test_id": "T52",
+      "reference_sha256": "5f030a171041a1e1394aa6fdc24136a3be0c1fe5ceb5f37458bbd06010187651",
+      "fixture_rederivation": "pass",
+      "metadata_duplicate_fields": [],
+      "rubric_decidable": true,
+      "reference_semantic_review": "pass",
+      "expected_output_rows": {
+        "0": 6,
+        "1": 7
+      },
+      "special_note": "No duplicate metadata fields remain; disabling precedes fallback and syntax failures prevent query."
+    },
+    {
+      "test_id": "T53",
+      "reference_sha256": "5e2252dc74f065402f3f0d7aa6a4877d9ffc0f3db2c48f91b9c4c767afec3926",
+      "fixture_rederivation": "pass",
+      "metadata_duplicate_fields": [],
+      "rubric_decidable": true,
+      "reference_semantic_review": "pass",
+      "expected_output_rows": {
+        "0": 2,
+        "1": 9,
+        "2": 2
+      },
+      "special_note": "Live-confirmed internal CTL output 0 routes to physical port 1; non-SKIP return accepted."
+    }
+  ]
+}

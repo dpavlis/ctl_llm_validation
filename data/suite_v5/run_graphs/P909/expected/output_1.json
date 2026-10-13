@@ -1,0 +1,22 @@
+[
+  {
+    "key_id": null,
+    "pair_txt": "NA:NB"
+  },
+  {
+    "key_id": 2,
+    "pair_txt": "A2:B2"
+  },
+  {
+    "key_id": 2,
+    "pair_txt": "A2:B3"
+  },
+  {
+    "key_id": 2,
+    "pair_txt": "A3:B2"
+  },
+  {
+    "key_id": 2,
+    "pair_txt": "A3:B3"
+  }
+]

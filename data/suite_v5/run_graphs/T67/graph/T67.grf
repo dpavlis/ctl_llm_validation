@@ -1,0 +1,500 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T67" id="6101300067" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Cold-chain gaps outrank temperature alarms
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="ColdSample" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="long" nullable="false" />
+        <Field name="cold_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="integer" nullable="false" />
+        <Field name="sensor_off" type="boolean" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="sample_time" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="string" nullable="false" />
+        <Field name="cold_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="string" nullable="false" />
+        <Field name="sensor_off" type="string" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="string" nullable="true" />
+        <Field name="sample_time" type="string" nullable="false" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="ColdSample" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="long" nullable="false" />
+        <Field name="cold_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="integer" nullable="false" />
+        <Field name="sensor_off" type="boolean" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="sample_time" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="string" nullable="false" />
+        <Field name="cold_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="string" nullable="false" />
+        <Field name="sensor_off" type="string" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="string" nullable="true" />
+        <Field name="sample_time" type="string" nullable="false" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out1">
+      <Record name="ColdSample" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="long" nullable="false" />
+        <Field name="cold_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="integer" nullable="false" />
+        <Field name="sensor_off" type="boolean" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="sample_time" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut1">
+      <Record name="RawOutput1" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="string" nullable="false" />
+        <Field name="cold_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="string" nullable="false" />
+        <Field name="sensor_off" type="string" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="string" nullable="true" />
+        <Field name="sample_time" type="string" nullable="false" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out2">
+      <Record name="ColdSample" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="long" nullable="false" />
+        <Field name="cold_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="integer" nullable="false" />
+        <Field name="sensor_off" type="boolean" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="sample_time" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut2">
+      <Record name="RawOutput2" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="string" nullable="false" />
+        <Field name="cold_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="string" nullable="false" />
+        <Field name="sensor_off" type="string" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="string" nullable="true" />
+        <Field name="sample_time" type="string" nullable="false" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out3">
+      <Record name="ColdSample" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="long" nullable="false" />
+        <Field name="cold_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="integer" nullable="false" />
+        <Field name="sensor_off" type="boolean" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="sample_time" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut3">
+      <Record name="RawOutput3" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="string" nullable="false" />
+        <Field name="cold_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="string" nullable="false" />
+        <Field name="sensor_off" type="string" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="string" nullable="true" />
+        <Field name="sample_time" type="string" nullable="false" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out4">
+      <Record name="ColdSample" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="long" nullable="false" />
+        <Field name="cold_received" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="integer" nullable="false" />
+        <Field name="sensor_off" type="boolean" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="sample_time" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut4">
+      <Record name="RawOutput4" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="cold_key" type="string" nullable="false" />
+        <Field name="cold_tenant" type="string" nullable="false" />
+        <Field name="cold_file" type="string" nullable="false" />
+        <Field name="cold_row" type="string" nullable="false" />
+        <Field name="cold_received" type="string" nullable="false" timeZone="UTC" />
+        <Field name="cold_team" type="string" nullable="true" />
+        <Field name="cold_market" type="string" nullable="true" />
+        <Field name="cold_currency" type="string" nullable="false" />
+        <Field name="cold_batch" type="string" nullable="false" />
+        <Field name="cold_note" type="string" nullable="true" />
+        <Field name="cold_trace" type="string" nullable="true" />
+        <Field name="cold_unused_archive" type="string" nullable="true" />
+        <Field name="trip_id" type="string" nullable="false" />
+        <Field name="sample_no" type="string" nullable="false" />
+        <Field name="sensor_off" type="string" nullable="false" />
+        <Field name="temperature_txt" type="string" nullable="true" />
+        <Field name="shipment_value" type="string" nullable="true" />
+        <Field name="sample_time" type="string" nullable="false" timeZone="UTC" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T67_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.cold_key=$in.0.cold_key;
+$out.0.cold_tenant=$in.0.cold_tenant;
+$out.0.cold_file=$in.0.cold_file;
+$out.0.cold_row=$in.0.cold_row == null ? null : str2long($in.0.cold_row);
+$out.0.cold_received=$in.0.cold_received == null ? null : str2date($in.0.cold_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.cold_team=$in.0.cold_team;
+$out.0.cold_market=$in.0.cold_market;
+$out.0.cold_currency=$in.0.cold_currency;
+$out.0.cold_batch=$in.0.cold_batch;
+$out.0.cold_note=$in.0.cold_note;
+$out.0.cold_trace=$in.0.cold_trace;
+$out.0.cold_unused_archive=$in.0.cold_unused_archive;
+$out.0.trip_id=$in.0.trip_id;
+$out.0.sample_no=$in.0.sample_no == null ? null : str2integer($in.0.sample_no);
+$out.0.sensor_off=$in.0.sensor_off == null ? null : str2bool($in.0.sensor_off);
+$out.0.temperature_txt=$in.0.temperature_txt;
+$out.0.shipment_value=$in.0.shipment_value == null ? null : str2decimal($in.0.shipment_value);
+$out.0.sample_time=$in.0.sample_time == null ? null : str2date($in.0.sample_time,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="PARTITION" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="partitionSource">//#CTL2
+string trip;boolean groupSeen=false;boolean validSeen=false;integer prevNo;decimal prevTemp;
+function integer getOutputPort(){
+ if(!groupSeen || trip!=$in.0.trip_id){trip=$in.0.trip_id;groupSeen=true;validSeen=false;}
+ if($in.0.sensor_off)return 0;
+ string raw=trim(nvl($in.0.temperature_txt,""));
+ if(!(raw ~= "-?[0-9]{1,2}(\\.[0-9])?"))return 1;
+ decimal t=str2decimal(raw);if(t &lt; -50D || t &gt; 50D)return 1;
+ integer port=4;
+ if(validSeen &amp;&amp; $in.0.sample_no-prevNo&gt;1)port=2;
+ else if(t&gt;8D || t &lt; -20D || (validSeen &amp;&amp; abs(t-prevTemp)&gt;5D))port=3;
+ prevNo=$in.0.sample_no;prevTemp=t;validSeen=true;return port;
+}
+function integer getOutputPortOnError(string message,string stackTrace){printLog(error,message);return 1;}
+</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.cold_key=$in.0.cold_key;
+$out.0.cold_tenant=$in.0.cold_tenant;
+$out.0.cold_file=$in.0.cold_file;
+$out.0.cold_row=$in.0.cold_row == null ? null : num2str($in.0.cold_row);
+$out.0.cold_received=$in.0.cold_received == null ? null : date2str($in.0.cold_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.cold_team=$in.0.cold_team;
+$out.0.cold_market=$in.0.cold_market;
+$out.0.cold_currency=$in.0.cold_currency;
+$out.0.cold_batch=$in.0.cold_batch;
+$out.0.cold_note=$in.0.cold_note;
+$out.0.cold_trace=$in.0.cold_trace;
+$out.0.cold_unused_archive=$in.0.cold_unused_archive;
+$out.0.trip_id=$in.0.trip_id;
+$out.0.sample_no=$in.0.sample_no == null ? null : num2str($in.0.sample_no);
+$out.0.sensor_off=$in.0.sensor_off == null ? null : ($in.0.sensor_off ? "true" : "false");
+$out.0.temperature_txt=$in.0.temperature_txt;
+$out.0.shipment_value=$in.0.shipment_value == null ? null : num2str($in.0.shipment_value,"0.00","en.US");
+$out.0.sample_time=$in.0.sample_time == null ? null : date2str($in.0.sample_time,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T67_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode1" type="REFORMAT" enabled="enabled" guiName="Encode1" guiX="725" guiY="375">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.cold_key=$in.0.cold_key;
+$out.0.cold_tenant=$in.0.cold_tenant;
+$out.0.cold_file=$in.0.cold_file;
+$out.0.cold_row=$in.0.cold_row == null ? null : num2str($in.0.cold_row);
+$out.0.cold_received=$in.0.cold_received == null ? null : date2str($in.0.cold_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.cold_team=$in.0.cold_team;
+$out.0.cold_market=$in.0.cold_market;
+$out.0.cold_currency=$in.0.cold_currency;
+$out.0.cold_batch=$in.0.cold_batch;
+$out.0.cold_note=$in.0.cold_note;
+$out.0.cold_trace=$in.0.cold_trace;
+$out.0.cold_unused_archive=$in.0.cold_unused_archive;
+$out.0.trip_id=$in.0.trip_id;
+$out.0.sample_no=$in.0.sample_no == null ? null : num2str($in.0.sample_no);
+$out.0.sensor_off=$in.0.sensor_off == null ? null : ($in.0.sensor_off ? "true" : "false");
+$out.0.temperature_txt=$in.0.temperature_txt;
+$out.0.shipment_value=$in.0.shipment_value == null ? null : num2str($in.0.shipment_value,"0.00","en.US");
+$out.0.sample_time=$in.0.sample_time == null ? null : date2str($in.0.sample_time,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer1" type="DATA_WRITER" enabled="enabled" guiName="Writer1" guiX="950" guiY="375">
+      <attr name="fileURL">suite_v5/data-out/T67_out_1.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result1" fromNode="Test:1" toNode="Encode1:0" metadata="Out1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written1" fromNode="Encode1:0" toNode="Writer1:0" metadata="RawOut1" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode2" type="REFORMAT" enabled="enabled" guiName="Encode2" guiX="725" guiY="550">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.cold_key=$in.0.cold_key;
+$out.0.cold_tenant=$in.0.cold_tenant;
+$out.0.cold_file=$in.0.cold_file;
+$out.0.cold_row=$in.0.cold_row == null ? null : num2str($in.0.cold_row);
+$out.0.cold_received=$in.0.cold_received == null ? null : date2str($in.0.cold_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.cold_team=$in.0.cold_team;
+$out.0.cold_market=$in.0.cold_market;
+$out.0.cold_currency=$in.0.cold_currency;
+$out.0.cold_batch=$in.0.cold_batch;
+$out.0.cold_note=$in.0.cold_note;
+$out.0.cold_trace=$in.0.cold_trace;
+$out.0.cold_unused_archive=$in.0.cold_unused_archive;
+$out.0.trip_id=$in.0.trip_id;
+$out.0.sample_no=$in.0.sample_no == null ? null : num2str($in.0.sample_no);
+$out.0.sensor_off=$in.0.sensor_off == null ? null : ($in.0.sensor_off ? "true" : "false");
+$out.0.temperature_txt=$in.0.temperature_txt;
+$out.0.shipment_value=$in.0.shipment_value == null ? null : num2str($in.0.shipment_value,"0.00","en.US");
+$out.0.sample_time=$in.0.sample_time == null ? null : date2str($in.0.sample_time,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer2" type="DATA_WRITER" enabled="enabled" guiName="Writer2" guiX="950" guiY="550">
+      <attr name="fileURL">suite_v5/data-out/T67_out_2.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result2" fromNode="Test:2" toNode="Encode2:0" metadata="Out2" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written2" fromNode="Encode2:0" toNode="Writer2:0" metadata="RawOut2" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode3" type="REFORMAT" enabled="enabled" guiName="Encode3" guiX="725" guiY="725">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.cold_key=$in.0.cold_key;
+$out.0.cold_tenant=$in.0.cold_tenant;
+$out.0.cold_file=$in.0.cold_file;
+$out.0.cold_row=$in.0.cold_row == null ? null : num2str($in.0.cold_row);
+$out.0.cold_received=$in.0.cold_received == null ? null : date2str($in.0.cold_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.cold_team=$in.0.cold_team;
+$out.0.cold_market=$in.0.cold_market;
+$out.0.cold_currency=$in.0.cold_currency;
+$out.0.cold_batch=$in.0.cold_batch;
+$out.0.cold_note=$in.0.cold_note;
+$out.0.cold_trace=$in.0.cold_trace;
+$out.0.cold_unused_archive=$in.0.cold_unused_archive;
+$out.0.trip_id=$in.0.trip_id;
+$out.0.sample_no=$in.0.sample_no == null ? null : num2str($in.0.sample_no);
+$out.0.sensor_off=$in.0.sensor_off == null ? null : ($in.0.sensor_off ? "true" : "false");
+$out.0.temperature_txt=$in.0.temperature_txt;
+$out.0.shipment_value=$in.0.shipment_value == null ? null : num2str($in.0.shipment_value,"0.00","en.US");
+$out.0.sample_time=$in.0.sample_time == null ? null : date2str($in.0.sample_time,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer3" type="DATA_WRITER" enabled="enabled" guiName="Writer3" guiX="950" guiY="725">
+      <attr name="fileURL">suite_v5/data-out/T67_out_3.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result3" fromNode="Test:3" toNode="Encode3:0" metadata="Out3" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written3" fromNode="Encode3:0" toNode="Writer3:0" metadata="RawOut3" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Encode4" type="REFORMAT" enabled="enabled" guiName="Encode4" guiX="725" guiY="900">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.cold_key=$in.0.cold_key;
+$out.0.cold_tenant=$in.0.cold_tenant;
+$out.0.cold_file=$in.0.cold_file;
+$out.0.cold_row=$in.0.cold_row == null ? null : num2str($in.0.cold_row);
+$out.0.cold_received=$in.0.cold_received == null ? null : date2str($in.0.cold_received,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.cold_team=$in.0.cold_team;
+$out.0.cold_market=$in.0.cold_market;
+$out.0.cold_currency=$in.0.cold_currency;
+$out.0.cold_batch=$in.0.cold_batch;
+$out.0.cold_note=$in.0.cold_note;
+$out.0.cold_trace=$in.0.cold_trace;
+$out.0.cold_unused_archive=$in.0.cold_unused_archive;
+$out.0.trip_id=$in.0.trip_id;
+$out.0.sample_no=$in.0.sample_no == null ? null : num2str($in.0.sample_no);
+$out.0.sensor_off=$in.0.sensor_off == null ? null : ($in.0.sensor_off ? "true" : "false");
+$out.0.temperature_txt=$in.0.temperature_txt;
+$out.0.shipment_value=$in.0.shipment_value == null ? null : num2str($in.0.shipment_value,"0.00","en.US");
+$out.0.sample_time=$in.0.sample_time == null ? null : date2str($in.0.sample_time,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+return OK;}</attr>
+    </Node>
+    <Node id="Writer4" type="DATA_WRITER" enabled="enabled" guiName="Writer4" guiX="950" guiY="900">
+      <attr name="fileURL">suite_v5/data-out/T67_out_4.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result4" fromNode="Test:4" toNode="Encode4:0" metadata="Out4" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written4" fromNode="Encode4:0" toNode="Writer4:0" metadata="RawOut4" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

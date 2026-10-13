@@ -1,0 +1,232 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph author="Codex" name="T47" id="6101300047" nature="etlGraph" revision="1.0" guiVersion="7.5.0">
+  <Global>
+    <GraphParameters>
+      <GraphParameterFile fileURL="workspace.prm" />
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <RichTextNote id="Note" x="50" y="25" width="1200" height="100" backgroundColor="FAF6D6" textColor="444444" fontSize="medium" folded="false">
+      <attr name="text">Policy migration with explicit override precedence
+Acceptance fixture exercises the business rules and preserves every source field for comparison.</attr>
+    </RichTextNote>
+    <Metadata id="In0">
+      <Record name="InputT47" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="policy_batch" type="string" nullable="false" />
+        <Field name="policy_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="policy_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="policy_unused" type="string" nullable="true" />
+        <Field name="policy_note" type="string" nullable="true" />
+        <Field name="policy_row" type="long" nullable="false" />
+        <Field name="legacy_policy_no" type="string" nullable="false" />
+        <Field name="billing_mode" type="string" nullable="true" />
+        <Field name="suspended" type="boolean" nullable="true" />
+        <Field name="manual_override" type="string" nullable="true" />
+        <Field name="display_nm" type="string" nullable="true" />
+        <Field name="email_txt" type="string" nullable="true" />
+        <Field name="credit_balance" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="retired_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="policy_agent_ref" type="string" nullable="true" />
+        <Field name="policy_language_cd" type="string" nullable="true" />
+        <Field name="policy_tax_ref" type="string" nullable="true" />
+        <Field name="policy_delivery_addr" type="string" nullable="true" />
+        <Field name="policy_country_cd" type="string" nullable="true" />
+        <Field name="policy_currency_label" type="string" nullable="true" />
+        <Field name="policy_product_family" type="string" nullable="true" />
+        <Field name="policy_rider_txt" type="string" nullable="true" />
+        <Field name="policy_claims_team" type="string" nullable="true" />
+        <Field name="policy_contract_note" type="string" nullable="true" />
+        <Field name="policy_renewal_hint" type="string" nullable="true" />
+        <Field name="old_policy_memo" type="string" nullable="true" />
+        <Field name="old_billing_batch" type="string" nullable="true" />
+        <Field name="old_agent_terminal" type="string" nullable="true" />
+        <Field name="old_rate_table" type="string" nullable="true" />
+        <Field name="old_conversion_tag" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawIn0">
+      <Record name="RawInput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="policy_batch" type="string" nullable="false" />
+        <Field name="policy_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="policy_ledger" type="string" nullable="true" />
+        <Field name="policy_unused" type="string" nullable="true" />
+        <Field name="policy_note" type="string" nullable="true" />
+        <Field name="policy_row" type="string" nullable="false" />
+        <Field name="legacy_policy_no" type="string" nullable="false" />
+        <Field name="billing_mode" type="string" nullable="true" />
+        <Field name="suspended" type="string" nullable="true" />
+        <Field name="manual_override" type="string" nullable="true" />
+        <Field name="display_nm" type="string" nullable="true" />
+        <Field name="email_txt" type="string" nullable="true" />
+        <Field name="credit_balance" type="string" nullable="true" />
+        <Field name="retired_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="policy_agent_ref" type="string" nullable="true" />
+        <Field name="policy_language_cd" type="string" nullable="true" />
+        <Field name="policy_tax_ref" type="string" nullable="true" />
+        <Field name="policy_delivery_addr" type="string" nullable="true" />
+        <Field name="policy_country_cd" type="string" nullable="true" />
+        <Field name="policy_currency_label" type="string" nullable="true" />
+        <Field name="policy_product_family" type="string" nullable="true" />
+        <Field name="policy_rider_txt" type="string" nullable="true" />
+        <Field name="policy_claims_team" type="string" nullable="true" />
+        <Field name="policy_contract_note" type="string" nullable="true" />
+        <Field name="policy_renewal_hint" type="string" nullable="true" />
+        <Field name="old_policy_memo" type="string" nullable="true" />
+        <Field name="old_billing_batch" type="string" nullable="true" />
+        <Field name="old_agent_terminal" type="string" nullable="true" />
+        <Field name="old_rate_table" type="string" nullable="true" />
+        <Field name="old_conversion_tag" type="string" nullable="true" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="PolicyDestination" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__">
+        <Field name="policy_batch" type="string" nullable="false" />
+        <Field name="policy_loaded" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="policy_ledger" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="policy_unused" type="string" nullable="true" />
+        <Field name="policy_note" type="string" nullable="true" />
+        <Field name="policy_row" type="long" nullable="false" />
+        <Field name="suspended" type="boolean" nullable="true" />
+        <Field name="display_nm" type="string" nullable="true" />
+        <Field name="email_txt" type="string" nullable="true" />
+        <Field name="credit_balance" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="retired_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" timeZone="UTC" />
+        <Field name="policy_agent_ref" type="string" nullable="true" />
+        <Field name="policy_language_cd" type="string" nullable="true" />
+        <Field name="policy_tax_ref" type="string" nullable="true" />
+        <Field name="policy_delivery_addr" type="string" nullable="true" />
+        <Field name="policy_country_cd" type="string" nullable="true" />
+        <Field name="policy_currency_label" type="string" nullable="true" />
+        <Field name="policy_product_family" type="string" nullable="true" />
+        <Field name="policy_rider_txt" type="string" nullable="true" />
+        <Field name="policy_claims_team" type="string" nullable="true" />
+        <Field name="policy_contract_note" type="string" nullable="true" />
+        <Field name="policy_renewal_hint" type="string" nullable="true" />
+        <Field name="policy_number" type="string" nullable="false" />
+        <Field name="mode_cd" type="string" nullable="false" />
+        <Field name="migration_warning" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RawOut0">
+      <Record name="RawOutput0" type="delimited" fieldDelimiter="|" recordDelimiter="\n" nullValue="__NULL__" locale="en.US">
+        <Field name="policy_batch" type="string" nullable="false" />
+        <Field name="policy_loaded" type="string" nullable="false" timeZone="UTC" />
+        <Field name="policy_ledger" type="string" nullable="true" />
+        <Field name="policy_unused" type="string" nullable="true" />
+        <Field name="policy_note" type="string" nullable="true" />
+        <Field name="policy_row" type="string" nullable="false" />
+        <Field name="suspended" type="string" nullable="true" />
+        <Field name="display_nm" type="string" nullable="true" />
+        <Field name="email_txt" type="string" nullable="true" />
+        <Field name="credit_balance" type="string" nullable="true" />
+        <Field name="retired_at" type="string" nullable="true" timeZone="UTC" />
+        <Field name="policy_agent_ref" type="string" nullable="true" />
+        <Field name="policy_language_cd" type="string" nullable="true" />
+        <Field name="policy_tax_ref" type="string" nullable="true" />
+        <Field name="policy_delivery_addr" type="string" nullable="true" />
+        <Field name="policy_country_cd" type="string" nullable="true" />
+        <Field name="policy_currency_label" type="string" nullable="true" />
+        <Field name="policy_product_family" type="string" nullable="true" />
+        <Field name="policy_rider_txt" type="string" nullable="true" />
+        <Field name="policy_claims_team" type="string" nullable="true" />
+        <Field name="policy_contract_note" type="string" nullable="true" />
+        <Field name="policy_renewal_hint" type="string" nullable="true" />
+        <Field name="policy_number" type="string" nullable="false" />
+        <Field name="mode_cd" type="string" nullable="false" />
+        <Field name="migration_warning" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+  </Global>
+  <Phase number="0">
+    <Node id="Reader0" type="DATA_READER" enabled="enabled" guiName="Reader0" guiX="50" guiY="200">
+      <attr name="fileURL">suite_v5/data-in/T47_input_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="dataPolicy">strict</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="parser">org.jetel.data.parser.DataParser</attr>
+    </Node>
+    <Node id="Decode0" type="REFORMAT" enabled="enabled" guiName="Decode0" guiX="275" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.policy_batch=$in.0.policy_batch;
+$out.0.policy_loaded=$in.0.policy_loaded == null ? null : str2date($in.0.policy_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.policy_ledger=$in.0.policy_ledger == null ? null : str2decimal($in.0.policy_ledger);
+$out.0.policy_unused=$in.0.policy_unused;
+$out.0.policy_note=$in.0.policy_note;
+$out.0.policy_row=$in.0.policy_row == null ? null : str2long($in.0.policy_row);
+$out.0.legacy_policy_no=$in.0.legacy_policy_no;
+$out.0.billing_mode=$in.0.billing_mode;
+$out.0.suspended=$in.0.suspended == null ? null : str2bool($in.0.suspended);
+$out.0.manual_override=$in.0.manual_override;
+$out.0.display_nm=$in.0.display_nm;
+$out.0.email_txt=$in.0.email_txt;
+$out.0.credit_balance=$in.0.credit_balance == null ? null : str2decimal($in.0.credit_balance);
+$out.0.retired_at=$in.0.retired_at == null ? null : str2date($in.0.retired_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC",true);
+$out.0.policy_agent_ref=$in.0.policy_agent_ref;
+$out.0.policy_language_cd=$in.0.policy_language_cd;
+$out.0.policy_tax_ref=$in.0.policy_tax_ref;
+$out.0.policy_delivery_addr=$in.0.policy_delivery_addr;
+$out.0.policy_country_cd=$in.0.policy_country_cd;
+$out.0.policy_currency_label=$in.0.policy_currency_label;
+$out.0.policy_product_family=$in.0.policy_product_family;
+$out.0.policy_rider_txt=$in.0.policy_rider_txt;
+$out.0.policy_claims_team=$in.0.policy_claims_team;
+$out.0.policy_contract_note=$in.0.policy_contract_note;
+$out.0.policy_renewal_hint=$in.0.policy_renewal_hint;
+$out.0.old_policy_memo=$in.0.old_policy_memo;
+$out.0.old_billing_batch=$in.0.old_billing_batch;
+$out.0.old_agent_terminal=$in.0.old_agent_terminal;
+$out.0.old_rate_table=$in.0.old_rate_table;
+$out.0.old_conversion_tag=$in.0.old_conversion_tag;
+return OK;}</attr>
+    </Node>
+    <Edge id="Read0" fromNode="Reader0:0" toNode="Decode0:0" metadata="RawIn0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Decoded0" fromNode="Decode0:0" toNode="Test:0" metadata="In0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Node id="Test" type="REFORMAT" enabled="enabled" guiName="Test" guiX="500" guiY="200">
+      <attr name="charset">UTF-8</attr>
+      <attr name="transform">//#CTL2
+map[string,string] modes={"M"-&gt;"MONTHLY","A"-&gt;"ANNUAL"};function integer transform(){$out.0.*=$in.0.*;string id=trim($in.0.legacy_policy_no);$out.0.policy_number=id==""?"UNASSIGNED":id;string src=upperCase(trim(nvl($in.0.billing_mode,"")));string mode=containsKey(modes,src)?modes[src]:"MANUAL";string[] warningsList=[];if(src!=""&amp;&amp;!containsKey(modes,src))append(warningsList,"UNKNOWN_MODE");if($in.0.manual_override!=null){string o=upperCase(trim($in.0.manual_override));if(o=="")mode="MANUAL";else if(containsKey(modes,o))mode=modes[o];else append(warningsList,"BAD_OVERRIDE");}if(nvl($in.0.suspended,false))mode="HOLD";$out.0.mode_cd=mode;$out.0.migration_warning=join(";",warningsList);string n=trim(nvl($in.0.display_nm,""));$out.0.display_nm=n==""?"Unnamed":n;$out.0.email_txt=$in.0.email_txt==null?null:lowerCase(trim($in.0.email_txt));return OK;}</attr>
+    </Node>
+    <Node id="Encode0" type="REFORMAT" enabled="enabled" guiName="Encode0" guiX="725" guiY="200">
+      <attr name="transform">//#CTL2
+function integer transform(){
+$out.0.policy_batch=$in.0.policy_batch;
+$out.0.policy_loaded=$in.0.policy_loaded == null ? null : date2str($in.0.policy_loaded,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.policy_ledger=$in.0.policy_ledger == null ? null : num2str($in.0.policy_ledger,"0.00","en.US");
+$out.0.policy_unused=$in.0.policy_unused;
+$out.0.policy_note=$in.0.policy_note;
+$out.0.policy_row=$in.0.policy_row == null ? null : num2str($in.0.policy_row);
+$out.0.suspended=$in.0.suspended == null ? null : ($in.0.suspended ? "true" : "false");
+$out.0.display_nm=$in.0.display_nm;
+$out.0.email_txt=$in.0.email_txt;
+$out.0.credit_balance=$in.0.credit_balance == null ? null : num2str($in.0.credit_balance,"0.00","en.US");
+$out.0.retired_at=$in.0.retired_at == null ? null : date2str($in.0.retired_at,"yyyy-MM-dd HH:mm:ss.SSS","en.US","UTC");
+$out.0.policy_agent_ref=$in.0.policy_agent_ref;
+$out.0.policy_language_cd=$in.0.policy_language_cd;
+$out.0.policy_tax_ref=$in.0.policy_tax_ref;
+$out.0.policy_delivery_addr=$in.0.policy_delivery_addr;
+$out.0.policy_country_cd=$in.0.policy_country_cd;
+$out.0.policy_currency_label=$in.0.policy_currency_label;
+$out.0.policy_product_family=$in.0.policy_product_family;
+$out.0.policy_rider_txt=$in.0.policy_rider_txt;
+$out.0.policy_claims_team=$in.0.policy_claims_team;
+$out.0.policy_contract_note=$in.0.policy_contract_note;
+$out.0.policy_renewal_hint=$in.0.policy_renewal_hint;
+$out.0.policy_number=$in.0.policy_number;
+$out.0.mode_cd=$in.0.mode_cd;
+$out.0.migration_warning=$in.0.migration_warning;
+return OK;}</attr>
+    </Node>
+    <Node id="Writer0" type="DATA_WRITER" enabled="enabled" guiName="Writer0" guiX="950" guiY="200">
+      <attr name="fileURL">suite_v5/data-out/T47_out_0.csv</attr>
+      <attr name="charset">UTF-8</attr>
+      <attr name="makeDirs">true</attr>
+      <attr name="quotedStrings">true</attr>
+      <attr name="quoteCharacter">"</attr>
+      <attr name="createEmptyFiles">true</attr>
+      <attr name="append">false</attr>
+    </Node>
+    <Edge id="Result0" fromNode="Test:0" toNode="Encode0:0" metadata="Out0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+    <Edge id="Written0" fromNode="Encode0:0" toNode="Writer0:0" metadata="RawOut0" guiRouter="Manhattan" inPort="Port 0 (in)" outPort="Port 0 (out)" />
+  </Phase>
+</Graph>

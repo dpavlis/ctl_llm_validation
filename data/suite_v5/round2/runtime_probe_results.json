@@ -1,0 +1,3051 @@
+[
+  {
+    "test_id": "P901",
+    "label": "P901",
+    "graph_file": "suite_v5/graph/P901.grf",
+    "graph_sha256": "cf8a271021d642c0566b779c25533dbbe5e79e6c474142218df901f1b44d1766",
+    "reference_sha256": "f96dd40fb5ee9fad411d2e9f9bc5d59ff913d2a6417d175014526a7bc7cedf92",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/P901/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17915
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "case_id": 1,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 2,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 3,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 4,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 5,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 6,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 7,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 8,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          }
+        ],
+        "expected": [
+          {
+            "case_id": 1,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 2,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 3,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 4,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 5,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 6,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 7,
+            "raw_date": "2025-02-30",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          },
+          {
+            "case_id": 8,
+            "raw_date": "2025-1-1",
+            "decimal_threw": true,
+            "decimal_null": false,
+            "is_date": false,
+            "parse_threw": true,
+            "parsed_date": null,
+            "unicode_length": 3
+          }
+        ],
+        "actual_file": "run_graphs/P901/data-out/output_0.csv",
+        "pass_count": 8
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "case_id": 1,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 1,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "case_id": 2,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 2,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 2,
+        "passed": true,
+        "actual": {
+          "case_id": 3,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 3,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 3,
+        "passed": true,
+        "actual": {
+          "case_id": 4,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 4,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 4,
+        "passed": true,
+        "actual": {
+          "case_id": 5,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 5,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 5,
+        "passed": true,
+        "actual": {
+          "case_id": 6,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 6,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 6,
+        "passed": true,
+        "actual": {
+          "case_id": 7,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 7,
+          "raw_date": "2025-02-30",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 7,
+        "passed": true,
+        "actual": {
+          "case_id": 8,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        },
+        "expected": {
+          "case_id": 8,
+          "raw_date": "2025-1-1",
+          "decimal_threw": true,
+          "decimal_null": false,
+          "is_date": false,
+          "parse_threw": true,
+          "parsed_date": null,
+          "unicode_length": 3
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17915,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P901.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:39:32.071+02:00",
+      "startTime": "2026-10-13T11:39:32.071+02:00",
+      "stopTime": "2026-10-13T11:39:32.104+02:00",
+      "durationMs": 33
+    },
+    "tracking": {
+      "run_id": "17915",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.01,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.007,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.003,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 256
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 256
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 528
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 528
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 32,
+        "total_bytes": 1568
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:39:32,073 INFO  17915 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:39:32,073 INFO  17915 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:39:32,074 INFO  17915 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:39:32,077 INFO  17915 [JobStarter_17915] Starting job: MiscExamples/suite_v5/graph/P901.grf\n\t Run ID: \t\t17915\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:39:32,082 INFO  17915 [JobExecutor_17915] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:39:32,087 INFO  17915 [JobExecutor_17915] Initializing metadata\n2026-10-13 11:39:32,087 INFO  17915 [JobExecutor_17915] Initializing phase 0\n2026-10-13 11:39:32,090 INFO  17915 [JobExecutor_17915] Phase 0 initialized successfully.\n2026-10-13 11:39:32,091 INFO  17915 [WatchDog_17915] Job execution type: ETL_GRAPH\n2026-10-13 11:39:32,091 INFO  17915 [WatchDog_17915] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P901.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P901.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17915\nPROJECT=.\nROOT_RUN_ID=17915\nRUN_ID=17915\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:39:32,091 INFO  17915 [WatchDog_17915] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:39:32,093 INFO  17915 [WatchDog_17915] Starting up all nodes in phase [0]\n2026-10-13 11:39:32,093 INFO  17915 [WatchDog_17915] Successfully started all nodes in phase!\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915] Time: 13/10/2026 11:39:32, JVM heap used: 54 MB\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915] ---------------------------------------------------------------------------------\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915] Test                     Test                                        FINISHED_OK\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915]  (alloc:0MB, cpu:42%)           Out:0              8          0    1142       35\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915]  (alloc:0MB, cpu:14%)            In:0              8          0    1142       35\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915]                                 Out:0              8          0    1142       73\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915]  (alloc:0MB, cpu:14%)            In:0              8          0    1142       73\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:39:32,101 INFO  17915 [WatchDog_17915] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:39:32,103 INFO  17915 [WatchDog_17915] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:39:32,103 INFO  17915 [WatchDog_17915] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:39:32,103 INFO  17915 [WatchDog_17915] 0                 FINISHED_OK                        0                54\n2026-10-13 11:39:32,103 INFO  17915 [WatchDog_17915] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:39:32,104 INFO  17915 [JobFinalizer_17915] Job finished: MiscExamples/suite_v5/graph/P901.grf\n\t Run ID: \t\t17915\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t33 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P901/mcp_evidence.json"
+  },
+  {
+    "test_id": "P902",
+    "label": "P902",
+    "graph_file": "suite_v5/graph/P902.grf",
+    "graph_sha256": "99d0bbbfa6bf946f64bcd699ecc39779d6b961b06f2200e7e405c8e241c2b881",
+    "reference_sha256": "70fa52226c0f219561035f7e1da3bbe985d562959527cdd90abde385b6f272bc",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/P902/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17916
+    ],
+    "outputs": {
+      "0": {
+        "actual": [],
+        "expected": [],
+        "actual_file": "run_graphs/P902/data-out/output_0.csv",
+        "pass_count": 0
+      }
+    },
+    "row_checks": [],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17916,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P902.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:39:37.132+02:00",
+      "startTime": "2026-10-13T11:39:37.132+02:00",
+      "stopTime": "2026-10-13T11:39:37.157+02:00",
+      "durationMs": 25
+    },
+    "tracking": {
+      "run_id": "17916",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.008,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.005,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 0,
+        "total_bytes": 0
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:39:37,134 INFO  17916 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:39:37,134 INFO  17916 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:39:37,135 INFO  17916 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:39:37,137 INFO  17916 [JobStarter_17916] Starting job: MiscExamples/suite_v5/graph/P902.grf\n\t Run ID: \t\t17916\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:39:37,141 INFO  17916 [JobExecutor_17916] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:39:37,145 INFO  17916 [JobExecutor_17916] Initializing metadata\n2026-10-13 11:39:37,145 INFO  17916 [JobExecutor_17916] Initializing phase 0\n2026-10-13 11:39:37,146 INFO  17916 [JobExecutor_17916] Phase 0 initialized successfully.\n2026-10-13 11:39:37,146 INFO  17916 [WatchDog_17916] Job execution type: ETL_GRAPH\n2026-10-13 11:39:37,146 INFO  17916 [WatchDog_17916] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P902.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P902.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17916\nPROJECT=.\nROOT_RUN_ID=17916\nRUN_ID=17916\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:39:37,146 INFO  17916 [WatchDog_17916] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:39:37,148 INFO  17916 [WatchDog_17916] Starting up all nodes in phase [0]\n2026-10-13 11:39:37,148 INFO  17916 [WatchDog_17916] Successfully started all nodes in phase!\n2026-10-13 11:39:37,154 INFO  17916 [WatchDog_17916] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:39:37,154 INFO  17916 [WatchDog_17916] Time: 13/10/2026 11:39:37, JVM heap used: 54 MB\n2026-10-13 11:39:37,154 INFO  17916 [WatchDog_17916] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916] ---------------------------------------------------------------------------------\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916] Test                     Test                                        FINISHED_OK\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916]  (alloc:0MB, cpu:0%)            Out:0              0          0       0        0\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916]  (alloc:0MB, cpu:0%)             In:0              0          0       0        0\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916]                                 Out:0              0          0       0        0\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916]  (alloc:0MB, cpu:20%)            In:0              0          0       0        0\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:39:37,155 INFO  17916 [WatchDog_17916] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:39:37,156 INFO  17916 [WatchDog_17916] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:39:37,156 INFO  17916 [WatchDog_17916] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:39:37,156 INFO  17916 [WatchDog_17916] 0                 FINISHED_OK                        0                54\n2026-10-13 11:39:37,156 INFO  17916 [WatchDog_17916] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:39:37,157 INFO  17916 [JobFinalizer_17916] Job finished: MiscExamples/suite_v5/graph/P902.grf\n\t Run ID: \t\t17916\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t25 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P902/mcp_evidence.json"
+  },
+  {
+    "test_id": "P903",
+    "label": "P903",
+    "graph_file": "suite_v5/graph/P903.grf",
+    "graph_sha256": "13c1fc33813f8d0d960f1df2937fb4c06815db6e0c0d25d49600fe6ac6f5e6e0",
+    "reference_sha256": "90dcc0f0635be9efed885bcd495308d80b32c08da169a7307ca60194354f4497",
+    "input_files": [
+      "run_graphs/P903/data-in/input_0.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P903/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17917
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "group_key": "A",
+            "rows_seen": 3,
+            "total": 6
+          },
+          {
+            "group_key": "B",
+            "rows_seen": 1,
+            "total": 4
+          },
+          {
+            "group_key": "C",
+            "rows_seen": 4,
+            "total": 6
+          }
+        ],
+        "expected": [
+          {
+            "group_key": "A",
+            "rows_seen": 3,
+            "total": 6
+          },
+          {
+            "group_key": "B",
+            "rows_seen": 1,
+            "total": 4
+          },
+          {
+            "group_key": "C",
+            "rows_seen": 4,
+            "total": 6
+          }
+        ],
+        "actual_file": "run_graphs/P903/data-out/output_0.csv",
+        "pass_count": 3
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "group_key": "A",
+          "rows_seen": 3,
+          "total": 6
+        },
+        "expected": {
+          "group_key": "A",
+          "rows_seen": 3,
+          "total": 6
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "group_key": "B",
+          "rows_seen": 1,
+          "total": 4
+        },
+        "expected": {
+          "group_key": "B",
+          "rows_seen": 1,
+          "total": 4
+        }
+      },
+      {
+        "port": 0,
+        "index": 2,
+        "passed": true,
+        "actual": {
+          "group_key": "C",
+          "rows_seen": 4,
+          "total": 6
+        },
+        "expected": {
+          "group_key": "C",
+          "rows_seen": 4,
+          "total": 6
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17917,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P903.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:39:42.195+02:00",
+      "startTime": "2026-10-13T11:39:42.195+02:00",
+      "stopTime": "2026-10-13T11:39:42.230+02:00",
+      "durationMs": 35
+    },
+    "tracking": {
+      "run_id": "17917",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.011,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.008,
+          "nodes": [
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 50
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 50
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 56
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DENORMALIZER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 56
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 33
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 33
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 27
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.002,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 3,
+                  "bytes": 27
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 5,
+        "port_count": 8,
+        "total_records": 44,
+        "total_bytes": 332
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:39:42,201 INFO  17917 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:39:42,201 INFO  17917 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:39:42,201 INFO  17917 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:39:42,204 INFO  17917 [JobStarter_17917] Starting job: MiscExamples/suite_v5/graph/P903.grf\n\t Run ID: \t\t17917\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:39:42,209 INFO  17917 [JobExecutor_17917] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:39:42,214 INFO  17917 [JobExecutor_17917] Initializing metadata\n2026-10-13 11:39:42,214 INFO  17917 [JobExecutor_17917] Initializing phase 0\n2026-10-13 11:39:42,216 INFO  17917 [JobExecutor_17917] Phase 0 initialized successfully.\n2026-10-13 11:39:42,216 INFO  17917 [WatchDog_17917] Job execution type: ETL_GRAPH\n2026-10-13 11:39:42,216 INFO  17917 [WatchDog_17917] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P903.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P903.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17917\nPROJECT=.\nROOT_RUN_ID=17917\nRUN_ID=17917\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:39:42,216 INFO  17917 [WatchDog_17917] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:39:42,218 INFO  17917 [WatchDog_17917] Starting up all nodes in phase [0]\n2026-10-13 11:39:42,219 INFO  17917 [WatchDog_17917] Successfully started all nodes in phase!\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917] Time: 13/10/2026 11:39:42, JVM heap used: 70 MB\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917] ---------------------------------------------------------------------------------\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917]  (alloc:0MB, cpu:12%)           Out:0              8          0    1000        6\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917]  (alloc:0MB, cpu:12%)            In:0              8          0    1000        6\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917]                                 Out:0              8          0    1000        6\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917] Test                     Test                                        FINISHED_OK\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917]  (alloc:0MB, cpu:12%)            In:0              8          0    1000        6\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917]                                 Out:0              3          0     375        4\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917]  (alloc:0MB, cpu:0%)             In:0              3          0     375        4\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917]                                 Out:0              3          0     375        3\n2026-10-13 11:39:42,227 INFO  17917 [WatchDog_17917] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:39:42,228 INFO  17917 [WatchDog_17917]  (alloc:0MB, cpu:25%)            In:0              3          0     375        3\n2026-10-13 11:39:42,228 INFO  17917 [WatchDog_17917] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:39:42,228 INFO  17917 [WatchDog_17917] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:39:42,228 INFO  17917 [WatchDog_17917] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:39:42,229 INFO  17917 [WatchDog_17917] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:39:42,229 INFO  17917 [WatchDog_17917] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:39:42,229 INFO  17917 [WatchDog_17917] 0                 FINISHED_OK                        0                70\n2026-10-13 11:39:42,229 INFO  17917 [WatchDog_17917] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:39:42,231 INFO  17917 [JobFinalizer_17917] Job finished: MiscExamples/suite_v5/graph/P903.grf\n\t Run ID: \t\t17917\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t35 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P903/mcp_evidence.json"
+  },
+  {
+    "test_id": "P904",
+    "label": "P904",
+    "graph_file": "suite_v5/graph/P904.grf",
+    "graph_sha256": "fb6a02390b56da654f129093e664a25012da5362885740882acc0a1f35f84edf",
+    "reference_sha256": "ea389613e51c108cafb75635dac1cebf311ddab76fcab90e83028f17ae2ef36e",
+    "input_files": [
+      "run_graphs/P904/data-in/input_0.csv",
+      "run_graphs/P904/data-in/input_1.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P904/expected/output_0.json",
+      "run_graphs/P904/expected/output_1.json",
+      "run_graphs/P904/expected/output_2.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17918
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "actual_file": "run_graphs/P904/data-out/output_0.csv",
+        "pass_count": 2
+      },
+      "1": {
+        "actual": [
+          {
+            "key_id": null,
+            "pair_txt": "NA:NB"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B3"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B3"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": null,
+            "pair_txt": "NA:NB"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B3"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B3"
+          }
+        ],
+        "actual_file": "run_graphs/P904/data-out/output_1.csv",
+        "pass_count": 5
+      },
+      "2": {
+        "actual": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ],
+        "actual_file": "run_graphs/P904/data-out/output_2.csv",
+        "pass_count": 2
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": 1,
+          "value_cd": "A1"
+        },
+        "expected": {
+          "key_id": 1,
+          "value_cd": "A1"
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 4,
+          "value_cd": "A4"
+        },
+        "expected": {
+          "key_id": 4,
+          "value_cd": "A4"
+        }
+      },
+      {
+        "port": 1,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": null,
+          "pair_txt": "NA:NB"
+        },
+        "expected": {
+          "key_id": null,
+          "pair_txt": "NA:NB"
+        }
+      },
+      {
+        "port": 1,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A2:B2"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A2:B2"
+        }
+      },
+      {
+        "port": 1,
+        "index": 2,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A2:B3"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A2:B3"
+        }
+      },
+      {
+        "port": 1,
+        "index": 3,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A3:B2"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A3:B2"
+        }
+      },
+      {
+        "port": 1,
+        "index": 4,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A3:B3"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A3:B3"
+        }
+      },
+      {
+        "port": 2,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": 3,
+          "value_cd": "B3"
+        },
+        "expected": {
+          "key_id": 3,
+          "value_cd": "B3"
+        }
+      },
+      {
+        "port": 2,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 5,
+          "value_cd": "B5"
+        },
+        "expected": {
+          "key_id": 5,
+          "value_cd": "B5"
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17918,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P904.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:39:47.267+02:00",
+      "startTime": "2026-10-13T11:39:47.267+02:00",
+      "stopTime": "2026-10-13T11:39:47.299+02:00",
+      "durationMs": 32
+    },
+    "tracking": {
+      "run_id": "17918",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.011,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.007,
+          "nodes": [
+            {
+              "node_id": "Reader1",
+              "node_name": "Reader1",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                }
+              ]
+            },
+            {
+              "node_id": "Decode1",
+              "node_name": "Decode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                }
+              ]
+            },
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_INTERSECTION",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                },
+                {
+                  "port_type": "INPUT",
+                  "index": 1,
+                  "records": 5,
+                  "bytes": 45
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 1,
+                  "records": 5,
+                  "bytes": 75
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 2,
+                  "records": 2,
+                  "bytes": 18
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Encode1",
+              "node_name": "Encode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 75
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 68
+                }
+              ]
+            },
+            {
+              "node_id": "Writer1",
+              "node_name": "Writer1",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 68
+                }
+              ]
+            },
+            {
+              "node_id": "Encode2",
+              "node_name": "Encode2",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Writer2",
+              "node_name": "Writer2",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 11,
+        "port_count": 20,
+        "total_records": 76,
+        "total_bytes": 754
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:39:47,269 INFO  17918 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:39:47,269 INFO  17918 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:39:47,269 INFO  17918 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:39:47,273 INFO  17918 [JobStarter_17918] Starting job: MiscExamples/suite_v5/graph/P904.grf\n\t Run ID: \t\t17918\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:39:47,276 INFO  17918 [JobExecutor_17918] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:39:47,280 INFO  17918 [JobExecutor_17918] Initializing metadata\n2026-10-13 11:39:47,280 INFO  17918 [JobExecutor_17918] Initializing phase 0\n2026-10-13 11:39:47,285 INFO  17918 [JobExecutor_17918] Phase 0 initialized successfully.\n2026-10-13 11:39:47,285 INFO  17918 [WatchDog_17918] Job execution type: ETL_GRAPH\n2026-10-13 11:39:47,285 INFO  17918 [WatchDog_17918] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P904.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P904.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17918\nPROJECT=.\nROOT_RUN_ID=17918\nRUN_ID=17918\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:39:47,285 INFO  17918 [WatchDog_17918] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:39:47,288 INFO  17918 [WatchDog_17918] Starting up all nodes in phase [0]\n2026-10-13 11:39:47,288 INFO  17918 [WatchDog_17918] Successfully started all nodes in phase!\n2026-10-13 11:39:47,295 INFO  17918 [WatchDog_17918] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Time: 13/10/2026 11:39:47, JVM heap used: 70 MB\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] ---------------------------------------------------------------------------------\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Reader1                  Reader1                                     FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:14%)           Out:0              5          0     714        5\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Decode1                  Decode1                                     FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:0%)             In:0              5          0     714        5\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]                                 Out:0              5          0     714        6\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:14%)           Out:0              5          0     714        5\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:0%)             In:0              5          0     714        5\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]                                 Out:0              5          0     714        6\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Test                     Test                                        FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:14%)            In:0              5          0     714        6\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]                                  In:1              5          0     714        6\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]                                 Out:0              2          0     285        2\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]                                 Out:1              5          0     714       10\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]                                 Out:2              2          0     285        2\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:0%)             In:0              2          0     285        2\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]                                 Out:0              2          0     285        2\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:14%)            In:0              2          0     285        2\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Encode1                  Encode1                                     FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:0%)             In:0              5          0     714       10\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]                                 Out:0              5          0     714        9\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Writer1                  Writer1                                     FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:14%)            In:0              5          0     714        9\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Encode2                  Encode2                                     FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:0%)             In:0              2          0     285        2\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]                                 Out:0              2          0     285        2\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Writer2                  Writer2                                     FINISHED_OK\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918]  (alloc:0MB, cpu:14%)            In:0              2          0     285        2\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:39:47,296 INFO  17918 [WatchDog_17918] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:39:47,297 INFO  17918 [WatchDog_17918] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:39:47,298 INFO  17918 [WatchDog_17918] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:39:47,298 INFO  17918 [WatchDog_17918] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:39:47,298 INFO  17918 [WatchDog_17918] 0                 FINISHED_OK                        0                70\n2026-10-13 11:39:47,298 INFO  17918 [WatchDog_17918] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:39:47,299 INFO  17918 [JobFinalizer_17918] Job finished: MiscExamples/suite_v5/graph/P904.grf\n\t Run ID: \t\t17918\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t32 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P904/mcp_evidence.json"
+  },
+  {
+    "test_id": "P905",
+    "label": "P905",
+    "graph_file": "suite_v5/graph/P905.grf",
+    "graph_sha256": "cfb68bf61d93b906fd4d7318bf6f208554d40d0ff25f8c56b41fbf9cc3a5caf7",
+    "reference_sha256": "40ec278dc8f0d5616ec61093edb63fa48774e7bbbb133e3578b824dcda7e0a8b",
+    "input_files": [
+      "run_graphs/P905/data-in/input_0.csv",
+      "run_graphs/P905/data-in/input_1.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P905/expected/output_0.json",
+      "run_graphs/P905/expected/output_1.json",
+      "run_graphs/P905/expected/output_2.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17919
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "actual_file": "run_graphs/P905/data-out/output_0.csv",
+        "pass_count": 2
+      },
+      "1": {
+        "actual": [
+          {
+            "key_id": null,
+            "pair_txt": "NA:NB"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B3"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B3"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": null,
+            "pair_txt": "NA:NB"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B3"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B3"
+          }
+        ],
+        "actual_file": "run_graphs/P905/data-out/output_1.csv",
+        "pass_count": 5
+      },
+      "2": {
+        "actual": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ],
+        "actual_file": "run_graphs/P905/data-out/output_2.csv",
+        "pass_count": 2
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": 1,
+          "value_cd": "A1"
+        },
+        "expected": {
+          "key_id": 1,
+          "value_cd": "A1"
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 4,
+          "value_cd": "A4"
+        },
+        "expected": {
+          "key_id": 4,
+          "value_cd": "A4"
+        }
+      },
+      {
+        "port": 1,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": null,
+          "pair_txt": "NA:NB"
+        },
+        "expected": {
+          "key_id": null,
+          "pair_txt": "NA:NB"
+        }
+      },
+      {
+        "port": 1,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A2:B2"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A2:B2"
+        }
+      },
+      {
+        "port": 1,
+        "index": 2,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A2:B3"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A2:B3"
+        }
+      },
+      {
+        "port": 1,
+        "index": 3,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A3:B2"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A3:B2"
+        }
+      },
+      {
+        "port": 1,
+        "index": 4,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A3:B3"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A3:B3"
+        }
+      },
+      {
+        "port": 2,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": 3,
+          "value_cd": "B3"
+        },
+        "expected": {
+          "key_id": 3,
+          "value_cd": "B3"
+        }
+      },
+      {
+        "port": 2,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 5,
+          "value_cd": "B5"
+        },
+        "expected": {
+          "key_id": 5,
+          "value_cd": "B5"
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17919,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P905.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:39:52.334+02:00",
+      "startTime": "2026-10-13T11:39:52.334+02:00",
+      "stopTime": "2026-10-13T11:39:52.358+02:00",
+      "durationMs": 24
+    },
+    "tracking": {
+      "run_id": "17919",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.007,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.003,
+          "nodes": [
+            {
+              "node_id": "Reader1",
+              "node_name": "Reader1",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                }
+              ]
+            },
+            {
+              "node_id": "Decode1",
+              "node_name": "Decode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                }
+              ]
+            },
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_INTERSECTION",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                },
+                {
+                  "port_type": "INPUT",
+                  "index": 1,
+                  "records": 5,
+                  "bytes": 45
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 1,
+                  "records": 5,
+                  "bytes": 75
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 2,
+                  "records": 2,
+                  "bytes": 18
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Encode1",
+              "node_name": "Encode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 75
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 68
+                }
+              ]
+            },
+            {
+              "node_id": "Writer1",
+              "node_name": "Writer1",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 68
+                }
+              ]
+            },
+            {
+              "node_id": "Encode2",
+              "node_name": "Encode2",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Writer2",
+              "node_name": "Writer2",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 11,
+        "port_count": 20,
+        "total_records": 76,
+        "total_bytes": 754
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:39:52,336 INFO  17919 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:39:52,336 INFO  17919 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:39:52,336 INFO  17919 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:39:52,339 INFO  17919 [JobStarter_17919] Starting job: MiscExamples/suite_v5/graph/P905.grf\n\t Run ID: \t\t17919\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:39:52,342 INFO  17919 [JobExecutor_17919] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:39:52,347 INFO  17919 [JobExecutor_17919] Initializing metadata\n2026-10-13 11:39:52,347 INFO  17919 [JobExecutor_17919] Initializing phase 0\n2026-10-13 11:39:52,350 INFO  17919 [JobExecutor_17919] Phase 0 initialized successfully.\n2026-10-13 11:39:52,350 INFO  17919 [WatchDog_17919] Job execution type: ETL_GRAPH\n2026-10-13 11:39:52,350 INFO  17919 [WatchDog_17919] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P905.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P905.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17919\nPROJECT=.\nROOT_RUN_ID=17919\nRUN_ID=17919\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:39:52,350 INFO  17919 [WatchDog_17919] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:39:52,352 INFO  17919 [WatchDog_17919] Starting up all nodes in phase [0]\n2026-10-13 11:39:52,352 INFO  17919 [WatchDog_17919] Successfully started all nodes in phase!\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] Time: 13/10/2026 11:39:52, JVM heap used: 102 MB\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] ---------------------------------------------------------------------------------\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] Reader1                  Reader1                                     FINISHED_OK\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:33%)           Out:0              5          0    1666       12\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] Decode1                  Decode1                                     FINISHED_OK\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:33%)            In:0              5          0    1666       12\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]                                 Out:0              5          0    1666       14\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:33%)           Out:0              5          0    1666       12\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:0%)             In:0              5          0    1666       12\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]                                 Out:0              5          0    1666       14\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] Test                     Test                                        FINISHED_OK\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:0%)             In:0              5          0    1666       14\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]                                  In:1              5          0    1666       14\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]                                 Out:0              2          0     666        5\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]                                 Out:1              5          0    1666       24\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]                                 Out:2              2          0     666        5\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:0%)             In:0              2          0     666        5\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]                                 Out:0              2          0     666        5\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:39:52,356 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:33%)            In:0              2          0     666        5\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] Encode1                  Encode1                                     FINISHED_OK\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:0%)             In:0              5          0    1666       24\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919]                                 Out:0              5          0    1666       22\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] Writer1                  Writer1                                     FINISHED_OK\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:33%)            In:0              5          0    1666       22\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] Encode2                  Encode2                                     FINISHED_OK\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:0%)             In:0              2          0     666        5\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919]                                 Out:0              2          0     666        5\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] Writer2                  Writer2                                     FINISHED_OK\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919]  (alloc:0MB, cpu:33%)            In:0              2          0     666        5\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] 0                 FINISHED_OK                        0               102\n2026-10-13 11:39:52,357 INFO  17919 [WatchDog_17919] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:39:52,358 INFO  17919 [JobFinalizer_17919] Job finished: MiscExamples/suite_v5/graph/P905.grf\n\t Run ID: \t\t17919\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t24 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P905/mcp_evidence.json"
+  },
+  {
+    "test_id": "P906",
+    "label": "P906",
+    "graph_file": "suite_v5/graph/P906.grf",
+    "graph_sha256": "1e4131f7b60ad6c1133172d182d51b884a5e1eb8bc35525b83751dca47619182",
+    "reference_sha256": "3f00c810964e6bf24904b02e6f072ba02fc21bbdd3bf580491e6bc3ccc0e262e",
+    "input_files": [
+      "run_graphs/P906/data-in/input_0.csv",
+      "run_graphs/P906/data-in/input_1.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P906/expected/output_0.json",
+      "run_graphs/P906/expected/output_1.json",
+      "run_graphs/P906/expected/output_2.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17920
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "actual_file": "run_graphs/P906/data-out/output_0.csv",
+        "pass_count": 2
+      },
+      "1": {
+        "actual": [
+          {
+            "key_id": null,
+            "pair_txt": "NA:NB"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B3"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B3"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": null,
+            "pair_txt": "NA:NB"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A2:B3"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B2"
+          },
+          {
+            "key_id": 2,
+            "pair_txt": "A3:B3"
+          }
+        ],
+        "actual_file": "run_graphs/P906/data-out/output_1.csv",
+        "pass_count": 5
+      },
+      "2": {
+        "actual": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ],
+        "actual_file": "run_graphs/P906/data-out/output_2.csv",
+        "pass_count": 2
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": 1,
+          "value_cd": "A1"
+        },
+        "expected": {
+          "key_id": 1,
+          "value_cd": "A1"
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 4,
+          "value_cd": "A4"
+        },
+        "expected": {
+          "key_id": 4,
+          "value_cd": "A4"
+        }
+      },
+      {
+        "port": 1,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": null,
+          "pair_txt": "NA:NB"
+        },
+        "expected": {
+          "key_id": null,
+          "pair_txt": "NA:NB"
+        }
+      },
+      {
+        "port": 1,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A2:B2"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A2:B2"
+        }
+      },
+      {
+        "port": 1,
+        "index": 2,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A2:B3"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A2:B3"
+        }
+      },
+      {
+        "port": 1,
+        "index": 3,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A3:B2"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A3:B2"
+        }
+      },
+      {
+        "port": 1,
+        "index": 4,
+        "passed": true,
+        "actual": {
+          "key_id": 2,
+          "pair_txt": "A3:B3"
+        },
+        "expected": {
+          "key_id": 2,
+          "pair_txt": "A3:B3"
+        }
+      },
+      {
+        "port": 2,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": 3,
+          "value_cd": "B3"
+        },
+        "expected": {
+          "key_id": 3,
+          "value_cd": "B3"
+        }
+      },
+      {
+        "port": 2,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 5,
+          "value_cd": "B5"
+        },
+        "expected": {
+          "key_id": 5,
+          "value_cd": "B5"
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17920,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P906.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:39:57.397+02:00",
+      "startTime": "2026-10-13T11:39:57.397+02:00",
+      "stopTime": "2026-10-13T11:39:57.462+02:00",
+      "durationMs": 65
+    },
+    "tracking": {
+      "run_id": "17920",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.008,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.004,
+          "nodes": [
+            {
+              "node_id": "Reader1",
+              "node_name": "Reader1",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                }
+              ]
+            },
+            {
+              "node_id": "Decode1",
+              "node_name": "Decode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                }
+              ]
+            },
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_INTERSECTION",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                },
+                {
+                  "port_type": "INPUT",
+                  "index": 1,
+                  "records": 5,
+                  "bytes": 45
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 1,
+                  "records": 5,
+                  "bytes": 75
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 2,
+                  "records": 2,
+                  "bytes": 18
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Encode1",
+              "node_name": "Encode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 75
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 68
+                }
+              ]
+            },
+            {
+              "node_id": "Writer1",
+              "node_name": "Writer1",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 68
+                }
+              ]
+            },
+            {
+              "node_id": "Encode2",
+              "node_name": "Encode2",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Writer2",
+              "node_name": "Writer2",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 11,
+        "port_count": 20,
+        "total_records": 76,
+        "total_bytes": 754
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:39:57,399 INFO  17920 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:39:57,399 INFO  17920 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:39:57,399 INFO  17920 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:39:57,402 INFO  17920 [JobStarter_17920] Starting job: MiscExamples/suite_v5/graph/P906.grf\n\t Run ID: \t\t17920\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:39:57,406 INFO  17920 [JobExecutor_17920] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:39:57,410 INFO  17920 [JobExecutor_17920] Initializing metadata\n2026-10-13 11:39:57,410 INFO  17920 [JobExecutor_17920] Initializing phase 0\n2026-10-13 11:39:57,452 INFO  17920 [JobExecutor_17920] Phase 0 initialized successfully.\n2026-10-13 11:39:57,452 INFO  17920 [WatchDog_17920] Job execution type: ETL_GRAPH\n2026-10-13 11:39:57,452 INFO  17920 [WatchDog_17920] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P906.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P906.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17920\nPROJECT=.\nROOT_RUN_ID=17920\nRUN_ID=17920\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:39:57,452 INFO  17920 [WatchDog_17920] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:39:57,454 INFO  17920 [WatchDog_17920] Starting up all nodes in phase [0]\n2026-10-13 11:39:57,455 INFO  17920 [WatchDog_17920] Successfully started all nodes in phase!\n2026-10-13 11:39:57,459 INFO  17920 [WatchDog_17920] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:39:57,459 INFO  17920 [WatchDog_17920] Time: 13/10/2026 11:39:57, JVM heap used: 88 MB\n2026-10-13 11:39:57,459 INFO  17920 [WatchDog_17920] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:39:57,459 INFO  17920 [WatchDog_17920] ---------------------------------------------------------------------------------\n2026-10-13 11:39:57,459 INFO  17920 [WatchDog_17920] Reader1                  Reader1                                     FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:25%)           Out:0              5          0    1250        9\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Decode1                  Decode1                                     FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:0%)             In:0              5          0    1250        9\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]                                 Out:0              5          0    1250       10\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:25%)           Out:0              5          0    1250        9\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:0%)             In:0              5          0    1250        9\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]                                 Out:0              5          0    1250       10\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Test                     Test                                        FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:25%)            In:0              5          0    1250       10\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]                                  In:1              5          0    1250       10\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]                                 Out:0              2          0     500        4\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]                                 Out:1              5          0    1250       18\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]                                 Out:2              2          0     500        4\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:0%)             In:0              2          0     500        4\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]                                 Out:0              2          0     500        3\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:25%)            In:0              2          0     500        3\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Encode1                  Encode1                                     FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:0%)             In:0              5          0    1250       18\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]                                 Out:0              5          0    1250       16\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Writer1                  Writer1                                     FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:25%)            In:0              5          0    1250       16\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Encode2                  Encode2                                     FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:25%)            In:0              2          0     500        4\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]                                 Out:0              2          0     500        3\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Writer2                  Writer2                                     FINISHED_OK\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920]  (alloc:0MB, cpu:25%)            In:0              2          0     500        3\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] 0                 FINISHED_OK                        0                88\n2026-10-13 11:39:57,460 INFO  17920 [WatchDog_17920] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:39:57,462 INFO  17920 [JobFinalizer_17920] Job finished: MiscExamples/suite_v5/graph/P906.grf\n\t Run ID: \t\t17920\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t65 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P906/mcp_evidence.json"
+  },
+  {
+    "test_id": "P907",
+    "label": "P907",
+    "graph_file": "suite_v5/graph/P907.grf",
+    "graph_sha256": "bb9133f641464d7f3816854240f0c76e14a9ae473974fbbc5b23493cbf262c75",
+    "reference_sha256": "4580e982e71eea7a7dff25d49f88c2b04ce886acaff31c6ac4c9b1f6e66ee5e9",
+    "input_files": [
+      "run_graphs/P907/data-in/input_0.csv",
+      "run_graphs/P907/data-in/input_1.csv"
+    ],
+    "expected_files": [
+      "run_graphs/P907/expected/output_0.json",
+      "run_graphs/P907/expected/output_1.json",
+      "run_graphs/P907/expected/output_2.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17922
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": 1,
+            "value_cd": "A1"
+          },
+          {
+            "key_id": 4,
+            "value_cd": "A4"
+          }
+        ],
+        "actual_file": "run_graphs/P907/data-out/output_0.csv",
+        "pass_count": 2
+      },
+      "1": {
+        "actual": [],
+        "expected": [],
+        "actual_file": "run_graphs/P907/data-out/output_1.csv",
+        "pass_count": 0
+      },
+      "2": {
+        "actual": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ],
+        "expected": [
+          {
+            "key_id": 3,
+            "value_cd": "B3"
+          },
+          {
+            "key_id": 5,
+            "value_cd": "B5"
+          }
+        ],
+        "actual_file": "run_graphs/P907/data-out/output_2.csv",
+        "pass_count": 2
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": 1,
+          "value_cd": "A1"
+        },
+        "expected": {
+          "key_id": 1,
+          "value_cd": "A1"
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 4,
+          "value_cd": "A4"
+        },
+        "expected": {
+          "key_id": 4,
+          "value_cd": "A4"
+        }
+      },
+      {
+        "port": 2,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "key_id": 3,
+          "value_cd": "B3"
+        },
+        "expected": {
+          "key_id": 3,
+          "value_cd": "B3"
+        }
+      },
+      {
+        "port": 2,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "key_id": 5,
+          "value_cd": "B5"
+        },
+        "expected": {
+          "key_id": 5,
+          "value_cd": "B5"
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17922,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P907.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:40:02.470+02:00",
+      "startTime": "2026-10-13T11:40:02.470+02:00",
+      "stopTime": "2026-10-13T11:40:02.496+02:00",
+      "durationMs": 26
+    },
+    "tracking": {
+      "run_id": "17922",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.007,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.004,
+          "nodes": [
+            {
+              "node_id": "Reader1",
+              "node_name": "Reader1",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                }
+              ]
+            },
+            {
+              "node_id": "Decode1",
+              "node_name": "Decode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                }
+              ]
+            },
+            {
+              "node_id": "Reader0",
+              "node_name": "Reader0",
+              "node_type": "DATA_READER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                }
+              ]
+            },
+            {
+              "node_id": "Decode0",
+              "node_name": "Decode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 38
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                }
+              ]
+            },
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_INTERSECTION",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.002,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 5,
+                  "bytes": 45
+                },
+                {
+                  "port_type": "INPUT",
+                  "index": 1,
+                  "records": 5,
+                  "bytes": 45
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 1,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 2,
+                  "records": 2,
+                  "bytes": 18
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Encode1",
+              "node_name": "Encode1",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Writer1",
+              "node_name": "Writer1",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 0,
+                  "bytes": 0
+                }
+              ]
+            },
+            {
+              "node_id": "Encode2",
+              "node_name": "Encode2",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 18
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            },
+            {
+              "node_id": "Writer2",
+              "node_name": "Writer2",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 2,
+                  "bytes": 16
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 11,
+        "port_count": 20,
+        "total_records": 56,
+        "total_bytes": 468
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:40:02,472 INFO  17922 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:40:02,472 INFO  17922 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:40:02,472 INFO  17922 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:40:02,476 INFO  17922 [JobStarter_17922] Starting job: MiscExamples/suite_v5/graph/P907.grf\n\t Run ID: \t\t17922\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:40:02,479 INFO  17922 [JobExecutor_17922] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:40:02,484 INFO  17922 [JobExecutor_17922] Initializing metadata\n2026-10-13 11:40:02,484 INFO  17922 [JobExecutor_17922] Initializing phase 0\n2026-10-13 11:40:02,486 INFO  17922 [JobExecutor_17922] Phase 0 initialized successfully.\n2026-10-13 11:40:02,487 INFO  17922 [WatchDog_17922] Job execution type: ETL_GRAPH\n2026-10-13 11:40:02,487 INFO  17922 [WatchDog_17922] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P907.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P907.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17922\nPROJECT=.\nROOT_RUN_ID=17922\nRUN_ID=17922\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:40:02,487 INFO  17922 [WatchDog_17922] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:40:02,489 INFO  17922 [WatchDog_17922] Starting up all nodes in phase [0]\n2026-10-13 11:40:02,489 INFO  17922 [WatchDog_17922] Successfully started all nodes in phase!\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Time: 13/10/2026 11:40:02, JVM heap used: 104 MB\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] ---------------------------------------------------------------------------------\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Reader1                  Reader1                                     FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:25%)           Out:0              5          0    1250        9\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Decode1                  Decode1                                     FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:25%)            In:0              5          0    1250        9\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]                                 Out:0              5          0    1250       10\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Reader0                  Reader0                                     FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:0%)            Out:0              5          0    1250        9\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Decode0                  Decode0                                     FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:0%)             In:0              5          0    1250        9\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]                                 Out:0              5          0    1250       10\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Test                     Test                                        FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:50%)            In:0              5          0    1250       10\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]                                  In:1              5          0    1250       10\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]                                 Out:0              2          0     500        4\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]                                 Out:1              0          0       0        0\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]                                 Out:2              2          0     500        4\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:0%)             In:0              2          0     500        4\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]                                 Out:0              2          0     500        3\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:25%)            In:0              2          0     500        3\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Encode1                  Encode1                                     FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:0%)             In:0              0          0       0        0\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]                                 Out:0              0          0       0        0\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Writer1                  Writer1                                     FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:25%)            In:0              0          0       0        0\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Encode2                  Encode2                                     FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:0%)             In:0              2          0     500        4\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]                                 Out:0              2          0     500        3\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Writer2                  Writer2                                     FINISHED_OK\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922]  (alloc:0MB, cpu:25%)            In:0              2          0     500        3\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:40:02,494 INFO  17922 [WatchDog_17922] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:40:02,495 INFO  17922 [WatchDog_17922] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:40:02,495 INFO  17922 [WatchDog_17922] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:40:02,495 INFO  17922 [WatchDog_17922] 0                 FINISHED_OK                        0               104\n2026-10-13 11:40:02,495 INFO  17922 [WatchDog_17922] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:40:02,496 INFO  17922 [JobFinalizer_17922] Job finished: MiscExamples/suite_v5/graph/P907.grf\n\t Run ID: \t\t17922\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t26 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P907/mcp_evidence.json"
+  },
+  {
+    "test_id": "P908",
+    "label": "P908",
+    "graph_file": "suite_v5/graph/P908.grf",
+    "graph_sha256": "d027cca75e12eb77dea0d600b4935e0fad4f514f96f6e234d1b9855e80984810",
+    "reference_sha256": "c4897fddaeff3e25d9cf860cbd740a03c277db6d2ebe5c56e27def499b93e24a",
+    "input_files": [],
+    "expected_files": [
+      "run_graphs/P908/expected/output_0.json"
+    ],
+    "reference_runs": true,
+    "run_ids": [
+      17923
+    ],
+    "outputs": {
+      "0": {
+        "actual": [
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 1
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 2
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 3
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 4
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 5
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 6
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 7
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 8
+          }
+        ],
+        "expected": [
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 1
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 2
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 3
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 4
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 5
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 6
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 7
+          },
+          {
+            "flag": true,
+            "label": "RW2",
+            "counter": 8
+          }
+        ],
+        "actual_file": "run_graphs/P908/data-out/output_0.csv",
+        "pass_count": 8
+      }
+    },
+    "row_checks": [
+      {
+        "port": 0,
+        "index": 0,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 1
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 1
+        }
+      },
+      {
+        "port": 0,
+        "index": 1,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 2
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 2
+        }
+      },
+      {
+        "port": 0,
+        "index": 2,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 3
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 3
+        }
+      },
+      {
+        "port": 0,
+        "index": 3,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 4
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 4
+        }
+      },
+      {
+        "port": 0,
+        "index": 4,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 5
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 5
+        }
+      },
+      {
+        "port": 0,
+        "index": 5,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 6
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 6
+        }
+      },
+      {
+        "port": 0,
+        "index": 6,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 7
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 7
+        }
+      },
+      {
+        "port": 0,
+        "index": 7,
+        "passed": true,
+        "actual": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 8
+        },
+        "expected": {
+          "flag": true,
+          "label": "RW2",
+          "counter": 8
+        }
+      }
+    ],
+    "expected_failure": false,
+    "validation": {
+      "overall": "PASS",
+      "timedOut": false,
+      "problems": []
+    },
+    "completion": {
+      "runId": 17923,
+      "sandboxCode": "MiscExamples",
+      "jobFile": "suite_v5/graph/P908.grf",
+      "jobType": "ETL_GRAPH",
+      "status": "FINISHED_OK",
+      "submitTime": "2026-10-13T11:40:07.532+02:00",
+      "startTime": "2026-10-13T11:40:07.532+02:00",
+      "stopTime": "2026-10-13T11:40:07.550+02:00",
+      "durationMs": 18
+    },
+    "tracking": {
+      "run_id": "17923",
+      "status": "FINISHED_OK",
+      "exec_seconds": 0.005,
+      "phases": [
+        {
+          "phase_number": 0,
+          "exec_seconds": 0.002,
+          "nodes": [
+            {
+              "node_id": "Test",
+              "node_name": "Test",
+              "node_type": "DATA_GENERATOR",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 96
+                }
+              ]
+            },
+            {
+              "node_id": "Encode0",
+              "node_name": "Encode0",
+              "node_type": "REFORMAT",
+              "result": "FINISHED_OK",
+              "cpu_seconds": null,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 96
+                },
+                {
+                  "port_type": "OUTPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 152
+                }
+              ]
+            },
+            {
+              "node_id": "Writer0",
+              "node_name": "Writer0",
+              "node_type": "DATA_WRITER",
+              "result": "FINISHED_OK",
+              "cpu_seconds": 0.001,
+              "ports": [
+                {
+                  "port_type": "INPUT",
+                  "index": 0,
+                  "records": 8,
+                  "bytes": 152
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "summary": {
+        "phase_count": 1,
+        "node_count": 3,
+        "port_count": 4,
+        "total_records": 32,
+        "total_bytes": 496
+      }
+    },
+    "log": {
+      "text": "2026-10-13 11:40:07,534 INFO  17923 [boundedElastic-86] ***  CloverDX, (c) 2002- CloverDX a.s.  ***\n2026-10-13 11:40:07,534 INFO  17923 [boundedElastic-86] Running with CloverDX version 0.0.0.devel\n2026-10-13 11:40:07,534 INFO  17923 [boundedElastic-86] Running on 16 CPU(s), OS Linux, architecture amd64\n2026-10-13 11:40:07,537 INFO  17923 [JobStarter_17923] Starting job: MiscExamples/suite_v5/graph/P908.grf\n\t Run ID: \t\t17923\n\t User: \t\t\tclover\n\t Triggered by: \t\tMCP_TOOL\n\t Executing on: \t\t[worker0@node01]\n2026-10-13 11:40:07,540 INFO  17923 [JobExecutor_17923] Running on OpenJDK Runtime Environment, 21.0.12.1, Red Hat, Inc. (JDK), max available memory for JVM: 30688 MB\n2026-10-13 11:40:07,543 INFO  17923 [JobExecutor_17923] Initializing metadata\n2026-10-13 11:40:07,543 INFO  17923 [JobExecutor_17923] Initializing phase 0\n2026-10-13 11:40:07,544 INFO  17923 [JobExecutor_17923] Phase 0 initialized successfully.\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Job execution type: ETL_GRAPH\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Job parameters: \nCLOVER_USERNAME=clover\nCONN_DIR=${PROJECT}/conn\nDATAIN_DIR=${PROJECT}/data-in\nDATAOUT_DIR=${PROJECT}/data-out\nDATATMP_DIR=${PROJECT}/data-tmp\nDATA_SERVICE_DIR=${PROJECT}/data-service\nGRAPH_DIR=${PROJECT}/graph\nGRAPH_FILE=suite_v5/graph/P908.grf\nJOBFLOW_DIR=${PROJECT}/jobflow\nJOB_FILE=suite_v5/graph/P908.grf\nLIB_DIR=${PROJECT}/lib\nLOOKUP_DIR=${PROJECT}/lookup\nMETA_DIR=${PROJECT}/meta\nNODE_ID=node01\nPARENT_RUN_ID=17923\nPROJECT=.\nROOT_RUN_ID=17923\nRUN_ID=17923\nSANDBOX_CODE=MiscExamples\nSANDBOX_ROOT=/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples\nSEQ_DIR=${PROJECT}/seq\nSUBGRAPH_DIR=${GRAPH_DIR}/subgraph\nTRANS_DIR=${PROJECT}/trans\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Runtime classpath: [file:/home/pavlisd/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54/sandboxes/MiscExamples/trans/]\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] Initial dictionary content:\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] DictEntry:Enabled:boolean:{value=true}\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] DictEntry:RunLabel:string:{value=RW2}\n2026-10-13 11:40:07,544 INFO  17923 [WatchDog_17923] DictEntry:Count:integer:{value=0}\n2026-10-13 11:40:07,546 INFO  17923 [WatchDog_17923] Starting up all nodes in phase [0]\n2026-10-13 11:40:07,546 INFO  17923 [WatchDog_17923] Successfully started all nodes in phase!\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ----------------------** Final tracking Log for phase [0] **---------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Time: 13/10/2026 11:40:07, JVM heap used: 120 MB\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Node                     ID      Port       #Records        #KB  aRec/s   aKB/s\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ---------------------------------------------------------------------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Test                     Test                                        FINISHED_OK\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]  (alloc:0MB, cpu:50%)           Out:0              8          0    4000       46\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Encode0                  Encode0                                     FINISHED_OK\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]  (alloc:0MB, cpu:0%)             In:0              8          0    4000       46\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]                                 Out:0              8          0    4000       74\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Writer0                  Writer0                                     FINISHED_OK\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923]  (alloc:0MB, cpu:50%)            In:0              8          0    4000       74\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ---------------------------------** End of Log **--------------------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Execution of phase [0] successfully finished - elapsed time (sec): 0\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Final dictionary content:\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] DictEntry:Enabled:boolean:{value=true}\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] DictEntry:RunLabel:string:{value=RW2}\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] DictEntry:Count:integer:{value=8}\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] WatchDog finished - total execution time: 0 sec\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] -----------------------** Summary of Phases execution **---------------------\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] Phase#            Finished Status         RunTime(sec)    MemoryAllocation(MB)\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] 0                 FINISHED_OK                        0               120\n2026-10-13 11:40:07,549 INFO  17923 [WatchDog_17923] ------------------------------** End of Summary **---------------------------\n2026-10-13 11:40:07,550 INFO  17923 [JobFinalizer_17923] Job finished: MiscExamples/suite_v5/graph/P908.grf\n\t Run ID: \t\t17923\n\t Status: \t\tFINISHED_OK\n\t Duration: \t\t18 ms\n",
+      "isError": false
+    },
+    "record_counts_match": true,
+    "evidence_file": "run_graphs/P908/mcp_evidence.json"
+  }
+]

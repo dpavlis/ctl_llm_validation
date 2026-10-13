@@ -1,0 +1,9 @@
+A|T1|sup.csv|2026-01-01 00:00:00.000|1|__NULL__||EUR|B|__NULL__|s1|x| L |CZ| IBAN |1960-01-01 00:00:00.000|1|__NULL__
+A|T1|sup.csv|2026-01-01 00:00:00.000|2|__NULL__||EUR|B|__NULL__|s2|x| L |CZ||2026-01-01 00:00:00.000|1|__NULL__
+A|T1|sup.csv|2026-01-01 00:00:00.000|3|__NULL__||EUR|B|__NULL__|s3|x| L |CZ| IBAN |1960-01-01 00:00:00.000|1|__NULL__
+B|T1|sup.csv|2026-01-01 00:00:00.000|4|__NULL__||EUR|B|__NULL__|s4|x|__NULL__|CZ| IBAN |__NULL__|1|__NULL__
+B|T1|sup.csv|2026-01-01 00:00:00.000|5|__NULL__||EUR|B|__NULL__|s5|x||CZ| IBAN |__NULL__|2|__NULL__
+B|T1|sup.csv|2026-01-01 00:00:00.000|6|__NULL__||EUR|B|__NULL__|s6|x| |CZ| IBAN |__NULL__|2|__NULL__
+C|T1|sup.csv|2026-01-01 00:00:00.000|7|__NULL__||EUR|B|__NULL__|s7|x| L |BAD:DATE| IBAN |__NULL__|1|__NULL__
+D|T1|sup.csv|2026-01-01 00:00:00.000|8|__NULL__||EUR|B|__NULL__|s8|x| L |CZ| IBAN |__NULL__|1|__NULL__
+D|T1|sup.csv|2026-01-01 00:00:00.000|9|__NULL__||EUR|B|__NULL__|s9|x| L |CZ| IBAN |__NULL__|3|__NULL__

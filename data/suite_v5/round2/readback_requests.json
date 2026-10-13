@@ -1,0 +1,802 @@
+[
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T44_input_0.csv"
+    },
+    "label": "run_graphs/T44/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T44.grf"
+    },
+    "label": "run_graphs/T44/graph/T44.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T45_input_0.csv"
+    },
+    "label": "run_graphs/T45/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T45.grf"
+    },
+    "label": "run_graphs/T45/graph/T45.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T46_input_0.csv"
+    },
+    "label": "run_graphs/T46/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T46.grf"
+    },
+    "label": "run_graphs/T46/graph/T46.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T47_input_0.csv"
+    },
+    "label": "run_graphs/T47/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T47.grf"
+    },
+    "label": "run_graphs/T47/graph/T47.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T48_input_0.csv"
+    },
+    "label": "run_graphs/T48/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T48.grf"
+    },
+    "label": "run_graphs/T48/graph/T48.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T49_input_0.csv"
+    },
+    "label": "run_graphs/T49/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T49.grf"
+    },
+    "label": "run_graphs/T49/graph/T49.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T50_lookup_0.csv"
+    },
+    "label": "run_graphs/T50/data-in/lookup_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T50_input_0.csv"
+    },
+    "label": "run_graphs/T50/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T50.grf"
+    },
+    "label": "run_graphs/T50/graph/T50.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T51_lookup_0.csv"
+    },
+    "label": "run_graphs/T51/data-in/lookup_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T51_input_0.csv"
+    },
+    "label": "run_graphs/T51/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T51.grf"
+    },
+    "label": "run_graphs/T51/graph/T51.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T52_lookup_0.csv"
+    },
+    "label": "run_graphs/T52/data-in/lookup_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T52_lookup_1.csv"
+    },
+    "label": "run_graphs/T52/data-in/lookup_1.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T52_input_0.csv"
+    },
+    "label": "run_graphs/T52/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T52.grf"
+    },
+    "label": "run_graphs/T52/graph/T52.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T53_input_0.csv"
+    },
+    "label": "run_graphs/T53/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T53_input_1.csv"
+    },
+    "label": "run_graphs/T53/data-in/input_1.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T53.grf"
+    },
+    "label": "run_graphs/T53/graph/T53.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T54_input_0.csv"
+    },
+    "label": "run_graphs/T54/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T54_input_1.csv"
+    },
+    "label": "run_graphs/T54/data-in/input_1.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T54.grf"
+    },
+    "label": "run_graphs/T54/graph/T54.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T55_input_0.csv"
+    },
+    "label": "run_graphs/T55/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T55_input_1.csv"
+    },
+    "label": "run_graphs/T55/data-in/input_1.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T55.grf"
+    },
+    "label": "run_graphs/T55/graph/T55.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T56_input_0.csv"
+    },
+    "label": "run_graphs/T56/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T56.grf"
+    },
+    "label": "run_graphs/T56/graph/T56.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T57_input_0.csv"
+    },
+    "label": "run_graphs/T57/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T57.grf"
+    },
+    "label": "run_graphs/T57/graph/T57.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T58_input_0.csv"
+    },
+    "label": "run_graphs/T58/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T58.grf"
+    },
+    "label": "run_graphs/T58/graph/T58.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T59_input_0.csv"
+    },
+    "label": "run_graphs/T59/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T59.grf"
+    },
+    "label": "run_graphs/T59/graph/T59.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T60_input_0.csv"
+    },
+    "label": "run_graphs/T60/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T60.grf"
+    },
+    "label": "run_graphs/T60/graph/T60.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T61_input_0.csv"
+    },
+    "label": "run_graphs/T61/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T61.grf"
+    },
+    "label": "run_graphs/T61/graph/T61.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T62_input_0.csv"
+    },
+    "label": "run_graphs/T62/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T62.grf"
+    },
+    "label": "run_graphs/T62/graph/T62.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T63_input_0.csv"
+    },
+    "label": "run_graphs/T63/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T63.grf"
+    },
+    "label": "run_graphs/T63/graph/T63.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T64_input_0.csv"
+    },
+    "label": "run_graphs/T64/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T64.grf"
+    },
+    "label": "run_graphs/T64/graph/T64.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T65_input_0.csv"
+    },
+    "label": "run_graphs/T65/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T65.grf"
+    },
+    "label": "run_graphs/T65/graph/T65.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T66_input_0.csv"
+    },
+    "label": "run_graphs/T66/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T66.grf"
+    },
+    "label": "run_graphs/T66/graph/T66.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T67_input_0.csv"
+    },
+    "label": "run_graphs/T67/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T67.grf"
+    },
+    "label": "run_graphs/T67/graph/T67.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T68_input_0.csv"
+    },
+    "label": "run_graphs/T68/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T68.grf"
+    },
+    "label": "run_graphs/T68/graph/T68.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T69_input_0.csv"
+    },
+    "label": "run_graphs/T69/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T69.grf"
+    },
+    "label": "run_graphs/T69/graph/T69.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T70.grf"
+    },
+    "label": "run_graphs/T70/graph/T70.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T71.grf"
+    },
+    "label": "run_graphs/T71/graph/T71.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T72_input_0.csv"
+    },
+    "label": "run_graphs/T72/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T72.grf"
+    },
+    "label": "run_graphs/T72/graph/T72.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T73_input_0.csv"
+    },
+    "label": "run_graphs/T73/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T73.grf"
+    },
+    "label": "run_graphs/T73/graph/T73.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T64_empty_amount_input_0.csv"
+    },
+    "label": "run_graphs/T64_empty_amount/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T64_empty_amount.grf"
+    },
+    "label": "run_graphs/T64_empty_amount/graph/T64_empty_amount.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T64_malformed_amount_input_0.csv"
+    },
+    "label": "run_graphs/T64_malformed_amount/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T64_malformed_amount.grf"
+    },
+    "label": "run_graphs/T64_malformed_amount/graph/T64_malformed_amount.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T64_excess_integer_digits_input_0.csv"
+    },
+    "label": "run_graphs/T64_excess_integer_digits/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T64_excess_integer_digits.grf"
+    },
+    "label": "run_graphs/T64_excess_integer_digits/graph/T64_excess_integer_digits.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T64_excess_fraction_digits_input_0.csv"
+    },
+    "label": "run_graphs/T64_excess_fraction_digits/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T64_excess_fraction_digits.grf"
+    },
+    "label": "run_graphs/T64_excess_fraction_digits/graph/T64_excess_fraction_digits.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T70_zero_rows.grf"
+    },
+    "label": "run_graphs/T70_zero_rows/graph/T70_zero_rows.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T70_one_row.grf"
+    },
+    "label": "run_graphs/T70_one_row/graph/T70_one_row.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T70_partial_customer.grf"
+    },
+    "label": "run_graphs/T70_partial_customer/graph/T70_partial_customer.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T71_zero_steps.grf"
+    },
+    "label": "run_graphs/T71_zero_steps/graph/T71_zero_steps.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T71_one_step.grf"
+    },
+    "label": "run_graphs/T71_one_step/graph/T71_one_step.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/T73_disabled_invalid_cutoff_input_0.csv"
+    },
+    "label": "run_graphs/T73_disabled_invalid_cutoff/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/T73_disabled_invalid_cutoff.grf"
+    },
+    "label": "run_graphs/T73_disabled_invalid_cutoff/graph/T73_disabled_invalid_cutoff.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/P901.grf"
+    },
+    "label": "run_graphs/P901/graph/P901.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/P902.grf"
+    },
+    "label": "run_graphs/P902/graph/P902.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P903_input_0.csv"
+    },
+    "label": "run_graphs/P903/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/P903.grf"
+    },
+    "label": "run_graphs/P903/graph/P903.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P904_input_0.csv"
+    },
+    "label": "run_graphs/P904/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P904_input_1.csv"
+    },
+    "label": "run_graphs/P904/data-in/input_1.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/P904.grf"
+    },
+    "label": "run_graphs/P904/graph/P904.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P905_input_0.csv"
+    },
+    "label": "run_graphs/P905/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P905_input_1.csv"
+    },
+    "label": "run_graphs/P905/data-in/input_1.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/P905.grf"
+    },
+    "label": "run_graphs/P905/graph/P905.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P906_input_0.csv"
+    },
+    "label": "run_graphs/P906/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P906_input_1.csv"
+    },
+    "label": "run_graphs/P906/data-in/input_1.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/P906.grf"
+    },
+    "label": "run_graphs/P906/graph/P906.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P907_input_0.csv"
+    },
+    "label": "run_graphs/P907/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P907_input_1.csv"
+    },
+    "label": "run_graphs/P907/data-in/input_1.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/P907.grf"
+    },
+    "label": "run_graphs/P907/graph/P907.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/P908.grf"
+    },
+    "label": "run_graphs/P908/graph/P908.grf"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P909_input_0.csv"
+    },
+    "label": "run_graphs/P909/data-in/input_0.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/data-in/P909_input_1.csv"
+    },
+    "label": "run_graphs/P909/data-in/input_1.csv"
+  },
+  {
+    "tool": "sandbox_read_file",
+    "arguments": {
+      "sandboxCode": "MiscExamples",
+      "sandboxPath": "suite_v5/graph/P909.grf"
+    },
+    "label": "run_graphs/P909/graph/P909.grf"
+  }
+]
