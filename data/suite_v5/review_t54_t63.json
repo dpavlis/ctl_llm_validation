@@ -1,0 +1,1813 @@
+{
+  "review_scope": "T54-T63",
+  "sources": [
+    "spec/suite_generate_rw_brief.md",
+    "spec/ctl2_training_findings.md \u00a77",
+    "resources/ctl2-basics.md",
+    "data/suite_v5/generate_rw.json"
+  ],
+  "semantic_reference_failures": 0,
+  "findings": [
+    {
+      "ids": [
+        "T54",
+        "T55"
+      ],
+      "severity": "required_rubric_gap",
+      "finding": "Changed-pair cdc_action=UPDATE is explicitly required by clause 3, but no required item explicitly checks it. Current .3 checks only changed_fields and .4 only SKIP/UNCHANGED. A solution leaving cdc_action empty or another value may satisfy all stated required checks.",
+      "recommendation": "Extend .3 to require UPDATE on every changed emitted pair, in addition to exact ordered changed_fields."
+    },
+    {
+      "ids": [
+        "T56",
+        "T57",
+        "T58"
+      ],
+      "severity": "clarification",
+      "finding": "Required .1 asks for a persistent whole candidate and explicit first-candidate sentinel. Correct equivalent implementations may save individual winner fields and use seen==0 as first-candidate state; .6 already accepts explicit assignment.",
+      "recommendation": "State that a saved record or equivalent saved fields, and boolean/count/null-record first-candidate state, are accepted."
+    },
+    {
+      "ids": [
+        "T54",
+        "T55"
+      ],
+      "severity": "validation_fact",
+      "finding": "DataIntersection physical port numbering and Cartesian duplicate semantics are specified in the owner-confirmed brief but are not in ctl2-basics.md.",
+      "recommendation": "List these owner-confirmed facts and source in validation_report so the judge reference can be updated before snapshot."
+    }
+  ],
+  "tests": [
+    {
+      "test_id": "T54",
+      "reference_semantic_status": "pass",
+      "independent_derivation": [
+        "Matched tuples alone reach transform; compare each tracked field by exact null-safe equality in metadata order.",
+        "Copy incoming matching fields to output 1, populate comma-separated changed_fields and UPDATE when nonempty.",
+        "Unchanged pair returns SKIP.",
+        "Do not manufacture one-sided records; duplicate matches receive independent decisions."
+      ],
+      "rubric_item_review": [
+        {
+          "id": "T54.1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T54.2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T54.3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T54.4",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T54.5",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            5
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T54.6",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T54.7",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T54.F1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T54.F2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T54.F3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        }
+      ],
+      "ctl2_fact_review": [
+        "CTL2 ==/!= supports null-safe equality; ordered comparisons require non-null operands (ctl2-basics \u00a73).",
+        "Wildcard mapping copies matching name/type fields (ctl2-basics \u00a76).",
+        "DataIntersection ports 0/1/2 and Cartesian duplicate matching are owner-confirmed in suite brief; these facts are absent from ctl2-basics and must be captured in the validation report."
+      ],
+      "independent_cases": [
+        {
+          "input": {
+            "previous_tracked": [
+              null,
+              null,
+              null
+            ],
+            "incoming_tracked": [
+              null,
+              null,
+              null
+            ]
+          },
+          "expected": {
+            "emit": false,
+            "action": null,
+            "changed_fields": ""
+          }
+        },
+        {
+          "input": {
+            "previous_tracked": [
+              null,
+              null,
+              null
+            ],
+            "incoming_tracked": [
+              0,
+              "",
+              null
+            ]
+          },
+          "expected": {
+            "emit": true,
+            "action": "UPDATE",
+            "changed_fields": "list_price,category_cd"
+          }
+        },
+        {
+          "input": {
+            "previous_tracked": [
+              1,
+              "a",
+              "2026-01-01T00:00:00"
+            ],
+            "incoming_tracked": [
+              1,
+              "a",
+              "2026-01-01T01:00:00"
+            ]
+          },
+          "expected": {
+            "emit": true,
+            "action": "UPDATE",
+            "changed_fields": "withdrawn_at"
+          }
+        }
+      ],
+      "compiler_review": "Handled by root; this review independently checks prompt/reference semantics and documented facts, not compiler execution."
+    },
+    {
+      "test_id": "T55",
+      "reference_semantic_status": "pass",
+      "independent_derivation": [
+        "Matched tuples alone reach transform; compare each tracked field by exact null-safe equality in metadata order.",
+        "Copy incoming matching fields to output 1, populate comma-separated changed_fields and UPDATE when nonempty.",
+        "Unchanged pair emits output 1 with UNCHANGED and empty change set.",
+        "Do not manufacture one-sided records; duplicate matches receive independent decisions."
+      ],
+      "rubric_item_review": [
+        {
+          "id": "T55.1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T55.2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T55.3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T55.4",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T55.5",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            5
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T55.6",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T55.7",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T55.F1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T55.F2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T55.F3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        }
+      ],
+      "ctl2_fact_review": [
+        "CTL2 ==/!= supports null-safe equality; ordered comparisons require non-null operands (ctl2-basics \u00a73).",
+        "Wildcard mapping copies matching name/type fields (ctl2-basics \u00a76).",
+        "DataIntersection ports 0/1/2 and Cartesian duplicate matching are owner-confirmed in suite brief; these facts are absent from ctl2-basics and must be captured in the validation report."
+      ],
+      "independent_cases": [
+        {
+          "input": {
+            "previous_tracked": [
+              null,
+              null,
+              null
+            ],
+            "incoming_tracked": [
+              null,
+              null,
+              null
+            ]
+          },
+          "expected": {
+            "emit": true,
+            "action": "UNCHANGED",
+            "changed_fields": ""
+          }
+        },
+        {
+          "input": {
+            "previous_tracked": [
+              null,
+              null,
+              null
+            ],
+            "incoming_tracked": [
+              0,
+              "",
+              null
+            ]
+          },
+          "expected": {
+            "emit": true,
+            "action": "UPDATE",
+            "changed_fields": "department_cd,fte"
+          }
+        },
+        {
+          "input": {
+            "previous_tracked": [
+              1,
+              "a",
+              "2026-01-01T00:00:00"
+            ],
+            "incoming_tracked": [
+              1,
+              "a",
+              "2026-01-01T01:00:00"
+            ]
+          },
+          "expected": {
+            "emit": true,
+            "action": "UPDATE",
+            "changed_fields": "end_dt"
+          }
+        }
+      ],
+      "compiler_review": "Handled by root; this review independently checks prompt/reference semantics and documented facts, not compiler execution."
+    },
+    {
+      "test_id": "T56",
+      "reference_semantic_status": "pass",
+      "independent_derivation": [
+        "Select one actual source record by lexicographic rank: completeness, timestamp-present, full timestamp, revision_no; retain first arrival when tied.",
+        "Completeness requires all three named strings non-null and trimmed nonblank, without modifying output strings.",
+        "Store winner across append calls, copy it during transform, count all inputs, and clean selection/rank/count state between groups."
+      ],
+      "rubric_item_review": [
+        {
+          "id": "T56.1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            6
+          ],
+          "status": "clarify_equivalent_state"
+        },
+        {
+          "id": "T56.2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T56.3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T56.4",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2,
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T56.5",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T56.6",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T56.7",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            5
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T56.8",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T56.F1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T56.F2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T56.F3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        }
+      ],
+      "ctl2_fact_review": [
+        "Input in Denormalizer transform is last record; varying winner values must be saved in append (findings \u00a77, basics \u00a78.4).",
+        "Record assignment deep-copies the candidate (basics \u00a73/\u00a76).",
+        "Default date is epoch, so no epoch sentinel; explicit first-selection state is valid (findings \u00a77)."
+      ],
+      "independent_cases": [
+        {
+          "input": [
+            {
+              "good": false,
+              "timestamp": "2026-01-01",
+              "revision": 99,
+              "id": "new-incomplete"
+            },
+            {
+              "good": true,
+              "timestamp": "1960-01-01",
+              "revision": 1,
+              "id": "old-complete"
+            },
+            {
+              "good": true,
+              "timestamp": null,
+              "revision": 999,
+              "id": "null-complete"
+            },
+            {
+              "good": true,
+              "timestamp": "1960-01-01",
+              "revision": 1,
+              "id": "exact-tie"
+            }
+          ],
+          "expected": {
+            "winner": "old-complete",
+            "versions_seen": 4,
+            "winner_complete": true
+          }
+        },
+        {
+          "input": [
+            {
+              "good": false,
+              "timestamp": null,
+              "revision": 1,
+              "id": "first"
+            },
+            {
+              "good": false,
+              "timestamp": null,
+              "revision": 2,
+              "id": "second"
+            }
+          ],
+          "expected": {
+            "winner": "second",
+            "versions_seen": 2,
+            "winner_complete": false
+          }
+        },
+        {
+          "input": [
+            {
+              "good": false,
+              "timestamp": null,
+              "revision": 1,
+              "id": "singleton"
+            }
+          ],
+          "expected": {
+            "winner": "singleton",
+            "versions_seen": 1,
+            "winner_complete": false
+          }
+        }
+      ],
+      "compiler_review": "Handled by root; this review independently checks prompt/reference semantics and documented facts, not compiler execution."
+    },
+    {
+      "test_id": "T57",
+      "reference_semantic_status": "pass",
+      "independent_derivation": [
+        "Select one actual source record by lexicographic rank: completeness, timestamp-present, full timestamp, revision_no; retain first arrival when tied.",
+        "Completeness requires all three named strings non-null and trimmed nonblank, without modifying output strings.",
+        "Store winner across append calls, copy it during transform, count all inputs, and clean selection/rank/count state between groups."
+      ],
+      "rubric_item_review": [
+        {
+          "id": "T57.1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            6
+          ],
+          "status": "clarify_equivalent_state"
+        },
+        {
+          "id": "T57.2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T57.3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T57.4",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2,
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T57.5",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T57.6",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T57.7",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            5
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T57.8",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T57.F1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T57.F2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T57.F3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        }
+      ],
+      "ctl2_fact_review": [
+        "Input in Denormalizer transform is last record; varying winner values must be saved in append (findings \u00a77, basics \u00a78.4).",
+        "Record assignment deep-copies the candidate (basics \u00a73/\u00a76).",
+        "Default date is epoch, so no epoch sentinel; explicit first-selection state is valid (findings \u00a77)."
+      ],
+      "independent_cases": [
+        {
+          "input": [
+            {
+              "good": false,
+              "timestamp": "2026-01-01",
+              "revision": 99,
+              "id": "new-incomplete"
+            },
+            {
+              "good": true,
+              "timestamp": "1960-01-01",
+              "revision": 1,
+              "id": "old-complete"
+            },
+            {
+              "good": true,
+              "timestamp": null,
+              "revision": 999,
+              "id": "null-complete"
+            },
+            {
+              "good": true,
+              "timestamp": "1960-01-01",
+              "revision": 1,
+              "id": "exact-tie"
+            }
+          ],
+          "expected": {
+            "winner": "old-complete",
+            "versions_seen": 4,
+            "winner_complete": true
+          }
+        },
+        {
+          "input": [
+            {
+              "good": false,
+              "timestamp": null,
+              "revision": 1,
+              "id": "first"
+            },
+            {
+              "good": false,
+              "timestamp": null,
+              "revision": 2,
+              "id": "second"
+            }
+          ],
+          "expected": {
+            "winner": "second",
+            "versions_seen": 2,
+            "winner_complete": false
+          }
+        },
+        {
+          "input": [
+            {
+              "good": false,
+              "timestamp": null,
+              "revision": 1,
+              "id": "singleton"
+            }
+          ],
+          "expected": {
+            "winner": "singleton",
+            "versions_seen": 1,
+            "winner_complete": false
+          }
+        }
+      ],
+      "compiler_review": "Handled by root; this review independently checks prompt/reference semantics and documented facts, not compiler execution."
+    },
+    {
+      "test_id": "T58",
+      "reference_semantic_status": "pass",
+      "independent_derivation": [
+        "Select one actual source record by lexicographic rank: completeness, timestamp-present, full timestamp, revision_no; retain first arrival when tied.",
+        "Completeness requires all three named strings non-null and trimmed nonblank, without modifying output strings.",
+        "Store winner across append calls, copy it during transform, count all inputs, and clean selection/rank/count state between groups."
+      ],
+      "rubric_item_review": [
+        {
+          "id": "T58.1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            6
+          ],
+          "status": "clarify_equivalent_state"
+        },
+        {
+          "id": "T58.2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T58.3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T58.4",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2,
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T58.5",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T58.6",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T58.7",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            5
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T58.8",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T58.F1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T58.F2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T58.F3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        }
+      ],
+      "ctl2_fact_review": [
+        "Input in Denormalizer transform is last record; varying winner values must be saved in append (findings \u00a77, basics \u00a78.4).",
+        "Record assignment deep-copies the candidate (basics \u00a73/\u00a76).",
+        "Default date is epoch, so no epoch sentinel; explicit first-selection state is valid (findings \u00a77)."
+      ],
+      "independent_cases": [
+        {
+          "input": [
+            {
+              "good": false,
+              "timestamp": "2026-01-01",
+              "revision": 99,
+              "id": "new-incomplete"
+            },
+            {
+              "good": true,
+              "timestamp": "1960-01-01",
+              "revision": 1,
+              "id": "old-complete"
+            },
+            {
+              "good": true,
+              "timestamp": null,
+              "revision": 999,
+              "id": "null-complete"
+            },
+            {
+              "good": true,
+              "timestamp": "1960-01-01",
+              "revision": 1,
+              "id": "exact-tie"
+            }
+          ],
+          "expected": {
+            "winner": "old-complete",
+            "versions_seen": 4,
+            "winner_complete": true
+          }
+        },
+        {
+          "input": [
+            {
+              "good": false,
+              "timestamp": null,
+              "revision": 1,
+              "id": "first"
+            },
+            {
+              "good": false,
+              "timestamp": null,
+              "revision": 2,
+              "id": "second"
+            }
+          ],
+          "expected": {
+            "winner": "second",
+            "versions_seen": 2,
+            "winner_complete": false
+          }
+        },
+        {
+          "input": [
+            {
+              "good": false,
+              "timestamp": null,
+              "revision": 1,
+              "id": "singleton"
+            }
+          ],
+          "expected": {
+            "winner": "singleton",
+            "versions_seen": 1,
+            "winner_complete": false
+          }
+        }
+      ],
+      "compiler_review": "Handled by root; this review independently checks prompt/reference semantics and documented facts, not compiler execution."
+    },
+    {
+      "test_id": "T59",
+      "reference_semantic_status": "pass",
+      "independent_derivation": [
+        "Determine previous existence solely from previous_sk; row_kind never controls routing.",
+        "An unchanged existing state returns SKIP before the sequence access.",
+        "A new key emits only opening port 1, consuming one long sequence value, even when both incoming attributes are null.",
+        "A changed existing key emits ALL: closing port 0 uses previous surrogate/from/attributes and event_at as valid_to; opening port 1 uses incoming attributes and event_at as valid_from, null valid_to, current true.",
+        "Copy remaining common fields from input, preserve arrival order, and use no cross-row buffer."
+      ],
+      "rubric_item_review": [
+        {
+          "id": "T59.1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T59.2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T59.3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T59.4",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T59.5",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4,
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T59.6",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            5
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T59.7",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T59.8",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3,
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T59.F1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T59.F2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T59.F3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        }
+      ],
+      "ctl2_fact_review": [
+        "sequence(DimKeys,long).next() is documented typed long next; no lifecycle access (basics \u00a79).",
+        "ALL emits all connected outputs; new rows must return 1 and unchanged SKIP (basics \u00a78.1).",
+        "Wildcard copies common fields before explicit placeholder overwrites (basics \u00a76)."
+      ],
+      "independent_cases": [
+        {
+          "input": {
+            "previous_sk": null,
+            "incoming_attributes": [
+              null,
+              null
+            ],
+            "previous_attributes": [
+              null,
+              null
+            ]
+          },
+          "expected": {
+            "ports": [
+              1
+            ],
+            "sequence_calls": 1
+          }
+        },
+        {
+          "input": {
+            "previous_sk": 7,
+            "incoming_attributes": [
+              null,
+              null
+            ],
+            "previous_attributes": [
+              null,
+              null
+            ]
+          },
+          "expected": {
+            "ports": [],
+            "sequence_calls": 0
+          }
+        },
+        {
+          "input": {
+            "previous_sk": 7,
+            "incoming_attributes": [
+              "",
+              null
+            ],
+            "previous_attributes": [
+              null,
+              null
+            ],
+            "previous_from": "2026-01-01T00:00:00Z",
+            "event_at": "2026-01-02T00:00:00Z"
+          },
+          "expected": {
+            "ports": [
+              0,
+              1
+            ],
+            "sequence_calls": 1,
+            "closing_version_sk": 7,
+            "closing_attributes": [
+              null,
+              null
+            ],
+            "closing_valid_to": "2026-01-02T00:00:00Z",
+            "opening_valid_from": "2026-01-02T00:00:00Z",
+            "opening_valid_to": null
+          }
+        }
+      ],
+      "compiler_review": "Handled by root; this review independently checks prompt/reference semantics and documented facts, not compiler execution."
+    },
+    {
+      "test_id": "T60",
+      "reference_semantic_status": "pass",
+      "independent_derivation": [
+        "Determine previous existence solely from previous_sk; row_kind never controls routing.",
+        "An unchanged existing state returns SKIP before the sequence access.",
+        "A new key emits only opening port 1, consuming one long sequence value, even when both incoming attributes are null.",
+        "A changed existing key emits ALL: closing port 0 uses previous surrogate/from/attributes and event_at as valid_to; opening port 1 uses incoming attributes and event_at as valid_from, null valid_to, current true.",
+        "Copy remaining common fields from input, preserve arrival order, and use no cross-row buffer."
+      ],
+      "rubric_item_review": [
+        {
+          "id": "T60.1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T60.2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T60.3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T60.4",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T60.5",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4,
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T60.6",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            5
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T60.7",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T60.8",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3,
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T60.F1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T60.F2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T60.F3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        }
+      ],
+      "ctl2_fact_review": [
+        "sequence(DimKeys,long).next() is documented typed long next; no lifecycle access (basics \u00a79).",
+        "ALL emits all connected outputs; new rows must return 1 and unchanged SKIP (basics \u00a78.1).",
+        "Wildcard copies common fields before explicit placeholder overwrites (basics \u00a76)."
+      ],
+      "independent_cases": [
+        {
+          "input": {
+            "previous_sk": null,
+            "incoming_attributes": [
+              null,
+              null
+            ],
+            "previous_attributes": [
+              null,
+              null
+            ]
+          },
+          "expected": {
+            "ports": [
+              1
+            ],
+            "sequence_calls": 1
+          }
+        },
+        {
+          "input": {
+            "previous_sk": 7,
+            "incoming_attributes": [
+              null,
+              null
+            ],
+            "previous_attributes": [
+              null,
+              null
+            ]
+          },
+          "expected": {
+            "ports": [],
+            "sequence_calls": 0
+          }
+        },
+        {
+          "input": {
+            "previous_sk": 7,
+            "incoming_attributes": [
+              "",
+              null
+            ],
+            "previous_attributes": [
+              null,
+              null
+            ],
+            "previous_from": "2026-01-01T00:00:00Z",
+            "event_at": "2026-01-02T00:00:00Z"
+          },
+          "expected": {
+            "ports": [
+              0,
+              1
+            ],
+            "sequence_calls": 1,
+            "closing_version_sk": 7,
+            "closing_attributes": [
+              null,
+              null
+            ],
+            "closing_valid_to": "2026-01-02T00:00:00Z",
+            "opening_valid_from": "2026-01-02T00:00:00Z",
+            "opening_valid_to": null
+          }
+        }
+      ],
+      "compiler_review": "Handled by root; this review independently checks prompt/reference semantics and documented facts, not compiler execution."
+    },
+    {
+      "test_id": "T61",
+      "reference_semantic_status": "pass",
+      "independent_derivation": [
+        "Determine previous existence solely from previous_sk; row_kind never controls routing.",
+        "An unchanged existing state returns SKIP before the sequence access.",
+        "A new key emits only opening port 1, consuming one long sequence value, even when both incoming attributes are null.",
+        "A changed existing key emits ALL: closing port 0 uses previous surrogate/from/attributes and event_at as valid_to; opening port 1 uses incoming attributes and event_at as valid_from, null valid_to, current true.",
+        "Copy remaining common fields from input, preserve arrival order, and use no cross-row buffer."
+      ],
+      "rubric_item_review": [
+        {
+          "id": "T61.1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T61.2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T61.3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T61.4",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T61.5",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4,
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T61.6",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            5
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T61.7",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T61.8",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3,
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T61.F1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T61.F2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T61.F3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        }
+      ],
+      "ctl2_fact_review": [
+        "sequence(DimKeys,long).next() is documented typed long next; no lifecycle access (basics \u00a79).",
+        "ALL emits all connected outputs; new rows must return 1 and unchanged SKIP (basics \u00a78.1).",
+        "Wildcard copies common fields before explicit placeholder overwrites (basics \u00a76)."
+      ],
+      "independent_cases": [
+        {
+          "input": {
+            "previous_sk": null,
+            "incoming_attributes": [
+              null,
+              null
+            ],
+            "previous_attributes": [
+              null,
+              null
+            ]
+          },
+          "expected": {
+            "ports": [
+              1
+            ],
+            "sequence_calls": 1
+          }
+        },
+        {
+          "input": {
+            "previous_sk": 7,
+            "incoming_attributes": [
+              null,
+              null
+            ],
+            "previous_attributes": [
+              null,
+              null
+            ]
+          },
+          "expected": {
+            "ports": [],
+            "sequence_calls": 0
+          }
+        },
+        {
+          "input": {
+            "previous_sk": 7,
+            "incoming_attributes": [
+              "",
+              null
+            ],
+            "previous_attributes": [
+              null,
+              null
+            ],
+            "previous_from": "2026-01-01T00:00:00Z",
+            "event_at": "2026-01-02T00:00:00Z"
+          },
+          "expected": {
+            "ports": [
+              0,
+              1
+            ],
+            "sequence_calls": 1,
+            "closing_version_sk": 7,
+            "closing_attributes": [
+              null,
+              null
+            ],
+            "closing_valid_to": "2026-01-02T00:00:00Z",
+            "opening_valid_from": "2026-01-02T00:00:00Z",
+            "opening_valid_to": null
+          }
+        }
+      ],
+      "compiler_review": "Handled by root; this review independently checks prompt/reference semantics and documented facts, not compiler execution."
+    },
+    {
+      "test_id": "T62",
+      "reference_semantic_status": "pass",
+      "independent_derivation": [
+        "Capture first input record during initGroup, explicitly reset all counts and sums, and count every row once in updateGroup.",
+        "Sum exact PAID and PENDING non-null amounts including negatives; count/sum billable true non-null amounts independently of status.",
+        "Average is null for no eligible amount, otherwise decimal sum/count rounded half-up 2; late percent is decimal 100*late/all rows rounded half-up 2.",
+        "Use all five callbacks; updateGroup false, updateTransform SKIP, finishGroup true, and transform counter>0 SKIP yield one summary.",
+        "Copy first-row base context; period label can use last-row occurred_at because group guarantees one period."
+      ],
+      "rubric_item_review": [
+        {
+          "id": "T62.1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T62.2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T62.3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2,
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T62.4",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T62.5",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T62.6",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            5
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T62.7",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T62.8",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T62.F1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T62.F2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T62.F3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        }
+      ],
+      "ctl2_fact_review": [
+        "All five Rollup callbacks mandatory; transform may read group key from input (findings \u00a77, basics \u00a78.7).",
+        "Nonempty groups permit division by rows count without a guard, while eligible count must be guarded (findings \u00a77).",
+        "Accumulator/output ++ is valid; decimal arithmetic is preserved with 100D (findings \u00a77, basics \u00a73).",
+        "round(value,2) is half-up; getMonth is 1-based and default timezone is graph UTC (basics date/math function tables)."
+      ],
+      "independent_cases": [
+        {
+          "input": [
+            {
+              "amount": 10,
+              "status": "PAID",
+              "billable": true,
+              "delay": 3
+            },
+            {
+              "amount": null,
+              "status": "PAID",
+              "billable": true,
+              "delay": null
+            },
+            {
+              "amount": -4,
+              "status": "PENDING",
+              "billable": true,
+              "delay": -1
+            }
+          ],
+          "expected": {
+            "rows_seen": 3,
+            "paid_total": 10,
+            "pending_total": -4,
+            "billable_average": "3.00",
+            "late_percent": "33.33"
+          }
+        },
+        {
+          "input": [
+            {
+              "amount": null,
+              "status": "paid",
+              "billable": true,
+              "delay": 0
+            }
+          ],
+          "expected": {
+            "rows_seen": 1,
+            "paid_total": 0,
+            "pending_total": 0,
+            "billable_average": null,
+            "late_percent": "0.00"
+          }
+        }
+      ],
+      "compiler_review": "Handled by root; this review independently checks prompt/reference semantics and documented facts, not compiler execution."
+    },
+    {
+      "test_id": "T63",
+      "reference_semantic_status": "pass",
+      "independent_derivation": [
+        "Capture first input record during initGroup, explicitly reset all counts and sums, and count every row once in updateGroup.",
+        "Sum exact PAID and PENDING non-null amounts including negatives; count/sum billable true non-null amounts independently of status.",
+        "Average is null for no eligible amount, otherwise decimal sum/count rounded half-up 2; late percent is decimal 100*late/all rows rounded half-up 2.",
+        "Use all five callbacks; updateGroup false, updateTransform SKIP, finishGroup true, and transform counter>0 SKIP yield one summary.",
+        "Copy first-row base context; period label can use last-row occurred_at because group guarantees one period.",
+        "Quarter is ((UTC month-1)/3)+1 using integer division; calendar year gives YYYY-FQ1 through YYYY-FQ4."
+      ],
+      "rubric_item_review": [
+        {
+          "id": "T63.1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            1,
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T63.2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T63.3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            2,
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T63.4",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            3
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T63.5",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            4
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T63.6",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            5
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T63.7",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            6
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T63.8",
+          "decidable_from_prompt": true,
+          "clause_coverage": [
+            7
+          ],
+          "status": "pass"
+        },
+        {
+          "id": "T63.F1",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T63.F2",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        },
+        {
+          "id": "T63.F3",
+          "decidable_from_prompt": true,
+          "clause_coverage": [],
+          "status": "pass"
+        }
+      ],
+      "ctl2_fact_review": [
+        "All five Rollup callbacks mandatory; transform may read group key from input (findings \u00a77, basics \u00a78.7).",
+        "Nonempty groups permit division by rows count without a guard, while eligible count must be guarded (findings \u00a77).",
+        "Accumulator/output ++ is valid; decimal arithmetic is preserved with 100D (findings \u00a77, basics \u00a73).",
+        "round(value,2) is half-up; getMonth is 1-based and default timezone is graph UTC (basics date/math function tables)."
+      ],
+      "independent_cases": [
+        {
+          "input": [
+            {
+              "amount": 10,
+              "status": "PAID",
+              "billable": true,
+              "delay": 3
+            },
+            {
+              "amount": null,
+              "status": "PAID",
+              "billable": true,
+              "delay": null
+            },
+            {
+              "amount": -4,
+              "status": "PENDING",
+              "billable": true,
+              "delay": -1
+            }
+          ],
+          "expected": {
+            "rows_seen": 3,
+            "paid_total": 10,
+            "pending_total": -4,
+            "billable_average": "3.00",
+            "late_percent": "33.33"
+          }
+        },
+        {
+          "input": [
+            {
+              "amount": null,
+              "status": "paid",
+              "billable": true,
+              "delay": 0
+            }
+          ],
+          "expected": {
+            "rows_seen": 1,
+            "paid_total": 0,
+            "pending_total": 0,
+            "billable_average": null,
+            "late_percent": "0.00"
+          }
+        },
+        {
+          "input": {
+            "utc_months": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12
+            ]
+          },
+          "expected": {
+            "quarter_numbers": [
+              1,
+              1,
+              1,
+              2,
+              2,
+              2,
+              3,
+              3,
+              3,
+              4,
+              4,
+              4
+            ]
+          }
+        }
+      ],
+      "compiler_review": "Handled by root; this review independently checks prompt/reference semantics and documented facts, not compiler execution."
+    }
+  ],
+  "final_addendum": {
+    "reviewed_final_references": [
+      {
+        "test_id": "T54",
+        "reference_sha256": "0efd4c86451e633f413d332fce9e281760074567a9a2c00f054685dfad75f5ee",
+        "reference_semantic_status": "pass",
+        "rubric_decidability_status": "pass",
+        "final_recheck": "Rechecked final null-safe tracked comparison, fresh change list, incoming-field mapping and emitted port 1."
+      },
+      {
+        "test_id": "T55",
+        "reference_sha256": "40093f0096b5f115d8ac7f12a3be95efad996dd061857c39ea81ebb23aee979f",
+        "reference_semantic_status": "pass",
+        "rubric_decidability_status": "pass",
+        "final_recheck": "Rechecked final null-safe tracked comparison, fresh change list, incoming-field mapping and emitted port 1."
+      },
+      {
+        "test_id": "T56",
+        "reference_sha256": "31d578540123925ea9fe6b2f431a11204460654c5facafb50aadef3f9889b22f",
+        "reference_semantic_status": "pass",
+        "rubric_decidability_status": "pass",
+        "final_recheck": "Rechecked explicit winner save/emit assignments for all 18 source fields. Completeness/timestamp/revision ranking and have/seen clean reset remain equivalent to the initial independently derived behavior; stale saved scalars are unreachable until first candidate replaces every field."
+      },
+      {
+        "test_id": "T57",
+        "reference_sha256": "a7bb5cf03ec6b960e0ad5590acf8ca6dc74f8b74ededb6ee6fcc92ace61ef130",
+        "reference_semantic_status": "pass",
+        "rubric_decidability_status": "pass",
+        "final_recheck": "Rechecked explicit winner save/emit assignments for all 18 source fields. Completeness/timestamp/revision ranking and have/seen clean reset remain equivalent to the initial independently derived behavior; stale saved scalars are unreachable until first candidate replaces every field."
+      },
+      {
+        "test_id": "T58",
+        "reference_sha256": "9d03441525b012f173f70c1fc742aa102718b9f7857c066bcc9ac4bb04c9cabb",
+        "reference_semantic_status": "pass",
+        "rubric_decidability_status": "pass",
+        "final_recheck": "Rechecked explicit winner save/emit assignments for all 18 source fields. Completeness/timestamp/revision ranking and have/seen clean reset remain equivalent to the initial independently derived behavior; stale saved scalars are unreachable until first candidate replaces every field."
+      },
+      {
+        "test_id": "T59",
+        "reference_sha256": "aaf253b070c0f3db1c6f5b79340a8823598f83fcedb0133dae47bbc4803749d4",
+        "reference_semantic_status": "pass",
+        "rubric_decidability_status": "pass",
+        "final_recheck": "Rechecked unchanged skip before sequence access; new keys return 1; changed existing keys return ALL; previous attributes and exact half-open boundary preserved. Incoming common fields map before required overwrites."
+      },
+      {
+        "test_id": "T60",
+        "reference_sha256": "42410976c2322f76dc0311f1f330bdef04efe86cfdfc305a5a5b2fa65fcb0798",
+        "reference_semantic_status": "pass",
+        "rubric_decidability_status": "pass",
+        "final_recheck": "Rechecked unchanged skip before sequence access; new keys return 1; changed existing keys return ALL; previous attributes and exact half-open boundary preserved. Incoming common fields map before required overwrites."
+      },
+      {
+        "test_id": "T61",
+        "reference_sha256": "6f0db1a56cbb4d4c9aec0e1ff8134a4b613b015c377dfe84281d0d41af3b832b",
+        "reference_semantic_status": "pass",
+        "rubric_decidability_status": "pass",
+        "final_recheck": "Rechecked unchanged skip before sequence access; new keys return 1; changed existing keys return ALL; previous attributes and exact half-open boundary preserved. Incoming common fields map before required overwrites."
+      },
+      {
+        "test_id": "T62",
+        "reference_sha256": "f7309f0bd93d1a8777a360c04badd9b0aa553d025b51e4b7a51313a68aafe1c8",
+        "reference_semantic_status": "pass",
+        "rubric_decidability_status": "pass",
+        "final_recheck": "Rechecked explicit first-row save/emit for all 12 base context fields. All five callbacks, explicit reset, null eligible mean, exact conditional buckets and decimal late percentage retained. Quarter formula remains correct for 1-based months and graph UTC."
+      },
+      {
+        "test_id": "T63",
+        "reference_sha256": "cd8c0086d6b9a895abdf06bb739112beac1434d6b1fd8227c1cccde225c47303",
+        "reference_semantic_status": "pass",
+        "rubric_decidability_status": "pass",
+        "final_recheck": "Rechecked explicit first-row save/emit for all 12 base context fields. All five callbacks, explicit reset, null eligible mean, exact conditional buckets and decimal late percentage retained. Quarter formula remains correct for 1-based months and graph UTC."
+      }
+    ],
+    "semantic_reference_failures": 0,
+    "resolved_findings": [
+      {
+        "original_finding": "T54/T55 cdc_action UPDATE missing from required rubric",
+        "status": "resolved",
+        "evidence": "Required .3 now explicitly requires UPDATE for changed pairs."
+      },
+      {
+        "original_finding": "T56\u2013T58 too restrictive persistent whole candidate wording",
+        "status": "resolved",
+        "evidence": "Required .1 accepts whole record or saved fields and have=false or seen==0; final references save every source field and use have."
+      },
+      {
+        "original_finding": "DataIntersection facts absent from ctl2-basics",
+        "status": "owner_fact_source_confirmed_report_pending",
+        "evidence": "Owner-confirmed component contract remains in suite brief. Root is responsible for including this in the final validation report; report not yet present at this recheck."
+      }
+    ],
+    "compiler_note": "Compiler execution/diagnostics remain root responsibility; this addendum hashes the exact final semantic-review sources."
+  }
+}

@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph name="T73_compile" id="T73" nature="etlGraph">
+  <Global>
+    <GraphParameters>
+      <GraphParameter name="PROJECT" value="." />
+      <GraphParameter name="RUN_ID" value="RUN-20261012-A" />
+      <GraphParameter name="RUN_TS" value="2026-10-12 08:00:00" />
+      <GraphParameter name="SOURCE_FILE" value="landing_meter.csv" />
+    </GraphParameters>
+    <Metadata id="In0">
+      <Record name="Source" type="delimited" fieldDelimiter="|" recordDelimiter="\n">
+        <Field name="meter_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="site_cd" type="string" nullable="true" />
+        <Field name="reading_ref" type="string" nullable="true" />
+        <Field name="posted_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="posting_dt" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="Audited" type="delimited" fieldDelimiter="|" recordDelimiter="\n">
+        <Field name="meter_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="site_cd" type="string" nullable="true" />
+        <Field name="reading_ref" type="string" nullable="true" />
+        <Field name="posted_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="posting_dt" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="run_id" type="string" nullable="false" />
+        <Field name="run_ts" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="audit_seq" type="long" nullable="false" />
+        <Field name="record_digest" type="string" nullable="false" />
+        <Field name="audit_source" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Sequence id="AuditRows" name="AuditRows" type="SIMPLE_SEQUENCE" start="1" step="1" />
+  </Global>
+  <Phase number="0">
+    <Node id="Source0" type="DATA_GENERATOR" recordsNumber="0">
+      <attr name="generate">//#CTL2
+function integer generate(){return OK;}</attr>
+    </Node>
+    <Node id="UnderTest" type="REFORMAT">
+      <attr name="transform">//#CTL2
+function string frame(string value) {return num2str(length(value))+":"+value;}
+function string marked(string value) {return isnull(value) ? "N" : "V"+value;}
+function integer transform() {
+ $out.0.*=$in.0.*;
+ $out.0.run_id=getParamValue("RUN_ID");
+ $out.0.run_ts=str2date(getParamValue("RUN_TS"),"yyyy-MM-dd HH:mm:ss","en.US","UTC",true);
+ $out.0.audit_source=getParamValue("SOURCE_FILE");
+ string a=marked($in.0.site_cd);string b=marked($in.0.reading_ref);
+ string c=isnull($in.0.posted_amount) ? "N" : "V"+num2str(round($in.0.posted_amount,2),"0.00","en.US");
+ string d=isnull($in.0.posting_dt) ? "N" : "V"+date2str($in.0.posting_dt,"yyyy-MM-dd HH:mm:ss","en.US","UTC");
+ $out.0.record_digest=lowerCase(sha256HexString(frame(a)+frame(b)+frame(c)+frame(d)));
+ $out.0.audit_seq=sequence(AuditRows,long).next();
+ return OK;
+}
+</attr>
+    </Node>
+    <Edge id="Input0" fromNode="Source0:0" toNode="UnderTest:0" metadata="In0" />
+    <Node id="Sink0" type="TRASH" />
+    <Edge id="Output0" fromNode="UnderTest:0" toNode="Sink0:0" metadata="Out0" />
+  </Phase>
+</Graph>

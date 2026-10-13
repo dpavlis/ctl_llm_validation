@@ -1365,6 +1365,7 @@ def append_eval_log(
         "generate_score": results["generate_score"],
         "validate_score": results["validate_score"],
         "fix_score":      results.get("fix_score"),
+        "generate_rw_score": results.get("generate_rw_score"),
         "tests":          tests_summary,
     }
 
@@ -1783,7 +1784,11 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug
                 all_results.append(result)
 
     # Suite-level averages — derived from each result's recorded type, not hardcoded ID sets
-    generate_ids = {r["test_id"] for r in all_results if r.get("test_type") == "generate"}
+    # The real-world generate tests (group "rw", suite v5) are scored apart, so
+    # generate_score stays comparable with every v4 run.
+    rw_ids       = {t["test_id"] for t in tests if t.get("group") == "rw"}
+    generate_ids = {r["test_id"] for r in all_results
+                    if r.get("test_type") == "generate" and r["test_id"] not in rw_ids}
     validate_ids = {r["test_id"] for r in all_results if r.get("test_type") == "validate"}
     fix_ids      = {r["test_id"] for r in all_results if r.get("test_type") == "fix"}
 
@@ -1819,6 +1824,7 @@ def run_suite(cfg: dict, suite_file: Path, run_name: str, base_model: str, debug
         "generate_score": round(_mean(generate_ids), 4),
         "validate_score": round(_mean(validate_ids), 4),
         "fix_score":      round(_mean(fix_ids), 4) if fix_ids else None,
+        "generate_rw_score": round(_mean(rw_ids), 4) if rw_ids else None,
         "tests":          all_results,
     }
 
@@ -1929,6 +1935,8 @@ def generate_llm_failure_summary(judge_client, results: dict, suite_file: Path) 
         f"Generate: {results['generate_score']:.4f}  "
         f"Validate: {results['validate_score']:.4f}"
         + (f"  Fix: {results['fix_score']:.4f}" if results.get("fix_score") is not None else "")
+        + (f"  Generate (rw): {results['generate_rw_score']:.4f}"
+           if results.get("generate_rw_score") is not None else "")
         + "\n\n"
         f"---\n\n{combined}"
     )
@@ -2026,6 +2034,8 @@ def write_summary_md(results: dict, output_dir: Path) -> Path:
     ]
     if results.get("fix_score") is not None:
         lines.append(f"**Fix score:**      {results['fix_score']:.4f}")
+    if results.get("generate_rw_score") is not None:
+        lines.append(f"**Generate (rw):**  {results['generate_rw_score']:.4f}")
 
     criticals = [
         (r["test_id"], r["run"], r["critical_failure"])
@@ -2120,6 +2130,8 @@ def print_summary_table(results: dict, prev_entry: Optional[dict] = None):
             f"Generate: {_suite_delta('generate_score')}  "
             f"Validate: {_suite_delta('validate_score')}"
             + (f"  Fix: {_suite_delta('fix_score')}" if results.get("fix_score") is not None else "")
+            + (f"  Generate (rw): {_suite_delta('generate_rw_score')}"
+               if results.get("generate_rw_score") is not None else "")
         )
     else:
         print("\n" + "=" * 84)
@@ -2157,6 +2169,8 @@ def print_summary_table(results: dict, prev_entry: Optional[dict] = None):
             f"Generate: {_suite_delta_plain('generate_score')}  "
             f"Validate: {_suite_delta_plain('validate_score')}"
             + (f"  Fix: {_suite_delta_plain('fix_score')}" if results.get("fix_score") is not None else "")
+            + (f"  Generate (rw): {_suite_delta_plain('generate_rw_score')}"
+               if results.get("generate_rw_score") is not None else "")
         )
 
 

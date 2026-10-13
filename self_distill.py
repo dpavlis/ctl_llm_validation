@@ -106,7 +106,7 @@ EXCLUDE_FILES = (
     EVAL_DIR / "CTL_LoRA_eval_data_think.json",
     EVAL_DIR / "CTL_LoRA_DPO_eval.jsonl",
 )
-SUITE_FILES = tuple(REPO_ROOT / "resources" / f"ctl2_test_suite_v{v}.json" for v in (2, 3, 4))
+SUITE_FILES = tuple(REPO_ROOT / "resources" / f"ctl2_test_suite_v{v}.json" for v in (2, 3, 4, 5))
 CTL2_REFERENCE_FILE = REPO_ROOT / "resources" / "ctl2-basics.md"
 RUNS_DIR = REPO_ROOT / "data" / "self_distill"
 DEFAULT_EVAL_CONFIG = REPO_ROOT / "configs" / "eval_T04_fix6_sftdpo_think.yaml"

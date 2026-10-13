@@ -555,6 +555,33 @@ function boolean init() {
 }
 ```
 
+### 8.9 DataIntersection
+
+Compares two inputs **sorted** on the Join key (`$a_key=$b_key;…`): input 0 = flow A (e.g. the previous snapshot), input 1 = flow B (e.g. the new data).
+
+| Output port | Records | Produced by |
+|---|---|---|
+| 0 | key only in A | the component, unchanged (input-0 metadata) |
+| 1 | key in both A and B | the CTL `transform()` (port-1 metadata) |
+| 2 | key only in B | the component, unchanged (input-1 metadata) |
+
+- `transform()` uses the joiner template and sees **matched pairs only**: `$in.0` is the A record, `$in.1` the B record. A-only and B-only records never reach CTL, so INSERT / DELETE need no code.
+- The transform writes **`$out.1`** — CTL `$out.N` follows the component's output port numbers. `$out.0` / `$out.2` are pass-through ports and are not written.
+- **The return value never selects a port** (unlike §8.1): any non-`SKIP` value (`OK`, `1`, `ALL`) emits the record on port 1; `SKIP` drops it. Ports 0 and 2 are unaffected by it.
+- Defaults: *Equal NULL* = true (null key values match each other); *Allow key duplicates* = true (duplicate keys give the Cartesian product of pairs).
+
+```ctl
+//#CTL2
+function integer transform() {
+    if ($in.0.status == $in.1.status && $in.0.amount == $in.1.amount) {
+        return SKIP;              // unchanged pair: drop it
+    }
+    $out.1.* = $in.1.*;
+    $out.1.cdc_action = "UPDATE";
+    return ALL;                   // OK or 1 would emit it on port 1 as well
+}
+```
+
 ---
 
 ## 9. Graph Parameters, Lookup Tables, Sequences, Dictionary

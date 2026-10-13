@@ -1,0 +1,27 @@
+[
+  {
+    "mutation": "wrong_temperature",
+    "detected": true,
+    "expected_diagnostic": "wrong category or temperature"
+  },
+  {
+    "mutation": "missing_clause_coverage",
+    "detected": true,
+    "expected_diagnostic": "every spec clause"
+  },
+  {
+    "mutation": "unknown_prose_field",
+    "detected": true,
+    "expected_diagnostic": "spec/rubric fields absent"
+  },
+  {
+    "mutation": "wrong_output_field_port",
+    "detected": true,
+    "expected_diagnostic": "reference field not on specified port"
+  },
+  {
+    "mutation": "stale_reference_compilation",
+    "detected": true,
+    "expected_diagnostic": "stale compiler code evidence"
+  }
+]

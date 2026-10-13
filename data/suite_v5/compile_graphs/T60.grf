@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph name="T60_compile" id="T60" nature="etlGraph">
+  <Global>
+    <GraphParameters>
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <Metadata id="In0">
+      <Record name="VersionEvent" type="delimited" fieldDelimiter="|" recordDelimiter="\n">
+        <Field name="territory_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="region_manager" type="string" nullable="true" />
+        <Field name="version_sk" type="long" nullable="false" />
+        <Field name="valid_from" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="valid_to" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="is_current" type="boolean" nullable="false" />
+        <Field name="row_kind" type="string" nullable="false" />
+        <Field name="event_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="contract_value" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="previous_sk" type="long" nullable="true" />
+        <Field name="previous_from" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="previous_region_manager" type="string" nullable="true" />
+        <Field name="previous_value" type="decimal" nullable="true" length="18" scale="2" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="DimensionVersion" type="delimited" fieldDelimiter="|" recordDelimiter="\n">
+        <Field name="territory_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="region_manager" type="string" nullable="true" />
+        <Field name="version_sk" type="long" nullable="false" />
+        <Field name="valid_from" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="valid_to" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="is_current" type="boolean" nullable="false" />
+        <Field name="contract_value" type="decimal" nullable="true" length="18" scale="2" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out1">
+      <Record name="DimensionVersion" type="delimited" fieldDelimiter="|" recordDelimiter="\n">
+        <Field name="territory_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="region_manager" type="string" nullable="true" />
+        <Field name="version_sk" type="long" nullable="false" />
+        <Field name="valid_from" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="valid_to" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="is_current" type="boolean" nullable="false" />
+        <Field name="contract_value" type="decimal" nullable="true" length="18" scale="2" />
+      </Record>
+    </Metadata>
+    <Sequence id="DimKeys" name="DimKeys" type="SIMPLE_SEQUENCE" start="900000" step="1" />
+  </Global>
+  <Phase number="0">
+    <Node id="Source0" type="DATA_GENERATOR" recordsNumber="0">
+      <attr name="generate">//#CTL2
+function integer generate(){return OK;}</attr>
+    </Node>
+    <Node id="UnderTest" type="REFORMAT">
+      <attr name="transform">//#CTL2
+function integer transform() {
+ boolean exists=!isnull($in.0.previous_sk);
+ boolean changed=$in.0.region_manager != $in.0.previous_region_manager || $in.0.contract_value != $in.0.previous_value;
+ if (exists &amp;&amp; !changed) return SKIP;
+ $out.1.*=$in.0.*;
+ $out.1.version_sk=sequence(DimKeys,long).next();
+ $out.1.valid_from=$in.0.event_at;$out.1.valid_to=null;$out.1.is_current=true;
+ if (!exists) return 1;
+ $out.0.*=$in.0.*;
+ $out.0.version_sk=$in.0.previous_sk;$out.0.valid_from=$in.0.previous_from;
+ $out.0.valid_to=$in.0.event_at;$out.0.is_current=false;
+ $out.0.region_manager=$in.0.previous_region_manager;$out.0.contract_value=$in.0.previous_value;
+ return ALL;
+}
+</attr>
+    </Node>
+    <Edge id="Input0" fromNode="Source0:0" toNode="UnderTest:0" metadata="In0" />
+    <Node id="Sink0" type="TRASH" />
+    <Edge id="Output0" fromNode="UnderTest:0" toNode="Sink0:0" metadata="Out0" />
+    <Node id="Sink1" type="TRASH" />
+    <Edge id="Output1" fromNode="UnderTest:1" toNode="Sink1:0" metadata="Out1" />
+  </Phase>
+</Graph>

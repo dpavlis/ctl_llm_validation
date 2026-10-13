@@ -1,0 +1,1225 @@
+{
+  "scope": "Independent semantic / rubric review of T64-T73; compiler validation owned by root agent.",
+  "source_suite_sha256": "83a9f83b3c8743a997686f86ca978cff4c00e84826c1b7f7cfce4bd4ffdecdf1",
+  "sources": [
+    "spec/suite_generate_rw_brief.md",
+    "spec/ctl2_training_findings.md \u00a77",
+    "resources/ctl2-basics.md"
+  ],
+  "compile_verified_by_this_review": false,
+  "facts_checked_against_reference": [
+    "STOP aborts generator; recordsNumber owns count (\u00a77 and basics \u00a77.3/8.3).",
+    "OnError callback logs (owner \u00a77); Partition callback shape basics \u00a78.6.",
+    "Normalizer count/transform(integer)/clean shapes basics \u00a78.5.",
+    "Null versus empty and scalar explicit null basics \u00a711.8.",
+    "round(decimal,2) uses HALF_UP, roundHalfToEven differs (\u00a711.4).",
+    "UTC date2str and createDate overloads \u00a711.1/11.3; decimals widen integers legally (\u00a72.1.2).",
+    "Variant access and casts \u00a72.3/11.1; containsKey variant overload \u00a711.5.",
+    "SHA256 string hash and hex output documented \u00a711.7.",
+    "getParamValue \u00a711.9; typed long sequence next, first-value and lifecycle rules appended Sequence Functions section."
+  ],
+  "facts_needing_runtime_or_added_reference": [
+    "UTF-16 length semantics are now part of the explicit prompt convention. Root compiler/source verification can document this CTL runtime fact; no unresolved contract ambiguity remains."
+  ],
+  "findings": [
+    {
+      "id": "R64-01",
+      "tests": [
+        "T64",
+        "T65"
+      ],
+      "severity": "verification_gap",
+      "finding": "Reference directly indexes optional variant-map keys. Missing-key indexing semantics are not explicit in ctl2-basics.md; compilation cannot prove missing-key behavior.",
+      "action": "Use containsKey guards for the optional root array, details, note and amount keys, or record a runtime probe for omitted keys and JSON null.",
+      "evidence": "resources/ctl2-basics.md \u00a72.3 documents bracket access; \u00a711.5 documents containsKey(variant,variant). Neither explicitly guarantees absent variant-map keys return null.",
+      "status": "resolved",
+      "resolution": "Both Normalizer references guard all optional map keys with containsKey before bracket access; null details short-circuits nested access. No absent-key indexing assumption remains."
+    },
+    {
+      "id": "R64-02",
+      "tests": [
+        "T68",
+        "T69"
+      ],
+      "severity": "contract_error",
+      "finding": "The no-range-restriction contract permits net amounts outside output metadata precision 18 / scale 2.",
+      "counterexample": {
+        "gross_amount": "9999999999999999.99",
+        "discount_percent": "-100.00",
+        "expected_net_amount": "19999999999999999.98"
+      },
+      "action": "State upstream numerical bounds that guarantee output representability while allowing negatives and pct >100, or enlarge output net_amount precision and verify intermediate arithmetic limits.",
+      "evidence": "Clause3 allows negative percentages without clamping; input fields length18 scale2 permit the counterexample; output net_amount uses the same precision.",
+      "status": "resolved",
+      "resolution": "Both pricing prompts now guarantee gross in [-1000000,1000000] and pct in [-1000,1000]. Absolute computed net is at most 11000000, fitting precision18 scale2. Negative values and pct >100 remain supported without clamping."
+    },
+    {
+      "id": "R64-03",
+      "tests": [
+        "T72",
+        "T73"
+      ],
+      "severity": "rubric_gap",
+      "finding": "Required item1 asks to read parameters and parse RUN_TS but does not explicitly check assignments to run_id, run_ts and audit_source. A program could calculate and discard those values while copying originals.",
+      "action": "Require run_id=getParamValue(RUN_ID), run_ts=strict UTC parse of RUN_TS, audit_source=SOURCE_FILE, accepting equivalent parameter access.",
+      "evidence": "Clause1 explicitly names the three target fields, whereas required item1 omits all three assignments and item7 checks originals only.",
+      "status": "resolved",
+      "resolution": "Both audit required item1 checks now explicitly assign run_id from RUN_ID, run_ts from strict UTC RUN_TS, and audit_source from SOURCE_FILE."
+    },
+    {
+      "id": "R64-04",
+      "tests": [
+        "T70",
+        "T71"
+      ],
+      "severity": "wording",
+      "finding": "Required item5 says six constant/context fields, but clause5 has five such fields, plus two derived text references.",
+      "action": "List tenant_cd, source_file_nm, source_row_no, currency_cd and batch_ref explicitly, together with the reference and trace mappings.",
+      "status": "resolved",
+      "resolution": "Both generator item5 checks enumerate tenant_cd, source_file_nm, source_row_no, currency_cd and batch_ref along with reference and trace."
+    },
+    {
+      "id": "R64-05",
+      "tests": [
+        "T72",
+        "T73"
+      ],
+      "severity": "clarification",
+      "finding": "The phrase character length does not distinguish Unicode code points from CTL length(string) units; ASCII and delimiter framing are otherwise unambiguous.",
+      "action": "Specify length(part) using CTL string-length semantics so supplementary Unicode characters are judged consistently.",
+      "status": "resolved",
+      "resolution": "Both audit prompts explicitly define framing length as CTL length(string), counting UTF-16 code units, and require the writer to use the same convention."
+    }
+  ],
+  "tests": [
+    {
+      "test_id": "T64",
+      "reviewed_required_items": [
+        {
+          "id": "T64.1",
+          "decidable_from_prompt": true,
+          "clauses": [
+            1
+          ]
+        },
+        {
+          "id": "T64.2",
+          "decidable_from_prompt": true,
+          "clauses": [
+            2,
+            6
+          ]
+        },
+        {
+          "id": "T64.3",
+          "decidable_from_prompt": true,
+          "clauses": [
+            3
+          ]
+        },
+        {
+          "id": "T64.4",
+          "decidable_from_prompt": true,
+          "clauses": [
+            4
+          ]
+        },
+        {
+          "id": "T64.5",
+          "decidable_from_prompt": true,
+          "clauses": [
+            5
+          ]
+        },
+        {
+          "id": "T64.6",
+          "decidable_from_prompt": true,
+          "clauses": [
+            6
+          ]
+        },
+        {
+          "id": "T64.7",
+          "decidable_from_prompt": true,
+          "clauses": [
+            7
+          ]
+        }
+      ],
+      "reviewed_forbidden_items": [
+        {
+          "id": "T64.F1",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T64.F2",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T64.F3",
+          "decidable_from_prompt": true
+        }
+      ],
+      "independently_rederived_behavior": {
+        "algorithm": "For each nonblank parent parse JSON, get optional lines; missing/null yields zero. Emit each array element in place, code from sku, ordinal=index+1, optional details.note/amount mapped to null only when missing/null; amount text converted strictly. Copy all common parent fields.",
+        "edge_vectors": [
+          {
+            "parent": "null / empty / whitespace / object without array / array:null / array:[]",
+            "rows": 0
+          },
+          {
+            "children": [
+              {
+                "sku": " A ",
+                "details": {
+                  "note": ""
+                },
+                "amount": "1.25"
+              },
+              {
+                "sku": " A ",
+                "amount": null
+              }
+            ],
+            "expected": [
+              {
+                "child_code": " A ",
+                "ordinal": 1,
+                "child_note": "",
+                "child_amount": "1.25"
+              },
+              {
+                "child_code": " A ",
+                "ordinal": 2,
+                "child_note": null,
+                "child_amount": null
+              }
+            ]
+          },
+          {
+            "amount": "",
+            "result": "visible component failure"
+          }
+        ]
+      },
+      "reference_assessment": "Matches the specified formulas and mappings on representable inputs; see attached findings for verification gaps / contract bounds.",
+      "finding_ids": [
+        "R64-01"
+      ],
+      "final_reference_sha256": "c1e9abd1d5620fbbd1c78664e82d164de509141429a31205c4e2966a98466f4c",
+      "final_review_status": "pass",
+      "final_reference_assessment": "Reference decisions agree with independently rederived behavior; all applicable semantic/rubric findings resolved."
+    },
+    {
+      "test_id": "T65",
+      "reviewed_required_items": [
+        {
+          "id": "T65.1",
+          "decidable_from_prompt": true,
+          "clauses": [
+            1
+          ]
+        },
+        {
+          "id": "T65.2",
+          "decidable_from_prompt": true,
+          "clauses": [
+            2,
+            6
+          ]
+        },
+        {
+          "id": "T65.3",
+          "decidable_from_prompt": true,
+          "clauses": [
+            3
+          ]
+        },
+        {
+          "id": "T65.4",
+          "decidable_from_prompt": true,
+          "clauses": [
+            4
+          ]
+        },
+        {
+          "id": "T65.5",
+          "decidable_from_prompt": true,
+          "clauses": [
+            5
+          ]
+        },
+        {
+          "id": "T65.6",
+          "decidable_from_prompt": true,
+          "clauses": [
+            6
+          ]
+        },
+        {
+          "id": "T65.7",
+          "decidable_from_prompt": true,
+          "clauses": [
+            7
+          ]
+        }
+      ],
+      "reviewed_forbidden_items": [
+        {
+          "id": "T65.F1",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T65.F2",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T65.F3",
+          "decidable_from_prompt": true
+        }
+      ],
+      "independently_rederived_behavior": {
+        "algorithm": "For each nonblank parent parse JSON, get optional findings; missing/null yields zero. Emit each array element in place, code from code, ordinal=index+1, optional details.note/amount mapped to null only when missing/null; amount text converted strictly. Copy all common parent fields.",
+        "edge_vectors": [
+          {
+            "parent": "null / empty / whitespace / object without array / array:null / array:[]",
+            "rows": 0
+          },
+          {
+            "children": [
+              {
+                "code": " A ",
+                "details": {
+                  "note": ""
+                },
+                "amount": "1.25"
+              },
+              {
+                "code": " A ",
+                "amount": null
+              }
+            ],
+            "expected": [
+              {
+                "child_code": " A ",
+                "ordinal": 1,
+                "child_note": "",
+                "child_amount": "1.25"
+              },
+              {
+                "child_code": " A ",
+                "ordinal": 2,
+                "child_note": null,
+                "child_amount": null
+              }
+            ]
+          },
+          {
+            "amount": "",
+            "result": "visible component failure"
+          }
+        ]
+      },
+      "reference_assessment": "Matches the specified formulas and mappings on representable inputs; see attached findings for verification gaps / contract bounds.",
+      "finding_ids": [
+        "R64-01"
+      ],
+      "final_reference_sha256": "17fff0667a77d321eac5e55a40fef62bead39f0bf368ef624a7e3667319aba42",
+      "final_review_status": "pass",
+      "final_reference_assessment": "Reference decisions agree with independently rederived behavior; all applicable semantic/rubric findings resolved."
+    },
+    {
+      "test_id": "T66",
+      "reviewed_required_items": [
+        {
+          "id": "T66.1",
+          "decidable_from_prompt": true,
+          "clauses": [
+            1,
+            2
+          ]
+        },
+        {
+          "id": "T66.2",
+          "decidable_from_prompt": true,
+          "clauses": [
+            2
+          ]
+        },
+        {
+          "id": "T66.3",
+          "decidable_from_prompt": true,
+          "clauses": [
+            3
+          ]
+        },
+        {
+          "id": "T66.4",
+          "decidable_from_prompt": true,
+          "clauses": [
+            4
+          ]
+        },
+        {
+          "id": "T66.5",
+          "decidable_from_prompt": true,
+          "clauses": [
+            5
+          ]
+        },
+        {
+          "id": "T66.6",
+          "decidable_from_prompt": true,
+          "clauses": [
+            6
+          ]
+        },
+        {
+          "id": "T66.7",
+          "decidable_from_prompt": true,
+          "clauses": [
+            7
+          ]
+        }
+      ],
+      "reviewed_forbidden_items": [
+        {
+          "id": "T66.F1",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T66.F2",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T66.F3",
+          "decidable_from_prompt": true
+        }
+      ],
+      "independently_rederived_behavior": {
+        "algorithm": "Exact REVERSED->0; otherwise hold true->1; otherwise trim/coalesce amount to zero or parse; amount >= 10000->2; exact URGENT->3; otherwise4; conversion exceptions log and route5. Partition preserves originals.",
+        "edge_vectors": [
+          {
+            "status_cd": "REVERSED",
+            "amount_txt": "bad",
+            "expected_port": 0
+          },
+          {
+            "hold_flag": true,
+            "amount_txt": "bad",
+            "expected_port": 1
+          },
+          {
+            "amount_txt": "10000",
+            "priority_cd": "URGENT",
+            "expected_port": 2
+          },
+          {
+            "amount_txt": "bad",
+            "expected_port": 5
+          },
+          {
+            "amount_txt": null,
+            "priority_cd": "URGENT",
+            "expected_port": 3
+          },
+          {
+            "amount_txt": "-1",
+            "priority_cd": null,
+            "expected_port": 4
+          }
+        ]
+      },
+      "reference_assessment": "Matches the specified decisions and edge conditions.",
+      "finding_ids": [],
+      "final_reference_sha256": "006ef2a9e14e11791e80c7de41749a37c9fd5e9d611ef80981292fffb172387a",
+      "final_review_status": "pass",
+      "final_reference_assessment": "Reference decisions agree with independently rederived behavior; all applicable semantic/rubric findings resolved."
+    },
+    {
+      "test_id": "T67",
+      "reviewed_required_items": [
+        {
+          "id": "T67.1",
+          "decidable_from_prompt": true,
+          "clauses": [
+            1,
+            2
+          ]
+        },
+        {
+          "id": "T67.2",
+          "decidable_from_prompt": true,
+          "clauses": [
+            2
+          ]
+        },
+        {
+          "id": "T67.3",
+          "decidable_from_prompt": true,
+          "clauses": [
+            3
+          ]
+        },
+        {
+          "id": "T67.4",
+          "decidable_from_prompt": true,
+          "clauses": [
+            4
+          ]
+        },
+        {
+          "id": "T67.5",
+          "decidable_from_prompt": true,
+          "clauses": [
+            5
+          ]
+        },
+        {
+          "id": "T67.6",
+          "decidable_from_prompt": true,
+          "clauses": [
+            6
+          ]
+        },
+        {
+          "id": "T67.7",
+          "decidable_from_prompt": true,
+          "clauses": [
+            7
+          ]
+        }
+      ],
+      "reviewed_forbidden_items": [
+        {
+          "id": "T67.F1",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T67.F2",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T67.F3",
+          "decidable_from_prompt": true
+        }
+      ],
+      "independently_rederived_behavior": {
+        "algorithm": "Exact CANCELLED->0; otherwise hold true->1; otherwise trim/coalesce amount to zero or parse; amount >= 5000->2; exact URGENT->3; otherwise4; conversion exceptions log and route5. Partition preserves originals.",
+        "edge_vectors": [
+          {
+            "status_cd": "CANCELLED",
+            "amount_txt": "bad",
+            "expected_port": 0
+          },
+          {
+            "hold_flag": true,
+            "amount_txt": "bad",
+            "expected_port": 1
+          },
+          {
+            "amount_txt": "5000",
+            "priority_cd": "URGENT",
+            "expected_port": 2
+          },
+          {
+            "amount_txt": "bad",
+            "expected_port": 5
+          },
+          {
+            "amount_txt": null,
+            "priority_cd": "URGENT",
+            "expected_port": 3
+          },
+          {
+            "amount_txt": "-1",
+            "priority_cd": null,
+            "expected_port": 4
+          }
+        ]
+      },
+      "reference_assessment": "Matches the specified decisions and edge conditions.",
+      "finding_ids": [],
+      "final_reference_sha256": "802b36b395c543c1a702e84af7f536f17f7bc7667439d00d895542bebf7d8de3",
+      "final_review_status": "pass",
+      "final_reference_assessment": "Reference decisions agree with independently rederived behavior; all applicable semantic/rubric findings resolved."
+    },
+    {
+      "test_id": "T68",
+      "reviewed_required_items": [
+        {
+          "id": "T68.1",
+          "decidable_from_prompt": true,
+          "clauses": [
+            1
+          ]
+        },
+        {
+          "id": "T68.2",
+          "decidable_from_prompt": true,
+          "clauses": [
+            2
+          ]
+        },
+        {
+          "id": "T68.3",
+          "decidable_from_prompt": true,
+          "clauses": [
+            3
+          ]
+        },
+        {
+          "id": "T68.4",
+          "decidable_from_prompt": true,
+          "clauses": [
+            4
+          ]
+        },
+        {
+          "id": "T68.5",
+          "decidable_from_prompt": true,
+          "clauses": [
+            5
+          ]
+        },
+        {
+          "id": "T68.6",
+          "decidable_from_prompt": true,
+          "clauses": [
+            6
+          ]
+        },
+        {
+          "id": "T68.7",
+          "decidable_from_prompt": true,
+          "clauses": [
+            7
+          ]
+        }
+      ],
+      "reviewed_forbidden_items": [
+        {
+          "id": "T68.F1",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T68.F2",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T68.F3",
+          "decidable_from_prompt": true
+        }
+      ],
+      "independently_rederived_behavior": {
+        "algorithm": "Four port-independent functions: trim+uppercase/null-preserve code; decimal discounted amount rounded HALF_UP2; UTC calendar date text; null-propagating code+/+UTC day token. Wrapper copies originals and computes four additions.",
+        "edge_vectors": [
+          {
+            "canonicalCode": {
+              "input": "  a b  ",
+              "output": "A B"
+            }
+          },
+          {
+            "canonicalCode": {
+              "input": "  ",
+              "output": ""
+            }
+          },
+          {
+            "netAfterDiscount": {
+              "gross": "1.00",
+              "pct": "99.50",
+              "output": "0.01"
+            }
+          },
+          {
+            "netAfterDiscount": {
+              "gross": "-1.00",
+              "pct": "99.50",
+              "output": "-0.01"
+            }
+          },
+          {
+            "businessToken": {
+              "code": "",
+              "utc_date": "2026-01-01",
+              "output": "/2026-01-01"
+            }
+          },
+          {
+            "null_argument": "Each public contract propagates null; wrapper still emits row."
+          }
+        ]
+      },
+      "reference_assessment": "Matches the specified formulas and mappings on representable inputs; see attached findings for verification gaps / contract bounds.",
+      "finding_ids": [
+        "R64-02"
+      ],
+      "final_reference_sha256": "46d0b5a869422fa3d3469d29906b9dcdf3977681c08c67771dd2fd0d07885dd1",
+      "final_review_status": "pass",
+      "final_reference_assessment": "Reference decisions agree with independently rederived behavior; all applicable semantic/rubric findings resolved."
+    },
+    {
+      "test_id": "T69",
+      "reviewed_required_items": [
+        {
+          "id": "T69.1",
+          "decidable_from_prompt": true,
+          "clauses": [
+            1
+          ]
+        },
+        {
+          "id": "T69.2",
+          "decidable_from_prompt": true,
+          "clauses": [
+            2
+          ]
+        },
+        {
+          "id": "T69.3",
+          "decidable_from_prompt": true,
+          "clauses": [
+            3
+          ]
+        },
+        {
+          "id": "T69.4",
+          "decidable_from_prompt": true,
+          "clauses": [
+            4
+          ]
+        },
+        {
+          "id": "T69.5",
+          "decidable_from_prompt": true,
+          "clauses": [
+            5
+          ]
+        },
+        {
+          "id": "T69.6",
+          "decidable_from_prompt": true,
+          "clauses": [
+            6
+          ]
+        },
+        {
+          "id": "T69.7",
+          "decidable_from_prompt": true,
+          "clauses": [
+            7
+          ]
+        }
+      ],
+      "reviewed_forbidden_items": [
+        {
+          "id": "T69.F1",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T69.F2",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T69.F3",
+          "decidable_from_prompt": true
+        }
+      ],
+      "independently_rederived_behavior": {
+        "algorithm": "Four port-independent functions: trim+uppercase/null-preserve code; decimal discounted amount rounded HALF_UP2; UTC calendar date text; null-propagating code+-+UTC day token. Wrapper copies originals and computes four additions.",
+        "edge_vectors": [
+          {
+            "canonicalCode": {
+              "input": "  a b  ",
+              "output": "A B"
+            }
+          },
+          {
+            "canonicalCode": {
+              "input": "  ",
+              "output": ""
+            }
+          },
+          {
+            "netAfterDiscount": {
+              "gross": "1.00",
+              "pct": "99.50",
+              "output": "0.01"
+            }
+          },
+          {
+            "netAfterDiscount": {
+              "gross": "-1.00",
+              "pct": "99.50",
+              "output": "-0.01"
+            }
+          },
+          {
+            "businessToken": {
+              "code": "",
+              "utc_date": "2026-01-01",
+              "output": "-2026-01-01"
+            }
+          },
+          {
+            "null_argument": "Each public contract propagates null; wrapper still emits row."
+          }
+        ]
+      },
+      "reference_assessment": "Matches the specified formulas and mappings on representable inputs; see attached findings for verification gaps / contract bounds.",
+      "finding_ids": [
+        "R64-02"
+      ],
+      "final_reference_sha256": "2458f6e7c76dcb415fc0ea4d97d47ce1cec441ad3b1626a6bfe7e05cf8f3ade6",
+      "final_review_status": "pass",
+      "final_reference_assessment": "Reference decisions agree with independently rederived behavior; all applicable semantic/rubric findings resolved."
+    },
+    {
+      "test_id": "T70",
+      "reviewed_required_items": [
+        {
+          "id": "T70.1",
+          "decidable_from_prompt": true,
+          "clauses": [
+            1,
+            6,
+            7
+          ]
+        },
+        {
+          "id": "T70.2",
+          "decidable_from_prompt": true,
+          "clauses": [
+            2
+          ]
+        },
+        {
+          "id": "T70.3",
+          "decidable_from_prompt": true,
+          "clauses": [
+            3
+          ]
+        },
+        {
+          "id": "T70.4",
+          "decidable_from_prompt": true,
+          "clauses": [
+            4
+          ]
+        },
+        {
+          "id": "T70.5",
+          "decidable_from_prompt": true,
+          "clauses": [
+            5
+          ]
+        },
+        {
+          "id": "T70.6",
+          "decidable_from_prompt": true,
+          "clauses": [
+            6
+          ]
+        },
+        {
+          "id": "T70.7",
+          "decidable_from_prompt": true,
+          "clauses": [
+            7
+          ]
+        }
+      ],
+      "reviewed_forbidden_items": [
+        {
+          "id": "T70.F1",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T70.F2",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T70.F3",
+          "decidable_from_prompt": true
+        }
+      ],
+      "independently_rederived_behavior": {
+        "algorithm": "Record count configured externally. Before each emission increment n from zero. fixture=100000+n, customer=1000+floor((n-1)/3), line=(n-1)%3+1; price12.50+line; total=price*line; dates UTC Jan1+n-1days; odd OPEN/even CLOSED; assign all context and null fields; every callback succeeds.",
+        "edge_vectors": [
+          {
+            "configured_rows": 0,
+            "emitted_rows": 0
+          },
+          {
+            "n": 1,
+            "fixture_id": 100001,
+            "customer_id": 1000,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "line_total": "13.50",
+            "date": "2026-01-01",
+            "state": "OPEN"
+          },
+          {
+            "n": 3,
+            "customer_id": 1000,
+            "line_no": 3,
+            "line_total": "46.50"
+          },
+          {
+            "n": 4,
+            "customer_id": 1001,
+            "line_no": 1,
+            "state": "CLOSED"
+          },
+          {
+            "n": 7,
+            "customer_id": 1002,
+            "line_no": 1,
+            "result": "emit OK/ALL, then component ends"
+          }
+        ]
+      },
+      "reference_assessment": "Matches the specified formulas and mappings on representable inputs; see attached findings for verification gaps / contract bounds.",
+      "finding_ids": [
+        "R64-04"
+      ],
+      "final_reference_sha256": "972920f41478a0a76cda967cfe18176e0d7189d731e8778d4b12a6e0ab798489",
+      "final_review_status": "pass",
+      "final_reference_assessment": "Reference decisions agree with independently rederived behavior; all applicable semantic/rubric findings resolved."
+    },
+    {
+      "test_id": "T71",
+      "reviewed_required_items": [
+        {
+          "id": "T71.1",
+          "decidable_from_prompt": true,
+          "clauses": [
+            1,
+            6,
+            7
+          ]
+        },
+        {
+          "id": "T71.2",
+          "decidable_from_prompt": true,
+          "clauses": [
+            2
+          ]
+        },
+        {
+          "id": "T71.3",
+          "decidable_from_prompt": true,
+          "clauses": [
+            3
+          ]
+        },
+        {
+          "id": "T71.4",
+          "decidable_from_prompt": true,
+          "clauses": [
+            4
+          ]
+        },
+        {
+          "id": "T71.5",
+          "decidable_from_prompt": true,
+          "clauses": [
+            5
+          ]
+        },
+        {
+          "id": "T71.6",
+          "decidable_from_prompt": true,
+          "clauses": [
+            6
+          ]
+        },
+        {
+          "id": "T71.7",
+          "decidable_from_prompt": true,
+          "clauses": [
+            7
+          ]
+        }
+      ],
+      "reviewed_forbidden_items": [
+        {
+          "id": "T71.F1",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T71.F2",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T71.F3",
+          "decidable_from_prompt": true
+        }
+      ],
+      "independently_rederived_behavior": {
+        "algorithm": "Record count configured externally. Before each emission increment n from zero. fixture=200000+n, customer=1000+floor((n-1)/3), line=(n-1)%3+1; price12.50+line; total=price*line; dates UTC Jan1+n-1days; odd OPEN/even CLOSED; assign all context and null fields; every callback succeeds.",
+        "edge_vectors": [
+          {
+            "configured_rows": 0,
+            "emitted_rows": 0
+          },
+          {
+            "n": 1,
+            "fixture_id": 200001,
+            "customer_id": 1000,
+            "line_no": 1,
+            "unit_price": "13.50",
+            "line_total": "13.50",
+            "date": "2026-01-01",
+            "state": "OPEN"
+          },
+          {
+            "n": 3,
+            "customer_id": 1000,
+            "line_no": 3,
+            "line_total": "46.50"
+          },
+          {
+            "n": 4,
+            "customer_id": 1001,
+            "line_no": 1,
+            "state": "CLOSED"
+          },
+          {
+            "n": 7,
+            "customer_id": 1002,
+            "line_no": 1,
+            "result": "emit OK/ALL, then component ends"
+          }
+        ]
+      },
+      "reference_assessment": "Matches the specified formulas and mappings on representable inputs; see attached findings for verification gaps / contract bounds.",
+      "finding_ids": [
+        "R64-04"
+      ],
+      "final_reference_sha256": "f23503fdfd018479a0adb3341aaae7686feced0233945e307b32cfd56d7dafe7",
+      "final_review_status": "pass",
+      "final_reference_assessment": "Reference decisions agree with independently rederived behavior; all applicable semantic/rubric findings resolved."
+    },
+    {
+      "test_id": "T72",
+      "reviewed_required_items": [
+        {
+          "id": "T72.1",
+          "decidable_from_prompt": true,
+          "clauses": [
+            1
+          ]
+        },
+        {
+          "id": "T72.2",
+          "decidable_from_prompt": true,
+          "clauses": [
+            2
+          ]
+        },
+        {
+          "id": "T72.3",
+          "decidable_from_prompt": true,
+          "clauses": [
+            3
+          ]
+        },
+        {
+          "id": "T72.4",
+          "decidable_from_prompt": true,
+          "clauses": [
+            4
+          ]
+        },
+        {
+          "id": "T72.5",
+          "decidable_from_prompt": true,
+          "clauses": [
+            5
+          ]
+        },
+        {
+          "id": "T72.6",
+          "decidable_from_prompt": true,
+          "clauses": [
+            6
+          ]
+        },
+        {
+          "id": "T72.7",
+          "decidable_from_prompt": true,
+          "clauses": [
+            7
+          ]
+        }
+      ],
+      "reviewed_forbidden_items": [
+        {
+          "id": "T72.F1",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T72.F2",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T72.F3",
+          "decidable_from_prompt": true
+        }
+      ],
+      "independently_rederived_behavior": {
+        "algorithm": "Copy originals. Assign parameter run fields, strict UTC run timestamp and authoritative audit filename. In specified tuple order mark null N, else V+raw string/fixed2 decimal/UTC timestamp; frame each as length:marked-part, concatenate, hash SHA256 lowercase. Advance long AuditRows exactly once in transform per input.",
+        "edge_vectors": [
+          {
+            "represented_parts": [
+              "V A|:",
+              "V",
+              "V12.50",
+              "V2026-01-01 00:00:00"
+            ],
+            "canonical": "5:V A|:1:V6:V12.5020:V2026-01-01 00:00:00",
+            "sha256": "f287b354dba4e9779586cda0ed6c7b7224ccf8e954554371fb1368cb94923c7f"
+          },
+          {
+            "null_string_frame": "1:N",
+            "empty_string_frame": "1:V",
+            "collision": false
+          },
+          {
+            "duplicate_selected_tuples": "Identical digest, distinct sequential audit_seq values."
+          }
+        ]
+      },
+      "reference_assessment": "Matches the specified formulas and mappings on representable inputs; see attached findings for verification gaps / contract bounds.",
+      "finding_ids": [
+        "R64-03",
+        "R64-05"
+      ],
+      "final_reference_sha256": "b7d10e6a558c1c46eac74fbb5a03e7e79a90312b15afbd8df0ba79e9dfc035c3",
+      "final_review_status": "pass",
+      "final_reference_assessment": "Reference decisions agree with independently rederived behavior; all applicable semantic/rubric findings resolved."
+    },
+    {
+      "test_id": "T73",
+      "reviewed_required_items": [
+        {
+          "id": "T73.1",
+          "decidable_from_prompt": true,
+          "clauses": [
+            1
+          ]
+        },
+        {
+          "id": "T73.2",
+          "decidable_from_prompt": true,
+          "clauses": [
+            2
+          ]
+        },
+        {
+          "id": "T73.3",
+          "decidable_from_prompt": true,
+          "clauses": [
+            3
+          ]
+        },
+        {
+          "id": "T73.4",
+          "decidable_from_prompt": true,
+          "clauses": [
+            4
+          ]
+        },
+        {
+          "id": "T73.5",
+          "decidable_from_prompt": true,
+          "clauses": [
+            5
+          ]
+        },
+        {
+          "id": "T73.6",
+          "decidable_from_prompt": true,
+          "clauses": [
+            6
+          ]
+        },
+        {
+          "id": "T73.7",
+          "decidable_from_prompt": true,
+          "clauses": [
+            7
+          ]
+        }
+      ],
+      "reviewed_forbidden_items": [
+        {
+          "id": "T73.F1",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T73.F2",
+          "decidable_from_prompt": true
+        },
+        {
+          "id": "T73.F3",
+          "decidable_from_prompt": true
+        }
+      ],
+      "independently_rederived_behavior": {
+        "algorithm": "Copy originals. Assign parameter run fields, strict UTC run timestamp and authoritative audit filename. In specified tuple order mark null N, else V+raw string/fixed2 decimal/UTC timestamp; frame each as length:marked-part, concatenate, hash SHA256 lowercase. Advance long AuditRows exactly once in transform per input.",
+        "edge_vectors": [
+          {
+            "represented_parts": [
+              "V A|:",
+              "V",
+              "V12.50",
+              "V2026-01-01 00:00:00"
+            ],
+            "canonical": "5:V A|:1:V6:V12.5020:V2026-01-01 00:00:00",
+            "sha256": "f287b354dba4e9779586cda0ed6c7b7224ccf8e954554371fb1368cb94923c7f"
+          },
+          {
+            "null_string_frame": "1:N",
+            "empty_string_frame": "1:V",
+            "collision": false
+          },
+          {
+            "duplicate_selected_tuples": "Identical digest, distinct sequential audit_seq values."
+          }
+        ]
+      },
+      "reference_assessment": "Matches the specified formulas and mappings on representable inputs; see attached findings for verification gaps / contract bounds.",
+      "finding_ids": [
+        "R64-03",
+        "R64-05"
+      ],
+      "final_reference_sha256": "32a9c9bef13ac398c34c6b37c4c514e291d8994b1cc8eaa0c388887af1db5664",
+      "final_review_status": "pass",
+      "final_reference_assessment": "Reference decisions agree with independently rederived behavior; all applicable semantic/rubric findings resolved."
+    }
+  ],
+  "final_suite_sha256": "271332238a7cc9dd2d1fdd9a96ca88264b8571c5128444fbf6e3599c592ebe02",
+  "final_review": {
+    "status": "pass",
+    "tests_rechecked": [
+      "T64",
+      "T65",
+      "T66",
+      "T67",
+      "T68",
+      "T69",
+      "T70",
+      "T71",
+      "T72",
+      "T73"
+    ],
+    "unresolved_semantic_or_rubric_findings": 0,
+    "compiler_scope": "Root agent owns compiler validation; this final review does not claim separate compilation.",
+    "bounds_check": "abs(gross*(100-pct)/100) <= 11000000 under final pricing input bounds."
+  }
+}

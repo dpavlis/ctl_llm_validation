@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Graph name="T50_compile" id="T50" nature="etlGraph">
+  <Global>
+    <GraphParameters>
+      <GraphParameter name="PROJECT" value="." />
+    </GraphParameters>
+    <Metadata id="In0">
+      <Record name="Request" type="delimited" fieldDelimiter="|" recordDelimiter="\n">
+        <Field name="freight_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="carrier_cd" type="string" nullable="true" />
+        <Field name="service_cd" type="string" nullable="true" />
+        <Field name="quoted_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="requested_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" />
+      </Record>
+    </Metadata>
+    <Metadata id="Out0">
+      <Record name="Enriched" type="delimited" fieldDelimiter="|" recordDelimiter="\n">
+        <Field name="freight_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="carrier_cd" type="string" nullable="true" />
+        <Field name="service_cd" type="string" nullable="true" />
+        <Field name="quoted_amount" type="decimal" nullable="true" length="18" scale="2" />
+        <Field name="requested_at" type="date" nullable="true" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="sla_days" type="integer" nullable="false" />
+        <Field name="reference_miss" type="boolean" nullable="false" />
+        <Field name="reference_key" type="string" nullable="false" />
+      </Record>
+    </Metadata>
+    <Metadata id="RuleMeta">
+      <Record name="Rules" type="delimited" fieldDelimiter="|" recordDelimiter="\n">
+        <Field name="reference_ref_no" type="string" nullable="false" />
+        <Field name="tenant_cd" type="string" nullable="false" />
+        <Field name="source_file_nm" type="string" nullable="false" />
+        <Field name="received_at" type="date" nullable="false" format="yyyy-MM-dd HH:mm:ss" />
+        <Field name="source_row_no" type="long" nullable="false" />
+        <Field name="owner_team_cd" type="string" nullable="true" />
+        <Field name="market_cd" type="string" nullable="true" />
+        <Field name="currency_cd" type="string" nullable="false" />
+        <Field name="batch_ref" type="string" nullable="false" />
+        <Field name="operator_note" type="string" nullable="true" />
+        <Field name="external_trace_id" type="string" nullable="true" />
+        <Field name="unused_archive_label" type="string" nullable="true" />
+        <Field name="carrier_cd" type="string" nullable="false" />
+        <Field name="service_cd" type="string" nullable="false" />
+        <Field name="sla_days" type="integer" nullable="true" />
+      </Record>
+    </Metadata>
+    <LookupTable id="ServiceRules" name="ServiceRules" type="simpleLookup" metadata="RuleMeta" key="carrier_cd;service_cd" initialSize="16" />
+  </Global>
+  <Phase number="0">
+    <Node id="Source0" type="DATA_GENERATOR" recordsNumber="0">
+      <attr name="generate">//#CTL2
+function integer generate(){return OK;}</attr>
+    </Node>
+    <Node id="UnderTest" type="REFORMAT">
+      <attr name="transform">//#CTL2
+function integer transform() {
+ $out.0.*=$in.0.*;
+ string a=upperCase(trim(nvl($in.0.carrier_cd,"")));
+ string b=upperCase(trim(nvl($in.0.service_cd,"")));
+ $out.0.reference_key=a+":"+b;
+ $out.0.sla_days=5;
+ $out.0.reference_miss=true;
+ if (a != "" &amp;&amp; b != "") {
+  Rules ref=lookup(ServiceRules).get(a,b);
+  if (ref != null) {$out.0.reference_miss=false;$out.0.sla_days=nvl(ref.sla_days,5);}
+ }
+ return OK;
+}
+</attr>
+    </Node>
+    <Edge id="Input0" fromNode="Source0:0" toNode="UnderTest:0" metadata="In0" />
+    <Node id="Sink0" type="TRASH" />
+    <Edge id="Output0" fromNode="UnderTest:0" toNode="Sink0:0" metadata="Out0" />
+  </Phase>
+</Graph>

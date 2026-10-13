@@ -1,0 +1,1196 @@
+{
+  "reviewer": "independent subagent /root/review_t44_t53",
+  "scope": "T44-T53",
+  "sources": [
+    "attached suite_generate_rw_brief.md",
+    "spec/ctl2_training_findings.md section 7",
+    "resources/ctl2-basics.md"
+  ],
+  "compiler_verification": "Compiler execution and final diagnostics are handled by root. This report does not assert successful compilation.",
+  "summary": "All 10 prompts meet field count and prompt length constraints. Core reference semantics match independent derivation. Four join calls conflict with the documented argument order; onboarding output time format and migration target naming should be clarified; DataIntersection routing alternatives need precise evidence.",
+  "tests": [
+    {
+      "test_id": "T44",
+      "rubric_review": [
+        {
+          "id": "T44.1",
+          "clauses": [
+            1,
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T44.2",
+          "clauses": [
+            1,
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T44.3",
+          "clauses": [
+            1,
+            2
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T44.4",
+          "clauses": [
+            1,
+            3
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T44.5",
+          "clauses": [
+            1,
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T44.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T44.7",
+          "clauses": [
+            5,
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T44.8",
+          "clauses": [
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        }
+      ],
+      "forbidden_review": {
+        "ids": [
+          "T44.F1",
+          "T44.F2",
+          "T44.F3"
+        ],
+        "status": "All are supported by the prompt, metadata, or attached brief house-style rule against redundant never-null guards."
+      },
+      "independent_reference_derivation": "Independently normalize only validation operands; independently validate nonblank identifier, ASCII amount grammar, exact date/timestamp shape plus strict UTC calendar parsing, and normalized allowed code. Build the ordered complete rejection-token list. On any failure copy the raw record to port 1 and return 1. Otherwise copy raw fields to port 0, assign parsed amount/date and normalized code, and return 0. Keep every input independently.",
+      "edge_case_oracles": [
+        {
+          "input": "identifier=\"  \", amount=null, date=\"2026-02-30\", code=\"bad\"",
+          "expected": "Port 1; all four business rejection tokens, in declared order; raw fields preserved."
+        },
+        {
+          "input": "nonblank raw identifier=\" X \", amount=\"0\", date=\"2026-01-01 12:34:56\", recognized lowercase/spaced code",
+          "expected": "Port 0; amount zero, UTC timestamp including time, normalized code; raw identifier remains \" X \"."
+        },
+        {
+          "input": "valid identifier/code/date but amount=\"1e2\" or \"1.000\"",
+          "expected": "Port 1, amount rejection only."
+        }
+      ],
+      "ctl2_fact_check": [
+        "Whole-string regex matching ~=; symmetric null equality and nvl; wildcard copies matching names/types; strict six-argument isDate/str2date with en.US and UTC are listed in basics.",
+        "join signature in basics section 11 is delimiter first.",
+        "No Rollup or group state facts are needed; local failure list is fresh for every transform call."
+      ],
+      "reference_semantic_status": "matches independent derivation subject to listed findings",
+      "findings": [
+        {
+          "severity": "error",
+          "location": "reference.reject_reason",
+          "finding": "join(failures,\";\") reverses the documented join signature.",
+          "action": "Use join(\";\",failures), then compile; compiler result is owned by root."
+        },
+        {
+          "severity": "warning",
+          "location": "output metadata effective_dt",
+          "finding": "Date-only yyyy-MM-dd serialization discards the supplied time despite clause 3 requiring time retention. Internal CTL date values do hold time, so this is downstream metadata ambiguity rather than a certain transform error.",
+          "action": "Set output format yyyy-MM-dd HH:mm:ss to make the downstream loader contract unambiguous."
+        }
+      ]
+    },
+    {
+      "test_id": "T45",
+      "rubric_review": [
+        {
+          "id": "T45.1",
+          "clauses": [
+            1,
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T45.2",
+          "clauses": [
+            1,
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T45.3",
+          "clauses": [
+            1,
+            2
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T45.4",
+          "clauses": [
+            1,
+            3
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T45.5",
+          "clauses": [
+            1,
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T45.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T45.7",
+          "clauses": [
+            5,
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T45.8",
+          "clauses": [
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        }
+      ],
+      "forbidden_review": {
+        "ids": [
+          "T45.F1",
+          "T45.F2",
+          "T45.F3"
+        ],
+        "status": "All are supported by the prompt, metadata, or attached brief house-style rule against redundant never-null guards."
+      },
+      "independent_reference_derivation": "Independently normalize only validation operands; independently validate nonblank identifier, ASCII amount grammar, exact date/timestamp shape plus strict UTC calendar parsing, and normalized allowed code. Build the ordered complete rejection-token list. On any failure copy the raw record to port 1 and return 1. Otherwise copy raw fields to port 0, assign parsed amount/date and normalized code, and return 0. Keep every input independently.",
+      "edge_case_oracles": [
+        {
+          "input": "identifier=\"  \", amount=null, date=\"2026-02-30\", code=\"bad\"",
+          "expected": "Port 1; all four business rejection tokens, in declared order; raw fields preserved."
+        },
+        {
+          "input": "nonblank raw identifier=\" X \", amount=\"0\", date=\"2026-01-01 12:34:56\", recognized lowercase/spaced code",
+          "expected": "Port 0; amount zero, UTC timestamp including time, normalized code; raw identifier remains \" X \"."
+        },
+        {
+          "input": "valid identifier/code/date but amount=\"1e2\" or \"1.000\"",
+          "expected": "Port 1, amount rejection only."
+        }
+      ],
+      "ctl2_fact_check": [
+        "Whole-string regex matching ~=; symmetric null equality and nvl; wildcard copies matching names/types; strict six-argument isDate/str2date with en.US and UTC are listed in basics.",
+        "join signature in basics section 11 is delimiter first.",
+        "No Rollup or group state facts are needed; local failure list is fresh for every transform call."
+      ],
+      "reference_semantic_status": "matches independent derivation subject to listed findings",
+      "findings": [
+        {
+          "severity": "error",
+          "location": "reference.reject_reason",
+          "finding": "join(failures,\";\") reverses the documented join signature.",
+          "action": "Use join(\";\",failures), then compile; compiler result is owned by root."
+        },
+        {
+          "severity": "warning",
+          "location": "output metadata effective_dt",
+          "finding": "Date-only yyyy-MM-dd serialization discards the supplied time despite clause 3 requiring time retention. Internal CTL date values do hold time, so this is downstream metadata ambiguity rather than a certain transform error.",
+          "action": "Set output format yyyy-MM-dd HH:mm:ss to make the downstream loader contract unambiguous."
+        }
+      ]
+    },
+    {
+      "test_id": "T46",
+      "rubric_review": [
+        {
+          "id": "T46.1",
+          "clauses": [
+            1,
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T46.2",
+          "clauses": [
+            1,
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T46.3",
+          "clauses": [
+            1,
+            2
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T46.4",
+          "clauses": [
+            1,
+            3
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T46.5",
+          "clauses": [
+            1,
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T46.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T46.7",
+          "clauses": [
+            5,
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T46.8",
+          "clauses": [
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        }
+      ],
+      "forbidden_review": {
+        "ids": [
+          "T46.F1",
+          "T46.F2",
+          "T46.F3"
+        ],
+        "status": "All are supported by the prompt, metadata, or attached brief house-style rule against redundant never-null guards."
+      },
+      "independent_reference_derivation": "Independently normalize only validation operands; independently validate nonblank identifier, ASCII amount grammar, exact date/timestamp shape plus strict UTC calendar parsing, and normalized allowed code. Build the ordered complete rejection-token list. On any failure copy the raw record to port 1 and return 1. Otherwise copy raw fields to port 0, assign parsed amount/date and normalized code, and return 0. Keep every input independently.",
+      "edge_case_oracles": [
+        {
+          "input": "identifier=\"  \", amount=null, date=\"2026-02-30\", code=\"bad\"",
+          "expected": "Port 1; all four business rejection tokens, in declared order; raw fields preserved."
+        },
+        {
+          "input": "nonblank raw identifier=\" X \", amount=\"0\", date=\"2026-01-01 12:34:56\", recognized lowercase/spaced code",
+          "expected": "Port 0; amount zero, UTC timestamp including time, normalized code; raw identifier remains \" X \"."
+        },
+        {
+          "input": "valid identifier/code/date but amount=\"1e2\" or \"1.000\"",
+          "expected": "Port 1, amount rejection only."
+        }
+      ],
+      "ctl2_fact_check": [
+        "Whole-string regex matching ~=; symmetric null equality and nvl; wildcard copies matching names/types; strict six-argument isDate/str2date with en.US and UTC are listed in basics.",
+        "join signature in basics section 11 is delimiter first.",
+        "No Rollup or group state facts are needed; local failure list is fresh for every transform call."
+      ],
+      "reference_semantic_status": "matches independent derivation subject to listed findings",
+      "findings": [
+        {
+          "severity": "error",
+          "location": "reference.reject_reason",
+          "finding": "join(failures,\";\") reverses the documented join signature.",
+          "action": "Use join(\";\",failures), then compile; compiler result is owned by root."
+        },
+        {
+          "severity": "warning",
+          "location": "output metadata effective_dt",
+          "finding": "Date-only yyyy-MM-dd serialization discards the supplied time despite clause 3 requiring time retention. Internal CTL date values do hold time, so this is downstream metadata ambiguity rather than a certain transform error.",
+          "action": "Set output format yyyy-MM-dd HH:mm:ss to make the downstream loader contract unambiguous."
+        }
+      ]
+    },
+    {
+      "test_id": "T47",
+      "rubric_review": [
+        {
+          "id": "T47.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T47.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable_with_target_field_ambiguity",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T47.3",
+          "clauses": [
+            2
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T47.4",
+          "clauses": [
+            3
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T47.5",
+          "clauses": [
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T47.6",
+          "clauses": [
+            5
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T47.7",
+          "clauses": [
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        }
+      ],
+      "forbidden_review": {
+        "ids": [
+          "T47.F1",
+          "T47.F2",
+          "T47.F3"
+        ],
+        "status": "All are supported by the prompt, metadata, or attached brief house-style rule against redundant never-null guards."
+      },
+      "independent_reference_derivation": "Independently copy all matching retained fields by name, then map the trimmed renamed identifier with UNASSIGNED fallback, normalized source code with its exact default, and UNKNOWN_MODE only for unknown nonblank codes. Apply distinct display-name and email missing policies. Return port 0 per input; no mutable record-to-record state.",
+      "edge_case_oracles": [
+        {
+          "input": "identifier=\" \", source code=null, display_nm=null, email_txt=null",
+          "expected": "UNASSIGNED; stated default mode; empty warning; Unnamed; null email."
+        },
+        {
+          "input": "unknown nonblank code surrounded by spaces, email_txt=\"  \"",
+          "expected": "Stated default mode, UNKNOWN_MODE, empty email."
+        },
+        {
+          "input": "recognized lowercase/spaced code, credit_balance=-2.50D, retired_at has time",
+          "expected": "Stated mapped mode, empty warning, decimal/date copied exactly including time."
+        }
+      ],
+      "ctl2_fact_check": [
+        "Wildcard copies matching names/types and safely ignores source fields removed from output.",
+        "Map literal ->, containsKey, missing map key null, trim/upperCase/lowerCase and isnull are in basics.",
+        "Non-null identifier can be empty; null email must remain null and cannot use an unconditional nvl fallback."
+      ],
+      "reference_semantic_status": "matches independent derivation subject to listed findings",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "user_message clause 2",
+          "finding": "The target field mode_cd for the translated source code is not named in the business clause; metadata and reference imply it but the clause does not expressly bind the mapping.",
+          "action": "Write \"Set mode_cd by translating ...\" so rubric item .2 is entirely decidable."
+        }
+      ]
+    },
+    {
+      "test_id": "T48",
+      "rubric_review": [
+        {
+          "id": "T48.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T48.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable_with_target_field_ambiguity",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T48.3",
+          "clauses": [
+            2
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T48.4",
+          "clauses": [
+            3
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T48.5",
+          "clauses": [
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T48.6",
+          "clauses": [
+            5
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T48.7",
+          "clauses": [
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        }
+      ],
+      "forbidden_review": {
+        "ids": [
+          "T48.F1",
+          "T48.F2",
+          "T48.F3"
+        ],
+        "status": "All are supported by the prompt, metadata, or attached brief house-style rule against redundant never-null guards."
+      },
+      "independent_reference_derivation": "Independently copy all matching retained fields by name, then map the trimmed renamed identifier with UNASSIGNED fallback, normalized source code with its exact default, and UNKNOWN_MODE only for unknown nonblank codes. Apply distinct display-name and email missing policies. Return port 0 per input; no mutable record-to-record state.",
+      "edge_case_oracles": [
+        {
+          "input": "identifier=\" \", source code=null, display_nm=null, email_txt=null",
+          "expected": "UNASSIGNED; stated default mode; empty warning; Unnamed; null email."
+        },
+        {
+          "input": "unknown nonblank code surrounded by spaces, email_txt=\"  \"",
+          "expected": "Stated default mode, UNKNOWN_MODE, empty email."
+        },
+        {
+          "input": "recognized lowercase/spaced code, credit_balance=-2.50D, retired_at has time",
+          "expected": "Stated mapped mode, empty warning, decimal/date copied exactly including time."
+        }
+      ],
+      "ctl2_fact_check": [
+        "Wildcard copies matching names/types and safely ignores source fields removed from output.",
+        "Map literal ->, containsKey, missing map key null, trim/upperCase/lowerCase and isnull are in basics.",
+        "Non-null identifier can be empty; null email must remain null and cannot use an unconditional nvl fallback."
+      ],
+      "reference_semantic_status": "matches independent derivation subject to listed findings",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "user_message clause 2",
+          "finding": "The target field mode_cd for the translated source code is not named in the business clause; metadata and reference imply it but the clause does not expressly bind the mapping.",
+          "action": "Write \"Set mode_cd by translating ...\" so rubric item .2 is entirely decidable."
+        }
+      ]
+    },
+    {
+      "test_id": "T49",
+      "rubric_review": [
+        {
+          "id": "T49.1",
+          "clauses": [
+            1
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T49.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable_with_target_field_ambiguity",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T49.3",
+          "clauses": [
+            2
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T49.4",
+          "clauses": [
+            3
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T49.5",
+          "clauses": [
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T49.6",
+          "clauses": [
+            5
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T49.7",
+          "clauses": [
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        }
+      ],
+      "forbidden_review": {
+        "ids": [
+          "T49.F1",
+          "T49.F2",
+          "T49.F3"
+        ],
+        "status": "All are supported by the prompt, metadata, or attached brief house-style rule against redundant never-null guards."
+      },
+      "independent_reference_derivation": "Independently copy all matching retained fields by name, then map the trimmed renamed identifier with UNASSIGNED fallback, normalized source code with its exact default, and UNKNOWN_MODE only for unknown nonblank codes. Apply distinct display-name and email missing policies. Return port 0 per input; no mutable record-to-record state.",
+      "edge_case_oracles": [
+        {
+          "input": "identifier=\" \", source code=null, display_nm=null, email_txt=null",
+          "expected": "UNASSIGNED; stated default mode; empty warning; Unnamed; null email."
+        },
+        {
+          "input": "unknown nonblank code surrounded by spaces, email_txt=\"  \"",
+          "expected": "Stated default mode, UNKNOWN_MODE, empty email."
+        },
+        {
+          "input": "recognized lowercase/spaced code, credit_balance=-2.50D, retired_at has time",
+          "expected": "Stated mapped mode, empty warning, decimal/date copied exactly including time."
+        }
+      ],
+      "ctl2_fact_check": [
+        "Wildcard copies matching names/types and safely ignores source fields removed from output.",
+        "Map literal ->, containsKey, missing map key null, trim/upperCase/lowerCase and isnull are in basics.",
+        "Non-null identifier can be empty; null email must remain null and cannot use an unconditional nvl fallback."
+      ],
+      "reference_semantic_status": "matches independent derivation subject to listed findings",
+      "findings": [
+        {
+          "severity": "warning",
+          "location": "user_message clause 2",
+          "finding": "The target field mode_cd for the translated source code is not named in the business clause; metadata and reference imply it but the clause does not expressly bind the mapping.",
+          "action": "Write \"Set mode_cd by translating ...\" so rubric item .2 is entirely decidable."
+        }
+      ]
+    },
+    {
+      "test_id": "T50",
+      "rubric_review": [
+        {
+          "id": "T50.1",
+          "clauses": [
+            1,
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T50.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T50.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T50.4",
+          "clauses": [
+            3,
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T50.5",
+          "clauses": [
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T50.6",
+          "clauses": [
+            5
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T50.7",
+          "clauses": [
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        }
+      ],
+      "forbidden_review": {
+        "ids": [
+          "T50.F1",
+          "T50.F2",
+          "T50.F3"
+        ],
+        "status": "All are supported by the prompt, metadata, or attached brief house-style rule against redundant never-null guards."
+      },
+      "independent_reference_derivation": "Independently copy the input by name; normalize both keys solely for lookup and diagnostics; set the per-row default integer and miss=true. Query ServiceRules with the two normalized key arguments only when both are nonempty. For a non-null returned Rules record set miss=false and use the attribute with null fallback. Always return port 0.",
+      "edge_case_oracles": [
+        {
+          "input": "both keys null/blank",
+          "expected": "No lookup query; reference_key=\":\"; stated default integer; reference_miss=true."
+        },
+        {
+          "input": "normalized key hit with zero attribute",
+          "expected": "Zero integer; reference_miss=false; original raw key fields unchanged."
+        },
+        {
+          "input": "key hit with null attribute",
+          "expected": "Stated default integer; reference_miss=false."
+        },
+        {
+          "input": "miss immediately following a hit",
+          "expected": "Stated default integer; reference_miss=true; no stale values."
+        }
+      ],
+      "ctl2_fact_check": [
+        "Composite lookup get accepts separate arguments in order and returns null on a miss, per basics section 9.",
+        "Lookup cannot be accessed in lifecycle initialization callbacks, per basics section 9.",
+        "Record ==/!= null is supported, with nvl(attribute,default) preserving zero.",
+        "Wildcard copy preserves all original key spellings and unused fields."
+      ],
+      "reference_semantic_status": "matches independent derivation subject to listed findings",
+      "findings": []
+    },
+    {
+      "test_id": "T51",
+      "rubric_review": [
+        {
+          "id": "T51.1",
+          "clauses": [
+            1,
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T51.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T51.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T51.4",
+          "clauses": [
+            3,
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T51.5",
+          "clauses": [
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T51.6",
+          "clauses": [
+            5
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T51.7",
+          "clauses": [
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        }
+      ],
+      "forbidden_review": {
+        "ids": [
+          "T51.F1",
+          "T51.F2",
+          "T51.F3"
+        ],
+        "status": "All are supported by the prompt, metadata, or attached brief house-style rule against redundant never-null guards."
+      },
+      "independent_reference_derivation": "Independently copy the input by name; normalize both keys solely for lookup and diagnostics; set the per-row default integer and miss=true. Query ServiceRules with the two normalized key arguments only when both are nonempty. For a non-null returned Rules record set miss=false and use the attribute with null fallback. Always return port 0.",
+      "edge_case_oracles": [
+        {
+          "input": "both keys null/blank",
+          "expected": "No lookup query; reference_key=\":\"; stated default integer; reference_miss=true."
+        },
+        {
+          "input": "normalized key hit with zero attribute",
+          "expected": "Zero integer; reference_miss=false; original raw key fields unchanged."
+        },
+        {
+          "input": "key hit with null attribute",
+          "expected": "Stated default integer; reference_miss=false."
+        },
+        {
+          "input": "miss immediately following a hit",
+          "expected": "Stated default integer; reference_miss=true; no stale values."
+        }
+      ],
+      "ctl2_fact_check": [
+        "Composite lookup get accepts separate arguments in order and returns null on a miss, per basics section 9.",
+        "Lookup cannot be accessed in lifecycle initialization callbacks, per basics section 9.",
+        "Record ==/!= null is supported, with nvl(attribute,default) preserving zero.",
+        "Wildcard copy preserves all original key spellings and unused fields."
+      ],
+      "reference_semantic_status": "matches independent derivation subject to listed findings",
+      "findings": []
+    },
+    {
+      "test_id": "T52",
+      "rubric_review": [
+        {
+          "id": "T52.1",
+          "clauses": [
+            1,
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T52.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T52.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T52.4",
+          "clauses": [
+            3,
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T52.5",
+          "clauses": [
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T52.6",
+          "clauses": [
+            5
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T52.7",
+          "clauses": [
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        }
+      ],
+      "forbidden_review": {
+        "ids": [
+          "T52.F1",
+          "T52.F2",
+          "T52.F3"
+        ],
+        "status": "All are supported by the prompt, metadata, or attached brief house-style rule against redundant never-null guards."
+      },
+      "independent_reference_derivation": "Independently copy the input by name; normalize both keys solely for lookup and diagnostics; set the per-row default integer and miss=true. Query ServiceRules with the two normalized key arguments only when both are nonempty. For a non-null returned Rules record set miss=false and use the attribute with null fallback. Always return port 0.",
+      "edge_case_oracles": [
+        {
+          "input": "both keys null/blank",
+          "expected": "No lookup query; reference_key=\":\"; stated default integer; reference_miss=true."
+        },
+        {
+          "input": "normalized key hit with zero attribute",
+          "expected": "Zero integer; reference_miss=false; original raw key fields unchanged."
+        },
+        {
+          "input": "key hit with null attribute",
+          "expected": "Stated default integer; reference_miss=false."
+        },
+        {
+          "input": "miss immediately following a hit",
+          "expected": "Stated default integer; reference_miss=true; no stale values."
+        }
+      ],
+      "ctl2_fact_check": [
+        "Composite lookup get accepts separate arguments in order and returns null on a miss, per basics section 9.",
+        "Lookup cannot be accessed in lifecycle initialization callbacks, per basics section 9.",
+        "Record ==/!= null is supported, with nvl(attribute,default) preserving zero.",
+        "Wildcard copy preserves all original key spellings and unused fields."
+      ],
+      "reference_semantic_status": "matches independent derivation subject to listed findings",
+      "findings": []
+    },
+    {
+      "test_id": "T53",
+      "rubric_review": [
+        {
+          "id": "T53.1",
+          "clauses": [
+            1,
+            6
+          ],
+          "status": "needs_verified_routing_alternatives",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T53.2",
+          "clauses": [
+            2
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T53.3",
+          "clauses": [
+            3
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T53.4",
+          "clauses": [
+            4
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T53.5",
+          "clauses": [
+            5
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T53.6",
+          "clauses": [
+            6
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        },
+        {
+          "id": "T53.7",
+          "clauses": [
+            7
+          ],
+          "status": "decidable",
+          "basis": "Business clauses and supplied metadata establish this requirement; source-reference facts listed below establish CTL implementation alternatives."
+        }
+      ],
+      "forbidden_review": {
+        "ids": [
+          "T53.F1",
+          "T53.F2",
+          "T53.F3"
+        ],
+        "status": "All are supported by the prompt, metadata, or attached brief house-style rule against redundant never-null guards."
+      },
+      "independent_reference_derivation": "Independently inspect only matched old/new pairs. Compare status_cd, annual_value, expires_at using typed != in their metadata order; add differing names once. Copy the incoming snapshot to output 1, then set UPDATE if list nonempty else UNCHANGED and serialize ordered names without a trailing comma. Return 1 and do not touch one-sided pass-through ports. Duplicated keys require independent per-pair local state.",
+      "edge_case_oracles": [
+        {
+          "input": "both tracked tuples all null",
+          "expected": "Matched output 1, UNCHANGED, changed_fields=\"\"."
+        },
+        {
+          "input": "status old=null, new=\"\"; annual_value differs; expires_at same date but different time",
+          "expected": "UPDATE; changed_fields=\"status_cd,annual_value,expires_at\"; all snapshot fields from input 1."
+        },
+        {
+          "input": "A-only/B-only keys",
+          "expected": "No transform invocation; unchanged pass-through on output 0/output 2 respectively."
+        }
+      ],
+      "ctl2_fact_check": [
+        "==/!= are null-safe for all types and exact typed values per basics section 3.2.",
+        "CTL dates include time per basics section 2.1; wildcard copy is by name/type.",
+        "DataIntersection matched pairs are written to output 1; outputs 0 and 2 pass through A-only/B-only unchanged; input duplicate keys produce Cartesian pairs. These facts come from the owner-confirmed attached brief, are absent from basics, and must be recorded as new reference facts.",
+        "The exact DataIntersection return routing semantics for OK/ALL require owner/runtime verification; compiler acceptance alone cannot establish routing."
+      ],
+      "reference_semantic_status": "matches independent derivation subject to listed findings",
+      "findings": [
+        {
+          "severity": "error",
+          "location": "reference.changed_fields",
+          "finding": "join(changes,\",\") reverses the documented join signature.",
+          "action": "Use join(\",\",changes) and compile."
+        },
+        {
+          "severity": "warning",
+          "location": "rubric required T53.1",
+          "finding": "OK=0 and ALL routes every connected port in the general template. The rubric accepts either conditionally without a precise verified DataIntersection routing rule.",
+          "action": "Require return 1 or an independently runtime-verified equivalent; do not accept OK/ALL solely because output 1 was written."
+        }
+      ]
+    }
+  ],
+  "final_addendum": {
+    "scope": "Final T44-T53 references and prompts rechecked after builder fixes",
+    "status": "All prior semantic and rubric findings resolved. T50-T52 compilation remains unverified in graph resource context.",
+    "overall_compiler_context": "Root reports 22 actual ctl_validate PASS results and eight unresolved resource-bound references across the full suite; server graph-context attempt failed with Sandbox not found. No network work performed by this reviewer.",
+    "tests": [
+      {
+        "test_id": "T44",
+        "final_reference_sha256": "3707ec35074614466f20149e9081cd6ac64fe86ff95102705a255666b22343f7",
+        "final_prompt_sha256": "6167ea671b38623a3620b4e7299898888d53da7da68f8a1285e37e2b51b0b77a",
+        "prior_findings_resolved": true,
+        "resolution_checks": {
+          "join_argument_order": true,
+          "output_preserves_time": true
+        },
+        "final_semantic_review": "pass: final prompt, rubric and reference match independent acceptance-contract derivation",
+        "actual_reference_compiles": true,
+        "actual_compile_result": "{\"overall\": \"PASS\", \"problems\": []}",
+        "compiler_status": "confirmed clean ctl_validate pass"
+      },
+      {
+        "test_id": "T45",
+        "final_reference_sha256": "bf0659c2c3d2a7f22b90e334241aa87a6b64da17ff1d4ad54adcb37b7229c2b0",
+        "final_prompt_sha256": "c78d9a9c2711f587700eb14284b96eab5abdd7d10504eadd3369e54c6183c23a",
+        "prior_findings_resolved": true,
+        "resolution_checks": {
+          "join_argument_order": true,
+          "output_preserves_time": true
+        },
+        "final_semantic_review": "pass: final prompt, rubric and reference match independent acceptance-contract derivation",
+        "actual_reference_compiles": true,
+        "actual_compile_result": "{\"overall\": \"PASS\", \"problems\": []}",
+        "compiler_status": "confirmed clean ctl_validate pass"
+      },
+      {
+        "test_id": "T46",
+        "final_reference_sha256": "c0673f0f01aa852e04ae049fed422557eb7730e0b37f95fd317c7fd7be4e08ed",
+        "final_prompt_sha256": "486f518ed29b3cd041023f16f11f4c22b270a01efb153f6d91ea09bda8ebf404",
+        "prior_findings_resolved": true,
+        "resolution_checks": {
+          "join_argument_order": true,
+          "output_preserves_time": true
+        },
+        "final_semantic_review": "pass: final prompt, rubric and reference match independent acceptance-contract derivation",
+        "actual_reference_compiles": true,
+        "actual_compile_result": "{\"overall\": \"PASS\", \"problems\": []}",
+        "compiler_status": "confirmed clean ctl_validate pass"
+      },
+      {
+        "test_id": "T47",
+        "final_reference_sha256": "77557e30c545cede43e68b3e1ddd0de0da5dea5b1a54951bab41524d1781322a",
+        "final_prompt_sha256": "ebc2ff491f75ba23837d14d01a1a0504363f662e8017980b97342e8e8db91c2a",
+        "prior_findings_resolved": true,
+        "resolution_checks": {
+          "translation_target_explicit": true
+        },
+        "final_semantic_review": "pass: final prompt, rubric and reference match independent acceptance-contract derivation",
+        "actual_reference_compiles": true,
+        "actual_compile_result": "{\"overall\": \"PASS\", \"problems\": []}",
+        "compiler_status": "confirmed clean ctl_validate pass"
+      },
+      {
+        "test_id": "T48",
+        "final_reference_sha256": "15afb8874673df0ccdba631e651951aca8c2de15b11f353afce3a532d612baf4",
+        "final_prompt_sha256": "0109cd9fd78dfdadcdc8c292bf643ff64dcdce698b85411513e281bdcff89ad1",
+        "prior_findings_resolved": true,
+        "resolution_checks": {
+          "translation_target_explicit": true
+        },
+        "final_semantic_review": "pass: final prompt, rubric and reference match independent acceptance-contract derivation",
+        "actual_reference_compiles": true,
+        "actual_compile_result": "{\"overall\": \"PASS\", \"problems\": []}",
+        "compiler_status": "confirmed clean ctl_validate pass"
+      },
+      {
+        "test_id": "T49",
+        "final_reference_sha256": "5db5757b64e21aab304c8e7719216e368aa584eb58daf289fc1b3e66fbe27a58",
+        "final_prompt_sha256": "13d30db778335b0616a8e5e40383c902ba8c3a332be06185413646c34bf459ae",
+        "prior_findings_resolved": true,
+        "resolution_checks": {
+          "translation_target_explicit": true
+        },
+        "final_semantic_review": "pass: final prompt, rubric and reference match independent acceptance-contract derivation",
+        "actual_reference_compiles": true,
+        "actual_compile_result": "{\"overall\": \"PASS\", \"problems\": []}",
+        "compiler_status": "confirmed clean ctl_validate pass"
+      },
+      {
+        "test_id": "T50",
+        "final_reference_sha256": "6c1412a966e9f233e1e367aa8d247e4c35c65742ac97f01b0611d9d27ac36f07",
+        "final_prompt_sha256": "d56ce794fc4f08771ddc6f4cad12910837e18d7368d228104bb0641ed5344b04",
+        "prior_findings_resolved": true,
+        "resolution_checks": {},
+        "final_semantic_review": "pass: final prompt, rubric and reference match independent acceptance-contract derivation",
+        "actual_reference_compiles": false,
+        "actual_compile_result": "{\"overall\": \"FAIL\", \"problems\": [{\"severity\": \"ERROR\", \"stage\": \"compile\", \"line\": 10, \"column\": 3, \"endLine\": 10, \"endColumn\": 7, \"message\": \"Unknown variable type or metadata name 'Rules'\"}, {\"severity\": \"ERROR\", \"stage\": \"compile\", \"line\": 10, \"column\": 13, \"endLine\": 10, \"endColumn\": 41, \"message\": \"Unable to resolve lookup table 'ServiceRules'\"}]}",
+        "compiler_status": "unresolved graph-resource binding: Rules metadata/ServiceRules absent from bare ctl_validate context; no clean compilation claim"
+      },
+      {
+        "test_id": "T51",
+        "final_reference_sha256": "bc8958229e694ba1202d5e04b9a6179b77b32c15ddb28d433a0407b2a179a370",
+        "final_prompt_sha256": "84fa239fc673341a700030077f6c6e772437f5fc89d6efeb0b9578f6ef76299a",
+        "prior_findings_resolved": true,
+        "resolution_checks": {},
+        "final_semantic_review": "pass: final prompt, rubric and reference match independent acceptance-contract derivation",
+        "actual_reference_compiles": false,
+        "actual_compile_result": "{\"overall\": \"FAIL\", \"problems\": [{\"severity\": \"ERROR\", \"stage\": \"compile\", \"line\": 10, \"column\": 3, \"endLine\": 10, \"endColumn\": 7, \"message\": \"Unknown variable type or metadata name 'Rules'\"}, {\"severity\": \"ERROR\", \"stage\": \"compile\", \"line\": 10, \"column\": 13, \"endLine\": 10, \"endColumn\": 41, \"message\": \"Unable to resolve lookup table 'ServiceRules'\"}]}",
+        "compiler_status": "unresolved graph-resource binding: Rules metadata/ServiceRules absent from bare ctl_validate context; no clean compilation claim"
+      },
+      {
+        "test_id": "T52",
+        "final_reference_sha256": "cb08a40f021852f919b4fc4f9ca03d7af57d9f119c20b9fbf9aa1770a8f73f59",
+        "final_prompt_sha256": "7f0e54780a5b3289bae977c74ced7a5a082dc7c8a183d2fe8d136b8752792d8a",
+        "prior_findings_resolved": true,
+        "resolution_checks": {},
+        "final_semantic_review": "pass: final prompt, rubric and reference match independent acceptance-contract derivation",
+        "actual_reference_compiles": false,
+        "actual_compile_result": "{\"overall\": \"FAIL\", \"problems\": [{\"severity\": \"ERROR\", \"stage\": \"compile\", \"line\": 10, \"column\": 3, \"endLine\": 10, \"endColumn\": 7, \"message\": \"Unknown variable type or metadata name 'Rules'\"}, {\"severity\": \"ERROR\", \"stage\": \"compile\", \"line\": 10, \"column\": 13, \"endLine\": 10, \"endColumn\": 41, \"message\": \"Unable to resolve lookup table 'ServiceRules'\"}]}",
+        "compiler_status": "unresolved graph-resource binding: Rules metadata/ServiceRules absent from bare ctl_validate context; no clean compilation claim"
+      },
+      {
+        "test_id": "T53",
+        "final_reference_sha256": "4f8a87ac19d2eec642acacb51ff23ade9d2a360fbfdd3a30fd6dd158beee5813",
+        "final_prompt_sha256": "808dfbf21b8538790bf29946c997d9952567d93004deadbc2eeb7d051c6a4678",
+        "prior_findings_resolved": true,
+        "resolution_checks": {
+          "join_argument_order": true,
+          "routing_rubric_precise": true
+        },
+        "final_semantic_review": "pass: final prompt, rubric and reference match independent acceptance-contract derivation",
+        "actual_reference_compiles": true,
+        "actual_compile_result": "{\"overall\": \"PASS\", \"problems\": []}",
+        "compiler_status": "confirmed clean ctl_validate pass"
+      }
+    ]
+  }
+}

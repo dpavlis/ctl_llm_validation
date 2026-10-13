@@ -56,14 +56,18 @@ def rejudge(r):
     return r
 
 runs = list(ThreadPoolExecutor(a.workers).map(rejudge, res["tests"]))
+rw = {k for k, t in tests.items() if t.get("group") == "rw"}   # suite v5 real-world tests, scored apart as in test.py
 def mean(ty):
-    s = [r["numeric_score"] for r in runs if (ty is None and r.get("test_type") in ("generate", "validate")) or r.get("test_type") == ty]
+    s = [r["numeric_score"] for r in runs if r["test_id"] not in rw and
+         ((ty is None and r.get("test_type") in ("generate", "validate")) or r.get("test_type") == ty)]
     return round(sum(s) / len(s), 4) if s else None
+s_rw = [r["numeric_score"] for r in runs if r["test_id"] in rw]
 out = dict(res, tests=runs, suite_score=mean(None), generate_score=mean("generate"),
            validate_score=mean("validate"), fix_score=mean("fix"),
+           generate_rw_score=round(sum(s_rw) / len(s_rw), 4) if s_rw else None,
            rejudged={"from": a.results, "suite": a.suite, "judge": jcfg.get("model")})
 p = Path(a.results).with_name(Path(a.results).stem + f"_rejudged_{Path(a.suite).parent.name}.json")
 json.dump(out, open(p, "w"), indent=2)
 errs = sum(1 for r in runs if "rejudge" in str(r.get("critical_failure")))
-print(f"{p.name}: suite {out['suite_score']} gen {out['generate_score']} val {out['validate_score']} fix {out['fix_score']} "
+print(f"{p.name}: suite {out['suite_score']} gen {out['generate_score']} val {out['validate_score']} fix {out['fix_score']} rw {out['generate_rw_score']} "
       f"(was {res.get('suite_score')}/{res.get('generate_score')}/{res.get('validate_score')}/{res.get('fix_score')}), judge errors {errs}")

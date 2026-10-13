@@ -1,0 +1,577 @@
+{
+  "method": "normalised word 5-gram exact Jaccard; full prompt and business prose",
+  "threshold": 0.5,
+  "prior_records": 1235,
+  "sources": [
+    {
+      "path": "resources/ctl2_test_suite_v4.json",
+      "records": 43,
+      "sha256": "fdaf4e75c5ab922d265dd597dce787c1eff7e005cbe8f34b565145057325d274"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_fix_to_spec.json",
+      "records": 28,
+      "sha256": "f0f6e9fe1328ee83597f291d3aa80096533235d561c7c0c561c526d8708c383d"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_httpconnector_requests.json",
+      "records": 6,
+      "sha256": "a693551f39154f795a46c52df0cf97c2df796d0cb763daa75598a797a71de02a"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_isnull_isNull_thinking.json",
+      "records": 32,
+      "sha256": "a061a00060d031582cd13496e2d20594f6f813b0ecc1998db4d80ecbded6d6c0"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_multibug_validate_thinking.json",
+      "records": 42,
+      "sha256": "3c574e2e4442b5998603fe774d41fb63278769e67772e3f05008e2fc6e309004"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+      "records": 495,
+      "sha256": "3705f1bc30607a8cd224890cf434b39755c529230aa069d8b19d7dcdc5fb34a3"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2_agent_authored_20_fewshot.json",
+      "records": 20,
+      "sha256": "f5188ed82a293c0ec6fc36684e2414e1e6e06af6bac75ad7a5cfe3d883ac2e8c"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_rollup_per_record_new.json",
+      "records": 26,
+      "sha256": "2c46f704334397540352890a2fa7a17945e05ad3f45fca8f128f7e3e1d8f79ad"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_rollup_update_transform_examples.json",
+      "records": 22,
+      "sha256": "55b95bc4867da81a0e1655eea1993afc028c3f7f9422034243d28f87db56357d"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_sft_misc_new_think.json",
+      "records": 33,
+      "sha256": "8e9cb6e1e537c8f65170aabb60f584bbbf4a26f07c8b048756bc2cd2eb2527b3"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_small_thinking_examples.json",
+      "records": 62,
+      "sha256": "4859932eb32f3ff0f25a8268c7bbd98cd54993024bc111fbe101086058fc0763"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+      "records": 236,
+      "sha256": "233c9995cb58417b6f59d3aac872a1324f81ce75173aa4cd7ac886b71e5da2f1"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_validate_examples_think.json",
+      "records": 4,
+      "sha256": "77b69bacefb16416814670ee5f2742bc871d08e7e400a7220851a4350ac25d49"
+    },
+    {
+      "path": "ctl_lora_training/sft_training_data/CTL_LoRAT_validate_thinking.json",
+      "records": 91,
+      "sha256": "623d52c48b1627870dd205a87762d1923cf2c4836c98537e4b215501effe56c9"
+    },
+    {
+      "path": "data/opcd/hard_cases.jsonl",
+      "records": 40,
+      "sha256": "b60c9f74ed31d4eeea0bb4b8a3af33f2e2614316c0f70dc978a4fd82ec730e8b"
+    },
+    {
+      "path": "data/opcd/hard_cases2.jsonl",
+      "records": 15,
+      "sha256": "149cdc03f473c2fa1e7c9123b481a6f8bc8f4f3a8dc28907991d937d151a7476"
+    },
+    {
+      "path": "data/opcd/hard_cases3.jsonl",
+      "records": 40,
+      "sha256": "9172617ca398b81d670ef90257224777b585cf37ad659d83b93dfbb7cc4204df"
+    }
+  ],
+  "missing_inputs": [
+    "data/genbench/tasks.jsonl"
+  ],
+  "suite_sha256": "a2d3b7356bc7cbec65a1fba78851d74d81cc3c2e7e46e4e9b02cb6711651290d",
+  "exact_matches": [],
+  "max_external_jaccard": 0.020787746170678335,
+  "tests": [
+    {
+      "test_id": "T44",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.013157894736842105,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+          "id": "tthinkinac_58"
+        },
+        "business_prose": {
+          "jaccard": 0.013186813186813187,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_250"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T45",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.013157894736842105,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+          "id": "tthinkinac_58"
+        },
+        "business_prose": {
+          "jaccard": 0.013186813186813187,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_250"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T46",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.013157894736842105,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+          "id": "tthinkinac_58"
+        },
+        "business_prose": {
+          "jaccard": 0.013186813186813187,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_250"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T47",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.015945330296127564,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.0110803324099723,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T48",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.015945330296127564,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.0110803324099723,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T49",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.015945330296127564,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.0110803324099723,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T50",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.01818181818181818,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.011627906976744186,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_70"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T51",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.01818181818181818,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.011627906976744186,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_70"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T52",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.01818181818181818,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.011627906976744186,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_70"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T53",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.014211886304909561,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+          "id": "tthinkinac_126"
+        },
+        "business_prose": {
+          "jaccard": 0.008869179600886918,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_250"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T54",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.014248704663212436,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+          "id": "tthinkinac_126"
+        },
+        "business_prose": {
+          "jaccard": 0.008908685968819599,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_250"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T55",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.014211886304909561,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+          "id": "tthinkinac_126"
+        },
+        "business_prose": {
+          "jaccard": 0.008869179600886918,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_250"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T56",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.017878426698450536,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.010309278350515464,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T57",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.017878426698450536,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.010309278350515464,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T58",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.017878426698450536,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.010309278350515464,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T59",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.014213197969543147,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.011450381679389313,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_250"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T60",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.014213197969543147,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.011450381679389313,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_250"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T61",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.014213197969543147,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.011450381679389313,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_250"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T62",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.01287128712871287,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_15"
+        },
+        "business_prose": {
+          "jaccard": 0.012448132780082987,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_4"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T63",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.012584704743465635,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_15"
+        },
+        "business_prose": {
+          "jaccard": 0.011881188118811881,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_4"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T64",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.020787746170678335,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.00851063829787234,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T65",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.020787746170678335,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.00851063829787234,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T66",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.017543859649122806,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.0015037593984962407,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_09"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T67",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.017543859649122806,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_11"
+        },
+        "business_prose": {
+          "jaccard": 0.0015037593984962407,
+          "source": "data/opcd/hard_cases2.jsonl",
+          "id": "opcd_hard2_09"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T68",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.013978494623655914,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+          "id": "tthinkinac_58"
+        },
+        "business_prose": {
+          "jaccard": 0.0091324200913242,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T69",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.013978494623655914,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+          "id": "tthinkinac_58"
+        },
+        "business_prose": {
+          "jaccard": 0.0091324200913242,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T70",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.01741654571843251,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_91"
+        },
+        "business_prose": {
+          "jaccard": 0
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T71",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.01741654571843251,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_91"
+        },
+        "business_prose": {
+          "jaccard": 0
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T72",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.012865497076023392,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+          "id": "tthinkinac_126"
+        },
+        "business_prose": {
+          "jaccard": 0.007952286282306162,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    },
+    {
+      "test_id": "T73",
+      "nearest": {
+        "full_prompt": {
+          "jaccard": 0.012865497076023392,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_thinking.json",
+          "id": "tthinkinac_126"
+        },
+        "business_prose": {
+          "jaccard": 0.007952286282306162,
+          "source": "ctl_lora_training/sft_training_data/CTL_LoRAT_reasoning_v2.json",
+          "id": "treasoniae_81"
+        }
+      },
+      "exact_matches": []
+    }
+  ],
+  "coverage_complete": false
+}
