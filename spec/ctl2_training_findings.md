@@ -9,12 +9,17 @@ sample counts changed over time, so check which era a number comes from:
 | §1–§3.15 | 38 tests (v4); 40 from `fix3` on (T39/T40, the `fix` type) | gpt-5.6-terra | mean of 3 runs |
 | §3.18 (09-29 – 10-05) | 43 tests (5 fix tests: T39–T43), frozen snapshots `results/eval_snapshot_20261001` / `_20261003` | gpt-6-sol | n=5 per test; fix n=20 |
 | §3.16, §3.19 (from 10-06) | snapshot `_20261003` | gpt-6-sol, then gpt-6.1-sol from 10-09 (§4.6) | n=5; fix and T40/T42 n=20; thinking-off validate 9 reps from §4.7 |
+| §3.21 (10-14) | suite v5 gap tests T44 T46 T57 T60–T63 T67 T73 n10 + 12 held-out gap prompts; the c4 gates as in §3.19 | gpt-6.1-sol | n=10 (gap tests), n=4–14 (holdout), gates as §4.7 |
 | §3.20 (10-13) | suite v5 = v4 + 30 real-world generate tests T44–T73, scored apart as `generate_rw`; snapshot `_20261013` | gpt-6.1-sol | n=5 on all 30, then n=10 more on 21 discriminating tests (n=15 pooled) |
 
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-13 with suite v5 (§3.20: 30 real-world generate tests, every reference run in a real graph; rb1006, c4
+Last updated 2026-10-14 with OPCD c9 (§3.21: a teacher with the CloverDX component guide in its prompt, on new generate
+prompts for four of the shared gaps; thinking-off suite v5 gap tests 0.574 → 0.691 and every c4 gate passes, but
+thinking-on SCD answers regress −0.19 — longer thinking that hits the token limit, and weaker completed answers).
+
+Earlier update, 2026-10-13, with suite v5 (§3.20: 30 real-world generate tests, every reference run in a real graph; rb1006, c4
 and c7 tie on them within ±0.025 at n=15; shared weak spots are DataIntersection, dictionary state, Rollup per-record
 emit and multi-check validation without thinking), the corrected DataIntersection contract and run-verified runtime facts
 (§7, `ctl2-basics.md` §8.9 and §13.3), and the decision to keep c4.
@@ -1450,6 +1455,71 @@ per-record emit or the stateful Partition. These are corpus gaps, not effects of
 - `test.py` and `rejudge_results.py` report `generate_rw` separately; `self_distill.SUITE_FILES` excludes v5.
 - Results: `results/results_qwen38_v5rw2*` (n=5) and `results_qwen38_v5rw2n10*` (n=10 on the 21 tests).
 
+### 3.21 OPCD c9: a component-guide teacher closes most of the thinking-off generate gaps
+
+**Why.** Suite v5 (§3.20) found generate gaps that every variant shares. A brief (`spec/opcd_generate_gaps_brief.md`,
+fixed in `_fix_brief.md`) had an agent write 120 run-verified generate prompts, 20 for each of six gaps. The first
+delivery was templated, with garbled clauses and trap giveaways; the rebuild fixed the text, though the prompts within
+a gap still share 2–4 solution skeletons (references 81–95% alike with field names masked).
+
+**Teacher check first** (`data/opcd/build_teacher_check.py`; 36 prompts × 4, both modes). A teacher with the CloverDX
+component guide (`component_get_guide`: contract, examples, common mistakes; the dictionary guide for G1) plus
+`ctl2-basics.md` §13.3 in its system prompt, against plain c4:
+
+| gap | thinking off | thinking on |
+|---|---|---|
+| G1 dictionary state | +0.28 | +0.40 |
+| G3 stateful routing | +0.18 | +0.04 (c4 already 0.93) |
+| G4 SCD versioning | +0.18 | +0.18 |
+| G6 UTC calendars | +0.22 | +0.25 |
+| G2 Rollup per-record + group emit | −0.04 | −0.06 |
+| G5 multi-check validation | +0.06 | −0.03 |
+
+The numbers are for the OPCD teacher itself: rb1006 with the adapter disabled and rulev3 + guide + §13.3 (c4 + guide
+gave the same picture). Without rulev3 the base would re-teach the declaration belief c4 removed. **G2 and G5 are not
+knowledge gaps:** with thinking on, c4 already scores 0.91 and 0.87, and the guide does not help it apply the knowledge
+without thinking. They were left out.
+
+**Run c9** (`configs/opcd_c9.yaml`, `data/opcd/build_c9.py`): from c4 round 15, 20 rounds. The 68 G1/G3/G4/G6
+prompts (12 held out) train in both modes, each scored by its component's teacher (`opcd.py`: per-prompt `teacher`
+and `mode`); hard-case sets 1–2 and replay 0.4 as in c4. Gap KL per token fell 0.05 → 0.016; replay KL stayed near 0.
+
+**Result** (vLLM, gpt-6.1-sol):
+
+| measure | c4 | c9 |
+|---|---|---|
+| suite v5 gap tests, thinking off (9 tests, n10) | 0.574 | **0.691** |
+| suite v5 gap tests, thinking on | 0.850 | 0.835 |
+| held-out gap prompts, thinking off (12 × 4) | 0.370 | **0.518** |
+| held-out gap prompts, thinking on | 0.652 | 0.712 |
+| validate, thinking off, 9 reps (WRONG) | 0.877 (8.2%) | 0.882 (**6.5%**) |
+| validate / fix / generate (v4), thinking on | 0.791 / 0.848 / 0.965 | 0.843 / 0.826 / 0.972 |
+| T40 + T42 false fixes (n20 each) | 4/40 | 3/40 |
+| hard sets 1 / 2 (declaration belief) | 0/160, 4/60 | 2/160, 5/60 |
+
+- **Thinking off is where it works.** On the suite tests, which were never trained on: T63 fiscal Rollup +0.22, T60 SCD
+  +0.20, T61 carried state +0.18, T46 onboarding +0.17, T73 dictionary +0.17. Some gains are outside the trained gaps
+  (T46 multi-check), so part of it is general. Every gap improved on the held-out prompts.
+- **Every c4 gate holds.** Thinking-off validate WRONG went down, fix stays within −0.03, T40/T42 and the hard sets are
+  within noise.
+- **Thinking on is mixed.** Confirmation reruns:
+  - suite T57 / T61 at n20: −0.03 / −0.10, pooled −0.06 [−0.20, +0.08], not significant;
+  - G4 SCD held-out prompts at n14: **−0.19 [−0.29, −0.10], real.** Half of it is length: c9 thinks about 20% longer on
+    these tasks (median 43k vs 36k characters) and 9 of 42 answers hit the 16k-token limit (c4: 1 of 42). The other
+    half is quality: completed answers score 0.49 against 0.59. On the other gaps c9's median thinking length equals
+    c4's, with a longer tail.
+
+**Status:** c9 is the candidate successor to c4 for thinking-off generation; adopting it is the owner's call (§6). A
+follow-up should keep the thinking-off gain without the thinking-on SCD loss, for example by training the G4 prompts
+thinking-off only, or raising the sampling cap above 6,144 tokens so thinking-on samples are not trained as truncated
+prefixes.
+
+**Practical notes:**
+- Adapter `data/opcd/c9/round_019/adapter` (gitignored), `adapter_vllm` for vLLM. `scripts/opcd_c9_run.sh` trains on
+  GPU 1 with the sampler on GPU 3 (about 3.5 h), then runs all the evaluations above (about 1.5 h).
+- Teacher configs: `configs/opcd_c9_teachers/`; prompts `data/opcd/generate_gaps_c9.jsonl`, holdout
+  `generate_gaps_c9_holdout.json`; result files `results/results_qwen38_{gapho,v5gaps,confirm_*}_{c4,c9}_*`.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number
@@ -1746,6 +1816,10 @@ There are two ways to get the c4 adapter:
 `opcd.py export --round N` merges an adapter into a full model for HF. vLLM serves the adapter
 directly.
 
+**Optional step 3b — c9** (§3.21): continue from c4 with `configs/opcd_c9.yaml` (component-guide teachers for the
+generate gaps; `scripts/opcd_c9_run.sh`). It improves thinking-off generation and keeps every c4 gate, but costs
+thinking-on SCD answers; whether it replaces c4 is open (§6).
+
 ### Step 4 — evaluate
 
 - Use the vLLM path (§4.7): `test.py` `mut.mode: vllm`, `--workers 32`.
@@ -1846,7 +1920,19 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 ## 6. Open questions, in priority order
 
-> **2026-10-13 — current front (§3.20).**
+> **2026-10-14 — current front (§3.21).**
+>
+> F. **Adopt c9?** It wins thinking-off generate (suite v5 gap tests 0.574 → 0.691) and passes every c4 gate, but loses
+>    −0.19 on thinking-on SCD (G4) answers. Options: adopt c9 as is (generate thinking off, or accept the SCD cost); or
+>    run c10 = c9's recipe with G4 trained thinking-off only and a higher sampling cap, then decide.
+>
+> G. **G2 (Rollup per-record + group emit) and G5 (multi-check validation without thinking)** are not knowledge gaps,
+>    so a guide teacher does not help. Candidate: distil c4's own correct thinking-on answers into thinking-off answers.
+>
+> H. **The gap prompt set still has 2–4 solution skeletons per gap** (§3.21). A more varied set (fewer, individually
+>    written prompts) may transfer better; measure on the suite, not on the training prompts.
+
+> **2026-10-13 front (§3.20).**
 >
 > A. ~~Ship decision c4 or c7~~ **Decided: c4** (owner, 2026-10-13). Generate does not separate them (§3.20).
 >
