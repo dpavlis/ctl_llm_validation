@@ -1,0 +1,16 @@
+{
+ "holdout": [
+  "opcd_gen_G1_03",
+  "opcd_gen_G1_09",
+  "opcd_gen_G1_15",
+  "opcd_gen_G3_03",
+  "opcd_gen_G3_09",
+  "opcd_gen_G3_15",
+  "opcd_gen_G4_03",
+  "opcd_gen_G4_09",
+  "opcd_gen_G4_15",
+  "opcd_gen_G6_03",
+  "opcd_gen_G6_09",
+  "opcd_gen_G6_15"
+ ]
+}

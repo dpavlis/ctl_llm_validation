@@ -1,0 +1,290 @@
+{
+  "status": "verified",
+  "date": "2026-10-13",
+  "records": 120,
+  "gap_counts": {
+    "G1": 20,
+    "G2": 20,
+    "G3": 20,
+    "G4": 20,
+    "G5": 20,
+    "G6": 20
+  },
+  "sandbox": "MiscExamples",
+  "server": "virt-ai:8083",
+  "server_folder": "opcd_gaps/",
+  "probes": [
+    {
+      "gap": "G1",
+      "id": "opcd_gen_G1_07",
+      "behavior": "Typed dictionary acceptance-only mutation and genuine empty-string setup.",
+      "verified": true,
+      "run_ids": [
+        18450,
+        18512
+      ],
+      "evidence": "generate_gaps_runs/cases/opcd_gen_G1_07/comparison.json"
+    },
+    {
+      "gap": "G2",
+      "id": "opcd_gen_G2_06",
+      "behavior": "Multiple per-record emissions plus one completed-group emission; loop termination and independent group state.",
+      "verified": true,
+      "run_ids": [
+        18406,
+        18584
+      ],
+      "evidence": "generate_gaps_runs/cases/opcd_gen_G2_06/comparison.json"
+    },
+    {
+      "gap": "G3",
+      "id": "opcd_gen_G3_08",
+      "behavior": "Zero heartbeat retains positive timestamp anchor; exact millisecond boundary.",
+      "verified": true,
+      "run_ids": [
+        18489,
+        18564,
+        18648
+      ],
+      "evidence": "generate_gaps_runs/cases/opcd_gen_G3_08/comparison.json"
+    },
+    {
+      "gap": "G4",
+      "id": "opcd_gen_G4_07",
+      "behavior": "One sequence value per OPEN; closure uses original payload and UTC day arithmetic.",
+      "verified": true,
+      "run_ids": [
+        18417,
+        18634
+      ],
+      "evidence": "generate_gaps_runs/cases/opcd_gen_G4_07/comparison.json"
+    },
+    {
+      "gap": "G5",
+      "id": "opcd_gen_G5_18",
+      "behavior": "Unchanged Partition source records with ordered complete log diagnostics.",
+      "verified": true,
+      "run_ids": [
+        18525,
+        18692
+      ],
+      "evidence": "generate_gaps_runs/cases/opcd_gen_G5_18/comparison.json"
+    },
+    {
+      "gap": "G6",
+      "id": "opcd_gen_G6_15",
+      "behavior": "First non-null timestamp anchors a group even on unusable numeric content.",
+      "verified": true,
+      "run_ids": [
+        18465,
+        18615
+      ],
+      "evidence": "generate_gaps_runs/cases/opcd_gen_G6_15/comparison.json"
+    },
+    {
+      "gap": "G5",
+      "id": "opcd_probe_G5_split",
+      "behavior": "Leading/interior zero-length split elements retained, trailing zero-length elements removed, all-comma list empty.",
+      "verified": true,
+      "run_ids": [
+        18598
+      ],
+      "evidence": "generate_gaps_runs/cases/opcd_probe_G5_split/result.json"
+    },
+    {
+      "gap": "G6",
+      "id": "opcd_probe_G6_dst",
+      "behavior": "Calendar-day arithmetic follows host DST; fixed milliseconds preserve UTC day boundaries.",
+      "verified": true,
+      "run_ids": [
+        18244
+      ],
+      "evidence": "generate_gaps_runs/cases/opcd_probe_G6_dst/result.json"
+    }
+  ],
+  "unrun": [],
+  "blocked": [],
+  "reference_runs": 120,
+  "oracle_policy": "Expected fixtures authored separately from CTL and fixed before execution; all fields and output order compared.",
+  "sources": {
+    "sources/resources/ctl2_test_suite_v4.json": "fdaf4e75c5ab922d265dd597dce787c1eff7e005cbe8f34b565145057325d274",
+    "sources/resources/ctl2_test_suite_v5.json": "f403bbf9c3464e767ecd3d7be4dfe32316a817d2505f0a83a87627c845f9a604",
+    "sources/resources/ctl2-basics.md": "6357bdd8dced257e57cb7a95b27e7fcd59389d7ff0950b8d3e68582b4bd2227a",
+    "sources/spec/ctl2_training_findings.md": "44f5e32a7430b6d0dc21fe90c6f19008d15193fd17f21234127fd256bd10ccc6",
+    "sources/spec/opcd_generate_gaps_fix_brief.md": "a10d4fb9f576f5094025cd19a97ca24a267491f096f4c2e6d2136a413ccf5fd5",
+    "sources/spec/suite_generate_rw_brief.md": "5798b2e30d30e82d6f756777f2235f36cbac7baff97cf6f97b12b461f3df7fa0",
+    "sources/spec/suite_generate_rw2_brief.md": "599c45fced96aa956eebdb32008d1abffbd66ea919a131f0d4789af2ffcaad05",
+    "sources/spec/opcd_generate_gaps_brief.md": "8e35df9ad27cc874117e9b16a497575078981951d88983fdcc6f982ee81be75a",
+    "sources/data/suite_v5/round2/workspace_parameters.json": "fa6c9f08eab60e5497bbd8270e3d72f02d54799b5a27170e3a297e76e6d62525",
+    "sources/data/suite_v5/round2/extra_manifests.json": "7ce0c9397e225372e510b67a64e8b6a128db421d8b6a238a6cfb8b56b82a1c05",
+    "sources/data/suite_v5/round2/knowledge_resources.json": "1c24eb5dfaa89448bace8e844fc861fd5e1cbd250e5352e5e9f14886b00fcae2",
+    "sources/data/suite_v5/round2/shard_t44_t53.json": "18465aeb8d822d3eda1cc1c11e2012755eaae79b604ef7f61aec2817e0a4c356",
+    "sources/data/suite_v5/round2/stop_probe_results.json": "9cfcadd33fe6e4b477e3d093adca4002cab8b2d33ef64ad8bec74670f8a2cf66",
+    "sources/data/suite_v5/round2/component_guides.json": "e597d6b7c0b48616094ca082fe41d03706a112351e87054b26217b77b8376370",
+    "sources/data/suite_v5/round2/shard_t54_t63.json": "c2c48d9a9c4e503b37ebf7d6a167c129eec78e3ef55e2d7d9378f4b562cacc00",
+    "sources/data/suite_v5/round2/lookup_dictionary_results.json": "a6e27b62322c39e7f7ec32ee24f82cd825f629e2b8e476560f56934f9bcc0f82",
+    "sources/data/suite_v5/round2/lookup_search.json": "8f67f330d026f71556b37768c0a1facc1dc45b0b99ab5665e8166c45c0fcb44f",
+    "sources/data/suite_v5/round2/DATA_GENERATOR_guide.json": "bf46b78f104c089049cfb371a3eadcfcd62b0c581d2a2f9e525505a29e8ed43f",
+    "sources/data/suite_v5/round2/DATA_INTERSECTION_info.json": "814aa0533db74d688c6cfcd56f30f18fd4816ae904d2dba368ea4f09bada16cc",
+    "sources/data/suite_v5/round2/NORMALIZER_guide.json": "9138a8a2e54d6b61297d2648c820c1177a97d779cf8b47f88bfa2b1c69e101d7",
+    "sources/data/suite_v5/round2/tool_schemas.json": "412c9268b6fde7d9d5de9df5e30a3470b06c672cbf6e22e1491bfa2a28359a82",
+    "sources/data/suite_v5/round2/t63_readback_requests.json": "b7d14864f9f7d9bb1b5fccff9cea51358e69184dcd43b58029b64da7c54c2625",
+    "sources/data/suite_v5/round2/PARTITION_info.json": "20bba217e3fb0395a787ec8b4f54a9560b28f26b3c2fac302ab0386e43101875",
+    "sources/data/suite_v5/round2/review_t64_t73.json": "665baeae9f310072ea7d5f7c5cbbeed235690e68fb0434096c4dbdc1a96ab719",
+    "sources/data/suite_v5/round2/lookup_dictionary_requests.json": "56c8daf21738a31ec95ac93579b66f3d92b68a492c7d5cc48ae1cd72d046423d",
+    "sources/data/suite_v5/round2/t63_compile_request.json": "45f9067cc092d11e01b35e90828775ffd7afbfa93e70a402838ab42ef0456240",
+    "sources/data/suite_v5/round2/review_extra_t44_t53.json": "8664a6034951c6c6c97117d03bb19bebb9aace19f27379871835b56ea4f1715a",
+    "sources/data/suite_v5/round2/readback_requests.json": "2942d72f9e3786027e0357f1a3adf81ff8c084b952f489fd0038831f54137cfc",
+    "sources/data/suite_v5/round2/extra_run_results.json": "d05f37b50643ed31654cc2bd10a516573167b6b7ae644158dd026664fb5327da",
+    "sources/data/suite_v5/round2/DENORMALIZER_guide.json": "68da14d7fbadd7f62716f89e111b8d94dcb8c143c8e505979de57455315eb9a6",
+    "sources/data/suite_v5/round2/initial_runtime_probe_results.json": "7e09e72c891bc2f1275bfd658fccc9b1ccd90972f68cd71ebed095541942ff52",
+    "sources/data/suite_v5/round2/graph_xml_reference.json": "f2e49240c4af16b7cb9be53c38be7484700b65f06db549f0f3b2d392564ee482",
+    "sources/data/suite_v5/round2/main_manifests.json": "c56da6eff341dfaa9da0fc0462971ecc6fea940932d49c285d69f1f8597b2531",
+    "sources/data/suite_v5/round2/DENORMALIZER_info.json": "b8b37512767a8c63268e2f21e68373cd727d8b330d73d137d56a427542e5c7f9",
+    "sources/data/suite_v5/round2/lookup_guide.json": "bce33b1c81cd452cb04eed4d59f8145bf59a9bf698a4d2e447ec0c1d30022275",
+    "sources/data/suite_v5/round2/extra_research_requests.json": "abddbc8bdd1819dcb8aa135fa967354e56b9d10f3a71b1661ab3f6499c14ce53",
+    "sources/data/suite_v5/round2/final_graph_specs.json": "e4b1427710a76f28b4b83fea0aedc30ed0c6af49cf427a01e6461e205f594507",
+    "sources/data/suite_v5/round2/EXT_MERGE_JOIN_info.json": "74cd5d6dd16257911224ccf27d2586d8f3cb93705a42705647fb28b43987c737",
+    "sources/data/suite_v5/round2/rubric_rewrite_T44_T53.json": "9fef90e839388237c3dcb294e474b1fdd08eeb7cc1356ae4ff5c4a24f7121b2d",
+    "sources/data/suite_v5/round2/rubric_rewrite_T54_T63.json": "08a14646fd656c98bf54e5078d7fdf988a5c24bf76cb519be8ef19b7a44f60de",
+    "sources/data/suite_v5/round2/dictionary_search.json": "c1dc1e97e8f9d9a2a7375a27f1916861671b73bf9aa28b10cf82b3f9784edd77",
+    "sources/data/suite_v5/round2/extra_research_results.json": "cf615314b6b77e6730264d6c3bf05ec609ea29a2a22ea2e6d46250ef94fc916d",
+    "sources/data/suite_v5/round2/rubric_rewrite_rules.md": "1e86791a4065c0543b0df48f2b1e12e9f4bdbcc5cb670cad3de188029a936a27",
+    "sources/data/suite_v5/round2/shard_t64_t73.json": "f6e034a661884af48cd34330f15daa4094a4b4d25ee99fc84e052f5f1391e6a0",
+    "sources/data/suite_v5/round2/NORMALIZER_info.json": "eaa67b10f0a915762a23294d81e2d918cec0a4445a4fc90df93d52ec50c7a45e",
+    "sources/data/suite_v5/round2/DATA_READER_info.json": "3a367300c269f43faed0fd34b1a2ae3d871940012831d3ec2f25725a75cbf72f",
+    "sources/data/suite_v5/round2/ctl2_reference.json": "832913a7d20c16089505bea9849657480ad5bf6605847f80dc2a82ffe1b2e52d",
+    "sources/data/suite_v5/round2/DATA_INTERSECTION_guide.json": "6914af7c5f77650438d10853538df4200537fa33433847a512cb75b801417322",
+    "sources/data/suite_v5/round2/t63_compile_response.json": "1b4148a6a0279fe8c75a3c37d0029d652f3bc698789c5cba2dcc05b26adbea5c",
+    "sources/data/suite_v5/round2/EXT_MERGE_JOIN_guide.json": "e8f9135edacd39babd280d68363a7856d2d83d4d4f831a428ef0584b6a53d4d4",
+    "sources/data/suite_v5/round2/research_requests.json": "90faa72a93b52505eca90d2b0756bf46ea5d16e0686a5f1657c0b44b1e305ea3",
+    "sources/data/suite_v5/round2/task_workflow_get.json": "0ca8ee377a40fdcf75d4d23ee69a5e8f560a954d84ada2bb25054c6da65bc47d",
+    "sources/data/suite_v5/round2/PARTITION_guide.json": "7f22fb9f72e48a9e9f72e31340554ce298f9cd1e06c633db9226760046929b13",
+    "sources/data/suite_v5/round2/review_t44_t53.json": "78606f0b87f47d3dd0e9d38040056c06ee769552cffcd2739587f167540eccb5",
+    "sources/data/suite_v5/round2/provisional_suite.json": "a6148e8befd008c09a3cbfd16b29639fc099f8cf2ebf47ea43be2c63deb60ade",
+    "sources/data/suite_v5/round2/readback_verification.json": "368d5afa3b668b8e8320e4f107d1c9fdbffd50cbb863ba8827d8b70da685d700",
+    "sources/data/suite_v5/round2/runtime_probe_results.json": "914847ba780b9d18e4a7749c439e563c2b8fdba928fa4a4fdecc2ee84c044981",
+    "sources/data/suite_v5/round2/review_t54_t63.json": "87623790bf8489a3c7e415efeabc6467af2a7dd1358f4b34dfa3a9714e424128",
+    "sources/data/suite_v5/round2/DATA_WRITER_guide.json": "c38da54555e2227d7c367ab44a91e56227c010407b00e2d7e457a4787b83dd92",
+    "sources/data/suite_v5/round2/stop_probe_manifest.json": "78237448c8b752b272f345a64ae1ae05f7c8cffd0bc8a0fffb4304031082b42b",
+    "sources/data/suite_v5/round2/REFORMAT_info.json": "e14149baf49585334e8493acb08d8b600c38fd10f38d566c3b8d0844199b34c3",
+    "sources/data/suite_v5/round2/probe_manifests.json": "d609a18a7f58d46cf89ad0f128dc0f719f5f82ef8373285fdf44b28a50fafa4c",
+    "sources/data/suite_v5/round2/retry_manifests.json": "8b70ea6b72b43ac80f198a7e092a9a04e7b12a0604f677309efe6c8b6fddcf4f",
+    "sources/data/suite_v5/round2/research_results.json": "a37263e140430b1bab9d274791950c831382ee1aa1e98e72c6c422400d414c9f",
+    "sources/data/suite_v5/round2/DATA_READER_guide.json": "783805d18805a8b5dc6e0e2041eed124736812bcc8e3dc30eb53f899df934c12",
+    "sources/data/suite_v5/round2/dictionary_guide.json": "7a03fd7b5f13a71e3b9cf616a8e954e97ae15f2522ed1544859bb523bf8cb62d",
+    "sources/data/suite_v5/round2/ROLLUP_info.json": "41f0c31b0bd8ad651a9f5f1bcfbbd6b266a34e336a92a0af4c3f410a087eab8d",
+    "sources/data/suite_v5/round2/DATA_GENERATOR_info.json": "bb35d753b6bb721c7fc6e76fb231cbcc9365cff7ef4f7130623ea24e669c9549",
+    "sources/data/suite_v5/round2/ROLLUP_guide.json": "4fe22f7106a0da4e6f9a7ddafaaa79cac444ffcc9307fadce9ee1a431d7e1bad",
+    "sources/data/suite_v5/round2/REFORMAT_guide.json": "2a1c990f0399d53cb06736ca817fce198bfd06ccc4eae2539a13ca2aea275847",
+    "sources/data/suite_v5/round2/compile_responses.json": "4ac808faaf3b801903c5adbe453be18933d8fb71ee6805f8e1f78eeb3c92fb64",
+    "sources/data/suite_v5/round2/rubric_rewrite_T64_T73.json": "ff13bad2937b21071e302c8e519cf6d7f3eca66bd590cb569ef475007600d948",
+    "sources/data/suite_v5/round2/readback_results.json": "4b1640e85c5afd98aa9b2854cfa92c3bbe751dd228aad4145888c36cb5dde2d1",
+    "sources/data/suite_v5/round2/DATA_WRITER_info.json": "0609db72dfffde97b34f1b147797dd14fe9a381c5cde05fd790dfe12421bd8c4",
+    "sources/data/suite_v5/round2/compile_requests.json": "56424e735ce43e96a2a4bd54e7b77f64f39cb1286acf72a0b8089430e6ab4a89",
+    "sources/data/suite_v5/round2/t63_readback_results.json": "aaebe3db27eb2054d634ca6350a31834e9565b22b43387db8e3a93f597f87724",
+    "sources/data/suite_v5/round2/sandbox_list.json": "83b1f1a9b3e13b2ec79e6e3d288f325a85041065ce50c1212a2b56eb3e2be1aa"
+  },
+  "scope": "Dataset authoring and graph verification. Internal tracking, teacher scoring and model training are outside this delivery.",
+  "revision": "round2_individually_authored_rebuild",
+  "diversity": {
+    "G1": {
+      "maximum": 0.08423326133909287,
+      "average": 0.040336620886830814,
+      "violations": []
+    },
+    "G2": {
+      "maximum": 0.09151785714285714,
+      "average": 0.06225170466413501,
+      "violations": []
+    },
+    "G3": {
+      "maximum": 0.07568807339449542,
+      "average": 0.04019844267946644,
+      "violations": []
+    },
+    "G4": {
+      "maximum": 0.07733812949640288,
+      "average": 0.04394601997453716,
+      "violations": []
+    },
+    "G5": {
+      "maximum": 0.08986615678776291,
+      "average": 0.05211551333785751,
+      "violations": []
+    },
+    "G6": {
+      "maximum": 0.12200956937799043,
+      "average": 0.05425407677349889,
+      "violations": []
+    }
+  },
+  "text_checks": "generate_gaps_runs/round2/text_checks.json",
+  "rubric_alternative_checks": "generate_gaps_runs/round2/alternative_checks.json",
+  "independent_review": {
+    "report": "generate_gaps_runs/round2/independent/final_independent_review.json",
+    "checks": "generate_gaps_runs/round2/independent_checks.json",
+    "prompts": 18,
+    "per_gap": 3,
+    "generator_reference_fixture_access": false,
+    "runtime_verified": true
+  },
+  "generator_reproducibility": {
+    "passed": true,
+    "regenerated_files": {
+      "shard_G4_G5.json": "66e15789ddb703e2a1e0979123116faf6d9839aab2d1c41ae22b335fa73424af",
+      "shard_G2_G6.json": "9efd2dcfef5c31882d2f950a628ebe3e58fa6dac99738b7befb9c0eb1e5139d6",
+      "shard_G1_G3.json": "7b0a2f831843df64c163c22bff319694ca2fc52ca3599d0db5e07d887766e473",
+      "g1_g3/author_review.json": "82284a0049541bbadabd4a3524c87f2e332ed34e030cd5bdb84f25005ee2dae7",
+      "g2_g6/alternative_acceptance_matrix.json": "6aa1955134ad284beb6a74ddd29a4be9c6b99188cf2719ce3f9d163fca31ab3f",
+      "g4_g5/alternative_acceptance_matrix.json": "4d79c0528fd77aa1b32162e2a588bef225a33b92ff9513867cb2a5f61b7091d3"
+    },
+    "generator_sources": {
+      "g1_g3/scenarios.py": "74fd4af845c7537a8c3c78b856cc80d41292d54c5d21b06855db8fd1473af861",
+      "g1_g3/build.py": "e71cea63942623300ab199baa6879461358922f1f1474cfbd5b3a9c1a4ee3d0f",
+      "g1_g3/manual_log_oracles.py": "0e3cf4a28a41dac593b6a6ef1e5fa8c630850cd10ad97471dda2053dabc50b09",
+      "g2_g6/generate.py": "f8f7531d0004d27a7681743ffb07eab9c94d3a2fdde261daf27c2ce1519c9cd3",
+      "g2_g6/cases.py": "eb035060fd68b34a380d7f87d6b0721332808e58b63d8b6c79e4e0d8e869952e",
+      "g2_g6/review.py": "25eba90f103135d4ba41c7109960c626c67905aea132f107c27d9b93ddde678a",
+      "g4_g5/build.py": "939da63b6157fec406c251bf14997c8e142f4e19998dd56c7cfe32e8647552a3",
+      "g4_g5/verify_semantics.py": "1c03992b5d733df2c442dddfa6ecf6ae338b683ecf35603f330c6c93130af443",
+      "g4_g5/review_matrix.py": "0058bb46ee0dbda94cc4421fe93b3ee7b740a36319f6e8d42b10f5d2f809e126",
+      "g4_g5/cases.py": "f1f24390a7468d779be2b69e3aaf4abc167130cf7177fb4276ab7f8445a6e22d"
+    },
+    "mechanism": "120 explicitly authored business scenarios; shared mechanics only; immutable verified algorithm baseline."
+  },
+  "verification": {
+    "primary_graphs": 120,
+    "alternative_graphs": 120,
+    "independent_graphs": 18,
+    "boundary_graphs": 6,
+    "complete_fields_and_order": true,
+    "partition_diagnostics": true,
+    "source_binding": "Compiler source, operational executed graph XML and exact uploaded input bytes checked against final authored fixtures."
+  },
+  "resolved_review_findings": [
+    "Replaced shared business clause templates with120 explicit scenario definitions and domain vocabulary maps.",
+    "Removed trap giveaways, stale component clauses and undefined output labels.",
+    "Fixed duplicate rubric checks, unsigned-grammar leftovers and rubric spacing.",
+    "Defined supplied dictionary configurations and request-number modulo operands.",
+    "Clarified zero-length list boundary policy; independently rederived and reran all7 Normalizer fixtures with leading/interior/trailing/whitespace children.",
+    "Independent developer reconstructed18 complete solutions; all final solutions matched the acceptance oracles.",
+    "Retained failed attempts and round1 evidence; published artifact paths are checked recursively."
+  ],
+  "runtime_facts": "generate_gaps_runs/runtime_facts.md",
+  "run_evidence_root": "generate_gaps_runs/cases/",
+  "round1_evidence_archive": "generate_gaps_runs/round2/baseline/run_evidence.tar.gz",
+  "generator_entrypoint": "generate_gaps_runs/round2/rebuild.py",
+  "checks": {
+    "text": true,
+    "alternative_matrices": true,
+    "independent": true,
+    "reproducible": true
+  },
+  "delivery": {
+    "local": "data/opcd/",
+    "remote": "virt-ai:/home/pavlisd/llama_train/data/opcd/",
+    "runtime_staging": "virt-ai:/tmp/opcd_gaps_round2_20261013.F4HwzX",
+    "previous_delivery": "Remote prior deliverables archived before mirroring; local complete prior evidence in round2/baseline/."
+  }
+}

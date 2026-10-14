@@ -1,0 +1,31 @@
+{
+ "holdout": [
+  "opcd_hard_03",
+  "opcd_hard_15",
+  "opcd_hard_16",
+  "opcd_hard_23",
+  "opcd_hard_25",
+  "opcd_hard_28",
+  "opcd_hard_29",
+  "opcd_hard_32",
+  "opcd_hard_33",
+  "opcd_hard_38",
+  "opcd_hard2_01",
+  "opcd_hard2_05",
+  "opcd_hard2_06",
+  "opcd_hard2_09",
+  "opcd_gen_G1_03",
+  "opcd_gen_G1_09",
+  "opcd_gen_G1_15",
+  "opcd_gen_G3_03",
+  "opcd_gen_G3_09",
+  "opcd_gen_G3_15",
+  "opcd_gen_G4_03",
+  "opcd_gen_G4_09",
+  "opcd_gen_G4_15",
+  "opcd_gen_G6_03",
+  "opcd_gen_G6_09",
+  "opcd_gen_G6_15"
+ ],
+ "note": "c3 holdout (sets 1-2) + 3 per gap of the c9 generate gaps (G1,G3,G4,G6)"
+}

@@ -1,0 +1,56 @@
+# On-policy context distillation, run c9 (continues c4 from round 15): component-guide teachers for the generate gaps
+# G1 dictionary state, G3 stateful routing, G4 SCD versioning, G6 UTC calendars (spec/opcd_generate_gaps_brief.md, findings §3.20).
+# student: rb1006 + LoRA, plain system prompt. teacher: rb1006 (adapter disabled) with, per gap prompt, rulev3 + the CloverDX
+# component guide (G1 also the dictionary guide) + ctl2-basics §13.3 (data/opcd/build_c9.py). Teacher check
+# (data/opcd/build_teacher_check.py, c4 + guide): +0.30/+0.41 G1, +0.16/+0.06 G3, +0.12/+0.25 G4, +0.19/+0.25 G6 (off/on);
+# G2 and G5 gained nothing and are left out. The guide also helped thinking-off answers, so gap prompts train in both modes.
+run: c9
+init_adapter: data/opcd/c4/round_015/adapter   # c4: the chosen model (owner, 2026-10-13)
+base_model: /home/pavlisd/exports/qwen38_rb1006_sftdpo
+student: {"on": configs/eval_rb1006_on.yaml, "off": configs/eval_rb1006_off.yaml}
+teacher: {"on": configs/eval_rb1006_rulev3_on.yaml, "off": configs/eval_rb1006_rulev3_off.yaml}   # the c4 rule teacher (hard sets 1-2)
+rule_marker: "Declaration defaults in CTL2"
+modes: {generate: "on", fix: "on", validate: "on"}
+set_modes: {replay: {validate: "off"}}
+set_teacher: {replay: plain}
+teachers:   # one per component; the gap prompts name theirs (generate_gaps_c9.jsonl "teacher")
+  guide_REFORMAT: {"on": configs/opcd_c9_teachers/guide_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_PARTITION: {"on": configs/opcd_c9_teachers/guide_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_DENORMALIZER: {"on": configs/opcd_c9_teachers/guide_DENORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_DENORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_NORMALIZER: {"on": configs/opcd_c9_teachers/guide_NORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_NORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_ROLLUP: {"on": configs/opcd_c9_teachers/guide_ROLLUP_on.yaml, "off": configs/opcd_c9_teachers/guide_ROLLUP_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_REFORMAT: {"on": configs/opcd_c9_teachers/guide_dict_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_PARTITION: {"on": configs/opcd_c9_teachers/guide_dict_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_DATA_GENERATOR: {"on": configs/opcd_c9_teachers/guide_dict_DATA_GENERATOR_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_DATA_GENERATOR_off.yaml, marker: "# Reference: the component you are writing for"}
+
+prompts:
+  target: []
+  hard:
+    - {file: data/opcd/generate_gaps_c9.jsonl, weight: 2, modes: ["on", "off"]}   # 68 gap prompts x both modes
+    - {file: data/opcd/hard_cases.jsonl, weight: 1}    # declaration belief (set 1), keeps c4's behaviour
+    - {file: data/opcd/hard_cases2.jsonl, weight: 1}   # previous-record dates (set 2)
+  hard_holdout: data/opcd/hard_holdout_c9.json        # c3's 14 + 12 gap prompts (3 per gap), never trained
+  probe: {run: dpodef1, split: probe}
+  replay_share: 0.4
+  replay_task_mix: {generate: 0.4, validate: 0.35, fix: 0.25}
+
+lora: {r: 32, alpha: 32, dropout: 0.0, target: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]}
+
+train:
+  seed: 0
+  rounds: 20
+  prompts_per_round: 32
+  k: 2
+  steps_per_round: 2
+  lr: 2.0e-5
+  warmup_steps: 5
+  grad_clip: 1.0
+  adv_clip: null
+  quote_guard: true
+  max_new_tokens: 6144
+  cutoff: 8192                # student prompt + completion; the teacher's guide prompt adds ~4.5k tokens to its scoring pass only
+  logits_chunk: 1024
+
+probe: {n: 20, k: 2, every: 4}
+
+sampler: {url: "http://127.0.0.1:3011", served_model: rb1006, concurrency: 32}

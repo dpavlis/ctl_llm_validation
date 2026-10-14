@@ -71,6 +71,7 @@ def cmd_prepare(cfg: dict) -> None:
     for hf in hard_files:  # a path, or {file: path, weight: n} (drawn n times as often)
         weight = hf.get("weight", 1) if isinstance(hf, dict) else pc.get("hard_weight", 1)
         weight_map = hf.get("weight_by_part") if isinstance(hf, dict) else None  # {part: weight}, e.g. set 3 A/B
+        both = hf.get("modes") if isinstance(hf, dict) else None  # e.g. [on, off]: each prompt once per thinking mode (c9)
         hf = hf["file"] if isinstance(hf, dict) else hf
         if not Path(hf).exists():
             raise SystemExit(f"hard-case file missing: {hf}")
@@ -82,7 +83,10 @@ def cmd_prepare(cfg: dict) -> None:
                 h["user"], _ = sd.with_validate_format(h["user"])
             h.setdefault("record_id", h.get("id"))
             h["weight"] = (weight_map or {}).get(h.get("part"), weight)
-            sets["hard"].append(h)
+            if both:
+                sets["hard"] += [dict(h, mode=m, prompt_id=f"{h['prompt_id']}:{m}") for m in both]
+            else:
+                sets["hard"].append(h)
     if pc.get("contrast"):  # corpus prompts where something really IS null (data/opcd/select_contrast.py)
         sets["contrast"] = sd.read_jsonl(Path(pc["contrast"]))
     sets["probe"] = read_prompts(pc["probe"])
@@ -100,7 +104,7 @@ def cmd_prepare(cfg: dict) -> None:
         cand = [p for p in pool if p["task_type"] == task]
         sets["replay"] += rng.sample(cand, min(len(cand), round(n_replay * share)))
 
-    keep = ("prompt_id", "task_type", "component", "source_file", "record_id", "user", "weight")
+    keep = ("prompt_id", "task_type", "component", "source_file", "record_id", "user", "weight", "teacher", "mode")
     rows = [{**{k: p.get(k) for k in keep}, "set": name} for name, ps in sets.items() for p in ps]
     seen, dedup = set(), []
     for r in rows:  # a prompt in two training sets is trained once
@@ -171,6 +175,8 @@ class Roles:
     def mode(self, p: dict) -> str:
         """Thinking mode for a prompt: `modes` by task, overridden per set by `set_modes`
         (`replay_modes` is the older spelling of set_modes.replay)."""
+        if p.get("mode"):  # a per-prompt mode (hard file with modes: [on, off]); samples carry their mode too
+            return p["mode"]
         sm = dict(self.cfg.get("set_modes") or {})
         sm.setdefault("replay", self.cfg.get("replay_modes") or {})
         return (sm.get(p.get("set")) or {}).get(p["task_type"]) or self.cfg["modes"][p["task_type"]]
@@ -184,6 +190,10 @@ class Roles:
         t = st.get(p.get("set"), "rule")
         t = t.get(p["task_type"], "rule") if isinstance(t, dict) else t
         role = {"plain": "student", "rule": "teacher"}.get(t, t)
+        # a per-prompt teacher (c9: the component-guide teacher of each generate-gap prompt) replaces the rule teacher in
+        # both modes; samples carry their resolved teacher name, so this also holds when it is recomputed from a sample
+        if p.get("teacher") and role == "teacher":
+            return p["teacher"]
         # component_teacher: {COMPONENT: name} swaps the rule teacher for a named one on that component's
         # thinking-on samples (c6: the accumulator teacher on Rollup prompts only, so its extra fact does not
         # dilute the declaration signal elsewhere). Replay and plain-teacher samples are never swapped.

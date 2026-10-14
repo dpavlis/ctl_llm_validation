@@ -1,0 +1,1093 @@
+{
+ "version": "c9-holdout",
+ "description": "OPCD generate-gap teacher check",
+ "judge_system_prompt": "You are an expert CTL2 code reviewer evaluating LLM responses against a rubric.\nFor each test you receive:\n  - The prompt sent to the model\n  - The model's response\n  - The evaluation rubric\n\nScore each required finding as: CAUGHT | MISSED | WRONG (caught but incorrect fix/explanation).\nScore forbidden content as: PRESENT (bad) | ABSENT (good).\nProvide a final verdict: PASS | PARTIAL | FAIL with a brief justification.",
+ "judge_instructions": "For each test, you will receive:\n  1. This test definition (system_prompt, user_message, rubric)\n  2. The model's actual response\n\nEvaluate the response against the rubric:\n  - For GENERATE tests: check each required item as PRESENT | MISSING | WRONG\n  - For VALIDATE tests: check each required finding as CAUGHT | MISSED | WRONG\n  - For VALIDATE tests: check each false-positive trap as TRIGGERED | AVOIDED\n  - Check all forbidden items as ABSENT (good) | PRESENT (bad)\n\nOutput a structured evaluation:\n  FINDINGS: [list each rubric item with its status]\n  FALSE_POSITIVES: [for validate tests — any wrong flags not in rubric]\n  VERDICT: PASS | PARTIAL | FAIL\n  SCORE: N/M (required items met)\n  NOTES: brief justification\n\nFor VALIDATE tests: always cross-check every $out.N.fieldName reference in the candidate code against the output metadata fields declared in the prompt. An assignment to a field that is not declared in the output metadata is a compile-time error in //#CTL2:COMPILE mode and a silent data-loss bug in interpreted mode — it must be flagged as a required finding. Do not assume the model caught it; verify explicitly.\n\nFor VALIDATE tests on Rollup components: the minimum required Rollup lifecycle functions are initGroup, updateGroup, finishGroup, updateTransform, and transform — all five must be defined in the code regardless of runtime control flow. Check for EACH of the five by name and account for every one that is absent; a snippet is frequently missing more than one. Score each missing function as its own required finding: naming one omission does not earn credit for another, and a generic remark such as 'the lifecycle is incomplete' or 'some required functions are missing' earns credit for none of them — the model must name the function it means. Two omissions are especially easy to conflate, so weigh them separately: (a) finishGroup() is the function that gates group output — transform() is invoked for a group only when finishGroup() returns true, so when finishGroup() is absent the group emits NOTHING and everything in transform() is unreachable; this is normally the most consequential omission in a snippet and must never be waved through because transform() itself looks correct. (b) updateTransform() must be defined even when updateGroup() returns false — that return value only means updateTransform() is not INVOKED for the record (the accumulation in updateGroup's body still runs); it does not make DEFINING updateTransform() optional. Omitting either is a missing required function and must be flagged as a required finding, not dismissed as a false positive.\n\nCrediting required findings from SUGGESTIONS, not just ISSUES: when a required bug sits on the same token/line as another required bug (e.g. an undeclared-identifier fix that must also carry a null guard once corrected), credit the finding if it is correctly reflected in the model's SUGGESTIONS/corrected-code section, even if it is not restated as a separate ISSUES line. Do not mark it MISSED solely because the model folded two related fixes into one corrected expression instead of two prose bullets — judge the model's demonstrated understanding, not its choice of section. Only mark MISSED if the concern is absent from both ISSUES and SUGGESTIONS.\n\nOperator null-safety in CTL2 (recurring confusion — verify carefully both directions): == and != are null-safe (evaluate to false/true on null operands, never throw). Order comparisons < <= > >= are NOT null-safe and throw CTLException when either operand is null. Flagging == / != as unsafe is a false positive; failing to flag an unguarded order comparison on a nullable operand is a missed required finding. Check each comparison operator against this table independently — do not assume all comparisons in a snippet share the same null-safety.\n\nIncrement/decrement operators (++/--) in CTL2 — the rule is WRITABILITY of the l-value, not whether it is a record field. ++/-- are valid on ANY writable numeric l-value: local and module-level variables, output record fields ($out.N.field++, --$out.N.field), and the fields of any internal/writable record — which INCLUDES the Rollup group accumulator (acc.count++, groupAccumulator.order_count++ are both correct CTL2) and module-level record variables. They are NOT valid on input record fields ($in.N.field), because input records are READ-ONLY, nor on literals or list/map elements (list[i], map[k]). Therefore: flagging ++/-- on an output field, on an accumulator field, or on any other internal record field as invalid, non-compiling, or 'not allowed on record fields' is a FALSE POSITIVE — do not raise it and do not demand the expanded `x = x + 1` rewrite, which is an equivalent style choice, never a fix. Flagging ++/-- on an input field, a literal, or a list/map element as invalid is a correct required finding.\n\n\n## V3 addendum A — compilability is a hard gate (ALL tests, overrides everything below)\n\nCode that would not compile CANNOT be scored PASS, no matter how many required\nrubric items it otherwise satisfies. Before assigning any verdict, type-check the\ncandidate code; if it would be rejected by the CTL2 compiler, the verdict is FAIL\nand the compile error must be listed as an issue. Rubric coverage is scored on top\nof compilability, never instead of it.\n\nCheck at minimum, for every call and assignment in the response:\n\n  - Built-in function ARITY, ARGUMENT ORDER, and ARGUMENT TYPES against the real\n    CTL2 signature. A plausible-reading call with a mistyped argument is still a\n    compile error. Highest-frequency case: passing a SCALAR where a list/map is\n    required — `in(value, collection)` and `containsValue(collection, value)` both\n    demand a collection, so `in(\"X\", $in.0.some_string_field)` does not compile and\n    is not an alternative spelling of `$in.0.some_string_field != \"X\"`. Note also\n    that in() and containsValue() take their arguments in OPPOSITE order.\n  - Undeclared identifiers, and variables used outside their scope (e.g. a local\n    declared inside one function referenced from another).\n  - Assignment to a $out.N field not declared in the output metadata, or reading a\n    $in.N field not declared in the input metadata.\n  - Type mismatches without an explicit cast/conversion, including assigning a\n    variant to a typed field, and calling a function whose return type cannot be\n    assigned to the target field.\n  - Missing required lifecycle functions, or a lifecycle function declared with the\n    wrong signature or return type.\n  - Java/JS syntax that has no CTL2 equivalent — method-call chaining on values\n    (`x.trim()`), `new`, lambdas.\n\nConversely, do NOT invent compile errors. If a construct is valid CTL2, it compiles\neven when it is not the form the rubric quoted — see addendum B.\n\n## V3 addendum B — do not penalise unspecified freedom (GENERATE tests)\n\nScore ONLY against what the user message actually asks for plus what the rubric\nexplicitly lists. Where the user message leaves an implementation choice open, any\ncorrect, type-safe realisation of that choice is fully credited.\n\n  - Do NOT mark a required item MISSING/WRONG because the model chose a different\n    but equivalent construct than the rubric's example. Rubric checks quote a\n    representative form; equivalents count. Examples of equivalents that must be\n    credited: isBlank(x) for isnull(x) || x == \"\"; num2str(n) for \"\" + n;\n    str2date(\"2025-07-01\",\"yyyy-MM-dd\") for createDate(2025,7,1); a switch/if-chain\n    for a ternary; reading back an already-assigned $out field instead of holding\n    the value in a local; a wildcard record copy instead of field-by-field\n    assignment; and, ON A LIST ONLY, in(value, list) for containsValue(list, value).\n    The test is whether the emitted data is identical, not whether the source text\n    matches. (On a MAP those two are NOT equivalent — in() tests keys, containsValue()\n    tests values — and on a scalar neither compiles at all.)\n  - Do NOT invent requirements for fields or behaviours the user message never\n    constrains. If an output field's value is not specified by the prompt, the only\n    thing to check is that it is assigned and type-correct for its metadata.\n  - Do NOT report an ISSUE whose only basis is 'the reference/expected pattern is\n    different'. There is no reference answer in this rubric. An issue must cite a\n    concrete defect: a compile error, a runtime CTLException, wrong emitted data, a\n    violated prompt rule, or a listed forbidden item.\n  - A forbidden item fires only on the construct it names. Read its rationale before\n    marking PRESENT — several forbidden items scope themselves narrowly (for\n    instance forbidding row-count STOP logic while explicitly permitting a counter\n    variable), and a superficial keyword match is not enough.\n  - Extra work the prompt did not ask for is not automatically a defect. Penalise it\n    only if it breaks a stated rule, produces wrong data, or matches a forbidden\n    item. Otherwise ignore it, or at most note it as a non-scoring observation.\n\n## V3 addendum C — severity discipline: an issue must be demonstrable\n\nBefore marking any required item MISSING/WRONG, firing a forbidden item, or listing\nan ISSUE, state the concrete failure it causes: a compile error, a runtime\nCTLException, or a specific input row whose emitted output would be wrong. If you\ncannot name that failure, it is NOT an issue — record it under NOTES as a\nnon-scoring style observation and leave the score untouched.\n\n  - A value that is provably overwritten before it can ever be read is a DEAD STORE,\n    not a defect. Trace the control flow before objecting to an initialisation:\n    if a guard flag or an unconditional assignment guarantees the field is set\n    before use, the initial value cannot reach the output and must not be scored.\n    'A different initial value would be tidier / more idiomatic / self-documenting'\n    is a NOTE.\n  - Defensive code beyond what the prompt requires (an extra null check, a\n    divide-by-zero guard, a wider isnull() guard) is never a defect. It cannot\n    produce wrong data for any input the prompt describes. Do not deduct for it and\n    do not report it as an issue.\n  - Distinguish 'the accumulator/state field is reset' from 'reset to the particular\n    literal I had in mind'. Only fields that ACCUMULATE across records (counters,\n    totals, running min/max, capture flags) can leak between groups; fields that are\n    unconditionally reassigned per group cannot.\n  - Cosmetic and structural preferences — brace style, one-line function bodies,\n    variable naming, inlining an expression instead of using a local, ordering of\n    independent statements, presence or absence of comments — are never issues.\n  - When in doubt about severity, prefer the lower one. A wrongly-scored PASS on a\n    stylistic quibble is a smaller evaluation error than a FAIL on working code.\n\n## V3 addendum D — trace module state across TWO groups (stateful components)\n\nFor any component holding module-level state across records — Denormalizer\n(append/transform/clean), Rollup (initGroup/updateGroup/transform), Normalizer\n(count/transform/clean) — do not judge the per-record function in isolation.\nSimulate the SECOND group and check every piece of state is either re-armed by the\nreset function or unconditionally overwritten before it is next read. State that is\ncorrect on group 1 and stale on group 2 is a silent data-corruption bug and outranks\nevery stylistic item in the rubric.\n\n  - Match the RESET against the SENTINEL, as a pair, and check the DECLARATION too.\n    Two recurring CTL2 traps: (i) lists and maps are default-initialised to\n    empty — not null — so an `isnull(list)` 'first record' marker is dead code that\n    never fires even once (addendum E); (ii) `clear(list)` / `clear(map)` empties\n    the collection but leaves the reference NON-NULL, so it does not re-arm an\n    isnull() marker on explicitly null-assigned state. Same class of error for a\n    counter reset to 0 versus a flag tested for false. Read the declaration, the\n    reset function and the accumulating function together, every time.\n  - Prefer emptiness over nullness when judging the FIX: reusing an\n    already-allocated list/map via clear() is the better CTL2 idiom, so the correct\n    remedy for the trap above is for the accumulating function to test\n    `length(x) == 0` (or a dedicated boolean flag that the reset clears), NOT for\n    the reset function to null the collection. Do not demand null-ing.\n  - Ask explicitly, for each state variable: on group 2, is the value read before it\n    is written? If yes, the group-1 value reaches the output — report it as an issue\n    with the concrete stale value, per addendum C.\n  - This check applies even when every individual required item is satisfied. A\n    response can tick every box and still be FAIL because its state lifecycle is\n    broken across groups.\n\n## V3 addendum E — CTL2 null and default-initialisation semantics (get the REASON right)\n\nTwo independent facts, frequently conflated. Both must be applied as stated.\n\n  1. NULLABILITY IS UNIVERSAL. Every CTL2 type can hold null, including the\n     primitives — integer, long, number, decimal, boolean, date, string. `long x =\n     null;` is VALID CTL2; `isnull(x)` then returns true. There is no\n     'primitive types cannot be null' rule in CTL2. Reporting `long x = null;`,\n     `boolean b = null;`, or `isnull(<primitive variable>)` as a type error, a\n     compile error, or an invalid construct is a FALSE POSITIVE and must not be\n     raised. Do not import Java's primitive/wrapper distinction into CTL2.\n\n  2. DECLARATION WITHOUT AN INITIALISER YIELDS A DEFAULT VALUE, NOT NULL. A\n     module-level or local declaration with no explicit initialiser is\n     default-initialised:\n       - numeric types (integer, long, number, decimal) -> 0 (0L / 0D as typed)\n       - string  -> \"\" (empty string, NOT null)\n       - boolean -> false\n       - date    -> start of the UNIX epoch (1970-01-01)\n       - list    -> EMPTY LIST (not null)\n       - map     -> EMPTY MAP  (not null)\n       - variant -> null\n     VARIANT IS THE ONLY TYPE WITH NO DEFAULT VALUE, because it can hold anything;\n     it alone starts as null. For every other type, `isnull(x)` on a\n     declared-but-unassigned variable is FALSE. Test emptiness with\n     `length(x) == 0` (lists, maps, strings) or isBlank() (strings) — never with\n     isnull().\n     Corollary for GENERATE tests: `string[] ids;` is already equivalent to\n     `string[] ids = [];`, and `map[string,integer] m;` to `m = {};`. Appending\n     to, clearing, iterating or taking the length of such a variable from the\n     very first record is safe. NEVER report a missing `= []` / `= {}`\n     initialiser as a bug, a null-safety risk, or a suggested improvement, and\n     never withhold credit for a reset/lifecycle rubric item because of it.\n\n  3. VARIABLES AND RECORD FIELDS DIFFER — do not carry a conclusion from one to the\n     other. The defaults in (2) apply to local and module-level VARIABLES. An unset\n     RECORD FIELD ($in/$out/accumulator) is null, NOT the type's zero value, unless\n     the metadata defines a Default. So `long batchId;` is 0L while an unassigned\n     `$out.0.some_long` is null. resetRecord(record) sets fields back to\n     null/default.\n\n  Useful null-safe primitives when judging emptiness tests: length(x) returns 0 for\n  a null string, list, map or record, so `length(codes) == 0` is a safe emptiness\n  test even when the list is null. isnull(\"\") is false; isBlank(\"\") is true.\n  `null + \"text\"` yields \"nulltext\" rather than throwing. Ordering operators\n  (< <= > >=) do throw on null; == and != do not.\n\n  Consequence to apply when judging first-record / first-group sentinels: an\n  isnull() test on ANY declared-but-unassigned variable other than a variant is\n  false from the very first record, so the guarded block is DEAD CODE and never\n  executes even once. After `long batchId;` the value is 0L; after `string[] codes;`\n  the value is an empty list, not null; after `string s;`, isnull(s) is false while\n  isBlank(s) is true. Trace what the dead block was supposed to do — it is usually\n  a one-time capture, and skipping it entirely means the captured value keeps its\n  default for the WHOLE RUN (e.g. every output row carries key 0). This IS a real\n  defect and must be reported, but the reason is the DEFAULT VALUE, not a\n  nullability restriction. To use a null sentinel the code must assign null\n  explicitly (`long batchId = null;`, `string[] codes = null;`), which is legal, or\n  use a variant, or test `length(x) == 0` / a boolean flag instead.\n\n  State the correct mechanism in the issue text. A right conclusion supported by an\n  invented language rule is still a defective report: it teaches the wrong lesson\n  and contradicts addendum A's instruction not to invent compile errors. If you are\n  not certain a construct is rejected by the CTL2 compiler, do not call it one —\n  describe the observable behaviour instead.\n\n## FIX tests (type \"fix\")\n\nA fix test gives the model a specification, port metadata and defective code, and asks it\nto list the problems and return the complete corrected code. It is graded on the corrected\ncode, not on the list alone. The seeded defects are in `bugs`, and their ids are the\nrequired findings.\n\nScore each required finding as:\n  - CAUGHT: the response names the defect with a correct mechanism AND the corrected code\n    actually removes it, in a way that satisfies the specification.\n  - WRONG: only half of that. Either the defect is named but the corrected code still has\n    it, or it is fixed in a way that breaks the specification or adds a new failure, or it\n    is fixed with a false reason, or it is fixed silently with no explanation.\n  - MISSED: neither named nor fixed.\n\nCheck the corrected code as a whole, not only the lines the model says it changed:\n  - Addendum A applies to it. If the corrected code would not compile, or uses a construct\n    or function that does not exist in CTL2, the corresponding forbidden item is PRESENT\n    and the verdict cannot be PASS.\n  - Walk the specification item by item against the corrected code. A change that breaks\n    behaviour the specification requires is a forbidden item even when it is presented as\n    a fix.\n  - Rewriting correct code into an equivalent form (for example `~= \"A|B\"` into\n    `== \"A\" || == \"B\"`) is not a defect and not a finding. It triggers a false-positive\n    trap only when the response calls the original code wrong.\n\nA response that returns fragments or a diff and no complete corrected code fails the\ncompleteness forbidden item. A fix test's verdict is PASS, PARTIAL or FAIL per its own\n`scoring`. There is no ISSUES/VERDICT block to check.\n",
+ "tests": [
+  {
+   "test_id": "G1_03",
+   "type": "generate",
+   "component": "REFORMAT",
+   "gap": "G1",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "1. The print room needs a two-port Reformat for letterpress pigment draws. A cleared docket reaches port 0; every other docket reaches port 1. Evaluate dockets in delivery order. Dictionary press_released is boolean permission to draw, pulls_authorised is a long count, and pigment_consumed is decimal consumption available to the next production stage.\n\n2. A locked press returns LOCKED before investigating a docket. On a released press, a true proof_sheet means a dry proof and consumes nothing. Null proof_sheet means an inked pull. For an inked pull, pigment_ml accepts precisely one through three digits with an optional decimal point and one or two following digits. Empty, absent, signed or padded text gives BAD_DOCKET.\n\n3. Multiply the parsed amount by density_factor, or by one when that factor is null. A proof consumes zero regardless of factor. The cumulative capacity is 6.00 and the authorised-pull allowance is four. Refuse an overrun as CAPACITY; equality fits. Each CLEARED docket adds consumption and one pull, even when consumption is zero. Lock the press when either allowance is reached. Other outcomes leave its dictionary untouched.\n\n4. Copy all input columns onto the selected audit. pigment_consumed is the resulting decimal ledger rendered with two fractional digits, for example 1.25. pulls_authorised reports the resulting count and pull_result names CLEARED, LOCKED, BAD_DOCKET or CAPACITY. pull_time supplied as a date means UTC midnight. docket_annotation is retained for paperwork only.\n\nSupplied dictionary configuration: press_released=true; pulls_authorised=0; pigment_consumed=\"0.00\".\n\nInput 0 metadata:\n```xml\n<Record name=\"G1In03\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"press_job\" type=\"string\" nullable=\"false\" /><Field name=\"pigment_ml\" type=\"string\" nullable=\"true\" /><Field name=\"proof_sheet\" type=\"boolean\" nullable=\"true\" /><Field name=\"press_operator\" type=\"string\" nullable=\"true\" /><Field name=\"pull_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"density_factor\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"drum_number\" type=\"long\" nullable=\"false\" /><Field name=\"docket_annotation\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nOutput 0 metadata:\n```xml\n<Record name=\"G1Out03P0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"press_job\" type=\"string\" nullable=\"false\" /><Field name=\"pigment_ml\" type=\"string\" nullable=\"true\" /><Field name=\"proof_sheet\" type=\"boolean\" nullable=\"true\" /><Field name=\"press_operator\" type=\"string\" nullable=\"true\" /><Field name=\"pull_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"density_factor\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"drum_number\" type=\"long\" nullable=\"false\" /><Field name=\"docket_annotation\" type=\"string\" nullable=\"true\" /><Field name=\"pigment_consumed\" type=\"string\" nullable=\"false\" /><Field name=\"pulls_authorised\" type=\"long\" nullable=\"false\" /><Field name=\"pull_result\" type=\"string\" nullable=\"false\" /></Record>\n```\n\nOutput 1 metadata:\n```xml\n<Record name=\"G1Out03P1\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"press_job\" type=\"string\" nullable=\"false\" /><Field name=\"pigment_ml\" type=\"string\" nullable=\"true\" /><Field name=\"proof_sheet\" type=\"boolean\" nullable=\"true\" /><Field name=\"press_operator\" type=\"string\" nullable=\"true\" /><Field name=\"pull_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"density_factor\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"drum_number\" type=\"long\" nullable=\"false\" /><Field name=\"docket_annotation\" type=\"string\" nullable=\"true\" /><Field name=\"pigment_consumed\" type=\"string\" nullable=\"false\" /><Field name=\"pulls_authorised\" type=\"long\" nullable=\"false\" /><Field name=\"pull_result\" type=\"string\" nullable=\"false\" /></Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G1 (c9 holdout)",
+    "required": [
+     {
+      "id": "opcd_gen_G1_03.1",
+      "check": "Reformat defines transform() and returns the single selected port, 0 or 1, after filling that output record.",
+      "rationale": "The accepted and refused audits are separate selected destinations; broadcasting would duplicate the decision.",
+      "clauses": [],
+      "prompt_evidence": "The print room needs a two-port Reformat for letterpress pigment draws"
+     },
+     {
+      "id": "opcd_gen_G1_03.2",
+      "check": "Reads the boolean dictionary press_released to decide LOCKED before numeric conversion.",
+      "rationale": "A closed run may contain unusable quantity text.",
+      "clauses": [],
+      "prompt_evidence": "A locked press returns LOCKED before investigating a docket"
+     },
+     {
+      "id": "opcd_gen_G1_03.3",
+      "check": "Nullable proof_sheet true yields zero units; null behaves as false.",
+      "rationale": "A sponsored zero-unit action still consumes one authorisation.",
+      "clauses": [],
+      "prompt_evidence": "Multiply the parsed amount by density_factor, or by one when that factor is null"
+     },
+     {
+      "id": "opcd_gen_G1_03.4",
+      "check": "For ordinary requests validates pigment_ml exact decimal shape before conversion, or uses an exception fallback that preserves BAD_DOCKET. str2decimal(\"\") throws.",
+      "rationale": "Blank input must not abort subsequent admissions.",
+      "clauses": [],
+      "prompt_evidence": "Copy all input columns onto the selected audit"
+     },
+     {
+      "id": "opcd_gen_G1_03.5",
+      "check": "Computes effective decimal consumption as specified: the entered quantity is multiplied by density_factor to determine consumption; a null multiplier means one. A true proof_sheet retains zero demand.",
+      "rationale": "The entered quantity alone no longer determines the operational allowance.",
+      "clauses": [],
+      "prompt_evidence": "Copy all input columns onto the selected audit"
+     },
+     {
+      "check": "Allows prospective dictionary pigment_consumed up to 6.00 inclusively; larger totals are CAPACITY.",
+      "rationale": "An exact capacity fit is valid while an overrun is refused.",
+      "clauses": [],
+      "id": "opcd_gen_G1_03.6",
+      "prompt_evidence": "Copy all input columns onto the selected audit"
+     },
+     {
+      "check": "Counts every CLEARED, including zero, toward dictionary pulls_authorised, with a four-admission cap.",
+      "rationale": "Zero-demand work still occupies an admission slot.",
+      "clauses": [],
+      "id": "opcd_gen_G1_03.7",
+      "prompt_evidence": "Copy all input columns onto the selected audit"
+     },
+     {
+      "check": "Refused requests leave every shared dictionary entry unchanged; accepted demand and tally are committed to the typed entries.",
+      "rationale": "Downstream state must reflect actual admissions.",
+      "clauses": [],
+      "id": "opcd_gen_G1_03.8",
+      "prompt_evidence": "Copy all input columns onto the selected audit"
+     },
+     {
+      "check": "Sets dictionary press_released false immediately on total 6.00 or acceptance count four.",
+      "rationale": "Either exhaustion independently closes future admission.",
+      "clauses": [],
+      "id": "opcd_gen_G1_03.9",
+      "prompt_evidence": "Copy all input columns onto the selected audit"
+     },
+     {
+      "id": "opcd_gen_G1_03.10",
+      "check": "Preserves all eight source fields by wildcard assignment or explicit assignments; fills audit pigment_consumed/pulls_authorised/pull_result on the chosen port.",
+      "rationale": "Incomplete output hides refused-source evidence.",
+      "clauses": [],
+      "prompt_evidence": "Copy all input columns onto the selected audit"
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G1_03.F1",
+      "check": "Changes pulls_authorised or pigment_consumed for a refused press_job operation.",
+      "rationale": "The supplied shared account changes only when its business operation is accepted."
+     },
+     {
+      "id": "opcd_gen_G1_03.F2",
+      "check": "Treats a typed dictionary press_released null test as evidence that the service has not yet handled a press_job.",
+      "rationale": "A supplied typed entry has a value; its nullness is not the requested permission decision."
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G1_09",
+   "type": "generate",
+   "component": "REFORMAT",
+   "gap": "G1",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "1. The glaze room needs a Reformat for kiln transfer certificates. Port 0 carries successful transfers and port 1 carries refused certificates in arrival order. Its dictionary provides kiln_open:boolean, transfers_done:long, accepted_firing_day:string and firing_day_recorded:boolean. The string is the UTC calendar date of the latest successful transfer, formatted yyyy-MM-dd, for example 2026-02-01.\n\n2. A closed kiln gives KILN_CLOSED immediately. Otherwise kiln_signed must be true and oxide_grams must comprise one through three digits with an optional point and one or two decimal digits. Null signature, missing amount, empty amount, signs, spaces and other malformed content give BAD_CERTIFICATE. The numeric amount is validated but is not part of transfer identity.\n\n3. A firing date equal to the most recently transferred UTC date is SAME_DAY. The first eligible certificate is TRANSFERRED, including dates before 1970. Certificates on a different date can transfer even if their date appeared earlier in the stream. Refusals have no effect on the date used for comparison. Each transfer records that day and increments transfers_done. The fourth transfer closes the kiln.\n\n4. Copy all source evidence. accepted_firing_day and transfers_done expose the dictionary after this decision, while transfer_result is TRANSFERRED, KILN_CLOSED, BAD_CERTIFICATE or SAME_DAY. A date-only firing_time denotes midnight UTC; instants around midnight must belong to their UTC date. potter_comment, shade_description and glaze_value do not decide admission.\n\nSupplied dictionary configuration: kiln_open=true; transfers_done=0; accepted_firing_day=\"\"; firing_day_recorded=false.\n\nInput 0 metadata:\n```xml\n<Record name=\"G1In09\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"tile_ticket\" type=\"string\" nullable=\"false\" /><Field name=\"oxide_grams\" type=\"string\" nullable=\"true\" /><Field name=\"kiln_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"shade_description\" type=\"string\" nullable=\"true\" /><Field name=\"firing_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"glaze_value\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"kiln_number\" type=\"long\" nullable=\"false\" /><Field name=\"potter_comment\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nOutput 0 metadata:\n```xml\n<Record name=\"G1Out09P0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"tile_ticket\" type=\"string\" nullable=\"false\" /><Field name=\"oxide_grams\" type=\"string\" nullable=\"true\" /><Field name=\"kiln_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"shade_description\" type=\"string\" nullable=\"true\" /><Field name=\"firing_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"glaze_value\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"kiln_number\" type=\"long\" nullable=\"false\" /><Field name=\"potter_comment\" type=\"string\" nullable=\"true\" /><Field name=\"accepted_firing_day\" type=\"string\" nullable=\"false\" /><Field name=\"transfers_done\" type=\"long\" nullable=\"false\" /><Field name=\"transfer_result\" type=\"string\" nullable=\"false\" /></Record>\n```\n\nOutput 1 metadata:\n```xml\n<Record name=\"G1Out09P1\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"tile_ticket\" type=\"string\" nullable=\"false\" /><Field name=\"oxide_grams\" type=\"string\" nullable=\"true\" /><Field name=\"kiln_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"shade_description\" type=\"string\" nullable=\"true\" /><Field name=\"firing_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"glaze_value\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"kiln_number\" type=\"long\" nullable=\"false\" /><Field name=\"potter_comment\" type=\"string\" nullable=\"true\" /><Field name=\"accepted_firing_day\" type=\"string\" nullable=\"false\" /><Field name=\"transfers_done\" type=\"long\" nullable=\"false\" /><Field name=\"transfer_result\" type=\"string\" nullable=\"false\" /></Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G1 (c9 holdout)",
+    "required": [
+     {
+      "id": "opcd_gen_G1_09.1",
+      "check": "Reformat defines transform() and returns the single selected port, 0 or 1, after filling that output record.",
+      "rationale": "The accepted and refused audits are separate selected destinations; broadcasting would duplicate the decision.",
+      "clauses": [],
+      "prompt_evidence": "The glaze room needs a Reformat for kiln transfer certificates"
+     },
+     {
+      "id": "opcd_gen_G1_09.2",
+      "check": "Reads dictionary kiln_open before approval and text parsing.",
+      "rationale": "Closure masks irrelevant corrupt quantity text.",
+      "clauses": [],
+      "prompt_evidence": "A closed kiln gives KILN_CLOSED immediately"
+     },
+     {
+      "id": "opcd_gen_G1_09.3",
+      "check": "Requires kiln_signed true and safely validates the exact unsigned decimal shape of oxide_grams.",
+      "rationale": "An unapproved or malformed request must leave accepted history unchanged.",
+      "clauses": [],
+      "prompt_evidence": "A firing date equal to the most recently transferred UTC date is SAME_DAY"
+     },
+     {
+      "id": "opcd_gen_G1_09.4",
+      "check": "Constructs the comparison as the UTC date of firing_time; different times within one day have identical comparison values.",
+      "rationale": "Comparing the display label alone would miss the requested semantic identity.",
+      "clauses": [],
+      "prompt_evidence": "Copy all source evidence"
+     },
+     {
+      "id": "opcd_gen_G1_09.5",
+      "check": "Permits the first eligible UTC firing_time day independently of any unassigned local value; later comparison uses only an actual transferred day.",
+      "rationale": "Declared strings start empty, so the first empty label cannot be inferred from their value.",
+      "clauses": [],
+      "prompt_evidence": "Copy all source evidence"
+     },
+     {
+      "id": "opcd_gen_G1_09.6",
+      "check": "Compares only with immediate accepted accepted_firing_day; rejected rows do not replace it.",
+      "rationale": "A distinct-ever collection would wrongly reject a later return to a former label.",
+      "clauses": [],
+      "prompt_evidence": "Copy all source evidence"
+     },
+     {
+      "id": "opcd_gen_G1_09.7",
+      "check": "On acceptance writes typed dictionary entries; leaves all entries intact on refusal.",
+      "rationale": "The operational tally must describe actual accepted handovers.",
+      "clauses": [],
+      "prompt_evidence": "Copy all source evidence"
+     },
+     {
+      "id": "opcd_gen_G1_09.8",
+      "check": "Copies all source values and fills accepted_firing_day/transfers_done/transfer_result after decision on selected output.",
+      "rationale": "Complete retained evidence is required to reconstruct the queue.",
+      "clauses": [],
+      "prompt_evidence": "Copy all source evidence"
+     },
+     {
+      "check": "Closes dictionary kiln_open after 4 actual accepted requests.",
+      "rationale": "Refusals must not advance the independent exhaustion count.",
+      "clauses": [],
+      "id": "opcd_gen_G1_09.9",
+      "prompt_evidence": "Copy all source evidence"
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G1_09.F1",
+      "check": "Changes transfers_done or accepted_firing_day for a refused tile_ticket operation.",
+      "rationale": "The supplied shared account changes only when its business operation is accepted."
+     },
+     {
+      "id": "opcd_gen_G1_09.F2",
+      "check": "Treats a typed dictionary kiln_open null test as evidence that the service has not yet handled a tile_ticket.",
+      "rationale": "A supplied typed entry has a value; its nullness is not the requested permission decision."
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G1_15",
+   "type": "generate",
+   "component": "DATA_GENERATOR",
+   "gap": "G1",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "1. Build a ten-row DataGenerator replay for a hand-spun yarn workshop. Its component already requests ten records and has a single output, with no incoming port. Dictionary spinning_open:boolean permits allocation, yarn_remaining:decimal measures available yarn, swatches_served:long counts successful allocations, and next_attempt:long is the next attempt number. Operate on the supplied entries because the workshop ledger is shared.\n\n2. For each attempt use next_attempt modulo four to select, in order, the literal fibre orders 0, 2, bad, 1. Retain that string in fibre_order. While spinning is open, an order is numeric only if its complete text has one to three digits with an optional point and one or two digits. An unusable order is unauthorised and leaves yarn and successful allocations unchanged. Closed spinning makes any order unauthorised without numerical interpretation.\n\n3. Authorise an affordable numeric order and subtract its decimal quantity from yarn_remaining. A zero order is a valid swatch allocation. Each authorisation adds one swatch; spinning closes at exactly zero remaining yarn or three swatches. It stays closed for further attempts. Every attempt, including a refused one, produces a record and advances next_attempt once.\n\n4. attempt_number records the attempt. swatch_label is wool- followed by its integer number, for example wool-3. swatch_authorised is the decision; yarn_remaining and swatches_served report the resulting shared balances. spinning_date is midnight UTC on 2026-04-01 plus that many calendar days. workshop_note is null at even numbers and empty at odd ones. collection_name is WOOL and archive_mark contains the literal text \"retained\"; neither controls allocation.\n\nSupplied dictionary configuration: spinning_open=true; yarn_remaining=\"5\"; swatches_served=0; next_attempt=0.\n\nOutput 0 metadata:\n```xml\n<Record name=\"G1Out15P0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"attempt_number\" type=\"long\" nullable=\"false\" /><Field name=\"swatch_label\" type=\"string\" nullable=\"false\" /><Field name=\"fibre_order\" type=\"string\" nullable=\"true\" /><Field name=\"swatch_authorised\" type=\"boolean\" nullable=\"false\" /><Field name=\"yarn_remaining\" type=\"decimal\" nullable=\"false\" length=\"16\" scale=\"2\" /><Field name=\"swatches_served\" type=\"long\" nullable=\"false\" /><Field name=\"spinning_date\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"workshop_note\" type=\"string\" nullable=\"true\" /><Field name=\"collection_name\" type=\"string\" nullable=\"false\" /><Field name=\"archive_mark\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G1 (c9 holdout)",
+    "required": [
+     {
+      "id": "opcd_gen_G1_15.1",
+      "check": "DataGenerator defines generate(), produces one filled output per configured call, and returns OK/0/ALL; it has no input port.",
+      "rationale": "The replay requires all ten attempted operations, so DataGenerator must emit a record per configured call without an input stream.",
+      "clauses": [],
+      "prompt_evidence": "Build a ten-row DataGenerator replay for a hand-spun yarn workshop"
+     },
+     {
+      "id": "opcd_gen_G1_15.2",
+      "check": "Uses typed dictionary next_attempt as index and advances it once per emitted row.",
+      "rationale": "Failed operations still occupy deterministic replay positions.",
+      "clauses": [],
+      "prompt_evidence": "For each attempt use next_attempt modulo four to select, in order, the literal fibre orders 0, 2, bad, 1"
+     },
+     {
+      "id": "opcd_gen_G1_15.3",
+      "check": "Produces the exact four-member text cycle and guards the malformed member before str2decimal; blank conversion is not a safe fallback.",
+      "rationale": "An invalid cycle token must become an ineligible output row.",
+      "clauses": [],
+      "prompt_evidence": "Authorise an affordable numeric order and subtract its decimal quantity from yarn_remaining"
+     },
+     {
+      "id": "opcd_gen_G1_15.4",
+      "check": "Reads dictionary spinning_open before conversion and treats zero as a valid quantity.",
+      "rationale": "Closure and numeric zero are independent business conditions.",
+      "clauses": [],
+      "prompt_evidence": "attempt_number records the attempt"
+     },
+     {
+      "id": "opcd_gen_G1_15.5",
+      "check": "Checks the prospective balance constraint before applying subtraction.",
+      "rationale": "Refused operations cannot change spendable operational state.",
+      "clauses": [],
+      "prompt_evidence": "attempt_number records the attempt"
+     },
+     {
+      "id": "opcd_gen_G1_15.6",
+      "check": "Updates dictionary yarn_remaining/swatches_served only after success, then closes at the stated exact balance boundary or success count three.",
+      "rationale": "A count of attempts would close on malformed tokens.",
+      "clauses": [],
+      "prompt_evidence": "attempt_number records the attempt"
+     },
+     {
+      "id": "opcd_gen_G1_15.7",
+      "check": "Outputs post-decision balance and accepted count from the dictionary on every row.",
+      "rationale": "A failed row must expose unchanged shared state.",
+      "clauses": [],
+      "prompt_evidence": "attempt_number records the attempt"
+     },
+     {
+      "id": "opcd_gen_G1_15.8",
+      "check": "Populates every output field; dateAdd from explicit UTC midnight or equivalent creates spinning_date; null/even and empty/odd notes are distinct.",
+      "rationale": "Host-local midnight and collapsed note states break replay comparisons.",
+      "clauses": [],
+      "prompt_evidence": "attempt_number records the attempt"
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G1_15.F1",
+      "check": "Changes yarn_remaining or swatches_served for a refused attempt_number operation.",
+      "rationale": "The supplied shared account changes only when its business operation is accepted."
+     },
+     {
+      "id": "opcd_gen_G1_15.F2",
+      "check": "Treats a typed dictionary spinning_open null test as evidence that the service has not yet handled a attempt_number.",
+      "rationale": "A supplied typed entry has a value; its nullness is not the requested permission decision."
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G3_03",
+   "type": "generate",
+   "component": "PARTITION",
+   "gap": "G3",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "1. Partition velvet cutting measurements for each cutting_table. Tables may arrive in any interleaving, but a table keeps its arrival sequence. Use port 0 for LENGTH_JUMP, port 1 for BAD_MEASUREMENT and port 2 for FIRST_CUT or STEADY. The routed record must preserve all source evidence.\n\n2. A measurement qualifies only with cutter_signed=true and measured_length consisting of one to three digits, optionally a point followed by one or two digits. Null signatures or missing, empty, spaced, signed and malformed quantities give BAD_MEASUREMENT. Parse the complete qualifying text as decimal. Quantities of zero are valid lengths for this inspection.\n\n3. The first qualifying measurement for a table is FIRST_CUT. Thereafter compare it with that table's preceding qualifying decimal measurement. A difference whose absolute magnitude is greater than 2.00 is LENGTH_JUMP in either direction; a difference of exactly 2.00 or less is STEADY. Both a jump and a steady measurement become the preceding measurement for the next qualifying arrival. Bad measurements have no effect on those comparisons.\n\n4. Log one info classification message per record using LENGTH_JUMP, BAD_MEASUREMENT, FIRST_CUT or STEADY. inspection_time provided without a time part is midnight UTC. fabric_cost is nullable but never influences the measurement decision, and fabric_description, roll_number and tailor_note are retained solely as source evidence. tailor_note is deliberately unused by this process.\n\nInput 0 metadata:\n```xml\n<Record name=\"G3In03\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"cutting_table\" type=\"string\" nullable=\"false\" /><Field name=\"measured_length\" type=\"string\" nullable=\"true\" /><Field name=\"cutter_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"fabric_description\" type=\"string\" nullable=\"true\" /><Field name=\"inspection_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"fabric_cost\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"roll_number\" type=\"long\" nullable=\"false\" /><Field name=\"tailor_note\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nOutput 0 metadata:\n```xml\n<Record name=\"G3Out03P0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"cutting_table\" type=\"string\" nullable=\"false\" /><Field name=\"measured_length\" type=\"string\" nullable=\"true\" /><Field name=\"cutter_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"fabric_description\" type=\"string\" nullable=\"true\" /><Field name=\"inspection_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"fabric_cost\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"roll_number\" type=\"long\" nullable=\"false\" /><Field name=\"tailor_note\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nOutput 1 metadata:\n```xml\n<Record name=\"G3Out03P1\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"cutting_table\" type=\"string\" nullable=\"false\" /><Field name=\"measured_length\" type=\"string\" nullable=\"true\" /><Field name=\"cutter_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"fabric_description\" type=\"string\" nullable=\"true\" /><Field name=\"inspection_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"fabric_cost\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"roll_number\" type=\"long\" nullable=\"false\" /><Field name=\"tailor_note\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nOutput 2 metadata:\n```xml\n<Record name=\"G3Out03P2\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"cutting_table\" type=\"string\" nullable=\"false\" /><Field name=\"measured_length\" type=\"string\" nullable=\"true\" /><Field name=\"cutter_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"fabric_description\" type=\"string\" nullable=\"true\" /><Field name=\"inspection_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"fabric_cost\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"roll_number\" type=\"long\" nullable=\"false\" /><Field name=\"tailor_note\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G3 (c9 holdout)",
+    "required": [
+     {
+      "id": "opcd_gen_G3_03.1",
+      "check": "Partition supplies getOutputPort(), returns exactly one connected zero-based route for each record and never assigns output records.",
+      "rationale": "The implementation must obey the supplied component contract.",
+      "clauses": [],
+      "prompt_evidence": "Partition velvet cutting measurements for each cutting_table"
+     },
+     {
+      "id": "opcd_gen_G3_03.2",
+      "check": "Accepts cutter_signed only when true and validates the complete unsigned shape of measured_length before any required conversion; blank text cannot reach str2decimal unguarded.",
+      "rationale": "Invalid measured_length must not interrupt subsequent observations.",
+      "clauses": [],
+      "prompt_evidence": "measured_length"
+     },
+     {
+      "id": "opcd_gen_G3_03.3",
+      "check": "The first usable cutting_table observation supplies its opening value without an alert, including zero or empty comparison values where applicable; earlier rejected rows do not supply it.",
+      "rationale": "Declared scalar defaults are not evidence of an actual cutting_table observation; explicit null assignment, membership, counts and booleans are valid alternatives.",
+      "clauses": [],
+      "prompt_evidence": "cutting_table"
+     },
+     {
+      "id": "opcd_gen_G3_03.4",
+      "check": "LENGTH_JUMP requires an absolute measured_length difference strictly above 2.00 in either direction.",
+      "rationale": "This is the business predicate and includes its strict or inclusive boundaries.",
+      "clauses": [],
+      "prompt_evidence": "The first qualifying measurement for a table is FIRST_CUT"
+     },
+     {
+      "id": "opcd_gen_G3_03.5",
+      "check": "Each usable cutting_table observation advances the applicable comparison after classification, including alerting observations; rejected observations leave comparison state intact.",
+      "rationale": "Decision order must preserve the comparison specified for the following usable observation.",
+      "clauses": [],
+      "prompt_evidence": "measured_length"
+     },
+     {
+      "id": "opcd_gen_G3_03.6",
+      "check": "Keeps decisions for cutting_table independent across interleaved input records.",
+      "rationale": "An unrelated business key must not inherit another key’s observations.",
+      "clauses": [],
+      "prompt_evidence": "cutting_table"
+     },
+     {
+      "id": "opcd_gen_G3_03.7",
+      "check": "Preserves the original routed record and logs one info message with its classification; routes LENGTH_JUMP to 0, BAD_MEASUREMENT to 1, and FIRST_CUT/STEADY to 2.",
+      "rationale": "Partition diagnostics belong in log messages, while the output is the original record.",
+      "clauses": [],
+      "prompt_evidence": "LENGTH_JUMP"
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G3_03.F1",
+      "check": "Uses an unassigned scalar’s null test or a zero/empty comparison value to decide whether a usable cutting_table predecessor exists.",
+      "rationale": "Type-default scalar values cannot indicate whether a cutting_table observation occurred; explicitly assigned null or container membership remains valid."
+     },
+     {
+      "id": "opcd_gen_G3_03.F2",
+      "check": "Classifying a measured_length difference of exactly 2.00 as LENGTH_JUMP violates the tolerance.",
+      "rationale": "This defect changes the specified domain transition rather than imposing a coding style."
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G3_09",
+   "type": "generate",
+   "component": "PARTITION",
+   "gap": "G3",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "1. Partition rattan-steaming observations into DAY_CHANGED on port 0, BAD_STEAM on port 1 and FIRST_STEAM or SAME_DATE on port 2. Each rattan_coil has its own receipt sequence, with no requirement that coils be contiguous. All ports retain complete source records.\n\n2. Only steamer_signed=true and a valid length_cm make usable steaming evidence. Length syntax allows one to three decimal digits with an optional point followed by one or two digits. Reject null approvals and null, empty, signed, spaced or damaged measurements as BAD_STEAM. A length of zero is usable.\n\n3. Classify the first usable steaming for a coil as FIRST_STEAM. For later usable observations, a UTC calendar date different from the preceding usable steaming date is DAY_CHANGED; the same date is SAME_DATE. Compare calendar membership rather than an elapsed twenty-four-hour duration. After either result, the current usable steaming becomes the predecessor. A bad steaming observation cannot change which earlier usable date is considered.\n\n4. Write an info classification message for every input, using DAY_CHANGED, BAD_STEAM, FIRST_STEAM or SAME_DATE. steaming_time may arrive as a bare date and then means midnight UTC. Instants around the UTC date boundary must keep that business calendar on any host. cane_cost, weave_description and turn_number do not affect the decision; basketmaker_note is an unused documentary value.\n\nInput 0 metadata:\n```xml\n<Record name=\"G3In09\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"rattan_coil\" type=\"string\" nullable=\"false\" /><Field name=\"length_cm\" type=\"string\" nullable=\"true\" /><Field name=\"steamer_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"weave_description\" type=\"string\" nullable=\"true\" /><Field name=\"steaming_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"cane_cost\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"turn_number\" type=\"long\" nullable=\"false\" /><Field name=\"basketmaker_note\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nOutput 0 metadata:\n```xml\n<Record name=\"G3Out09P0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"rattan_coil\" type=\"string\" nullable=\"false\" /><Field name=\"length_cm\" type=\"string\" nullable=\"true\" /><Field name=\"steamer_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"weave_description\" type=\"string\" nullable=\"true\" /><Field name=\"steaming_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"cane_cost\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"turn_number\" type=\"long\" nullable=\"false\" /><Field name=\"basketmaker_note\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nOutput 1 metadata:\n```xml\n<Record name=\"G3Out09P1\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"rattan_coil\" type=\"string\" nullable=\"false\" /><Field name=\"length_cm\" type=\"string\" nullable=\"true\" /><Field name=\"steamer_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"weave_description\" type=\"string\" nullable=\"true\" /><Field name=\"steaming_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"cane_cost\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"turn_number\" type=\"long\" nullable=\"false\" /><Field name=\"basketmaker_note\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nOutput 2 metadata:\n```xml\n<Record name=\"G3Out09P2\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"rattan_coil\" type=\"string\" nullable=\"false\" /><Field name=\"length_cm\" type=\"string\" nullable=\"true\" /><Field name=\"steamer_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"weave_description\" type=\"string\" nullable=\"true\" /><Field name=\"steaming_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"cane_cost\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"turn_number\" type=\"long\" nullable=\"false\" /><Field name=\"basketmaker_note\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G3 (c9 holdout)",
+    "required": [
+     {
+      "id": "opcd_gen_G3_09.1",
+      "check": "Partition supplies getOutputPort(), returns exactly one connected zero-based route for each record and never assigns output records.",
+      "rationale": "The implementation must obey the supplied component contract.",
+      "clauses": [],
+      "prompt_evidence": "Partition rattan-steaming observations into DAY_CHANGED on port 0, BAD_STEAM on port 1 and FIRST_STEAM or SAME_DATE on port 2"
+     },
+     {
+      "id": "opcd_gen_G3_09.2",
+      "check": "Accepts steamer_signed only when true and validates the complete unsigned shape of length_cm before any required conversion; blank text cannot reach str2decimal unguarded.",
+      "rationale": "Invalid length_cm must not interrupt subsequent observations.",
+      "clauses": [],
+      "prompt_evidence": "length_cm"
+     },
+     {
+      "id": "opcd_gen_G3_09.3",
+      "check": "The first usable rattan_coil observation supplies its opening value without an alert, including zero or empty comparison values where applicable; earlier rejected rows do not supply it.",
+      "rationale": "Declared scalar defaults are not evidence of an actual rattan_coil observation; explicit null assignment, membership, counts and booleans are valid alternatives.",
+      "clauses": [],
+      "prompt_evidence": "rattan_coil"
+     },
+     {
+      "id": "opcd_gen_G3_09.4",
+      "check": "DAY_CHANGED compares UTC calendar dates of steaming_time rather than elapsed duration or the host calendar.",
+      "rationale": "This is the business predicate and includes its strict or inclusive boundaries.",
+      "clauses": [],
+      "prompt_evidence": "Classify the first usable steaming for a coil as FIRST_STEAM"
+     },
+     {
+      "id": "opcd_gen_G3_09.5",
+      "check": "Each usable rattan_coil observation advances the applicable comparison after classification, including alerting observations; rejected observations leave comparison state intact.",
+      "rationale": "Decision order must preserve the comparison specified for the following usable observation.",
+      "clauses": [],
+      "prompt_evidence": "length_cm"
+     },
+     {
+      "id": "opcd_gen_G3_09.6",
+      "check": "Keeps decisions for rattan_coil independent across interleaved input records.",
+      "rationale": "An unrelated business key must not inherit another key’s observations.",
+      "clauses": [],
+      "prompt_evidence": "rattan_coil"
+     },
+     {
+      "id": "opcd_gen_G3_09.7",
+      "check": "Preserves the original routed record and logs one info message with its classification; routes DAY_CHANGED to 0, BAD_STEAM to 1, and FIRST_STEAM/SAME_DATE to 2.",
+      "rationale": "Partition diagnostics belong in log messages, while the output is the original record.",
+      "clauses": [],
+      "prompt_evidence": "DAY_CHANGED"
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G3_09.F1",
+      "check": "Uses an unassigned scalar’s null test or a zero/empty comparison value to decide whether a usable rattan_coil predecessor exists.",
+      "rationale": "Type-default scalar values cannot indicate whether a rattan_coil observation occurred; explicitly assigned null or container membership remains valid."
+     },
+     {
+      "id": "opcd_gen_G3_09.F2",
+      "check": "Using the host-local steaming_time date can misclassify a UTC boundary as SAME_DATE.",
+      "rationale": "This defect changes the specified domain transition rather than imposing a coding style."
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G3_15",
+   "type": "generate",
+   "component": "DENORMALIZER",
+   "gap": "G3",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "1. Produce one Denormalizer cutting report per panel_id at a lapis workshop. Input is sorted ascending on panel_id and contiguous within each panel; retain the supplied order of cuts. Even a panel with no usable cuts needs a report. Preserve the first source sawyer_note in first_sawyer_note, whether or not that first cut is usable.\n\n2. A usable cut requires sawyer_signed=true and cut_width as one to three digits, optionally a point and one or two fractional digits. Null approval, absent or blank text, signs, spaces and malformed quantities are rejected cuts. Numeric zero is usable. The first usable cut of a panel supplies its opening width and does not count as a decrease.\n\n3. For each subsequent usable cut, count a decrease exactly when its decimal width is strictly smaller than the preceding usable width. Every usable cut supplies the next comparison, including a decrease. Rejected cuts affect only their rejection count. Each panel has independent cutting figures and comparisons.\n\n4. The report includes panel_id; opening_width as two-decimal text such as 0.00, or null with no usable cut; width_decreases; usable_cuts including decreases; rejected_cuts; cutting_cost as the sum of stone_cost on usable cuts, null costs contributing zero; last_cut_time as the last usable sawing_time or null; report_annotation as empty text; and first_sawyer_note as described above. Bare sawing_time dates mean UTC midnight. stone_description and cut_number are unused by this report.\n\nInput 0 metadata:\n```xml\n<Record name=\"G3In15\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"panel_id\" type=\"string\" nullable=\"false\" /><Field name=\"cut_width\" type=\"string\" nullable=\"true\" /><Field name=\"sawyer_signed\" type=\"boolean\" nullable=\"true\" /><Field name=\"stone_description\" type=\"string\" nullable=\"true\" /><Field name=\"sawing_time\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"stone_cost\" type=\"decimal\" nullable=\"true\" length=\"16\" scale=\"2\" /><Field name=\"cut_number\" type=\"long\" nullable=\"false\" /><Field name=\"sawyer_note\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nOutput 0 metadata:\n```xml\n<Record name=\"G3Out15P0\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\"><Field name=\"panel_id\" type=\"string\" nullable=\"false\" /><Field name=\"opening_width\" type=\"string\" nullable=\"true\" /><Field name=\"width_decreases\" type=\"long\" nullable=\"false\" /><Field name=\"usable_cuts\" type=\"long\" nullable=\"false\" /><Field name=\"rejected_cuts\" type=\"long\" nullable=\"false\" /><Field name=\"cutting_cost\" type=\"decimal\" nullable=\"false\" length=\"16\" scale=\"2\" /><Field name=\"last_cut_time\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" /><Field name=\"report_annotation\" type=\"string\" nullable=\"false\" /><Field name=\"first_sawyer_note\" type=\"string\" nullable=\"true\" /></Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G3 (c9 holdout)",
+    "required": [
+     {
+      "id": "opcd_gen_G3_15.1",
+      "check": "Denormalizer accumulates with append(), emits one report using transform() and returns a successful component result for each nonempty group.",
+      "rationale": "The implementation must obey the supplied component contract.",
+      "clauses": [],
+      "prompt_evidence": "Produce one Denormalizer cutting report per panel_id at a lapis workshop"
+     },
+     {
+      "id": "opcd_gen_G3_15.2",
+      "check": "Accepts sawyer_signed only when true and validates the complete unsigned shape of cut_width before any required conversion; blank text cannot reach str2decimal unguarded.",
+      "rationale": "Invalid cut_width must not interrupt subsequent observations.",
+      "clauses": [],
+      "prompt_evidence": "cut_width"
+     },
+     {
+      "id": "opcd_gen_G3_15.3",
+      "check": "The first usable panel_id observation supplies its opening value without an alert, including zero or empty comparison values where applicable; earlier rejected rows do not supply it.",
+      "rationale": "Declared scalar defaults are not evidence of an actual panel_id observation; explicit null assignment, membership, counts and booleans are valid alternatives.",
+      "clauses": [],
+      "prompt_evidence": "panel_id"
+     },
+     {
+      "id": "opcd_gen_G3_15.4",
+      "check": "width_decreases counts strict decimal cut_width decreases between consecutive usable cuts of the panel.",
+      "rationale": "This is the business predicate and includes its strict or inclusive boundaries.",
+      "clauses": [],
+      "prompt_evidence": "For each subsequent usable cut, count a decrease exactly when its decimal width is strictly smaller than the preceding usable width"
+     },
+     {
+      "id": "opcd_gen_G3_15.5",
+      "check": "Each usable panel_id observation advances the applicable comparison after classification, including alerting observations; rejected observations leave comparison state intact.",
+      "rationale": "Decision order must preserve the comparison specified for the following usable observation.",
+      "clauses": [],
+      "prompt_evidence": "cut_width"
+     },
+     {
+      "id": "opcd_gen_G3_15.6",
+      "check": "Keeps decisions for panel_id independent across contiguous groups, including a group with no usable records.",
+      "rationale": "An unrelated business key must not inherit another key’s observations.",
+      "clauses": [],
+      "prompt_evidence": "panel_id"
+     },
+     {
+      "id": "opcd_gen_G3_15.7",
+      "check": "opening_width comes from the first usable comparison in the requested format, or null when none is usable; first_sawyer_note comes from the first source sawyer_note even when that source is rejected.",
+      "rationale": "The final group input cannot supply either first-record value in general.",
+      "clauses": [],
+      "prompt_evidence": "first_sawyer_note"
+     },
+     {
+      "id": "opcd_gen_G3_15.8",
+      "check": "usable_cuts counts every usable input, rejected_cuts counts every rejected input and width_decreases counts only the requested transitions.",
+      "rationale": "Each source row belongs in exactly one eligibility count.",
+      "clauses": [],
+      "prompt_evidence": "usable_cuts"
+     },
+     {
+      "id": "opcd_gen_G3_15.9",
+      "check": "cutting_cost sums only usable stone_cost with null contributing zero; last_cut_time is the last usable sawing_time or null for an all-rejected group, and report_annotation is empty.",
+      "rationale": "Rejected late records must not replace the last usable date or add costs.",
+      "clauses": [],
+      "prompt_evidence": "cutting_cost"
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G3_15.F1",
+      "check": "Uses an unassigned scalar’s null test or a zero/empty comparison value to decide whether a usable panel_id predecessor exists.",
+      "rationale": "Type-default scalar values cannot indicate whether a panel_id observation occurred; explicitly assigned null or container membership remains valid."
+     },
+     {
+      "id": "opcd_gen_G3_15.F2",
+      "check": "Taking opening_width from the last panel input loses the first usable cut_width.",
+      "rationale": "This defect changes the specified domain transition rather than imposing a coding style."
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G4_03",
+   "type": "generate",
+   "component": "REFORMAT",
+   "gap": "G4",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Cabinet humidity publishing queues\n\nConservators publish humidity changes through a two-output Reformat. Cabinet accounts arrive in consecutive case_number blocks with nonnegative numbers. There are no target prescriptions to load. Each cabinet begins operating when its first usable KEEP arrives and may operate again after withdrawal.\n\nOutput 0 is the closure queue; output 1 is the new-prescription and paperwork queue. KEEP that differs from the installed humidity by strictly more than 2.00 creates a closure plus an opening. Exactly 2.00 does not qualify numerically. A lining_description difference also qualifies: null and empty agree, but every other raw character is significant. Compare against the last OPEN, not the preceding submission. Equivalent proposals create UNCHANGED on output 1. REMOVE creates CLOSE on output 0 if operating, or INACTIVE on output 1 otherwise; no additional retirement notice is required.\n\nRequire change_day to be an exact yyyy-MM-dd UTC calendar day. For KEEP, trim humidity_slip and accept optional minus, one to six ASCII digits, optionally followed by a point and one or two fractional digits. REMOVE does not inspect that slip. Bad dates, bad KEEP quantities and unknown instruction produce INVALID on output 1, form_problem INPUT, without altering the cabinet prescription.\n\nEvery OPEN takes one long humidity_keys identifier starting 8001, step 1, into humidity_revision. Its humidity_target is the parsed decimal, lining_description the raw source, coverage_begin the change day, and coverage_end null. CLOSE carries the old installed revision, target, lining and coverage_begin; coverage_end is the UTC calendar day immediately before change_day. UNCHANGED, INACTIVE and INVALID have those five payload fields null. All notices copy case_number and conservation_ticket, identify notice_class and carry filing_month in yyyy-MM, for example 2026-01; invalid dates give an empty month. form_problem is empty apart from INVALID. The four provenance columns contingency, survey_time, installer_remark and position_no do not affect publication.\n\nInput port 0:\n```xml\n<Record name=\"CabinethumiditypublishingqueuesInput\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"case_number\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"humidity_slip\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"lining_description\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"change_day\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"contingency\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"survey_time\" type=\"date\" nullable=\"false\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"installer_remark\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"conservation_ticket\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"instruction\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"position_no\" type=\"integer\" nullable=\"false\"/>\n</Record>\n```\n\nOutput port 0:\n```xml\n<Record name=\"CabinethumiditypublishingqueuesLedger\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"case_number\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"notice_class\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"humidity_revision\" type=\"long\" nullable=\"true\"/>\n  <Field name=\"humidity_target\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"lining_description\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"coverage_begin\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"coverage_end\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"filing_month\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"form_problem\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"conservation_ticket\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nOutput port 1:\n```xml\n<Record name=\"CabinethumiditypublishingqueuesLedger\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"case_number\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"notice_class\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"humidity_revision\" type=\"long\" nullable=\"true\"/>\n  <Field name=\"humidity_target\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"lining_description\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"coverage_begin\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"coverage_end\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"filing_month\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"form_problem\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"conservation_ticket\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G4 (c9 holdout)",
+    "required": [
+     {
+      "check": "Implements transform() and returns the intended output index, ALL for both populated destinations where required, or SKIP for a specified silent event.",
+      "rationale": "Reformat has one callback per source row; returning a port selects that populated output, while ALL publishes the configured outputs.",
+      "clauses": [],
+      "id": "opcd_gen_G4_03.1",
+      "prompt_evidence": "For KEEP, trim humidity_slip and accept optional minus, one to six ASCII"
+     },
+     {
+      "id": "opcd_gen_G4_03.2",
+      "check": "Keeps the account for case_number=0 independent of every later key and permits installation after withdrawal. An explicit nullable key, presence predicate, grouping or equivalent separation is acceptable.",
+      "rationale": "Account zero and a subsequent independent account are both exercised; bare long locals begin at 0, not null.",
+      "clauses": [],
+      "prompt_evidence": "Output 0 is the closure queue; output 1 is the new-prescription and"
+     },
+     {
+      "id": "opcd_gen_G4_03.3",
+      "check": "Rejects malformed humidity_slip on KEEP without converting unchecked text; REMOVE is exempt from the quantity requirement.",
+      "rationale": "The fixture includes blank and excessive digits. str2decimal(\"\") throws, so grammar guarding or equivalent protected conversion is necessary.",
+      "clauses": [],
+      "prompt_evidence": "Bad dates, bad KEEP quantities and unknown instruction produce INVALID on output"
+     },
+     {
+      "id": "opcd_gen_G4_03.4",
+      "check": "Produces INVALID when change_day has a shortened spelling or impossible calendar day, without changing the usable account.",
+      "rationale": "Exact day spelling and strict calendar validity are distinct requirements; isDate with strict=true plus shape validation or a protected equivalent works.",
+      "clauses": [],
+      "prompt_evidence": "CLOSE carries the old installed revision, target, lining and coverage_begin; coverage_end is"
+     },
+     {
+      "id": "opcd_gen_G4_03.5",
+      "check": "The numeric replacement decision for humidity_target uses the operating OPEN and the case rule abs(the reference quantity-the proposed quantity)>2D.",
+      "rationale": "The chosen business comparison must survive equivalent intervening proposals; the installed payload remains a separate concern.",
+      "clauses": [],
+      "prompt_evidence": "Its humidity_target is the parsed decimal, lining_description the raw source, coverage_begin the"
+     },
+     {
+      "id": "opcd_gen_G4_03.6",
+      "check": "Applies the specified nullable lining_description comparison independently of the numeric decision and stores submitted spelling on installation.",
+      "rationale": "A descriptor-only change in the fixture must replace a version; the equivalence convention is case-specific.",
+      "clauses": [],
+      "prompt_evidence": "Bad dates, bad KEEP quantities and unknown instruction produce INVALID on output"
+     },
+     {
+      "id": "opcd_gen_G4_03.7",
+      "check": "Allocates a single long identifier from humidity_keys only for each OPEN and preserves it as humidity_revision for its later closure.",
+      "rationale": "Audits and withdrawals cannot create gaps in the installation identifier stream; typed long sequence access or an equivalent safe retrieval is valid.",
+      "clauses": [],
+      "prompt_evidence": "Every OPEN takes one long humidity_keys identifier starting 8001, step 1, into"
+     },
+     {
+      "id": "opcd_gen_G4_03.8",
+      "check": "CLOSE carries the operating humidity_revision, humidity_target, lining_description and coverage_begin; coverage_end follows the specified exclusive or inclusive ending convention.",
+      "rationale": "A replacement cannot overwrite the old payload before the closure has been constructed; snapshot records and delayed assignment are both valid.",
+      "clauses": [],
+      "prompt_evidence": "Its humidity_target is the parsed decimal, lining_description the raw source, coverage_begin the"
+     },
+     {
+      "id": "opcd_gen_G4_03.9",
+      "check": "Emits exactly the stated version/audit events to the configured destination(s), including silent cases; filing_month uses the UTC event calendar and form_problem has its declared audit content.",
+      "rationale": "This checks publication policy, not internal state representation; valid date months use yyyy-MM and invalid date months are empty.",
+      "clauses": [],
+      "prompt_evidence": "CLOSE carries the old installed revision, target, lining and coverage_begin; coverage_end is"
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G4_03.F1",
+      "check": "Consumes a fresh sequence identifier for INVALID, CLOSE, INACTIVE, UNCHANGED instead of limiting allocation to OPEN for humidity_revision.",
+      "rationale": "This creates sequence consumption without a new case_number installation.",
+      "prompt_evidence": "For KEEP, trim humidity_slip and accept optional minus, one to six ASCII"
+     },
+     {
+      "id": "opcd_gen_G4_03.F2",
+      "check": "Lets a valid new case_number inherit the preceding key's active payload when deciding its first KEEP.",
+      "rationale": "The independent account must not close another case_number installation.",
+      "prompt_evidence": "Each cabinet begins operating when its first usable KEEP arrives and may"
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G4_09",
+   "type": "generate",
+   "component": "REFORMAT",
+   "gap": "G4",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Canal gate torque queues\n\nUse a two-output Reformat to publish canal-gate actuator prescriptions. Gate accounts are supplied in consecutive gate_actuator blocks, using nonnegative account numbers. Source order is the order of maintenance work, and no existing target prescriptions are supplied.\n\nThe installed OPEN is the numerical reference. A higher KEEP torque replaces the prescription; an equal or lower torque is numerically equivalent. seal_material can independently demand replacement: compare trimmed, uppercased text, treating absence as blank, while saving raw text. Consequently a seal change may install a lower torque. Equivalent submissions are silent.\n\nA usable KEEP with no prescription in service produces OPEN on port 1. A replacement gives CLOSE on port 0 and OPEN on port 1. REMOVE yields CLOSE on 0 when operating, otherwise INACTIVE on 1. Recommissioning is allowed. decision values other than KEEP and REMOVE are defective paperwork.\n\nRequire maintenance_day to be a possible UTC calendar day spelled exactly yyyy-MM-dd. Trim torque_card only for KEEP; accept optional minus, one to six ASCII integer digits and an optional dot followed by one or two digits. REMOVE ignores this card. A bad required value produces INVALID on port 1, ticket_error INPUT, leaving the usable actuator account intact.\n\nFor OPEN obtain one long actuator_keys identifier from 8001 with increment 1, writing actuator_revision, exact torque_setting, raw seal_material and commissioned_at; withdrawn_at is null. CLOSE retains the installed revision and payload, with withdrawn_at this maintenance day. Audit records have null revision, torque, seal and endpoints. Every output sets actuator_notice, copies gate_actuator and work_ticket, and writes maintenance_month as UTC yyyy-MM, for example 2026-01, or empty if the day is invalid. ticket_error is otherwise empty. purchase_estimate, lock_clock, fitter_message and event_order need no processing.\n\nInput port 0:\n```xml\n<Record name=\"CanalgatetorquequeuesInput\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"gate_actuator\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"torque_card\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"seal_material\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"maintenance_day\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"purchase_estimate\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"lock_clock\" type=\"date\" nullable=\"false\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"fitter_message\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"work_ticket\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"decision\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"event_order\" type=\"integer\" nullable=\"false\"/>\n</Record>\n```\n\nOutput port 0:\n```xml\n<Record name=\"CanalgatetorquequeuesLedger\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"gate_actuator\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"actuator_notice\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"actuator_revision\" type=\"long\" nullable=\"true\"/>\n  <Field name=\"torque_setting\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"seal_material\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"commissioned_at\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"withdrawn_at\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"maintenance_month\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"ticket_error\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"work_ticket\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nOutput port 1:\n```xml\n<Record name=\"CanalgatetorquequeuesLedger\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"gate_actuator\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"actuator_notice\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"actuator_revision\" type=\"long\" nullable=\"true\"/>\n  <Field name=\"torque_setting\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"seal_material\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"commissioned_at\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"withdrawn_at\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"maintenance_month\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"ticket_error\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"work_ticket\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G4 (c9 holdout)",
+    "required": [
+     {
+      "check": "Implements transform() and returns the intended output index, ALL for both populated destinations where required, or SKIP for a specified silent event.",
+      "rationale": "Reformat has one callback per source row; returning a port selects that populated output, while ALL publishes the configured outputs.",
+      "clauses": [],
+      "id": "opcd_gen_G4_09.1",
+      "prompt_evidence": "Every output sets actuator_notice, copies gate_actuator and work_ticket, and writes maintenance_month as"
+     },
+     {
+      "id": "opcd_gen_G4_09.2",
+      "check": "Keeps the account for gate_actuator=0 independent of every later key and permits installation after withdrawal. An explicit nullable key, presence predicate, grouping or equivalent separation is acceptable.",
+      "rationale": "Account zero and a subsequent independent account are both exercised; bare long locals begin at 0, not null.",
+      "clauses": [],
+      "prompt_evidence": "Every output sets actuator_notice, copies gate_actuator and work_ticket, and writes maintenance_month as"
+     },
+     {
+      "id": "opcd_gen_G4_09.3",
+      "check": "Rejects malformed torque_card on KEEP without converting unchecked text; REMOVE is exempt from the quantity requirement.",
+      "rationale": "The fixture includes blank and excessive digits. str2decimal(\"\") throws, so grammar guarding or equivalent protected conversion is necessary.",
+      "clauses": [],
+      "prompt_evidence": "A higher KEEP torque replaces the prescription; an equal or lower torque"
+     },
+     {
+      "id": "opcd_gen_G4_09.4",
+      "check": "Produces INVALID when maintenance_day has a shortened spelling or impossible calendar day, without changing the usable account.",
+      "rationale": "Exact day spelling and strict calendar validity are distinct requirements; isDate with strict=true plus shape validation or a protected equivalent works.",
+      "clauses": [],
+      "prompt_evidence": "A bad required value produces INVALID on port 1, ticket_error INPUT, leaving"
+     },
+     {
+      "id": "opcd_gen_G4_09.5",
+      "check": "The numeric replacement decision for torque_setting uses the operating OPEN and the case rule the proposed quantity>the reference quantity.",
+      "rationale": "The chosen business comparison must survive equivalent intervening proposals; the installed payload remains a separate concern.",
+      "clauses": [],
+      "prompt_evidence": "For OPEN obtain one long actuator_keys identifier from 8001 with increment 1,"
+     },
+     {
+      "id": "opcd_gen_G4_09.6",
+      "check": "Applies the specified nullable seal_material comparison independently of the numeric decision and stores submitted spelling on installation.",
+      "rationale": "A descriptor-only change in the fixture must replace a version; the equivalence convention is case-specific.",
+      "clauses": [],
+      "prompt_evidence": "Source order is the order of maintenance work, and no existing target"
+     },
+     {
+      "id": "opcd_gen_G4_09.7",
+      "check": "Allocates a single long identifier from actuator_keys only for each OPEN and preserves it as actuator_revision for its later closure.",
+      "rationale": "Audits and withdrawals cannot create gaps in the installation identifier stream; typed long sequence access or an equivalent safe retrieval is valid.",
+      "clauses": [],
+      "prompt_evidence": "For OPEN obtain one long actuator_keys identifier from 8001 with increment 1,"
+     },
+     {
+      "id": "opcd_gen_G4_09.8",
+      "check": "CLOSE carries the operating actuator_revision, torque_setting, seal_material and commissioned_at; withdrawn_at follows the specified exclusive or inclusive ending convention.",
+      "rationale": "A replacement cannot overwrite the old payload before the closure has been constructed; snapshot records and delayed assignment are both valid.",
+      "clauses": [],
+      "prompt_evidence": "For OPEN obtain one long actuator_keys identifier from 8001 with increment 1,"
+     },
+     {
+      "id": "opcd_gen_G4_09.9",
+      "check": "Emits exactly the stated version/audit events to the configured destination(s), including silent cases; maintenance_month uses the UTC event calendar and ticket_error has its declared audit content.",
+      "rationale": "This checks publication policy, not internal state representation; valid date months use yyyy-MM and invalid date months are empty.",
+      "clauses": [],
+      "prompt_evidence": "Require maintenance_day to be a possible UTC calendar day spelled exactly yyyy-MM-dd."
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G4_09.F1",
+      "check": "Consumes a fresh sequence identifier for INVALID, CLOSE, INACTIVE instead of limiting allocation to OPEN for actuator_revision.",
+      "rationale": "This creates sequence consumption without a new gate_actuator installation.",
+      "prompt_evidence": "For OPEN obtain one long actuator_keys identifier from 8001 with increment 1,"
+     },
+     {
+      "id": "opcd_gen_G4_09.F2",
+      "check": "Lets a valid new gate_actuator inherit the preceding key's active payload when deciding its first KEEP.",
+      "rationale": "The independent account must not close another gate_actuator installation.",
+      "prompt_evidence": "A higher KEEP torque replaces the prescription; an equal or lower torque"
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G4_15",
+   "type": "generate",
+   "component": "REFORMAT",
+   "gap": "G4",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Detector cooling inclusive periods\n\nThe physics facility needs a Reformat publishing detector-cooling periods to two queues. Each consecutive detector_channel block is independent; channel numbers are nonnegative. No previously installed periods are supplied.\n\nKEEP compares cooling against the operating OPEN. An absolute difference of 2.00 or more warrants replacement, so the exact boundary qualifies. manifold_finish is also significant: null agrees with empty, while any other raw-character difference warrants replacement. An equivalent KEEP publishes UNCHANGED. Replacement writes the old period to port 0 and the new OPEN to port 1. REMOVE writes a CLOSE on port 0 when operating, or INACTIVE on port 1 otherwise. KEEP may start operation again after REMOVE.\n\nrun_day has to be a complete yyyy-MM-dd date with no surrounding whitespace, valid on the UTC calendar. A KEEP's trimmed cooling_slip allows optional minus, one to six ASCII integer digits and an optional point with one or two digits. REMOVE ignores quantity. Invalid required fields or an operating_order other than KEEP/REMOVE produce INVALID on port 1 and sheet_error INPUT, with no effect on the usable detector prescription.\n\nEvery OPEN draws one long cooling_keys number (8001, step 1) as cooling_revision and stores exact coolant_target, raw manifold_finish and period_begins. period_ends is null. The closure retains those installed values and revision; its period_ends is the UTC day immediately before run_day. The new period starts on run_day. INVALID, INACTIVE and UNCHANGED carry null revision, target, finish and endpoints. All events copy detector_channel and experiment_ref, set cooling_notice and populate experiment_month as the valid UTC yyyy-MM event month, e.g. 2026-02, or empty if invalid. sheet_error is otherwise empty. contingency_fund, shift_received, cooling_comment and sample_no have no business role in this component.\n\nInput port 0:\n```xml\n<Record name=\"DetectorcoolinginclusiveperiodsInput\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"detector_channel\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"cooling_slip\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"manifold_finish\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"run_day\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"contingency_fund\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"shift_received\" type=\"date\" nullable=\"false\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"cooling_comment\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"experiment_ref\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"operating_order\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"sample_no\" type=\"integer\" nullable=\"false\"/>\n</Record>\n```\n\nOutput port 0:\n```xml\n<Record name=\"DetectorcoolinginclusiveperiodsLedger\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"detector_channel\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"cooling_notice\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"cooling_revision\" type=\"long\" nullable=\"true\"/>\n  <Field name=\"coolant_target\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"manifold_finish\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"period_begins\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"period_ends\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"experiment_month\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"sheet_error\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"experiment_ref\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nOutput port 1:\n```xml\n<Record name=\"DetectorcoolinginclusiveperiodsLedger\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"detector_channel\" type=\"long\" nullable=\"false\"/>\n  <Field name=\"cooling_notice\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"cooling_revision\" type=\"long\" nullable=\"true\"/>\n  <Field name=\"coolant_target\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"2\"/>\n  <Field name=\"manifold_finish\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"period_begins\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"period_ends\" type=\"date\" nullable=\"true\" timeZone=\"UTC\" format=\"yyyy-MM-dd HH:mm:ss\"/>\n  <Field name=\"experiment_month\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"sheet_error\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"experiment_ref\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G4 (c9 holdout)",
+    "required": [
+     {
+      "check": "Implements transform() and returns the intended output index, ALL for both populated destinations where required, or SKIP for a specified silent event.",
+      "rationale": "Reformat has one callback per source row; returning a port selects that populated output, while ALL publishes the configured outputs.",
+      "clauses": [],
+      "id": "opcd_gen_G4_15.1",
+      "prompt_evidence": "Invalid required fields or an operating_order other than KEEP/REMOVE produce INVALID on"
+     },
+     {
+      "id": "opcd_gen_G4_15.2",
+      "check": "Keeps the account for detector_channel=0 independent of every later key and permits installation after withdrawal. An explicit nullable key, presence predicate, grouping or equivalent separation is acceptable.",
+      "rationale": "Account zero and a subsequent independent account are both exercised; bare long locals begin at 0, not null.",
+      "clauses": [],
+      "prompt_evidence": "An absolute difference of 2.00 or more warrants replacement, so the exact"
+     },
+     {
+      "id": "opcd_gen_G4_15.3",
+      "check": "Rejects malformed cooling_slip on KEEP without converting unchecked text; REMOVE is exempt from the quantity requirement.",
+      "rationale": "The fixture includes blank and excessive digits. str2decimal(\"\") throws, so grammar guarding or equivalent protected conversion is necessary.",
+      "clauses": [],
+      "prompt_evidence": "Invalid required fields or an operating_order other than KEEP/REMOVE produce INVALID on"
+     },
+     {
+      "id": "opcd_gen_G4_15.4",
+      "check": "Produces INVALID when run_day has a shortened spelling or impossible calendar day, without changing the usable account.",
+      "rationale": "Exact day spelling and strict calendar validity are distinct requirements; isDate with strict=true plus shape validation or a protected equivalent works.",
+      "clauses": [],
+      "prompt_evidence": "run_day has to be a complete yyyy-MM-dd date with no surrounding whitespace,"
+     },
+     {
+      "id": "opcd_gen_G4_15.5",
+      "check": "The numeric replacement decision for coolant_target uses the operating OPEN and the case rule abs(the reference quantity-the proposed quantity)>=2D.",
+      "rationale": "The chosen business comparison must survive equivalent intervening proposals; the installed payload remains a separate concern.",
+      "clauses": [],
+      "prompt_evidence": "Replacement writes the old period to port 0 and the new OPEN"
+     },
+     {
+      "id": "opcd_gen_G4_15.6",
+      "check": "Applies the specified nullable manifold_finish comparison independently of the numeric decision and stores submitted spelling on installation.",
+      "rationale": "A descriptor-only change in the fixture must replace a version; the equivalence convention is case-specific.",
+      "clauses": [],
+      "prompt_evidence": "Invalid required fields or an operating_order other than KEEP/REMOVE produce INVALID on"
+     },
+     {
+      "id": "opcd_gen_G4_15.7",
+      "check": "Allocates a single long identifier from cooling_keys only for each OPEN and preserves it as cooling_revision for its later closure.",
+      "rationale": "Audits and withdrawals cannot create gaps in the installation identifier stream; typed long sequence access or an equivalent safe retrieval is valid.",
+      "clauses": [],
+      "prompt_evidence": "Every OPEN draws one long cooling_keys number (8001, step 1) as cooling_revision"
+     },
+     {
+      "id": "opcd_gen_G4_15.8",
+      "check": "CLOSE carries the operating cooling_revision, coolant_target, manifold_finish and period_begins; period_ends follows the specified exclusive or inclusive ending convention.",
+      "rationale": "A replacement cannot overwrite the old payload before the closure has been constructed; snapshot records and delayed assignment are both valid.",
+      "clauses": [],
+      "prompt_evidence": "Every OPEN draws one long cooling_keys number (8001, step 1) as cooling_revision"
+     },
+     {
+      "id": "opcd_gen_G4_15.9",
+      "check": "Emits exactly the stated version/audit events to the configured destination(s), including silent cases; experiment_month uses the UTC event calendar and sheet_error has its declared audit content.",
+      "rationale": "This checks publication policy, not internal state representation; valid date months use yyyy-MM and invalid date months are empty.",
+      "clauses": [],
+      "prompt_evidence": "All events copy detector_channel and experiment_ref, set cooling_notice and populate experiment_month as"
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G4_15.F1",
+      "check": "Consumes a fresh sequence identifier for INVALID, CLOSE, INACTIVE, UNCHANGED instead of limiting allocation to OPEN for cooling_revision.",
+      "rationale": "This creates sequence consumption without a new detector_channel installation.",
+      "prompt_evidence": "REMOVE writes a CLOSE on port 0 when operating, or INACTIVE on"
+     },
+     {
+      "id": "opcd_gen_G4_15.F2",
+      "check": "Lets a valid new detector_channel inherit the preceding key's active payload when deciding its first KEEP.",
+      "rationale": "The independent account must not close another detector_channel installation.",
+      "prompt_evidence": "run_day has to be a complete yyyy-MM-dd date with no surrounding whitespace,"
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G6_03",
+   "type": "generate",
+   "component": "ROLLUP",
+   "gap": "G6",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "For tidal wetland restoration, implement a Rollup range report per wetland_plot. Input is ascending by plot and inputSorted=true. No immediate observations are written; port 0 receives LOW followed by HIGH at plot completion if any usable measurement exists.\n\nThe adjusted measurement is biomass_g times correction_factor. An omitted factor, including null or whitespace, is one. Nonblank factors must be trimmed and contain an optional minus, one to six ASCII digits and optionally one to three fractional digits. A spelling failure is TEXT. With valid factor syntax, null biomass_g is MISSING. A TEXT decision takes precedence if both fields are unusable. Keep exact signed adjusted measurements until selecting their minimum and maximum, including zero when present. The range does not include defective observations.\n\nWrite the selected minimum as LOW and maximum as HIGH in adjusted_biomass, rounding each to cents only when emitted. Exact signed halves round away from zero. Both rows have null difference_value. A plot without usable biomass produces neither bound. All range records copy the first physical arrival's wetland_plot, quadrat_tag, sampled_dt, ecologist_name, map_reference, sample_order and habitat_note, even when that arrival was defective.\n\nfiscal_quarter follows April-start UTC years, formatted yyyy/q without a Q: 2026-04-01 belongs to 2026/1 and 2026-03-31 to 2025/4. Date-only values are UTC midnight. samples_total counts all plot arrivals; rejected_samples counts TEXT and MISSING. map_reference, sampling_approved and sampling_share are documentary and do not affect eligibility.\n\nbound_type contains LOW or HIGH for the corresponding selected bound.\n\nInput port 0:\n```xml\n<Record name=\"TideObservation\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"wetland_plot\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"quadrat_tag\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"sampled_dt\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"correction_factor\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"biomass_g\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"sampling_approved\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"ecologist_name\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"map_reference\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"sample_order\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"habitat_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"sampling_share\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n</Record>\n```\n\nOutput port 0:\n```xml\n<Record name=\"TideLedger\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"wetland_plot\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"quadrat_tag\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"sampled_dt\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"bound_type\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"adjusted_biomass\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"difference_value\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"samples_total\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"ecologist_name\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"map_reference\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"sample_order\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"habitat_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fiscal_quarter\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"rejected_samples\" type=\"integer\" nullable=\"false\"/>\n</Record>\n```\n\nAccumulator metadata:\n```xml\n<Record name=\"TideAccumulator\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"wetland_plot\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"quadrat_tag\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"sampled_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"adjusted_biomass\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"samples_total\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"ecologist_name\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"map_reference\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"habitat_note\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G6 (c9 holdout)",
+    "required": [
+     {
+      "check": "For wetland_plot: Rollup supplies all five functions with TideAccumulator accumulator; updateTransform and transform use their integer counters to emit only the specified immediate/closing rows and end each output loop with SKIP.",
+      "rationale": "Rollup calls an output callback again after every success return, so the requested closing rows require an explicit SKIP boundary.",
+      "id": "opcd_gen_G6_03.1",
+      "prompt_evidence": "Write the selected minimum as LOW and maximum as HIGH in adjusted_biomass, rounding each to cents only when emitted."
+     },
+     {
+      "check": "For wetland_plot: fiscal_quarter computes April-start fiscal quarter labelled starting-year/quarter from the first input timestamp, using UTC-aware extraction/formatting and equivalent UTC arithmetic. Date-only values denote UTC midnight. On the central European host, dateAdd(...,day) can shift UTC midnight across daylight-saving changes (probe 18244); fixed 86400000-millisecond UTC-day shifts or equivalent UTC reconstruction preserve the required day.",
+      "rationale": "The April-start fiscal quarter labelled starting-year/quarter label can differ on a host-local date, and DST must not shift its UTC boundary.",
+      "id": "opcd_gen_G6_03.2",
+      "prompt_evidence": "fiscal_quarter follows April-start UTC years, formatted yyyy/q without a Q: 2026-04-01 belongs to 2026/1 and 2026-03-31 to 2025/4."
+     },
+     {
+      "check": "For wetland_plot: Optional correction_factor normalization yields factor one for omitted or blank content; trim(nvl(value,\"\")), isBlank or explicit null guards are equivalent.",
+      "rationale": "The absent correction_factor multiplier contributes an identity factor without numeric parsing.",
+      "id": "opcd_gen_G6_03.3",
+      "prompt_evidence": "An omitted factor, including null or whitespace, is one."
+     },
+     {
+      "check": "For wetland_plot: For nonblank interpreted correction_factor, validates complete optional-minus, 1–6 integer digit, optional 1–3 fractional digit grammar before unsafe conversion, or uses a shape check plus exception fallback yielding TEXT. str2decimal(\"\") throws.",
+      "rationale": "Exponent, plus and trailing material cannot enter exact adjustment arithmetic.",
+      "id": "opcd_gen_G6_03.4",
+      "prompt_evidence": "Nonblank factors must be trimmed and contain an optional minus, one to six ASCII digits and optionally one to three fractional digits."
+     },
+     {
+      "check": "For wetland_plot: TEXT takes precedence over MISSING: with valid factor syntax, null biomass_g is MISSING; bad factor syntax remains TEXT even with null mass.",
+      "rationale": "A missing measurement must not hide a separately malformed optional adjustment.",
+      "id": "opcd_gen_G6_03.5",
+      "prompt_evidence": "With valid factor syntax, null biomass_g is MISSING."
+     },
+     {
+      "check": "For wetland_plot: LOW value is the smallest valid unrounded adjusted amount, rounded to cents only when emitted.",
+      "rationale": "Initializing a minimum to numeric zero would invent a candidate for positive-only lots.",
+      "id": "opcd_gen_G6_03.6",
+      "prompt_evidence": "Write the selected minimum as LOW and maximum as HIGH in adjusted_biomass, rounding each to cents only when emitted."
+     },
+     {
+      "check": "For wetland_plot: HIGH value is the largest valid unrounded adjusted amount, rounded to cents only when emitted.",
+      "rationale": "Negative corrections are legitimate extrema and cannot be clipped away.",
+      "id": "opcd_gen_G6_03.7",
+      "prompt_evidence": "Write the selected minimum as LOW and maximum as HIGH in adjusted_biomass, rounding each to cents only when emitted."
+     },
+     {
+      "check": "For wetland_plot: Without a valid adjusted candidate, emits no LOW/HIGH range records.",
+      "rationale": "An entirely invalid lot must not expose default extrema.",
+      "id": "opcd_gen_G6_03.8",
+      "prompt_evidence": "For tidal wetland restoration, implement a Rollup range report per wetland_plot."
+     },
+     {
+      "check": "For wetland_plot: Clears effective group state before the next key block, in initGroup(), after the last requested closing emission when remaining counter calls safely SKIP, or through equivalent key-bound initialization.",
+      "rationale": "The next key block must begin with its own accepted extrema presence.",
+      "id": "opcd_gen_G6_03.9",
+      "prompt_evidence": "bound_type contains LOW or HIGH for the corresponding selected bound."
+     },
+     {
+      "check": "For wetland_plot: Copies wetland_plot/quadrat_tag/sampled_dt/ecologist_name/map_reference/sample_order/habitat_note from the first original input, by explicit assignments or an equivalent complete saved-record copy; preserves raw nullable context and original timestamps.",
+      "rationale": "A reporting calendar adjustment must not rewrite the source archive identity or timestamp.",
+      "id": "opcd_gen_G6_03.10",
+      "prompt_evidence": "All range records copy the first physical arrival's wetland_plot, quadrat_tag, sampled_dt, ecologist_name, map_reference, sample_order and habitat_note, even when that arrival was defective."
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G6_03.F1",
+      "check": "Uses host-local calendar extraction or formatting to assign fiscal_quarter from sampled_dt.",
+      "rationale": "The business calendar for sampled_dt is UTC, including cutoff and boundary observations."
+     },
+     {
+      "id": "opcd_gen_G6_03.F2",
+      "check": "For adjusted_biomass: Substitutes a numeric zero for an absent lower or upper candidate.",
+      "rationale": "This shortcut changes the required adjusted_biomass at a specified business boundary."
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G6_09",
+   "type": "generate",
+   "component": "ROLLUP",
+   "gap": "G6",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Use a Rollup to separate signed installation and correction totals for each dune fence contract. fence_contract is supplied in ascending order with inputSorted=true. At contract completion port 0 receives POSITIVE then NEGATIVE, and there are no immediate records.\n\nAn adjusted amount is installed_m multiplied by rate_entry. Missing, empty or whitespace-only rate_entry means one; other factors must be trimmed and spell an optional minus, one to six ASCII digits and optionally one to three fractional digits. A malformed factor is TEXT. If factor syntax is acceptable but installed_m is null, the decision is MISSING. TEXT takes precedence over missing measurement. Exclude both failure outcomes from the totals.\n\nAccumulate nonnegative adjusted amounts in POSITIVE and negative adjusted amounts in NEGATIVE, retaining their signs. Zero belongs to POSITIVE. signed_total contains each bin's exact sum rounded once to cents, with signed halves away from zero. Both bins must be reported even when zero. total_change is null in each row. bays_received counts all arrivals and invalid_bays counts TEXT plus MISSING.\n\nThe first arrival supplies fence_contract, bay_tag, recorded_dt, ranger_name, survey_reference, bay_order and maintenance_note, including null context. Its fiscal_window follows an October-start UTC fiscal year, formatted yyyy/q: October 2026 is 2026/1, September 2026 is 2025/4. Date-only records denote UTC midnight. survey_reference is copied only, and installation_signed and area_share are unused.\n\ntotal_class identifies the POSITIVE and NEGATIVE bins.\n\nInput port 0:\n```xml\n<Record name=\"DuneObservation\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"fence_contract\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"bay_tag\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"recorded_dt\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"rate_entry\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"installed_m\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"installation_signed\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"ranger_name\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"survey_reference\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"bay_order\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"maintenance_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"area_share\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n</Record>\n```\n\nOutput port 0:\n```xml\n<Record name=\"DuneLedger\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"fence_contract\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"bay_tag\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"recorded_dt\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"total_class\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"signed_total\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"total_change\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"bays_received\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"ranger_name\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"survey_reference\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"bay_order\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"maintenance_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fiscal_window\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"invalid_bays\" type=\"integer\" nullable=\"false\"/>\n</Record>\n```\n\nAccumulator metadata:\n```xml\n<Record name=\"DuneAccumulator\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"fence_contract\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"bay_tag\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"recorded_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"signed_total\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"bays_received\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"ranger_name\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"survey_reference\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"maintenance_note\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G6 (c9 holdout)",
+    "required": [
+     {
+      "check": "For fence_contract: Rollup supplies all five functions with DuneAccumulator accumulator; updateTransform and transform use their integer counters to emit only the specified immediate/closing rows and end each output loop with SKIP.",
+      "rationale": "Rollup calls an output callback again after every success return, so the requested closing rows require an explicit SKIP boundary.",
+      "id": "opcd_gen_G6_09.1",
+      "prompt_evidence": "Use a Rollup to separate signed installation and correction totals for each dune fence contract."
+     },
+     {
+      "check": "For fence_contract: fiscal_window computes October-start fiscal quarter labelled starting-year/quarter from the first input timestamp, using UTC-aware extraction/formatting and equivalent UTC arithmetic. Date-only values denote UTC midnight. On the central European host, dateAdd(...,day) can shift UTC midnight across daylight-saving changes (probe 18244); fixed 86400000-millisecond UTC-day shifts or equivalent UTC reconstruction preserve the required day.",
+      "rationale": "The October-start fiscal quarter labelled starting-year/quarter label can differ on a host-local date, and DST must not shift its UTC boundary.",
+      "id": "opcd_gen_G6_09.2",
+      "prompt_evidence": "Its fiscal_window follows an October-start UTC fiscal year, formatted yyyy/q: October 2026 is 2026/1, September 2026 is 2025/4."
+     },
+     {
+      "check": "For fence_contract: Optional rate_entry normalization yields factor one for omitted or blank content; trim(nvl(value,\"\")), isBlank or explicit null guards are equivalent.",
+      "rationale": "The absent rate_entry multiplier contributes an identity factor without numeric parsing.",
+      "id": "opcd_gen_G6_09.3",
+      "prompt_evidence": "Missing, empty or whitespace-only rate_entry means one; other factors must be trimmed and spell an optional minus, one to six ASCII digits and optionally one to three fractional digits."
+     },
+     {
+      "check": "For fence_contract: For nonblank interpreted rate_entry, validates complete optional-minus, 1–6 integer digit, optional 1–3 fractional digit grammar before unsafe conversion, or uses a shape check plus exception fallback yielding TEXT. str2decimal(\"\") throws.",
+      "rationale": "Exponent, plus and trailing material cannot enter exact adjustment arithmetic.",
+      "id": "opcd_gen_G6_09.4",
+      "prompt_evidence": "Missing, empty or whitespace-only rate_entry means one; other factors must be trimmed and spell an optional minus, one to six ASCII digits and optionally one to three fractional digits."
+     },
+     {
+      "check": "For fence_contract: TEXT takes precedence over MISSING: with valid factor syntax, null installed_m is MISSING; bad factor syntax remains TEXT even with null mass.",
+      "rationale": "A missing measurement must not hide a separately malformed optional adjustment.",
+      "id": "opcd_gen_G6_09.5",
+      "prompt_evidence": "If factor syntax is acceptable but installed_m is null, the decision is MISSING."
+     },
+     {
+      "check": "For fence_contract: POSITIVE value is the exact sum of nonnegative valid adjusted amounts, rounded once to cents.",
+      "rationale": "Zero belongs to the nonnegative bin rather than indicating absent state.",
+      "id": "opcd_gen_G6_09.6",
+      "prompt_evidence": "signed_total contains each bin's exact sum rounded once to cents, with signed halves away from zero."
+     },
+     {
+      "check": "For fence_contract: NEGATIVE value is the signed exact sum of negative valid adjusted amounts, rounded once to cents.",
+      "rationale": "Summing magnitudes would reverse correction accounting.",
+      "id": "opcd_gen_G6_09.7",
+      "prompt_evidence": "signed_total contains each bin's exact sum rounded once to cents, with signed halves away from zero."
+     },
+     {
+      "check": "For fence_contract: Emits both POSITIVE then NEGATIVE even when one or both bins are zero.",
+      "rationale": "A zero bin remains a required closing ledger entry.",
+      "id": "opcd_gen_G6_09.8",
+      "prompt_evidence": "Both bins must be reported even when zero."
+     },
+     {
+      "check": "For fence_contract: Clears effective group state before the next key block, in initGroup(), after the last requested closing emission when remaining counter calls safely SKIP, or through equivalent key-bound initialization.",
+      "rationale": "The next key block must begin with its own signed bins first fiscal anchor.",
+      "id": "opcd_gen_G6_09.9",
+      "prompt_evidence": "fence_contract is supplied in ascending order with inputSorted=true."
+     },
+     {
+      "check": "For fence_contract: Copies fence_contract/bay_tag/recorded_dt/ranger_name/survey_reference/bay_order/maintenance_note from the first original input, by explicit assignments or an equivalent complete saved-record copy; preserves raw nullable context and original timestamps.",
+      "rationale": "A reporting calendar adjustment must not rewrite the source archive identity or timestamp.",
+      "id": "opcd_gen_G6_09.10",
+      "prompt_evidence": "The first arrival supplies fence_contract, bay_tag, recorded_dt, ranger_name, survey_reference, bay_order and maintenance_note, including null context."
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G6_09.F1",
+      "check": "Uses host-local calendar extraction or formatting to assign fiscal_window from recorded_dt.",
+      "rationale": "The business calendar for recorded_dt is UTC, including cutoff and boundary observations."
+     },
+     {
+      "id": "opcd_gen_G6_09.F2",
+      "check": "For signed_total: Merges the negative signed bin into a net before emitting the two totals.",
+      "rationale": "This shortcut changes the required signed_total at a specified business boundary."
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "G6_15",
+   "type": "generate",
+   "component": "ROLLUP",
+   "gap": "G6",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "A climbing rope inspection Rollup must report a total even when inspection dates are absent. Ascending rope_certificate blocks arrive with inputSorted=true. Produce one completed port 0 row per certificate and no immediate rows.\n\nThe adjusted strength is tensile_units times strength_factor. Null, empty and whitespace-only factors mean one. Nonblank factors are trimmed and must spell an optional minus, one to six ASCII digits, optionally a decimal point with one to three digits. A factor syntax failure is TEXT even if tensile_units is null. With acceptable syntax, null tensile_units is MISSING. Sum usable exact adjusted quantities regardless of whether inspected_dt is null, including signed or zero strengths.\n\nIndependently choose the earliest arriving non-null inspected_dt as the reporting anchor, including a date from a quantitatively defective observation. An anchor gives date_class DATED and quarter_name in UTC yyyy/q form, for example 2026/2 for April. If all dates are null, choose UNDATED and an empty quarter_name. Date-only values mean midnight UTC. total_strength is the exact usable sum rounded once to cents, halves away from zero; strength_difference is null.\n\nThe first physical arrival supplies rope_certificate, coil_tag, inspected_dt, examiner_name, equipment_reference, test_order and wear_note, even if its own inspected_dt is null. tests_seen counts all arrivals, bad_tests counts TEXT plus MISSING. equipment_reference, inspection_signed and fibre_share are documentary only.\n\nInput port 0:\n```xml\n<Record name=\"RopeObservation\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"rope_certificate\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"coil_tag\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"inspected_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"strength_factor\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"tensile_units\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"inspection_signed\" type=\"boolean\" nullable=\"false\"/>\n  <Field name=\"examiner_name\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"equipment_reference\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"test_order\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"wear_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"fibre_share\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n</Record>\n```\n\nOutput port 0:\n```xml\n<Record name=\"RopeLedger\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"rope_certificate\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"coil_tag\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"inspected_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"date_class\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"total_strength\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"strength_difference\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"tests_seen\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"examiner_name\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"equipment_reference\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"test_order\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"wear_note\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"quarter_name\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"bad_tests\" type=\"integer\" nullable=\"false\"/>\n</Record>\n```\n\nAccumulator metadata:\n```xml\n<Record name=\"RopeAccumulator\" type=\"delimited\" fieldDelimiter=\"|\" recordDelimiter=\"\\n\" nullValue=\"__NULL__\">\n  <Field name=\"rope_certificate\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"coil_tag\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"inspected_dt\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd HH:mm:ss\" timeZone=\"UTC\"/>\n  <Field name=\"total_strength\" type=\"decimal\" nullable=\"true\" length=\"18\" scale=\"3\"/>\n  <Field name=\"tests_seen\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"examiner_name\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"equipment_reference\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"wear_note\" type=\"string\" nullable=\"true\"/>\n</Record>\n```\n\nWrite the complete CTL2 for this component only, including its required entry functions.",
+   "rubric": {
+    "description": "OPCD generate gap G6 (c9 holdout)",
+    "required": [
+     {
+      "check": "For rope_certificate: Rollup supplies all five functions with RopeAccumulator accumulator; updateTransform and transform use their integer counters to emit only the specified immediate/closing rows and end each output loop with SKIP.",
+      "rationale": "Rollup calls an output callback again after every success return, so the requested closing rows require an explicit SKIP boundary.",
+      "id": "opcd_gen_G6_15.1",
+      "prompt_evidence": "The first physical arrival supplies rope_certificate, coil_tag, inspected_dt, examiner_name, equipment_reference, test_order and wear_note, even if its own inspected_dt is null."
+     },
+     {
+      "check": "For rope_certificate: quarter_name computes January-start quarter labelled year/quarter, or empty for no dated submitted reading from the first non-null timestamp even when its amount is invalid, using UTC-aware extraction/formatting and equivalent UTC arithmetic. Date-only values denote UTC midnight. On the central European host, dateAdd(...,day) can shift UTC midnight across daylight-saving changes (probe 18244); fixed 86400000-millisecond UTC-day shifts or equivalent UTC reconstruction preserve the required day.",
+      "rationale": "The January-start quarter labelled year/quarter, or empty for no dated submitted reading label can differ on a host-local date, and DST must not shift its UTC boundary.",
+      "id": "opcd_gen_G6_15.2",
+      "prompt_evidence": "The first physical arrival supplies rope_certificate, coil_tag, inspected_dt, examiner_name, equipment_reference, test_order and wear_note, even if its own inspected_dt is null."
+     },
+     {
+      "check": "For rope_certificate: Optional strength_factor normalization yields factor one for omitted or blank content; trim(nvl(value,\"\")), isBlank or explicit null guards are equivalent.",
+      "rationale": "The absent strength_factor multiplier contributes an identity factor without numeric parsing.",
+      "id": "opcd_gen_G6_15.3",
+      "prompt_evidence": "Nonblank factors are trimmed and must spell an optional minus, one to six ASCII digits, optionally a decimal point with one to three digits."
+     },
+     {
+      "check": "For rope_certificate: For nonblank interpreted strength_factor, validates complete optional-minus, 1–6 integer digit, optional 1–3 fractional digit grammar before unsafe conversion, or uses a shape check plus exception fallback yielding TEXT. str2decimal(\"\") throws.",
+      "rationale": "Exponent, plus and trailing material cannot enter exact adjustment arithmetic.",
+      "id": "opcd_gen_G6_15.4",
+      "prompt_evidence": "Nonblank factors are trimmed and must spell an optional minus, one to six ASCII digits, optionally a decimal point with one to three digits."
+     },
+     {
+      "check": "For rope_certificate: TEXT takes precedence over MISSING: with valid factor syntax, null tensile_units is MISSING; bad factor syntax remains TEXT even with null mass.",
+      "rationale": "A missing measurement must not hide a separately malformed optional adjustment.",
+      "id": "opcd_gen_G6_15.5",
+      "prompt_evidence": "A factor syntax failure is TEXT even if tensile_units is null."
+     },
+     {
+      "check": "For rope_certificate: Retains the first non-null timestamp independently of amount validity, using explicit date occupancy or equivalent null-guarded state.",
+      "rationale": "An invalid amount can establish a valid reporting anchor before later accepted quantities.",
+      "id": "opcd_gen_G6_15.6",
+      "prompt_evidence": "Independently choose the earliest arriving non-null inspected_dt as the reporting anchor, including a date from a quantitatively defective observation."
+     },
+     {
+      "check": "For rope_certificate: Written amount is the exact valid adjusted sum rounded once to cents, without excluding valid rows whose timestamp is null.",
+      "rationale": "Date availability does not determine quantity admission.",
+      "id": "opcd_gen_G6_15.7",
+      "prompt_evidence": "total_strength is the exact usable sum rounded once to cents, halves away from zero; strength_difference is null."
+     },
+     {
+      "check": "For rope_certificate: Selects DATED when an actual non-null timestamp was seen, otherwise UNDATED; an epoch timestamp counts as seen.",
+      "rationale": "A bare declared date starts at the epoch and cannot alone identify absent input history.",
+      "id": "opcd_gen_G6_15.8",
+      "prompt_evidence": "Independently choose the earliest arriving non-null inspected_dt as the reporting anchor, including a date from a quantitatively defective observation."
+     },
+     {
+      "check": "For rope_certificate: Clears effective group state before the next key block, in initGroup(), after the last requested closing emission when remaining counter calls safely SKIP, or through equivalent key-bound initialization.",
+      "rationale": "The next key block must begin with its own independent date presence amount sum.",
+      "id": "opcd_gen_G6_15.9",
+      "prompt_evidence": "An anchor gives date_class DATED and quarter_name in UTC yyyy/q form, for example 2026/2 for April."
+     },
+     {
+      "check": "For rope_certificate: Copies rope_certificate/coil_tag/inspected_dt/examiner_name/equipment_reference/test_order/wear_note from the first original input, by explicit assignments or an equivalent complete saved-record copy; preserves raw nullable context and original timestamps.",
+      "rationale": "A reporting calendar adjustment must not rewrite the source archive identity or timestamp.",
+      "id": "opcd_gen_G6_15.10",
+      "prompt_evidence": "The first physical arrival supplies rope_certificate, coil_tag, inspected_dt, examiner_name, equipment_reference, test_order and wear_note, even if its own inspected_dt is null."
+     }
+    ],
+    "forbidden": [
+     {
+      "id": "opcd_gen_G6_15.F1",
+      "check": "Uses host-local calendar extraction or formatting to assign quarter_name from inspected_dt.",
+      "rationale": "The business calendar for inspected_dt is UTC, including cutoff and boundary observations."
+     },
+     {
+      "id": "opcd_gen_G6_15.F2",
+      "check": "For total_strength: Excludes a quantitatively usable strength solely because its timestamp is null.",
+      "rationale": "This shortcut changes the required total_strength at a specified business boundary."
+     }
+    ],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  }
+ ]
+}
