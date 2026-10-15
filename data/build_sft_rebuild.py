@@ -1,6 +1,8 @@
 """Build an SFT + DPO training set for the current recipe (rb1005/rb1006; findings §5).
 
   cd ~/llama_train && ~/venv/bin/python data/build_sft_rebuild.py rb1006 data/sft_rebuild_20261006
+  cd ~/llama_train && ~/venv/bin/python data/build_sft_rebuild.py rb1009 data/sft_rebuild_20261016 \
+      CTL_LoRA_fix_defaults_explained.json CTL_LoRA_declaration_defaults_contrast.json   # extra SFT files to exclude
 
 SFT  = every record in ctl_lora_training/sft_training_data/*.json (answer-only; minus EXCL), plus the
        self-distilled thinking traces of runs full1 + gen2full, each twice (minus stale traces listed in
@@ -18,7 +20,7 @@ from llamafactory.data.template import get_template_and_fix_tokenizer
 from llamafactory.hparams import DataArguments
 TAG,O=sys.argv[1],sys.argv[2]; os.makedirs(O,exist_ok=True)
 C="ctl_lora_training/sft_training_data/"
-EXCL={"CTL_LoRAT_reasoning_v2_agent_authored_20_fewshot.json"}
+EXCL={"CTL_LoRAT_reasoning_v2_agent_authored_20_fewshot.json"}|set(sys.argv[3:])
 sft=[]
 for f in sorted(glob.glob(C+"*.json")):
     name=f.split("/")[-1]
