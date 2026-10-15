@@ -9,13 +9,21 @@ sample counts changed over time, so check which era a number comes from:
 | §1–§3.15 | 38 tests (v4); 40 from `fix3` on (T39/T40, the `fix` type) | gpt-5.6-terra | mean of 3 runs |
 | §3.18 (09-29 – 10-05) | 43 tests (5 fix tests: T39–T43), frozen snapshots `results/eval_snapshot_20261001` / `_20261003` | gpt-6-sol | n=5 per test; fix n=20 |
 | §3.16, §3.19 (from 10-06) | snapshot `_20261003` | gpt-6-sol, then gpt-6.1-sol from 10-09 (§4.6) | n=5; fix and T40/T42 n=20; thinking-off validate 9 reps from §4.7 |
+| §3.22 (10-15) | as §3.21, plus suite v5 T53/T54 n10 and the c11 holdouts (20 DI/SCD-2 prompts × 4, judged against the verified answer) | gpt-6.1-sol | as §3.21 |
 | §3.21 (10-14) | suite v5 gap tests T44 T46 T57 T60–T63 T67 T73 n10 + 12 held-out gap prompts; the c4 gates as in §3.19 | gpt-6.1-sol | n=10 (gap tests), n=4–14 (holdout), gates as §4.7 |
 | §3.20 (10-13) | suite v5 = v4 + 30 real-world generate tests T44–T73, scored apart as `generate_rw`; snapshot `_20261013` | gpt-6.1-sol | n=5 on all 30, then n=10 more on 21 discriminating tests (n=15 pooled) |
 
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-14 with OPCD c9 (§3.21: a teacher with the CloverDX component guide in its prompt, on new generate
+Last updated 2026-10-15 with OPCD c10 and c11 (§3.22):
+- **c10** (c9 without training on truncated thinking-on samples) is the best model so far: thinking-off gap gains kept,
+  thinking-on gap tests 0.852, fix 0.924.
+- **c11** added DataIntersection and SCD-2 prompt groups from the owner's SFT sets. It improved same-set holdouts but
+  regressed the independent suite tests (T53 off 0.48 → 0.14, T60 off 0.71 → 0.42, T61 on 0.80 → 0.48). The
+  DataIntersection prompts all hinted the `$out.0` answer, and that set has since been revised.
+
+Earlier update, 2026-10-14, with OPCD c9 (§3.21: a teacher with the CloverDX component guide in its prompt, on new generate
 prompts for four of the shared gaps; thinking-off suite v5 gap tests 0.574 → 0.691 and every c4 gate passes, but
 thinking-on SCD answers regress −0.19 — longer thinking that hits the token limit, and weaker completed answers).
 
@@ -1520,6 +1528,107 @@ prefixes.
 - Teacher configs: `configs/opcd_c9_teachers/`; prompts `data/opcd/generate_gaps_c9.jsonl`, holdout
   `generate_gaps_c9_holdout.json`; result files `results/results_qwen38_{gapho,v5gaps,confirm_*}_{c4,c9}_*`.
 
+### 3.22 OPCD c10 and c11: skipping truncated samples helps; the DataIntersection/SCD-2 group does not transfer
+
+**c10** (`configs/opcd_c10.yaml`) is c9 with one change: thinking-on samples that hit the 6,144-token sampling cap are
+not trained (`train.skip_truncated: ["on"]`). c9 had trained every thinking-on SCD Normalizer answer only as a
+truncated thinking prefix (64 of 64 at the cap). From c4 round 15, 20 rounds.
+
+**c11** (`configs/opcd_c11.yaml`, `data/opcd/build_c11.py`) continues from c10 round 19 for 24 rounds and adds two
+prompt groups, built from the user turns of the owner's run-verified SFT sets:
+- **DataIntersection (50 prompts):** guide-only teacher (DataIntersection guide + `ctl2-basics.md` §8.9 + §13.3).
+- **SCD-2 (50 prompts):** guide teacher plus the verified answer to the same request as a worked example in the
+  teacher's prompt (SDFT-style, `teacher_context_field`).
+
+The teacher check chose that split: the guide teacher scored T53/T54 1.00 (c10 0.48–0.61), but was below c10 on SCD
+T60/T61. 10 prompts per group were held out. The c9/c10 gap prompts stay in at weight 1. Training was clean: target KL
+0.12 → 0.03, no cap hits.
+
+**Result** (vLLM, gpt-6.1-sol; T40/T42 counted as samples below full score, so the c9 figure differs from §3.21):
+
+| measure | c9 | c10 | c11 |
+|---|---|---|---|
+| suite v5 gap tests, thinking off (9 tests, n10) | **0.691** | 0.671 | 0.650 |
+| suite v5 gap tests, thinking on | 0.835 | **0.852** | 0.782 |
+| c9 held-out gap prompts, off / on (12 × 4) | 0.518 / 0.712 | 0.477 / **0.745** | 0.509 / 0.727 |
+| G4 SCD held-out, thinking on (3 × 10) | 0.364 | 0.376 | 0.324 |
+| validate, thinking off, 9 reps (WRONG) | 0.882 (6.5%) | 0.872 (6.8%) | 0.879 (6.1%) |
+| validate / fix / generate (v4), thinking on | 0.843 / 0.826 / 0.972 | 0.781 / **0.924** / 0.972 | 0.807 / 0.882 / 0.968 |
+| T40 + T42 below full score (n20 each) | 5/40 | 8/40 | 6/40 |
+| hard set 2, belief claims (60 samples) | 4 | 3 | **10** |
+| DataIntersection T53 off / on (n10) | — | 0.48 / 0.50 | **0.14** / 0.58 |
+| SCD T60 off, T61 on (n10) | — | 0.71, 0.80 | **0.42**, **0.48** |
+| c11 holdouts DI off / on (10 × 4) | — | 0.61 / 0.54 | 0.65 / 0.59 |
+| c11 holdouts SCD off / on | — | 0.73 / 0.71 | 0.79 / 0.81 |
+
+**c10 is the best model so far.** It keeps c9's thinking-off gain on the suite (0.671 vs c4's 0.574, within noise of
+c9) and recovers the thinking-on side:
+- gap tests 0.852 vs c9's 0.835;
+- fix 0.924, the highest of any run;
+- only 1 of 110 thinking-on gap answers fails to close `<think>`.
+
+Skipping truncated samples removed the thinking-on cost that c9 paid. G4 SCD stays weak in both (thinking on, c9 0.364
+vs c10 0.376), so it is a knowledge gap, not a training artefact.
+
+**c11 does not transfer.**
+- **The same-set holdouts improved** (SCD +0.06/+0.10, DI +0.04/+0.05).
+- **The independent suite tests that measure the same gaps got worse:**
+  - T53 thinking off 0.48 → 0.14;
+  - T60 thinking off 0.71 → 0.42;
+  - T61 thinking on 0.80 → 0.48.
+- **Hard set 2 belief claims rose** from 3 to 10 of 60.
+
+A checkpoint check (`scripts/opcd_ckpt_check.sh`, rounds 7/11/15 on T53/T60/T61 at n10) shows that no earlier round is
+usable:
+
+| | T53 off | T60 off | T61 on (failed to close `<think>`) |
+|---|---|---|---|
+| c10 r19 | 0.48 | 0.71 | 0.80 (1) |
+| c11 r07 | 0.58 | 0.56 | 0.45 (4) |
+| c11 r11 | 0.51 | 0.53 | 0.68 (3) |
+| c11 r15 | 0.34 | 0.36 | 0.51 (3) |
+| c11 r23 | 0.14 | 0.42 | 0.48 (5) |
+
+- **T53 falls with every round.**
+- **T60 thinking off drops by round 7.**
+- **T61 thinking on is mostly thinking length:** from round 7, 3–5 of 10 answers don't close `<think>`. Completed
+  answers score well (4 × 1.0 and 0.83 at r23).
+
+**Why: the DataIntersection prompts gave the answer away.** All 28 code prompts in the round-1 DI set said where the
+result goes ("physical output1 is represented by the single local `$out.0` record"). So neither the student nor the
+teacher ever had to decide it, and nothing carried over to an unhinted prompt like T53. On T53 c11 still writes
+`$out.1`/`$out.2` in 10 of 10 samples, as c10 does. c10 routes with `getOutputPort()`; c11 instead moves the logic
+into invented per-port callbacks (`transformMatched()`, `transformUnmatched()`), which the component never calls.
+
+The SCD-2 set passed the same audit:
+- no hints;
+- every `$out.1` is in a two-output Reformat;
+- every `count()` / `transform(idx)` is in a Normalizer.
+
+Its loss is the c9 pattern again: longer thinking on SCD. The DI set has been revised
+(`spec/dataintersection_training_set_fix_brief.md`, `_explanations_fix_brief.md`; ctl_lora_training `d80aaa5`):
+- no mechanism hints;
+- 14 whole-component prompts in the T53 framing;
+- 9 DPO pairs that reject per-port CTL;
+- run-verified.
+
+**Lessons:**
+- **Judge a prompt group on independent tests, not on holdouts from the same authored set.** The holdouts share the
+  set's framing and hints.
+- **Check the prompts of an OPCD group for mechanism hints before training,** as for any corpus set.
+- **A guide teacher plus a worked example raises thinking length on SCD.** Every SCD group so far (c9 G4, c11 SCD) has
+  cost thinking-on answers through `<think>` that does not close.
+
+**Status:** c10 is the recommended ship candidate (the decision is the owner's). c11 is not adopted.
+
+**Practical notes:**
+- Adapters: `data/opcd/c10/round_019/adapter`, `data/opcd/c11/round_023/adapter` (gitignored).
+- Run scripts:
+  - `scripts/opcd_gaps_run.sh RUN LAST` with `HO2=` / `BASE=`: training plus all the evaluations above;
+  - `scripts/teacher_check_c11.sh`;
+  - `scripts/opcd_ckpt_check.sh`.
+- Result files: `results/results_qwen38_{ho2,gapho,v5gaps,confirm_ho,ckpt}_c1[01]*`.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number
@@ -1820,6 +1929,10 @@ directly.
 generate gaps; `scripts/opcd_c9_run.sh`). It improves thinking-off generation and keeps every c4 gate, but costs
 thinking-on SCD answers; whether it replaces c4 is open (§6).
 
+**Step 3c — c10** (§3.22), the recommended ship candidate: `configs/opcd_c10.yaml`, c9's recipe with
+`train.skip_truncated: ["on"]`, via `scripts/opcd_gaps_run.sh c10`. It keeps c9's thinking-off gain without the
+thinking-on cost.
+
 ### Step 4 — evaluate
 
 - Use the vLLM path (§4.7): `test.py` `mut.mode: vllm`, `--workers 32`.
@@ -1920,7 +2033,23 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 ## 6. Open questions, in priority order
 
-> **2026-10-14 — current front (§3.21).**
+> **2026-10-15 — current front (§3.22).**
+>
+> F. **Adopt c10?** It is the recommended ship candidate (best thinking-on and fix, thinking-off gains kept); c9 is superseded and c11 is not adopted. Owner decision open.
+>
+> I. **DataIntersection:** rerun the teacher check on the revised, unhinted DI prompts (ctl_lora_training `d80aaa5`).
+>    If the teacher still beats c10 there, rebuild the DI group from c10 and gate on T53/T54 (n10, both modes), not on
+>    same-set holdouts.
+>
+> J. **SCD (G4, T60/T61):** two OPCD groups have each cost thinking-on SCD answers through longer thinking. Options:
+>    - train SCD prompts thinking-off only;
+>    - a teacher without the worked example;
+>    - a length guard;
+>    - rely on the SCD-2 SFT/DPO set in the next base rebuild.
+>
+> K. **Fold c10 into the next base rebuild (C below),** together with the new DI and SCD-2 SFT/DPO sets.
+
+> **2026-10-14 front (§3.21).**
 >
 > F. **Adopt c9?** It wins thinking-off generate (suite v5 gap tests 0.574 → 0.691) and passes every c4 gate, but loses
 >    −0.19 on thinking-on SCD (G4) answers. Options: adopt c9 as is (generate thinking off, or accept the SCD cost); or
