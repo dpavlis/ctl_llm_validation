@@ -384,6 +384,26 @@ only. The untuned model writes Java-like code, invents functions and misses the 
 ² Judged before the CTL2 reference gained its DataIntersection section and the verified runtime facts, so it is not
 exactly comparable with the c4 / c10 columns.
 
+**Why keep training when neighbouring columns look close?** Read across the columns and the later stages can look
+marginal: generate 0.963 → 0.972, validate about the same. That impression comes from what the averages contain.
+
+- **The headline rows are near their ceiling by design.** Suite v4 generate and validate were solved by every fine-tuned
+  model; they are kept as *regression guards*. Each later stage must not lower them. A flat row means nothing broke, not
+  that nothing improved.
+- **Each later stage targets a specific failure, and its own row moves a lot:**
+  - c4 targeted the null-default belief: false fixes went from about 100% to 10%. In real code that belief produces
+    `if (x == null)` checks that never fire: wrong output with no error, the most expensive kind of bug.
+  - c4 → c10 targeted component knowledge gaps: fix 0.848 → 0.924, and +0.10 on the hardest production-like tests
+    without thinking.
+  - c11 targets DataIntersection, where the model scores 0.5–0.6 and its teacher 1.00.
+
+  None of these show in an average over mostly easy tests.
+- **Production failures come from the tail.** An agent generating CTL2 all day fails on the rare component, the state
+  carried across records, the edge case, not on the common patterns. A gain from 0.5 to 0.9 on a component used in 5%
+  of tasks barely moves an overall average, but removes a whole class of agent failures.
+- **Fewer false findings matter beyond the score.** In an agent loop a false review finding triggers a wrong "fix".
+  Taking WRONG findings from 8.2% to 6.8% is about one in six fewer such detours.
+
 **In short:**
 - **Generate:** routine CTL2 is solved reliably, about 0.97 on the per-feature tests in either thinking mode. On
   production-like tasks (wide metadata, business rules, reject ports, state across records) the model is at about 0.85
@@ -510,12 +530,49 @@ High level, in rough order:
 - **System prompt.** The model expects the standard CloverDX expert prompt it was trained with. Extra instructions in
   the prompt can change its behaviour; for example, a rule text in the prompt made thinking-off reviews worse.
 
+### 11.1 Prompt size: the main reason for all this training
+
+The trained model needs almost nothing in its prompt. A general model needs the CTL2 knowledge handed to it in every
+request.
+
+| | trained model (Qwen 27B + adapter) | large general model as judge (or generator) |
+|---|---|---|
+| system prompt | **three sentences, about 75 tokens:** "You are a CloverDX ETL expert … Prefer correct, practical, minimal solutions." | **about 25–30 thousand tokens:** the full CTL2 reference (language, about 260 built-in functions, component patterns, pitfalls, run-verified runtime facts) |
+| per component | nothing | the component's contract and guide, about 3–5 thousand tokens more for each component involved (Rollup, DataIntersection, Normalizer, …) |
+| user request | the task and the record metadata | the same |
+
+**Why the large model needs the big prompt.** CTL2 and the CloverDX component contracts are rare in public text. Even a
+frontier model mixes CTL2 up with Java or JavaScript, invents functions, or gets component contracts wrong:
+- which functions a component calls;
+- what a return value means;
+- which output record a DataIntersection writes;
+- that declared variables start at defaults, not null.
+
+So the judge is always given the full reference, and the reference keeps growing as facts are verified on the server.
+Without it, a judge cannot reliably tell a correct CTL2 answer from a plausible wrong one.
+
+**The same effect on Qwen itself.** Measured in the teacher checks (§7.3), Qwen with the component guide in its prompt
+solves much more than the trained model without it:
+- **DataIntersection suite tests:** 1.00, against 0.5–0.6 for c10;
+- **dictionary and UTC-calendar tasks:** +0.2 to +0.4.
+
+Knowledge in the prompt works; it is just expensive to send with every request.
+
+**What training buys.** Stages 2–4 move that knowledge from the prompt into the weights. Stage 4 does it literally: the
+teacher is the model *with* the guide or rule in its prompt, and the student learns to answer the same way *without*
+it. The result:
+- **Cost and speed:** about 75 tokens of system prompt instead of 25–35 thousand per request, many thousands of
+  requests a day in an agent loop.
+- **Local and private:** a 27B model on local GPUs instead of a frontier model behind an API.
+- **No retrieval step:** no need to pick the right guide sections for each request, and nothing to go wrong in that
+  selection.
+
 ## 12. External resources
 
 | resource | used for | stages |
 |---|---|---|
 | Qwen3.8-27B weights (Hugging Face) | the starting model | all |
-| GPUs: 4 × ~96 GB on one machine, power-capped at 450 W | training (1 GPU per job), sampling and serving (vLLM, 1 GPU each) | 1–4, evaluation |
+| GPUs: ~96 GB cards, typically two in use: one trains, one samples or serves (vLLM) | training, sampling during OPCD, serving models for evaluation | 1–4, evaluation |
 | LlamaFactory | SFT and DPO training with LoRA | 2–3 |
 | Hugging Face transformers + PEFT | OPCD training loop, merging adapters | 4 |
 | vLLM | fast sampling during OPCD; serving models for evaluation | 1, 4, evaluation |
