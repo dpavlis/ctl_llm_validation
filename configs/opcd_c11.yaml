@@ -1,0 +1,68 @@
+# On-policy context distillation, run c11 (continues c10 from round 19): adds DataIntersection and SCD-2 prompt groups.
+# Prompts: user turns of the run-verified corpus sets CTL_LoRA_dataintersection_sft.json and CTL_LoRA_scd2_sft.json
+# (data/opcd/build_c11.py; 10 per group held out). Teacher per prompt: rb1006 (adapter off) + rulev3 + the CloverDX guide of
+# the component the prompt writes (DataIntersection also ctl2-basics §8.9) + §13.3. Optional: the verified answer to the
+# same request as a worked example in the teacher's prompt (teacher_context_field: worked_example), SDFT-style.
+# Teacher check (suite v5, n10, vs c10): the guide teacher scores T53/T54 1.00 (c10 0.48-0.61) but is below c10 on SCD
+# T60/T61 (-0.01..-0.18), so the SCD-2 group gets the worked example as well; the DataIntersection group the guide only.
+# The c9/c10 gap prompts stay in at weight 1 so c10's gains are kept; truncated thinking-on samples are skipped as in c10.
+run: c11
+init_adapter: data/opcd/c10/round_019/adapter   # c10: best overall so far (findings §3.21 follow-up)
+base_model: /home/pavlisd/exports/qwen38_rb1006_sftdpo
+student: {"on": configs/eval_rb1006_on.yaml, "off": configs/eval_rb1006_off.yaml}
+teacher: {"on": configs/eval_rb1006_rulev3_on.yaml, "off": configs/eval_rb1006_rulev3_off.yaml}   # the c4 rule teacher (hard sets 1-2)
+rule_marker: "Declaration defaults in CTL2"
+modes: {generate: "on", fix: "on", validate: "on"}
+set_modes: {replay: {validate: "off"}}
+set_teacher: {replay: plain}
+teachers:   # one per component; the gap prompts name theirs (generate_gaps_c9.jsonl "teacher")
+  guide_REFORMAT: {"on": configs/opcd_c9_teachers/guide_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_PARTITION: {"on": configs/opcd_c9_teachers/guide_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_DENORMALIZER: {"on": configs/opcd_c9_teachers/guide_DENORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_DENORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_NORMALIZER: {"on": configs/opcd_c9_teachers/guide_NORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_NORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_ROLLUP: {"on": configs/opcd_c9_teachers/guide_ROLLUP_on.yaml, "off": configs/opcd_c9_teachers/guide_ROLLUP_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_REFORMAT: {"on": configs/opcd_c9_teachers/guide_dict_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_PARTITION: {"on": configs/opcd_c9_teachers/guide_dict_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_DATA_GENERATOR: {"on": configs/opcd_c9_teachers/guide_dict_DATA_GENERATOR_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_DATA_GENERATOR_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide11_DATA_INTERSECTION: {"on": configs/opcd_c11_teachers/guide_DATA_INTERSECTION_on.yaml, "off": configs/opcd_c11_teachers/guide_DATA_INTERSECTION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide11_NORMALIZER: {"on": configs/opcd_c11_teachers/guide_NORMALIZER_on.yaml, "off": configs/opcd_c11_teachers/guide_NORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide11_REFORMAT: {"on": configs/opcd_c11_teachers/guide_REFORMAT_on.yaml, "off": configs/opcd_c11_teachers/guide_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide11_ROLLUP: {"on": configs/opcd_c11_teachers/guide_ROLLUP_on.yaml, "off": configs/opcd_c11_teachers/guide_ROLLUP_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide11_EXT_MERGE_JOIN: {"on": configs/opcd_c11_teachers/guide_EXT_MERGE_JOIN_on.yaml, "off": configs/opcd_c11_teachers/guide_EXT_MERGE_JOIN_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide11_EXT_HASH_JOIN: {"on": configs/opcd_c11_teachers/guide_EXT_HASH_JOIN_on.yaml, "off": configs/opcd_c11_teachers/guide_EXT_HASH_JOIN_off.yaml, marker: "# Reference: the component you are writing for"}
+
+prompts:
+  target: []
+  hard:
+    - {file: data/opcd/c11_di.jsonl, weight: 2, modes: ["on", "off"]}   # 50 DataIntersection prompts x both modes, guide teacher
+    - {file: data/opcd/c11_scd.jsonl, weight: 2, modes: ["on", "off"], teacher_context_field: worked_example}   # 50 SCD-2 prompts: guide + the verified answer
+    - {file: data/opcd/generate_gaps_c9.jsonl, weight: 1, modes: ["on", "off"]}   # the c9/c10 gap prompts, kept at weight 1
+    - {file: data/opcd/hard_cases.jsonl, weight: 1}    # declaration belief (set 1), keeps c4's behaviour
+    - {file: data/opcd/hard_cases2.jsonl, weight: 1}   # previous-record dates (set 2)
+  hard_holdout: data/opcd/hard_holdout_c11.json       # c9's 26 + 20 DataIntersection / SCD-2 prompts, never trained
+  probe: {run: dpodef1, split: probe}
+  replay_share: 0.4
+  replay_task_mix: {generate: 0.4, validate: 0.35, fix: 0.25}
+
+lora: {r: 32, alpha: 32, dropout: 0.0, target: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]}
+
+train:
+  seed: 0
+  rounds: 24
+  prompts_per_round: 32
+  k: 2
+  steps_per_round: 2
+  lr: 2.0e-5
+  warmup_steps: 5
+  grad_clip: 1.0
+  adv_clip: null
+  quote_guard: true
+  skip_truncated: ["on"]     # c9 trained thinking-on SCD answers only as truncated thinking (Normalizer 64/64 at the cap);
+                              # it learned to think longer without concluding (G4 thinking-on -0.19, findings §3.21)
+  max_new_tokens: 6144
+  cutoff: 8192                # student prompt + completion; the teacher's guide prompt adds ~4.5k tokens to its scoring pass only
+  logits_chunk: 1024
+
+probe: {n: 20, k: 2, every: 4}
+
+sampler: {url: "http://127.0.0.1:3011", served_model: rb1006, concurrency: 32}

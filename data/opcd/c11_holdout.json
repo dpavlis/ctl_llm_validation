@@ -1,0 +1,24 @@
+{
+ "holdout": [
+  "di_sft_006",
+  "di_sft_012",
+  "di_sft_018",
+  "di_sft_024",
+  "di_sft_030",
+  "di_sft_036",
+  "di_sft_042",
+  "di_sft_048",
+  "di_sft_054",
+  "di_sft_060",
+  "scd2_sft_006",
+  "scd2_sft_012",
+  "scd2_sft_018",
+  "scd2_sft_024",
+  "scd2_sft_030",
+  "scd2_sft_036",
+  "scd2_sft_042",
+  "scd2_sft_048",
+  "scd2_sft_054",
+  "scd2_sft_060"
+ ]
+}

@@ -72,6 +72,7 @@ def cmd_prepare(cfg: dict) -> None:
         weight = hf.get("weight", 1) if isinstance(hf, dict) else pc.get("hard_weight", 1)
         weight_map = hf.get("weight_by_part") if isinstance(hf, dict) else None  # {part: weight}, e.g. set 3 A/B
         both = hf.get("modes") if isinstance(hf, dict) else None  # e.g. [on, off]: each prompt once per thinking mode (c9)
+        ctx = hf.get("teacher_context_field") if isinstance(hf, dict) else None  # e.g. worked_example (c11, SDFT-style)
         hf = hf["file"] if isinstance(hf, dict) else hf
         if not Path(hf).exists():
             raise SystemExit(f"hard-case file missing: {hf}")
@@ -83,6 +84,8 @@ def cmd_prepare(cfg: dict) -> None:
                 h["user"], _ = sd.with_validate_format(h["user"])
             h.setdefault("record_id", h.get("id"))
             h["weight"] = (weight_map or {}).get(h.get("part"), weight)
+            if ctx:
+                h["teacher_context"] = h[ctx]
             if both:
                 sets["hard"] += [dict(h, mode=m, prompt_id=f"{h['prompt_id']}:{m}") for m in both]
             else:
@@ -104,7 +107,8 @@ def cmd_prepare(cfg: dict) -> None:
         cand = [p for p in pool if p["task_type"] == task]
         sets["replay"] += rng.sample(cand, min(len(cand), round(n_replay * share)))
 
-    keep = ("prompt_id", "task_type", "component", "source_file", "record_id", "user", "weight", "teacher", "mode")
+    keep = ("prompt_id", "task_type", "component", "source_file", "record_id", "user", "weight", "teacher", "mode",
+            "teacher_context")
     rows = [{**{k: p.get(k) for k in keep}, "set": name} for name, ps in sets.items() for p in ps]
     seen, dedup = set(), []
     for r in rows:  # a prompt in two training sets is trained once
@@ -210,7 +214,10 @@ class Roles:
 
     def ids(self, role: str, p: dict) -> list[int]:
         mode, task = self.mode(p), p["task_type"]
-        msgs = [{"role": "system", "content": self.system(role, mode, task)}, {"role": "user", "content": p["user"]}]
+        system = self.system(role, mode, task)
+        if role != "student" and p.get("teacher_context"):  # per-prompt teacher context, e.g. a verified worked example (c11)
+            system += "\n\n" + p["teacher_context"]
+        msgs = [{"role": "system", "content": system}, {"role": "user", "content": p["user"]}]
         t = self.clients[role, mode]._tokenize_messages(msgs)
         t = t.input_ids if hasattr(t, "input_ids") else t
         return [int(x) for x in (t[0] if hasattr(t, "dim") and t.dim() == 2 else t)]
@@ -543,7 +550,7 @@ def summarize(smps: list[dict]) -> dict:
 
 
 def write_samples(path: Path, smps: list[dict]) -> None:
-    drop = ("completion_ids", "prompt_ids", "r", "user", "r_topk_lp", "r_topk_idx")
+    drop = ("completion_ids", "prompt_ids", "r", "user", "r_topk_lp", "r_topk_idx", "teacher_context")
     path.write_text("".join(json.dumps({k: v for k, v in s.items() if k not in drop}, ensure_ascii=False) + "\n"
                             for s in smps))
 
@@ -557,6 +564,12 @@ def score_and_train(trainer: Trainer, smps: list[dict], steps: int) -> list[dict
         if len(s["prompt_ids"]) + len(s["completion_ids"]) > tc["cutoff"]:
             s["skipped"] = "cutoff"
             continue
+        # train.skip_truncated: [modes]: drop samples that hit the sampling cap in those modes (c10: thinking-on only).
+        # c9 trained thinking-on SCD answers only as prefixes of unfinished thinking (Normalizer 64/64 at the cap) and
+        # learned to think longer without concluding (findings §3.21).
+        if s.get("hit_cap") and s["mode"] in (tc.get("skip_truncated") or ()):
+            s["skipped"] = "truncated"
+            continue
         if tc.get("quote_guard") and roles.teacher_role(s) != "student" and CITE.search(s["raw"]):
             s["teacher_override"] = "student"
         s["r"] = teacher_logps(model, roles, s, tc["logits_chunk"],
@@ -565,6 +578,8 @@ def score_and_train(trainer: Trainer, smps: list[dict], steps: int) -> list[dict
         keep.append(s)
     random.Random(trainer.step).shuffle(keep)
     logs = []
+    if not keep:  # every sample skipped (cutoff / truncated): no step this round
+        return logs
     per = math.ceil(len(keep) / steps)
     for i in range(0, len(keep), per):
         logs.append(trainer.train_minibatch(keep[i:i + per]))
@@ -639,6 +654,8 @@ def cmd_train(cfg: dict, args) -> None:
         for i, (p, got) in enumerate(zip(batch, sampler.sample_many(jobs, tc["k"], tc["max_new_tokens"])), 1):
             for s in got:
                 s["user"] = p["user"]; s.update(scan(s))
+                if p.get("teacher_context"):
+                    s["teacher_context"] = p["teacher_context"]
             smps += got
             print(f"r{rnd} sample {i}/{len(batch)} {p['set']}/{p['task_type']}/{got[0]['mode']} "
                   f"{[s['new_tokens'] for s in got]} tok, {got[0]['gen_s']}s, belief {[int(s['belief']) for s in got]}", flush=True)
@@ -649,6 +666,7 @@ def cmd_train(cfg: dict, args) -> None:
         write_samples(d / "samples.jsonl", smps)
         met = {"round": rnd, "steps": logs, "summary": summarize([s for s in smps if "kl_mean" in s]),
                "skipped_cutoff": sum(s.get("skipped") == "cutoff" for s in smps),
+               "skipped_truncated": sum(s.get("skipped") == "truncated" for s in smps),
                "sample_min": round(t_s / 60, 1), "train_min": round((time.monotonic() - t0 - t_s) / 60, 1)}
         if probe and pcfg.get("every") and (rnd + 1) % pcfg["every"] == 0:
             met["probe"] = run_probe(sampler, probe, pcfg["k"], tc["max_new_tokens"], 7)

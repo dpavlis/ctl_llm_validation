@@ -1,0 +1,568 @@
+{
+ "version": "c11-holdout",
+ "description": "CTL2 model evaluation test suite V4 — the single consolidated suite: 43 tests (T1-T43), 25 generate, 13 validate and 5 fix, covering CTL2 generation, validation and spec-driven fixing quality across Reformat, Denormalizer, Normalizer, Rollup, Partition, Filter, ExtHashJoin, Lookup, Sequence, DataGenerator and standalone functions. Supersedes V2 (T1-T28, T37) and V3 (T29-T36), which are merged here in full; the V3 judge addenda A-E apply to every test. v5 adds T44-T73: 30 real-world generate tests (group \"rw\", data/suite_v5/generate_rw.json), scored separately as generate_rw.",
+ "judge_system_prompt": "You are an expert CTL2 code reviewer evaluating LLM responses against a rubric.\nFor each test you receive:\n  - The prompt sent to the model\n  - The model's response\n  - The evaluation rubric\n\nScore each required finding as: CAUGHT | MISSED | WRONG (caught but incorrect fix/explanation).\nScore forbidden content as: PRESENT (bad) | ABSENT (good).\nProvide a final verdict: PASS | PARTIAL | FAIL with a brief justification.",
+ "judge_instructions": "For each test, you will receive:\n  1. This test definition (system_prompt, user_message, rubric)\n  2. The model's actual response\n\nEvaluate the response against the rubric:\n  - For GENERATE tests: check each required item as PRESENT | MISSING | WRONG\n  - For VALIDATE tests: check each required finding as CAUGHT | MISSED | WRONG\n  - For VALIDATE tests: check each false-positive trap as TRIGGERED | AVOIDED\n  - Check all forbidden items as ABSENT (good) | PRESENT (bad)\n\nOutput a structured evaluation:\n  FINDINGS: [list each rubric item with its status]\n  FALSE_POSITIVES: [for validate tests — any wrong flags not in rubric]\n  VERDICT: PASS | PARTIAL | FAIL\n  SCORE: N/M (required items met)\n  NOTES: brief justification\n\nFor VALIDATE tests: always cross-check every $out.N.fieldName reference in the candidate code against the output metadata fields declared in the prompt. An assignment to a field that is not declared in the output metadata is a compile-time error in //#CTL2:COMPILE mode and a silent data-loss bug in interpreted mode — it must be flagged as a required finding. Do not assume the model caught it; verify explicitly.\n\nFor VALIDATE tests on Rollup components: the minimum required Rollup lifecycle functions are initGroup, updateGroup, finishGroup, updateTransform, and transform — all five must be defined in the code regardless of runtime control flow. Check for EACH of the five by name and account for every one that is absent; a snippet is frequently missing more than one. Score each missing function as its own required finding: naming one omission does not earn credit for another, and a generic remark such as 'the lifecycle is incomplete' or 'some required functions are missing' earns credit for none of them — the model must name the function it means. Two omissions are especially easy to conflate, so weigh them separately: (a) finishGroup() is the function that gates group output — transform() is invoked for a group only when finishGroup() returns true, so when finishGroup() is absent the group emits NOTHING and everything in transform() is unreachable; this is normally the most consequential omission in a snippet and must never be waved through because transform() itself looks correct. (b) updateTransform() must be defined even when updateGroup() returns false — that return value only means updateTransform() is not INVOKED for the record (the accumulation in updateGroup's body still runs); it does not make DEFINING updateTransform() optional. Omitting either is a missing required function and must be flagged as a required finding, not dismissed as a false positive.\n\nCrediting required findings from SUGGESTIONS, not just ISSUES: when a required bug sits on the same token/line as another required bug (e.g. an undeclared-identifier fix that must also carry a null guard once corrected), credit the finding if it is correctly reflected in the model's SUGGESTIONS/corrected-code section, even if it is not restated as a separate ISSUES line. Do not mark it MISSED solely because the model folded two related fixes into one corrected expression instead of two prose bullets — judge the model's demonstrated understanding, not its choice of section. Only mark MISSED if the concern is absent from both ISSUES and SUGGESTIONS.\n\nOperator null-safety in CTL2 (recurring confusion — verify carefully both directions): == and != are null-safe (evaluate to false/true on null operands, never throw). Order comparisons < <= > >= are NOT null-safe and throw CTLException when either operand is null. Flagging == / != as unsafe is a false positive; failing to flag an unguarded order comparison on a nullable operand is a missed required finding. Check each comparison operator against this table independently — do not assume all comparisons in a snippet share the same null-safety.\n\nIncrement/decrement operators (++/--) in CTL2 — the rule is WRITABILITY of the l-value, not whether it is a record field. ++/-- are valid on ANY writable numeric l-value: local and module-level variables, output record fields ($out.N.field++, --$out.N.field), and the fields of any internal/writable record — which INCLUDES the Rollup group accumulator (acc.count++, groupAccumulator.order_count++ are both correct CTL2) and module-level record variables. They are NOT valid on input record fields ($in.N.field), because input records are READ-ONLY, nor on literals or list/map elements (list[i], map[k]). Therefore: flagging ++/-- on an output field, on an accumulator field, or on any other internal record field as invalid, non-compiling, or 'not allowed on record fields' is a FALSE POSITIVE — do not raise it and do not demand the expanded `x = x + 1` rewrite, which is an equivalent style choice, never a fix. Flagging ++/-- on an input field, a literal, or a list/map element as invalid is a correct required finding.\n\n\n## V3 addendum A — compilability is a hard gate (ALL tests, overrides everything below)\n\nCode that would not compile CANNOT be scored PASS, no matter how many required\nrubric items it otherwise satisfies. Before assigning any verdict, type-check the\ncandidate code; if it would be rejected by the CTL2 compiler, the verdict is FAIL\nand the compile error must be listed as an issue. Rubric coverage is scored on top\nof compilability, never instead of it.\n\nCheck at minimum, for every call and assignment in the response:\n\n  - Built-in function ARITY, ARGUMENT ORDER, and ARGUMENT TYPES against the real\n    CTL2 signature. A plausible-reading call with a mistyped argument is still a\n    compile error. Highest-frequency case: passing a SCALAR where a list/map is\n    required — `in(value, collection)` and `containsValue(collection, value)` both\n    demand a collection, so `in(\"X\", $in.0.some_string_field)` does not compile and\n    is not an alternative spelling of `$in.0.some_string_field != \"X\"`. Note also\n    that in() and containsValue() take their arguments in OPPOSITE order.\n  - Undeclared identifiers, and variables used outside their scope (e.g. a local\n    declared inside one function referenced from another).\n  - Assignment to a $out.N field not declared in the output metadata, or reading a\n    $in.N field not declared in the input metadata.\n  - Type mismatches without an explicit cast/conversion, including assigning a\n    variant to a typed field, and calling a function whose return type cannot be\n    assigned to the target field.\n  - Missing required lifecycle functions, or a lifecycle function declared with the\n    wrong signature or return type.\n  - Java/JS syntax that has no CTL2 equivalent — method-call chaining on values\n    (`x.trim()`), `new`, lambdas.\n\nConversely, do NOT invent compile errors. If a construct is valid CTL2, it compiles\neven when it is not the form the rubric quoted — see addendum B.\n\n## V3 addendum B — do not penalise unspecified freedom (GENERATE tests)\n\nScore ONLY against what the user message actually asks for plus what the rubric\nexplicitly lists. Where the user message leaves an implementation choice open, any\ncorrect, type-safe realisation of that choice is fully credited.\n\n  - Do NOT mark a required item MISSING/WRONG because the model chose a different\n    but equivalent construct than the rubric's example. Rubric checks quote a\n    representative form; equivalents count. Examples of equivalents that must be\n    credited: isBlank(x) for isnull(x) || x == \"\"; num2str(n) for \"\" + n;\n    str2date(\"2025-07-01\",\"yyyy-MM-dd\") for createDate(2025,7,1); a switch/if-chain\n    for a ternary; reading back an already-assigned $out field instead of holding\n    the value in a local; a wildcard record copy instead of field-by-field\n    assignment; and, ON A LIST ONLY, in(value, list) for containsValue(list, value).\n    The test is whether the emitted data is identical, not whether the source text\n    matches. (On a MAP those two are NOT equivalent — in() tests keys, containsValue()\n    tests values — and on a scalar neither compiles at all.)\n  - Do NOT invent requirements for fields or behaviours the user message never\n    constrains. If an output field's value is not specified by the prompt, the only\n    thing to check is that it is assigned and type-correct for its metadata.\n  - Do NOT report an ISSUE whose only basis is 'the reference/expected pattern is\n    different'. There is no reference answer in this rubric. An issue must cite a\n    concrete defect: a compile error, a runtime CTLException, wrong emitted data, a\n    violated prompt rule, or a listed forbidden item.\n  - A forbidden item fires only on the construct it names. Read its rationale before\n    marking PRESENT — several forbidden items scope themselves narrowly (for\n    instance forbidding row-count STOP logic while explicitly permitting a counter\n    variable), and a superficial keyword match is not enough.\n  - Extra work the prompt did not ask for is not automatically a defect. Penalise it\n    only if it breaks a stated rule, produces wrong data, or matches a forbidden\n    item. Otherwise ignore it, or at most note it as a non-scoring observation.\n\n## V3 addendum C — severity discipline: an issue must be demonstrable\n\nBefore marking any required item MISSING/WRONG, firing a forbidden item, or listing\nan ISSUE, state the concrete failure it causes: a compile error, a runtime\nCTLException, or a specific input row whose emitted output would be wrong. If you\ncannot name that failure, it is NOT an issue — record it under NOTES as a\nnon-scoring style observation and leave the score untouched.\n\n  - A value that is provably overwritten before it can ever be read is a DEAD STORE,\n    not a defect. Trace the control flow before objecting to an initialisation:\n    if a guard flag or an unconditional assignment guarantees the field is set\n    before use, the initial value cannot reach the output and must not be scored.\n    'A different initial value would be tidier / more idiomatic / self-documenting'\n    is a NOTE.\n  - Defensive code beyond what the prompt requires (an extra null check, a\n    divide-by-zero guard, a wider isnull() guard) is never a defect. It cannot\n    produce wrong data for any input the prompt describes. Do not deduct for it and\n    do not report it as an issue.\n  - Distinguish 'the accumulator/state field is reset' from 'reset to the particular\n    literal I had in mind'. Only fields that ACCUMULATE across records (counters,\n    totals, running min/max, capture flags) can leak between groups; fields that are\n    unconditionally reassigned per group cannot.\n  - Cosmetic and structural preferences — brace style, one-line function bodies,\n    variable naming, inlining an expression instead of using a local, ordering of\n    independent statements, presence or absence of comments — are never issues.\n  - When in doubt about severity, prefer the lower one. A wrongly-scored PASS on a\n    stylistic quibble is a smaller evaluation error than a FAIL on working code.\n\n## V3 addendum D — trace module state across TWO groups (stateful components)\n\nFor any component holding module-level state across records — Denormalizer\n(append/transform/clean), Rollup (initGroup/updateGroup/transform), Normalizer\n(count/transform/clean) — do not judge the per-record function in isolation.\nSimulate the SECOND group and check every piece of state is either re-armed by the\nreset function or unconditionally overwritten before it is next read. State that is\ncorrect on group 1 and stale on group 2 is a silent data-corruption bug and outranks\nevery stylistic item in the rubric.\n\n  - Match the RESET against the SENTINEL, as a pair, and check the DECLARATION too.\n    Two recurring CTL2 traps: (i) lists and maps are default-initialised to\n    empty — not null — so an `isnull(list)` 'first record' marker is dead code that\n    never fires even once (addendum E); (ii) `clear(list)` / `clear(map)` empties\n    the collection but leaves the reference NON-NULL, so it does not re-arm an\n    isnull() marker on explicitly null-assigned state. Same class of error for a\n    counter reset to 0 versus a flag tested for false. Read the declaration, the\n    reset function and the accumulating function together, every time.\n  - Prefer emptiness over nullness when judging the FIX: reusing an\n    already-allocated list/map via clear() is the better CTL2 idiom, so the correct\n    remedy for the trap above is for the accumulating function to test\n    `length(x) == 0` (or a dedicated boolean flag that the reset clears), NOT for\n    the reset function to null the collection. Do not demand null-ing.\n  - Ask explicitly, for each state variable: on group 2, is the value read before it\n    is written? If yes, the group-1 value reaches the output — report it as an issue\n    with the concrete stale value, per addendum C.\n  - This check applies even when every individual required item is satisfied. A\n    response can tick every box and still be FAIL because its state lifecycle is\n    broken across groups.\n\n## V3 addendum E — CTL2 null and default-initialisation semantics (get the REASON right)\n\nTwo independent facts, frequently conflated. Both must be applied as stated.\n\n  1. NULLABILITY IS UNIVERSAL. Every CTL2 type can hold null, including the\n     primitives — integer, long, number, decimal, boolean, date, string. `long x =\n     null;` is VALID CTL2; `isnull(x)` then returns true. There is no\n     'primitive types cannot be null' rule in CTL2. Reporting `long x = null;`,\n     `boolean b = null;`, or `isnull(<primitive variable>)` as a type error, a\n     compile error, or an invalid construct is a FALSE POSITIVE and must not be\n     raised. Do not import Java's primitive/wrapper distinction into CTL2.\n\n  2. DECLARATION WITHOUT AN INITIALISER YIELDS A DEFAULT VALUE, NOT NULL. A\n     module-level or local declaration with no explicit initialiser is\n     default-initialised:\n       - numeric types (integer, long, number, decimal) -> 0 (0L / 0D as typed)\n       - string  -> \"\" (empty string, NOT null)\n       - boolean -> false\n       - date    -> start of the UNIX epoch (1970-01-01)\n       - list    -> EMPTY LIST (not null)\n       - map     -> EMPTY MAP  (not null)\n       - variant -> null\n     VARIANT IS THE ONLY TYPE WITH NO DEFAULT VALUE, because it can hold anything;\n     it alone starts as null. For every other type, `isnull(x)` on a\n     declared-but-unassigned variable is FALSE. Test emptiness with\n     `length(x) == 0` (lists, maps, strings) or isBlank() (strings) — never with\n     isnull().\n     Corollary for GENERATE tests: `string[] ids;` is already equivalent to\n     `string[] ids = [];`, and `map[string,integer] m;` to `m = {};`. Appending\n     to, clearing, iterating or taking the length of such a variable from the\n     very first record is safe. NEVER report a missing `= []` / `= {}`\n     initialiser as a bug, a null-safety risk, or a suggested improvement, and\n     never withhold credit for a reset/lifecycle rubric item because of it.\n\n  3. VARIABLES AND RECORD FIELDS DIFFER — do not carry a conclusion from one to the\n     other. The defaults in (2) apply to local and module-level VARIABLES. An unset\n     RECORD FIELD ($in/$out/accumulator) is null, NOT the type's zero value, unless\n     the metadata defines a Default. So `long batchId;` is 0L while an unassigned\n     `$out.0.some_long` is null. resetRecord(record) sets fields back to\n     null/default.\n\n  Useful null-safe primitives when judging emptiness tests: length(x) returns 0 for\n  a null string, list, map or record, so `length(codes) == 0` is a safe emptiness\n  test even when the list is null. isnull(\"\") is false; isBlank(\"\") is true.\n  `null + \"text\"` yields \"nulltext\" rather than throwing. Ordering operators\n  (< <= > >=) do throw on null; == and != do not.\n\n  Consequence to apply when judging first-record / first-group sentinels: an\n  isnull() test on ANY declared-but-unassigned variable other than a variant is\n  false from the very first record, so the guarded block is DEAD CODE and never\n  executes even once. After `long batchId;` the value is 0L; after `string[] codes;`\n  the value is an empty list, not null; after `string s;`, isnull(s) is false while\n  isBlank(s) is true. Trace what the dead block was supposed to do — it is usually\n  a one-time capture, and skipping it entirely means the captured value keeps its\n  default for the WHOLE RUN (e.g. every output row carries key 0). This IS a real\n  defect and must be reported, but the reason is the DEFAULT VALUE, not a\n  nullability restriction. To use a null sentinel the code must assign null\n  explicitly (`long batchId = null;`, `string[] codes = null;`), which is legal, or\n  use a variant, or test `length(x) == 0` / a boolean flag instead.\n\n  State the correct mechanism in the issue text. A right conclusion supported by an\n  invented language rule is still a defective report: it teaches the wrong lesson\n  and contradicts addendum A's instruction not to invent compile errors. If you are\n  not certain a construct is rejected by the CTL2 compiler, do not call it one —\n  describe the observable behaviour instead.\n\n## FIX tests (type \"fix\")\n\nA fix test gives the model a specification, port metadata and defective code, and asks it\nto list the problems and return the complete corrected code. It is graded on the corrected\ncode, not on the list alone. The seeded defects are in `bugs`, and their ids are the\nrequired findings.\n\nScore each required finding as:\n  - CAUGHT: the response names the defect with a correct mechanism AND the corrected code\n    actually removes it, in a way that satisfies the specification.\n  - WRONG: only half of that. Either the defect is named but the corrected code still has\n    it, or it is fixed in a way that breaks the specification or adds a new failure, or it\n    is fixed with a false reason, or it is fixed silently with no explanation.\n  - MISSED: neither named nor fixed.\n\nCheck the corrected code as a whole, not only the lines the model says it changed:\n  - Addendum A applies to it. If the corrected code would not compile, or uses a construct\n    or function that does not exist in CTL2, the corresponding forbidden item is PRESENT\n    and the verdict cannot be PASS.\n  - Walk the specification item by item against the corrected code. A change that breaks\n    behaviour the specification requires is a forbidden item even when it is presented as\n    a fix.\n  - Rewriting correct code into an equivalent form (for example `~= \"A|B\"` into\n    `== \"A\" || == \"B\"`) is not a defect and not a finding. It triggers a false-positive\n    trap only when the response calls the original code wrong.\n\nA response that returns fragments or a diff and no complete corrected code fails the\ncompleteness forbidden item. A fix test's verdict is PASS, PARTIAL or FAIL per its own\n`scoring`. There is no ISSUES/VERDICT block to check.\n",
+ "tests": [
+  {
+   "test_id": "di_sft_006",
+   "type": "generate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Fix these DataIntersection consumer connections and the middle consumer’s assumption. Return the corrected wiring in prose.\n\nA=input 0=old product catalogue; B=input 1=new catalogue. Unique non-null product_id keys, ascending order, Join key $product_id=$product_id. Current plan: additions read output 0, deletions read output 2, and the update consumer treats every row on output 1 as a changed product. We want updates only when description or unit_price differs, including nullable values.",
+   "rubric": {
+    "description": "c11 holdout (DI): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "di_sft_006.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\nAdditions must read physical output 2, and deletions must read physical output 0. Physical output 1 contains matched product_id pairs. Its transform should compare description and unit_price from A with the corresponding fields from B using null-safe equality/inequality, emit a changed flag, and pass the flow through a Filter selecting changed rows before the update consumer.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "di_sft_006.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "di_sft_012",
+   "type": "generate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Write the complete CTL2 matched transform and give the Join key for this contract migration.\n\nA=input 0 metadata: legacy_contract string non-null, credit_limit decimal nullable. B=input 1 metadata: contract_code string non-null, limit_amount decimal nullable. Contract identifiers have the same format and define identity. Both streams are ascending by their identifier, and keys are unique. Physical output 1 metadata: contract_id string non-null, legacy_limit decimal nullable, current_limit decimal nullable. Map every matching pair; side outputs preserve their inputs. Within the DataIntersection transform, $out.0 is the matched output record sent to physical output 1.",
+   "rubric": {
+    "description": "c11 holdout (DI): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "di_sft_012.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.contract_id = $in.0.legacy_contract;\n    $out.0.legacy_limit = $in.0.credit_limit;\n    $out.0.current_limit = $in.1.limit_amount;\n    return ALL;\n}\n```\n\nSet Join key to `$legacy_contract=$contract_code`. The transform reads A through $in.0 and B through $in.1; its $out.0 record is emitted on physical output 1.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "di_sft_012.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "di_sft_018",
+   "type": "generate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "If we turn off duplicate keys, will DataIntersection automatically pick the most recent policy?\n\nA=input 0 has policy_id=P8, revision=2 followed by policy_id=P8, revision=5. B=input 1 has one policy_id=P8, revision=9. policy_id is a non-null string and revision is a non-null integer. Join key $policy_id=$policy_id, inputs are ascending by policy_id, Allow key duplicates=false. The matched transform emits A.revision and B.revision and returns ALL. The business wants A’s highest revision.",
+   "rubric": {
+    "description": "c11 holdout (DI): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "di_sft_018.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\nNo. With duplicate keys disabled, the first record for the key is used for matching; it does not select the highest revision. Here the matched pair uses A.revision=2 and B.revision=9.\n\nTo meet the business requirement, reduce A upstream to the highest revision per policy_id, with a defined tie rule, then sort the reduced flow ascending by policy_id. Do the same for B if it can also contain multiple revisions.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "di_sft_018.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "di_sft_024",
+   "type": "generate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Write only the complete CTL2 matched transform.\n\nDataIntersection input 0=A has badge string non-null, zone string nullable. Input 1=B has badge string non-null, access_zone string nullable, issued_by string nullable. Unique badges, ascending badge order, Join key $badge=$badge. Physical middle output 1 has badge_id string non-null, previous_zone string nullable, current_zone string nullable. Output 0 uses A metadata and output 2 uses B metadata; neither should be mapped here. The CTL transform exposes the middle record as $out.0. Emit every matched badge.",
+   "rubric": {
+    "description": "c11 holdout (DI): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "di_sft_024.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.badge_id = $in.1.badge;\n    $out.0.previous_zone = $in.0.zone;\n    $out.0.current_zone = $in.1.access_zone;\n    return ALL;\n}\n```",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "di_sft_024.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "di_sft_030",
+   "type": "generate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Our subscription dimension load receives no incremental events today. Explain exactly what DataIntersection outputs and what the warehouse writers should do; do not supply CTL.\n\nFor this graph A/input0 is the incremental source, now empty; B/input1 is the current dimension filtered to one current row per subscription_code. A fields: subscription_code string non-null, plan string nullable, effective_at date non-null. B fields: subscription_sk long non-null, subscription_code string non-null, plan string nullable, valid_from date non-null, valid_to date nullable, is_current boolean non-null. Both inputs are sorted ascending subscription_code; Join key $subscription_code=$subscription_code. All ports are connected:0=A-only,1=both,2=B-only. plan is an SCD2 attribute, with changed matches normally closing an old version and creating a new one. Events express explicit changes, not a full snapshot or a list of deletions.",
+   "rubric": {
+    "description": "c11 holdout (DI): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "di_sft_030.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\nPhysical0 emits no records because A is empty. Physical1 emits no records because there are no matched pairs, so its transform is never called. Physical2 emits every current dimension row from B unchanged.\n\nLeave those B-only dimension rows current. Absence from an incremental event feed does not mean a subscription was deleted. The new-version and matched-change writers have no work, and the B-only branch must not expire records. The batch completes with no warehouse changes. A separate explicit deletion event or an authoritative complete snapshot with an agreed retirement policy is needed to justify expiration.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "di_sft_030.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "di_sft_036",
+   "type": "generate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "For matched rental contracts classify the monthly rent as UP, DOWN or SAME and emit every match. A is current and B is historical; do not reverse the direction.\n\nCurrent rental contracts arrive on A/input0 and historical contracts on B/input1. Join key $contract_number=$contract_number. Both feeds are sorted by contract_number ascending, one contract per key. Ports0/1/2 are connected for A-only/matched/B-only records respectively.\n\nA metadata:\n| Field | Type | Nullable |\n|---|---|---|\n| contract_number | string | no |\n| rent | decimal | no |\n\nB metadata:\n| Field | Type | Nullable |\n|---|---|---|\n| contract_number | string | no |\n| rent | decimal | no |\n\nMatched output metadata:\n| Field | Type | Nullable |\n|---|---|---|\n| contract_number | string | no |\n| movement | string | no |\n\nThe middle-output transform has one local output record ($out.0). Side outputs preserve the schema of A and B respectively.",
+   "rubric": {
+    "description": "c11 holdout (DI): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "di_sft_036.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.contract_number = $in.0.contract_number;\n    if ($in.0.rent > $in.1.rent) $out.0.movement = \"UP\";\n    else if ($in.0.rent < $in.1.rent) $out.0.movement = \"DOWN\";\n    else $out.0.movement = \"SAME\";\n    return ALL;\n}\n```",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "di_sft_036.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "di_sft_042",
+   "type": "fix",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Fix the CTL below. A property listing is changed when either asking_price or active differs. Keep every matched listing with the Boolean result; the current AND misses single-field changes.\n\nProperty listings before revision use A/input0, revised listings B/input1. Both are sorted ascending by listing_id with one row per key. DataIntersection uses $listing_id=$listing_id. All physical outputs are connected:0 carries A-only,1 matched,2 B-only.\n\nRecord layouts:\n- A: listing_id (string, required); asking_price (decimal, required); active (boolean, required)\n- B: listing_id (string, required); asking_price (decimal, required); active (boolean, required)\n- Middle result: listing_id (string, required); changed (boolean, required)\n\nSide schemas equal their corresponding input schemas; the transform output schema shown below belongs to $out.0 and physical port1.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.listing_id = $in.0.listing_id;\n    $out.0.changed = $in.0.asking_price != $in.1.asking_price && $in.0.active != $in.1.active;\n    return ALL;\n}\n```",
+   "rubric": {
+    "description": "c11 holdout (DI): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "di_sft_042.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.listing_id = $in.0.listing_id;\n    $out.0.changed = $in.0.asking_price != $in.1.asking_price || $in.0.active != $in.1.active;\n    return ALL;\n}\n```",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "di_sft_042.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "di_sft_048",
+   "type": "generate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Create a full transform for matched transport orders. The output schema is the new order schema. Copy all B fields first and replace reconciliation_label with MATCHED. Input reconciliation_label values are irrelevant.\n\nOld transport orders enter A/input0; new orders enter B/input1. Both inputs have unique order_ref keys, ascending sort order, and key mapping $order_ref=$order_ref. All outputs are connected:0=A-only,1=matched,2=B-only.\n\nA metadata:\n| Field | Type | Nullable |\n|---|---|---|\n| order_ref | string | no |\n| route | string | no |\n| reconciliation_label | string | no |\n\nB metadata:\n| Field | Type | Nullable |\n|---|---|---|\n| order_ref | string | no |\n| route | string | no |\n| reconciliation_label | string | no |\n\nMatched output metadata:\n| Field | Type | Nullable |\n|---|---|---|\n| order_ref | string | no |\n| route | string | no |\n| reconciliation_label | string | no |\n\nThe middle-output transform has one local output record ($out.0). Side outputs preserve the schema of A and B respectively.",
+   "rubric": {
+    "description": "c11 holdout (DI): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "di_sft_048.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.* = $in.1.*;\n    $out.0.reconciliation_label = \"MATCHED\";\n    return ALL;\n}\n```",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "di_sft_048.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "di_sft_054",
+   "type": "validate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Validate this CTL. Does the complete matched transform copy the new nullable note correctly? A key match guarantees both input records exist.\n\nA/input0 contains the previous case notes and B/input1 the replacement notes. Unique case_ref keys are sorted ascending; Join key $case_ref=$case_ref. Outputs0=A-only,1=matched,2=B-only are all connected.\n\nRecord layouts:\n- A: case_ref (string, required); note (string, nullable)\n- B: case_ref (string, required); note (string, nullable)\n- Middle result: case_ref (string, required); note (string, nullable)\n\nSide schemas equal their corresponding input schemas; the transform output schema shown below belongs to $out.0 and physical port1.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.case_ref = $in.0.case_ref;\n    $out.0.note = $in.1.note;\n    return ALL;\n}\n```",
+   "rubric": {
+    "description": "c11 holdout (DI): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "di_sft_054.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\nISSUES:\n  [INFO] No issues found.\n\nVERDICT: PASS",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "di_sft_054.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "di_sft_060",
+   "type": "validate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Validate this CTL. Validate the nickname comparison. A null nickname differs from an empty nickname, while two null nicknames are equal. Is a missing-record guard required here?\n\nOriginal profiles arrive on A/input0, revised profiles on B/input1. Join key $profile_id=$profile_id, unique profile_id keys, ascending sorting on both inputs. Physical outputs0=A-only,1=matched,2=B-only are connected.\n\nA metadata:\n| Field | Type | Nullable |\n|---|---|---|\n| profile_id | string | no |\n| nickname | string | yes |\n\nB metadata:\n| Field | Type | Nullable |\n|---|---|---|\n| profile_id | string | no |\n| nickname | string | yes |\n\nMatched output metadata:\n| Field | Type | Nullable |\n|---|---|---|\n| profile_id | string | no |\n| changed | boolean | no |\n\nThe middle-output transform has one local output record ($out.0). Side outputs preserve the schema of A and B respectively.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.profile_id = $in.0.profile_id;\n    $out.0.changed = $in.0.nickname != $in.1.nickname;\n    return ALL;\n}\n```",
+   "rubric": {
+    "description": "c11 holdout (DI): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "di_sft_060.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\nISSUES:\n  [INFO] No issues found.\n\nVERDICT: PASS",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "di_sft_060.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "scd2_sft_006",
+   "type": "validate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Validate this wind-turbine SCD2 decision. changed must be true when capacity or certification differs and false otherwise.\n\nDataIntersection joins unique ascending turbine_id keys; A/input 0 contains proposals and B/input 1 contains one current warehouse version. \nA: turbine_id:string, capacity_kw:integer, certificate:string.\nB: turbine_id:string, capacity_kw:integer, certificate:string.\nMatched record: turbine_id:string, changed:boolean.\n? marks nullable fields; all others are non-null.\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.turbine_id=$in.0.turbine_id;\n    $out.0.changed = !($in.0.capacity_kw != $in.1.capacity_kw || $in.0.certificate != $in.1.certificate);\n    return ALL;\n}\n```",
+   "rubric": {
+    "description": "c11 holdout (SCD): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "scd2_sft_006.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\nISSUES:\n  [ERROR] The negation reverses the required changed flag: identical specifications produce true and a changed capacity or certificate produces false. This violates the stated versioning requirement.\n\nSUGGESTIONS:\n  - Remove the outer negation so either tracked difference sets changed.\n\nVERDICT: FAIL",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "scd2_sft_006.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "scd2_sft_012",
+   "type": "generate",
+   "component": "NORMALIZER",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Generate the airport gate Normalizer after reconciliation. The DataIntersection matched branch supplies existing-key decisions, and its A-only branch is adapted into new-key plans. New gates need OPEN, changed gates CLOSE then OPEN, unchanged gates no writes. Keep the stored identity, terminal and start on CLOSE; each OPEN receives a fresh GateVersion identity. The sequence begins at 3200000000 with increment 1. Validity is half-open, open ends are null. A present old version guarantees old_sk and old_from; absent old fields are null. Existing changes occur after old_from.\n\nGatePlan input: gate:string!,has_old:boolean!,changed:boolean!,old_sk:long?,old_terminal:string?,terminal:string!,old_from:date?,effective:date!. GateWrite output: gate:string!,op:string!,sk:long!,terminal:string?,valid_from:date!,valid_to:date?.",
+   "rubric": {
+    "description": "c11 holdout (SCD): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "scd2_sft_012.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nfunction integer count() {\n    if (!$in.0.has_old) return 1;\n    return $in.0.changed ? 2 : 0;\n}\nfunction integer transform(integer idx) {\n    boolean close = $in.0.has_old && idx == 0;\n    $out.0.gate = $in.0.gate;\n    $out.0.op = close ? \"CLOSE\" : \"OPEN\";\n    $out.0.sk = close ? $in.0.old_sk : sequence(GateVersion, long).next();\n    $out.0.terminal = close ? $in.0.old_terminal : $in.0.terminal;\n    $out.0.valid_from = close ? $in.0.old_from : $in.0.effective;\n    $out.0.valid_to = close ? $in.0.effective : null;\n    return ALL;\n}\n```\n\nUnchanged plans produce no commands. The old identity survives on CLOSE while OPEN obtains its own identity.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "scd2_sft_012.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "scd2_sft_018",
+   "type": "generate",
+   "component": "NORMALIZER",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Solar-installation capacity arrives as a change log sorted by installation then strictly increasing effective time. Write a one-output Reformat preparing deltas for a later CLOSE/OPEN Normalizer. Emit each installation's first event and every capacity change, retaining the last accepted version's capacity and effective start. Repeated capacity emits nothing. Unknown capacity differs from zero. received is audit time only; delayed delivery must not shift validity. An installation can have an empty string key.\n\nInput SolarEvent(installation:string!,capacity:integer?,received:date!,effective:date!). Output SolarDelta(installation:string!,first:boolean!,previous_capacity:integer?,previous_from:date?,capacity:integer?,valid_from:date!,received:date!). Previous fields are null for the first version.",
+   "rubric": {
+    "description": "c11 holdout (SCD): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "scd2_sft_018.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nboolean populated = false;\nstring installation;\ninteger capacity;\ndate since;\nfunction integer transform() {\n    boolean first = !populated || installation != $in.0.installation;\n    if (!first && capacity == $in.0.capacity) return SKIP;\n    $out.0.installation = $in.0.installation;\n    $out.0.first = first;\n    $out.0.previous_capacity = first ? null : capacity;\n    $out.0.previous_from = first ? null : since;\n    $out.0.capacity = $in.0.capacity;\n    $out.0.valid_from = $in.0.effective;\n    $out.0.received = $in.0.received;\n    installation = $in.0.installation; capacity = $in.0.capacity;\n    since = $in.0.effective; populated = true;\n    return ALL;\n}\n```\n\nOnly an accepted version updates the carried start; receipt time stays a separate audit value.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "scd2_sft_018.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "scd2_sft_024",
+   "type": "fix",
+   "component": "NORMALIZER",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Repair the Normalizer for repair-parts grade history. Every input is a real existing-version change and requires two commands in CLOSE,OPEN order. CLOSE must preserve the old grade, surrogate and start; OPEN takes the replacement values. Intervals are half-open, effective is later than prior_from, and all keys are already allocated. The only reported defect is the grade on CLOSE.\n\nInput 0: part string non-null, prior_grade string nullable, next_grade string nullable, prior_sk long non-null, next_sk long non-null, prior_from date non-null, effective date non-null. Output 0: part string non-null, action string non-null, grade string nullable, sk long non-null, from_at date non-null, to_at date nullable. \n\n```ctl\n//#CTL2\nfunction integer count() { return 2; }\nfunction integer transform(integer idx) {\n    $out.0.part = $in.0.part;\n    if (idx == 0) {\n        $out.0.action = \"CLOSE\";\n        $out.0.grade = $in.0.next_grade;\n        $out.0.sk = $in.0.prior_sk;\n        $out.0.from_at = $in.0.prior_from;\n        $out.0.to_at = $in.0.effective;\n    } else {\n        $out.0.action = \"OPEN\";\n        $out.0.grade = $in.0.next_grade;\n        $out.0.sk = $in.0.next_sk;\n        $out.0.from_at = $in.0.effective;\n        $out.0.to_at = null;\n    }\n    return ALL;\n}\n```",
+   "rubric": {
+    "description": "c11 holdout (SCD): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "scd2_sft_024.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nfunction integer count() { return 2; }\nfunction integer transform(integer idx) {\n    $out.0.part = $in.0.part;\n    if (idx == 0) {\n        $out.0.action = \"CLOSE\";\n        $out.0.grade = $in.0.prior_grade;\n        $out.0.sk = $in.0.prior_sk;\n        $out.0.from_at = $in.0.prior_from;\n        $out.0.to_at = $in.0.effective;\n    } else {\n        $out.0.action = \"OPEN\";\n        $out.0.grade = $in.0.next_grade;\n        $out.0.sk = $in.0.next_sk;\n        $out.0.from_at = $in.0.effective;\n        $out.0.to_at = null;\n    }\n    return ALL;\n}\n```\nCLOSE now retains the previous grade, including null.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "scd2_sft_024.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "scd2_sft_030",
+   "type": "fix",
+   "component": "REFORMAT",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Fix first-event classification in this placement-history Reformat. sensor is non-null but the empty string is a legal identity. Events are sorted by sensor then strictly increasing at. First event of each sensor must emit INITIAL even when its location is null or empty. A changed location emits REPLACE with previous location; an unchanged location is dropped. Null location differs from empty. Keep the single-output delta interface.\n\nInput 0: sensor string non-null, location string nullable, at date non-null. Output 0: sensor string non-null, kind string non-null, old_location string nullable, new_location string nullable, at date non-null. \n\n```ctl\n//#CTL2\nstring lastSensor;\nstring lastLocation;\nfunction integer transform() {\n    boolean initial = lastSensor == null || lastSensor != $in.0.sensor;\n    if (!initial && lastLocation == $in.0.location) return SKIP;\n    $out.0.sensor = $in.0.sensor;\n    $out.0.kind = initial ? \"INITIAL\" : \"REPLACE\";\n    $out.0.old_location = initial ? null : lastLocation;\n    $out.0.new_location = $in.0.location;\n    $out.0.at = $in.0.at;\n    lastSensor = $in.0.sensor;\n    lastLocation = $in.0.location;\n    return ALL;\n}\n```",
+   "rubric": {
+    "description": "c11 holdout (SCD): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "scd2_sft_030.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nboolean seen = false;\nstring lastSensor;\nstring lastLocation;\nfunction integer transform() {\n    boolean initial = !seen || lastSensor != $in.0.sensor;\n    if (!initial && lastLocation == $in.0.location) return SKIP;\n    $out.0.sensor = $in.0.sensor;\n    $out.0.kind = initial ? \"INITIAL\" : \"REPLACE\";\n    $out.0.old_location = initial ? null : lastLocation;\n    $out.0.new_location = $in.0.location;\n    $out.0.at = $in.0.at;\n    seen = true;\n    lastSensor = $in.0.sensor;\n    lastLocation = $in.0.location;\n    return ALL;\n}\n```\nAn explicit presence flag distinguishes no prior event from a prior identity or payload equal to its default value.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "scd2_sft_030.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "scd2_sft_036",
+   "type": "validate",
+   "component": "NORMALIZER",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Validate this Normalizer for serial classification history. Input is sorted by serial and strictly increasing at. First observation emits OPEN; a changed classification emits CLOSE with the old class/key, then OPEN with the new ones; unchanged emits nothing. at is the command effective time on both rows; a downstream applier looks up the old version start by sk. event_sk is provided upstream, null classification differs from empty. Check whether two transform calls for a change can accidentally advance carried state twice.\n\nInput 0: serial string non-null, classification string nullable, event_sk long non-null, at date non-null. Output 0: serial string non-null, op string non-null, classification string nullable, sk long non-null, at date non-null. \n\n```ctl\n//#CTL2\nboolean hasState = false;\nstring activeSerial;\nstring activeClass;\nlong activeSk;\nstring[] actions = [];\nstring[] classes = [];\nlong[] keys = [];\nfunction integer count() {\n    clear(actions); clear(classes); clear(keys);\n    boolean known = hasState && activeSerial == $in.0.serial;\n    if (known && activeClass == $in.0.classification) return 0;\n    if (known) {\n        append(actions, \"CLOSE\"); append(classes, activeClass); append(keys, activeSk);\n    }\n    append(actions, \"OPEN\"); append(classes, $in.0.classification); append(keys, $in.0.event_sk);\n    activeSerial = $in.0.serial;\n    activeClass = $in.0.classification;\n    activeSk = $in.0.event_sk;\n    hasState = true;\n    return length(actions);\n}\nfunction integer transform(integer idx) {\n    $out.0.serial = $in.0.serial;\n    $out.0.op = actions[idx];\n    $out.0.classification = classes[idx];\n    $out.0.sk = keys[idx];\n    $out.0.at = $in.0.at;\n    return ALL;\n}\n```",
+   "rubric": {
+    "description": "c11 holdout (SCD): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "scd2_sft_036.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\nISSUES:\n  [INFO] No issues found.\n  [INFO] count() prepares immutable command arrays once per input; transform(idx) only reads them, preserving old class/key on CLOSE without advancing state per emitted row.\n\nVERDICT: PASS",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "scd2_sft_036.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "scd2_sft_042",
+   "type": "generate",
+   "component": "NORMALIZER",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Write the Normalizer CTL for this bicycle-model versioning step. Each input is an already-confirmed finish change. Emit CLOSE, OPEN, AUDIT in that order. CLOSE and AUDIT retain the old surrogate and finish; OPEN carries the incoming finish and a fresh key. All outputs carry model.\n\nInput BicycleChange: model:string!, old_sk:long!, old_finish:string?, new_finish:string?. One output BicycleAction: model:string!, op:string!, sk:long!, finish:string?. The graph defines sequence BicycleVersion, initial value 3000000000, step 1. Audit records describe the previous dimension version. Return the two Normalizer functions.",
+   "rubric": {
+    "description": "c11 holdout (SCD): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "scd2_sft_042.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nfunction integer count() { return 3; }\nfunction integer transform(integer idx) {\n    $out.0.model = $in.0.model;\n    if (idx == 1) {\n        $out.0.op = \"OPEN\";\n        $out.0.sk = sequence(BicycleVersion, long).next();\n        $out.0.finish = $in.0.new_finish;\n    } else {\n        $out.0.op = idx == 0 ? \"CLOSE\" : \"AUDIT\";\n        $out.0.sk = $in.0.old_sk;\n        $out.0.finish = $in.0.old_finish;\n    }\n    return OK;\n}\n```\n\nOnly the OPEN branch advances the long sequence; CLOSE and AUDIT preserve the previous version.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "scd2_sft_042.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "scd2_sft_048",
+   "type": "validate",
+   "component": "EXT_MERGE_JOIN",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Check this ExtMergeJoin mapping for permit history. The external starts text is a valid dd/MM/yyyy calendar date; convert it to midnight UTC, regardless of the server timezone, with strict parsing. Input 0 PermitText(permit:string!,starts:string!), input 1 PermitKey(permit:string!). Both flows unique and sorted by permit, inner joinKey $permit#$permit. Output PermitDate(permit:string!,valid_from:date!).\n\n```ctl\n//#CTL2\nfunction integer transform() {\n    $out.0.permit = $in.0.permit;\n    $out.0.valid_from = str2date($in.0.starts, \"dd/MM/yyyy\", \"en.US\", \"UTC\", true);\n    return ALL;\n}\n```",
+   "rubric": {
+    "description": "c11 holdout (SCD): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "scd2_sft_048.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\nISSUES:\n  [INFO] No issues found. The five-argument str2date signature supplies the pattern, locale, UTC timezone and strict flag. The key and date are assigned to defined output fields.\n\nVERDICT: PASS",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "scd2_sft_048.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "scd2_sft_054",
+   "type": "generate",
+   "component": "DATA_INTERSECTION",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "For food-packaging history, material is the only SCD2 attribute. Description edits must not create versions. Return the DataIntersection matched transform that emits a material-change plan, preserving the previous surrogate; suppress all other pairs. Unknown material and the empty material code are distinct.\n\nA/input 0 PackIncoming(pack:string!,material:string?,description:string?); B/input 1 PackCurrent(pack:string!,material:string?,description:string?,sk:long!). Both flows unique, ascending pack; Join key $pack=$pack. Matched PackChange output: pack:string!,old_sk:long!,old_material:string?,new_material:string?. No database writes or key allocation are needed here.",
+   "rubric": {
+    "description": "c11 holdout (SCD): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "scd2_sft_054.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\n```ctl\n//#CTL2\nfunction integer transform() {\n    if ($in.0.material == $in.1.material) return SKIP;\n    $out.0.pack = $in.0.pack;\n    $out.0.old_sk = $in.1.sk;\n    $out.0.old_material = $in.1.material;\n    $out.0.new_material = $in.0.material;\n    return ALL;\n}\n```\n\nOnly material participates in the SCD2 predicate.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "scd2_sft_054.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  },
+  {
+   "test_id": "scd2_sft_060",
+   "type": "generate",
+   "component": "ROLLUP",
+   "temperature": 0.4,
+   "system_prompt": "You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.\nPrefer correct, practical, minimal solutions.\n",
+   "user_message": "Before SCD2 reconciliation, equipment disposal events arrive sorted by equipment and strictly increasing event time. We need one latest snapshot per equipment, retaining an inactive final state and a null reason when that is the last event. Should the grouped aggregation emit every event, ignore inactive events, or return just its accumulated final state? Explain the Rollup lifecycle and how final output is bounded.",
+   "rubric": {
+    "description": "c11 holdout (SCD): judged against a run-verified reference answer",
+    "required": [
+     {
+      "id": "scd2_sft_060.1",
+      "check": "Reaches the same decisions and produces the same records or findings as this verified reference answer (equivalent CTL2 forms accepted):\nKeep the latest event in the group accumulator, including an inactive state or null reason, and suppress per-record output. finishGroup() enables final output; transform() emits the accumulated snapshot once and returns SKIP on subsequent counter values. Returning ALL for the first row does not end the Rollup output loop.",
+      "rationale": "The reference was compiled and run on the CloverDX server."
+     },
+     {
+      "id": "scd2_sft_060.2",
+      "check": "Makes no claim about the component contract, ports, return values or CTL2 behaviour that contradicts the reference answer or ctl2-basics.md.",
+      "rationale": "A correct result reached with a false explanation still teaches the wrong contract."
+     }
+    ],
+    "forbidden": [],
+    "scoring": {
+     "method": "required_fraction",
+     "forbidden_penalty": 0.2
+    }
+   }
+  }
+ ]
+}

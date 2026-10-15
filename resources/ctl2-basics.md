@@ -1350,6 +1350,8 @@ Facts settled by running graphs on CloverDX Server 7.4 (run ids in `data/suite_v
 | Normalizer | It has exactly one output port. `count()` returning 0 emits nothing for that input record; returning `SKIP` from `transform(idx)` drops only that child. |
 | DataGenerator | With `recordsNumber = 0`, `generate()` is never called. The configured record count ends generation; `generate()` returns `OK` / `ALL` on every call. |
 | ExtMergeJoin full outer | Matched pairs and one-sided records all go through `transform()` and out on output 0; the fields of the absent side read as null. Optional output 1 carries unjoined master records unchanged. |
+| ExtMergeJoin absent side | In a left-outer ExtMergeJoin, `isnull($in.1)` does **not** detect a missing slave record; the absent side's fields read as null, so test a field the slave always has (e.g. its non-nullable key: `$in.1.key == null`). A branch built on `isnull($in.1)` mis-routes (probe run 5019 failed; the field-level test, run 5020, passed — owner's server, SCD-2 set validation). |
+| Joiner duplicates disabled | With duplicate keys not allowed (Allow key duplicates = false), the joiner keeps the **first** record encountered for each key on the duplicated side (run 5021, owner's server). |
 | Lookup duplicates | Iterating several records for one key (`get(...)` then `next()`) needs the lookup table's `keyDuplicates=true`; `get(...)` returns null on a miss. |
 | Rounding | `round(decimal, n)` rounds halves away from zero: `round(2.505D, 2) = 2.51`, `round(-2.505D, 2) = -2.51`. |
 | Graph parameters | `RUN_ID` is reserved by the server (it is replaced by the numeric execution id); use another name for business run ids. |

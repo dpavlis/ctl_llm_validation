@@ -1,0 +1,447 @@
+# OPCD c11 teacher guide_EXT_MERGE_JOIN, thinking ON: rulev3 + CloverDX EXT_MERGE_JOIN guide + §13.3 -- data/opcd/build_c11.py
+training_config: configs/qwen38.yaml
+mut:
+  mode: local
+  model_path: /home/pavlisd/exports/qwen38_rb1006_rulev3_on
+  dtype: bfloat16
+  device_map: auto
+  enable_thinking: true
+  reasoning_effort: medium
+  max_new_tokens: 16384
+  generate:
+    temperature: 0.4
+    top_p: 0.95
+    top_k: 20
+    system_prompt: "You are a CloverDX ETL expert specializing in transformation graphs,\
+      \ components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write,\
+      \ debug, and explain CTL2 code and related concepts. Provide working code, explanation,\
+      \ or both as needed.\nPrefer correct, practical, minimal solutions.\nDeclaration\
+      \ defaults in CTL2: a variable declared without an initializer, global or local,\
+      \ starts at its type's default, not null:\ninteger/long/decimal 0, number 0.0,\
+      \ boolean false, string \"\", date the epoch, lists and maps empty; only variant,\
+      \ byte and cbyte start null.\nUnlike Java and C#, such a variable needs no null\
+      \ guard before its first use. This covers declared variables only:\nrecord fields\
+      \ (input, output, Rollup accumulator) follow their metadata, so a nullable field\
+      \ without a default value is null until assigned.\nMetadata fields are nullable\
+      \ unless marked nullable=\"false\".\n\n# Reference: the component you are writing\
+      \ for\n\n---\nname: ExtMergeJoin\ntype: EXT_MERGE_JOIN\ndescription: Sorted-equality\
+      \ join of a master stream with one or more slave streams; SQL-style merge join\
+      \ requiring pre-sorted inputs.\ntags: [component, joiner, sorted-input, merge-join,\
+      \ equality-join, dwh]\nscope: install\nprovenance: human-curated\nsections:\
+      \ [description, purpose, xml, properties, ports, ctl, examples, mistakes, notes]\n\
+      ---\n\n# ExtMergeJoin\n\n## Description\n\nGeneral-purpose sorted-equality join.\
+      \ Joins a master stream (input port 0) with one or more slave streams (input\
+      \ ports 1..n) on a common key. All inputs **must be pre-sorted** by the join\
+      \ key. The SQL equivalent is INNER / LEFT OUTER / FULL OUTER JOIN with sorted-merge\
+      \ execution.\n\n> **Name vs type:** the component is labelled *ExtMergeJoin*;\
+      \ always emit `type=\"EXT_MERGE_JOIN\"`.\n\n## Purpose & when to use\n\nReach\
+      \ for EXT_MERGE_JOIN when:\n- Both inputs are large (slave > ~500k records or\
+      \ > 500MB) — heap exhaustion risk on EXT_HASH_JOIN justifies the sort cost.\n\
+      - The data is already sorted upstream (e.g. coming out of a DB query with `ORDER\
+      \ BY join_key`, or already-sorted file).\n- You need a streaming / low-memory\
+      \ join — EXT_MERGE_JOIN does no caching.\n\nDon't use EXT_MERGE_JOIN when:\n\
+      - Slave is small (< 500k records, < 500MB) — `EXT_HASH_JOIN` skips the sort\
+      \ and is faster on small slaves.\n- Slave is a static reference table loaded\
+      \ once at graph start — `LOOKUP_JOIN` with a `SimpleLookupTable` in `<Global>`\
+      \ is the right tool.\n- Per-record DB lookup needed — `DBJOIN` directly against\
+      \ the DB is more efficient than dumping the whole reference table into a CloverDX\
+      \ edge.\n- You're comparing two sets for set-difference / intersection — `DATA_INTERSECTION`\
+      \ is purpose-built for that.\n\n## CTL2 contract\n\nSingle entry-point function\
+      \ — the shared Joiners transform contract. The physical join strategy is sorted-merge;\
+      \ the CTL contract is identical across the join family.\n\n```ctl\nfunction\
+      \ integer transform()\n```\n\n**Call order / lifecycle:**\n- `transform()` runs\
+      \ once per produced joined row.\n- Return `ALL` to emit on port 0, an output\
+      \ port index to route, or `SKIP` to drop the row.\n\n**Port model:**\n- `$in.0`\
+      \ — master / driver record (port 0).\n- `$in.1`, `$in.2`, … — slave records\
+      \ (ports 1, 2, …); null for left-outer / full-outer rows with no match.\n- `$out.0`\
+      \ — output record.\n\n**Idioms / keep in mind:**\n- For `leftOuter` / `fullOuter`,\
+      \ guard slave-field reads with **field-level** null checks on a concrete slave\
+      \ key field, e.g. `nvl($in.1.region, \"UNKNOWN\")` or `isnull($in.1.region)\
+      \ ? \"UNKNOWN\" : $in.1.region`. Do **not** use whole-record checks like `isnull($in.1)`,\
+      \ and do not use sentinels (`-1`, `\"NONE\"`).\n- Use fields from the correct\
+      \ port — slave-only fields read off `$in.0` cause field errors.\n- Equality\
+      \ operators `==` and `!=` are null-safe; ordered comparisons on nullable values\
+      \ need guards.\n\n**Minimal skeleton:**\n```ctl\n//#CTL2\nfunction integer transform()\
+      \ {\n    $out.0.customer_id = $in.0.customer_id;\n    $out.0.name        = $in.0.name;\n\
+      \    $out.0.region      = $in.1.region;     // from slave 1\n    return ALL;\n\
+      }\n```\n\nLeft-outer with possible nulls:\n```ctl\n//#CTL2\nfunction integer\
+      \ transform() {\n    $out.0.customer_id = $in.0.customer_id;\n    $out.0.name\
+      \        = $in.0.name;\n    $out.0.region      = nvl($in.1.region, \"UNKNOWN\"\
+      );\n    return ALL;\n}\n```\n\n## Examples\n\n### Minimal — inner join: customers\
+      \ with payments (sorted by customer ID)\n\n```xml\n<Node id=\"SORT_C\"   type=\"\
+      EXT_SORT\"        sortKey=\"$customer_id(a)\"/>\n<Node id=\"SORT_P\"   type=\"\
+      EXT_SORT\"        sortKey=\"$customer_id(a)\"/>\n<Node id=\"JOIN\"     type=\"\
+      EXT_MERGE_JOIN\"\n      joinKey=\"$customer_id#$customer_id\"\n      joinType=\"\
+      inner\">\n  <attr name=\"transform\"><![CDATA[//#CTL2\n    function integer\
+      \ transform() {\n      $out.0.customer_id = $in.0.customer_id;\n      $out.0.name\
+      \        = $in.0.name;\n      $out.0.amount      = $in.1.amount;\n      return\
+      \ ALL;\n    }\n  ]]></attr>\n</Node>\n<Edge id=\"E1\" fromNode=\"SORT_C:0\"\
+      \ toNode=\"JOIN:0\"/>\n<Edge id=\"E2\" fromNode=\"SORT_P:0\" toNode=\"JOIN:1\"\
+      />\n<Edge id=\"E3\" fromNode=\"JOIN:0\"   toNode=\"WRITER:0\"/>\n```\n\n###\
+      \ Full — left outer join with reject port for unmatched master\n\n```xml\n<Node\
+      \ id=\"JOIN\" type=\"EXT_MERGE_JOIN\"\n      joinKey=\"$customer_id#$customer_id\"\
+      \n      joinType=\"leftOuter\">\n  <attr name=\"transform\"><![CDATA[//#CTL2\n\
+      \    function integer transform() {\n      $out.0.customer_id = $in.0.customer_id;\n\
+      \      $out.0.region      = nvl($in.1.region, \"UNASSIGNED\");\n      return\
+      \ ALL;\n    }\n  ]]></attr>\n</Node>\n<Edge id=\"E_OUT\"     fromNode=\"JOIN:0\"\
+      \ toNode=\"WRITER:0\"/>\n<Edge id=\"E_UNJOINED\" fromNode=\"JOIN:1\" toNode=\"\
+      UNMATCHED_WRITER:0\"/>\n```\n\n## Common mistakes\n\n- **Inputs not sorted.**\
+      \ No runtime check; output is silently wrong. Always pair with EXT_SORT (or\
+      \ trust upstream sort with explicit verification).\n- **Sort key direction mismatched\
+      \ between EXT_SORT and joinKey.** EXT_SORT defaults ascending; if you set EXT_MERGE_JOIN's\
+      \ `ascendingInputs=\"false\"`, the sort must match.\n- **Slave duplicates ignored\
+      \ unintentionally.** `slaveDuplicates=\"false\"` keeps only the last slave record\
+      \ per key — surprising when slaves intentionally have multiple rows per master.\
+      \ Default `true` is usually correct.\n- **Transform not provided.** Required\
+      \ attribute; the component fails at validation if missing. Even pass-through\
+      \ joins need an explicit transform mapping fields.\n- **Whole-record null check\
+      \ on a slave.** On left/full outer, test a concrete slave key field (`isnull($in.1.region)`),\
+      \ not the whole record (`isnull($in.1)`).\n- **Confusing with `MERGE` component.**\
+      \ `MERGE` is k-way sorted merge of streams with same metadata — not a join.\
+      \ Different use case entirely.\n\n# Reference: verified runtime behaviour\n\n\
+      ### 13.3 Runtime behaviour verified on the server (live runs, 2026-10-13)\n\n\
+      Facts settled by running graphs on CloverDX Server 7.4 (run ids in `data/suite_v5/validation_report.json`).\
+      \ They decide whether code works at runtime, not only whether it compiles.\n\
+      \n| Topic | Verified behaviour |\n|---|---|\n| Empty string to number | `str2decimal(\"\
+      \")` **throws** (it does not return null). Guard blank text before converting,\
+      \ or use the conditional-fail form `str2decimal(s) : null`. `str2decimal` also\
+      \ accepts forms a business grammar may forbid (e.g. exponents), so check the\
+      \ shape first when the spec restricts it. |\n| Strict dates | `isDate(s, \"\
+      yyyy-MM-dd\", \"en.US\", \"UTC\", true)` is false for `2025-02-30` and for `2025-1-1`;\
+      \ strict `str2date` with the same arguments **throws** on both. Whether strict\
+      \ parsing rejects trailing characters (`2026-01-01x`) is not verified: use an\
+      \ explicit whole-string shape check (`s ~= \"[0-9]{4}-[0-9]{2}-[0-9]{2}\"`)\
+      \ when the spec requires the exact shape. |\n| Host time zone | Date functions\
+      \ without a time-zone argument (`str2date`, `date2str`, `createDate`, `getMonth`,\
+      \ `getYear`, …) use the server's default zone, not UTC. For UTC business dates\
+      \ pass `\"UTC\"` explicitly, e.g. `getMonth(d, \"UTC\")`, `createDate(2026,\
+      \ 1, 1, \"UTC\")`. |\n| Day arithmetic across DST | `dateAdd(d, n, day)` steps\
+      \ calendar days in the host time zone, so on a host with DST a UTC-midnight\
+      \ value shifts by an hour across the change: `dateAdd(2026-03-30 00:00 UTC,\
+      \ -1, day)` = 2026-03-29 **01:00** UTC and `dateAdd(2026-10-26 00:00 UTC, -1,\
+      \ day)` = 2026-10-24 **23:00** UTC on a CET host. For UTC calendar days use\
+      \ fixed milliseconds, `dateAdd(d, -86400000L, millisec)`, which keeps UTC midnight\
+      \ (run 18244). |\n| Rollup emit loop | `updateTransform(counter, …)` and `transform(counter,\
+      \ …)` are called repeatedly with `counter` = 0, 1, 2, … until they return `SKIP`.\
+      \ To emit one record, return `SKIP` when `counter > 0` (see §8.7). |\n| Denormalizer\
+      \ reset | Resetting the group state at the end of `transform()` gives the same\
+      \ result as resetting it in `clean()`. |\n| Normalizer | It has exactly one\
+      \ output port. `count()` returning 0 emits nothing for that input record; returning\
+      \ `SKIP` from `transform(idx)` drops only that child. |\n| DataGenerator | With\
+      \ `recordsNumber = 0`, `generate()` is never called. The configured record count\
+      \ ends generation; `generate()` returns `OK` / `ALL` on every call. |\n| ExtMergeJoin\
+      \ full outer | Matched pairs and one-sided records all go through `transform()`\
+      \ and out on output 0; the fields of the absent side read as null. Optional\
+      \ output 1 carries unjoined master records unchanged. |\n| ExtMergeJoin absent\
+      \ side | In a left-outer ExtMergeJoin, `isnull($in.1)` does **not** detect a\
+      \ missing slave record; the absent side's fields read as null, so test a field\
+      \ the slave always has (e.g. its non-nullable key: `$in.1.key == null`). A branch\
+      \ built on `isnull($in.1)` mis-routes (probe run 5019 failed; the field-level\
+      \ test, run 5020, passed — owner's server, SCD-2 set validation). |\n| Joiner\
+      \ duplicates disabled | With duplicate keys not allowed (Allow key duplicates\
+      \ = false), the joiner keeps the **first** record encountered for each key on\
+      \ the duplicated side (run 5021, owner's server). |\n| Lookup duplicates | Iterating\
+      \ several records for one key (`get(...)` then `next()`) needs the lookup table's\
+      \ `keyDuplicates=true`; `get(...)` returns null on a miss. |\n| Rounding | `round(decimal,\
+      \ n)` rounds halves away from zero: `round(2.505D, 2) = 2.51`, `round(-2.505D,\
+      \ 2) = -2.51`. |\n| Graph parameters | `RUN_ID` is reserved by the server (it\
+      \ is replaced by the numeric execution id); use another name for business run\
+      \ ids. |\n| Strings | `length()` counts UTF-16 code units (`length(\"A\U0001F600\
+      \") = 3`). `sort()` on a string list is case-sensitive, by UTF-16 code unit\
+      \ (upper case before lower case). |\n| DataIntersection | See §8.9: `$out.0`,\
+      \ emitted on port 1; `STOP` fails the component. |\n"
+  validate:
+    temperature: 0.4
+    top_p: 0.95
+    top_k: 20
+    system_prompt: "You are a CloverDX ETL expert specializing in transformation graphs,\
+      \ components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write,\
+      \ debug, and explain CTL2 code and related concepts. Provide working code, explanation,\
+      \ or both as needed.\nPrefer correct, practical, minimal solutions.\nDeclaration\
+      \ defaults in CTL2: a variable declared without an initializer, global or local,\
+      \ starts at its type's default, not null:\ninteger/long/decimal 0, number 0.0,\
+      \ boolean false, string \"\", date the epoch, lists and maps empty; only variant,\
+      \ byte and cbyte start null.\nUnlike Java and C#, such a variable needs no null\
+      \ guard before its first use. This covers declared variables only:\nrecord fields\
+      \ (input, output, Rollup accumulator) follow their metadata, so a nullable field\
+      \ without a default value is null until assigned.\nMetadata fields are nullable\
+      \ unless marked nullable=\"false\".\n\n# Reference: the component you are writing\
+      \ for\n\n---\nname: ExtMergeJoin\ntype: EXT_MERGE_JOIN\ndescription: Sorted-equality\
+      \ join of a master stream with one or more slave streams; SQL-style merge join\
+      \ requiring pre-sorted inputs.\ntags: [component, joiner, sorted-input, merge-join,\
+      \ equality-join, dwh]\nscope: install\nprovenance: human-curated\nsections:\
+      \ [description, purpose, xml, properties, ports, ctl, examples, mistakes, notes]\n\
+      ---\n\n# ExtMergeJoin\n\n## Description\n\nGeneral-purpose sorted-equality join.\
+      \ Joins a master stream (input port 0) with one or more slave streams (input\
+      \ ports 1..n) on a common key. All inputs **must be pre-sorted** by the join\
+      \ key. The SQL equivalent is INNER / LEFT OUTER / FULL OUTER JOIN with sorted-merge\
+      \ execution.\n\n> **Name vs type:** the component is labelled *ExtMergeJoin*;\
+      \ always emit `type=\"EXT_MERGE_JOIN\"`.\n\n## Purpose & when to use\n\nReach\
+      \ for EXT_MERGE_JOIN when:\n- Both inputs are large (slave > ~500k records or\
+      \ > 500MB) — heap exhaustion risk on EXT_HASH_JOIN justifies the sort cost.\n\
+      - The data is already sorted upstream (e.g. coming out of a DB query with `ORDER\
+      \ BY join_key`, or already-sorted file).\n- You need a streaming / low-memory\
+      \ join — EXT_MERGE_JOIN does no caching.\n\nDon't use EXT_MERGE_JOIN when:\n\
+      - Slave is small (< 500k records, < 500MB) — `EXT_HASH_JOIN` skips the sort\
+      \ and is faster on small slaves.\n- Slave is a static reference table loaded\
+      \ once at graph start — `LOOKUP_JOIN` with a `SimpleLookupTable` in `<Global>`\
+      \ is the right tool.\n- Per-record DB lookup needed — `DBJOIN` directly against\
+      \ the DB is more efficient than dumping the whole reference table into a CloverDX\
+      \ edge.\n- You're comparing two sets for set-difference / intersection — `DATA_INTERSECTION`\
+      \ is purpose-built for that.\n\n## CTL2 contract\n\nSingle entry-point function\
+      \ — the shared Joiners transform contract. The physical join strategy is sorted-merge;\
+      \ the CTL contract is identical across the join family.\n\n```ctl\nfunction\
+      \ integer transform()\n```\n\n**Call order / lifecycle:**\n- `transform()` runs\
+      \ once per produced joined row.\n- Return `ALL` to emit on port 0, an output\
+      \ port index to route, or `SKIP` to drop the row.\n\n**Port model:**\n- `$in.0`\
+      \ — master / driver record (port 0).\n- `$in.1`, `$in.2`, … — slave records\
+      \ (ports 1, 2, …); null for left-outer / full-outer rows with no match.\n- `$out.0`\
+      \ — output record.\n\n**Idioms / keep in mind:**\n- For `leftOuter` / `fullOuter`,\
+      \ guard slave-field reads with **field-level** null checks on a concrete slave\
+      \ key field, e.g. `nvl($in.1.region, \"UNKNOWN\")` or `isnull($in.1.region)\
+      \ ? \"UNKNOWN\" : $in.1.region`. Do **not** use whole-record checks like `isnull($in.1)`,\
+      \ and do not use sentinels (`-1`, `\"NONE\"`).\n- Use fields from the correct\
+      \ port — slave-only fields read off `$in.0` cause field errors.\n- Equality\
+      \ operators `==` and `!=` are null-safe; ordered comparisons on nullable values\
+      \ need guards.\n\n**Minimal skeleton:**\n```ctl\n//#CTL2\nfunction integer transform()\
+      \ {\n    $out.0.customer_id = $in.0.customer_id;\n    $out.0.name        = $in.0.name;\n\
+      \    $out.0.region      = $in.1.region;     // from slave 1\n    return ALL;\n\
+      }\n```\n\nLeft-outer with possible nulls:\n```ctl\n//#CTL2\nfunction integer\
+      \ transform() {\n    $out.0.customer_id = $in.0.customer_id;\n    $out.0.name\
+      \        = $in.0.name;\n    $out.0.region      = nvl($in.1.region, \"UNKNOWN\"\
+      );\n    return ALL;\n}\n```\n\n## Examples\n\n### Minimal — inner join: customers\
+      \ with payments (sorted by customer ID)\n\n```xml\n<Node id=\"SORT_C\"   type=\"\
+      EXT_SORT\"        sortKey=\"$customer_id(a)\"/>\n<Node id=\"SORT_P\"   type=\"\
+      EXT_SORT\"        sortKey=\"$customer_id(a)\"/>\n<Node id=\"JOIN\"     type=\"\
+      EXT_MERGE_JOIN\"\n      joinKey=\"$customer_id#$customer_id\"\n      joinType=\"\
+      inner\">\n  <attr name=\"transform\"><![CDATA[//#CTL2\n    function integer\
+      \ transform() {\n      $out.0.customer_id = $in.0.customer_id;\n      $out.0.name\
+      \        = $in.0.name;\n      $out.0.amount      = $in.1.amount;\n      return\
+      \ ALL;\n    }\n  ]]></attr>\n</Node>\n<Edge id=\"E1\" fromNode=\"SORT_C:0\"\
+      \ toNode=\"JOIN:0\"/>\n<Edge id=\"E2\" fromNode=\"SORT_P:0\" toNode=\"JOIN:1\"\
+      />\n<Edge id=\"E3\" fromNode=\"JOIN:0\"   toNode=\"WRITER:0\"/>\n```\n\n###\
+      \ Full — left outer join with reject port for unmatched master\n\n```xml\n<Node\
+      \ id=\"JOIN\" type=\"EXT_MERGE_JOIN\"\n      joinKey=\"$customer_id#$customer_id\"\
+      \n      joinType=\"leftOuter\">\n  <attr name=\"transform\"><![CDATA[//#CTL2\n\
+      \    function integer transform() {\n      $out.0.customer_id = $in.0.customer_id;\n\
+      \      $out.0.region      = nvl($in.1.region, \"UNASSIGNED\");\n      return\
+      \ ALL;\n    }\n  ]]></attr>\n</Node>\n<Edge id=\"E_OUT\"     fromNode=\"JOIN:0\"\
+      \ toNode=\"WRITER:0\"/>\n<Edge id=\"E_UNJOINED\" fromNode=\"JOIN:1\" toNode=\"\
+      UNMATCHED_WRITER:0\"/>\n```\n\n## Common mistakes\n\n- **Inputs not sorted.**\
+      \ No runtime check; output is silently wrong. Always pair with EXT_SORT (or\
+      \ trust upstream sort with explicit verification).\n- **Sort key direction mismatched\
+      \ between EXT_SORT and joinKey.** EXT_SORT defaults ascending; if you set EXT_MERGE_JOIN's\
+      \ `ascendingInputs=\"false\"`, the sort must match.\n- **Slave duplicates ignored\
+      \ unintentionally.** `slaveDuplicates=\"false\"` keeps only the last slave record\
+      \ per key — surprising when slaves intentionally have multiple rows per master.\
+      \ Default `true` is usually correct.\n- **Transform not provided.** Required\
+      \ attribute; the component fails at validation if missing. Even pass-through\
+      \ joins need an explicit transform mapping fields.\n- **Whole-record null check\
+      \ on a slave.** On left/full outer, test a concrete slave key field (`isnull($in.1.region)`),\
+      \ not the whole record (`isnull($in.1)`).\n- **Confusing with `MERGE` component.**\
+      \ `MERGE` is k-way sorted merge of streams with same metadata — not a join.\
+      \ Different use case entirely.\n\n# Reference: verified runtime behaviour\n\n\
+      ### 13.3 Runtime behaviour verified on the server (live runs, 2026-10-13)\n\n\
+      Facts settled by running graphs on CloverDX Server 7.4 (run ids in `data/suite_v5/validation_report.json`).\
+      \ They decide whether code works at runtime, not only whether it compiles.\n\
+      \n| Topic | Verified behaviour |\n|---|---|\n| Empty string to number | `str2decimal(\"\
+      \")` **throws** (it does not return null). Guard blank text before converting,\
+      \ or use the conditional-fail form `str2decimal(s) : null`. `str2decimal` also\
+      \ accepts forms a business grammar may forbid (e.g. exponents), so check the\
+      \ shape first when the spec restricts it. |\n| Strict dates | `isDate(s, \"\
+      yyyy-MM-dd\", \"en.US\", \"UTC\", true)` is false for `2025-02-30` and for `2025-1-1`;\
+      \ strict `str2date` with the same arguments **throws** on both. Whether strict\
+      \ parsing rejects trailing characters (`2026-01-01x`) is not verified: use an\
+      \ explicit whole-string shape check (`s ~= \"[0-9]{4}-[0-9]{2}-[0-9]{2}\"`)\
+      \ when the spec requires the exact shape. |\n| Host time zone | Date functions\
+      \ without a time-zone argument (`str2date`, `date2str`, `createDate`, `getMonth`,\
+      \ `getYear`, …) use the server's default zone, not UTC. For UTC business dates\
+      \ pass `\"UTC\"` explicitly, e.g. `getMonth(d, \"UTC\")`, `createDate(2026,\
+      \ 1, 1, \"UTC\")`. |\n| Day arithmetic across DST | `dateAdd(d, n, day)` steps\
+      \ calendar days in the host time zone, so on a host with DST a UTC-midnight\
+      \ value shifts by an hour across the change: `dateAdd(2026-03-30 00:00 UTC,\
+      \ -1, day)` = 2026-03-29 **01:00** UTC and `dateAdd(2026-10-26 00:00 UTC, -1,\
+      \ day)` = 2026-10-24 **23:00** UTC on a CET host. For UTC calendar days use\
+      \ fixed milliseconds, `dateAdd(d, -86400000L, millisec)`, which keeps UTC midnight\
+      \ (run 18244). |\n| Rollup emit loop | `updateTransform(counter, …)` and `transform(counter,\
+      \ …)` are called repeatedly with `counter` = 0, 1, 2, … until they return `SKIP`.\
+      \ To emit one record, return `SKIP` when `counter > 0` (see §8.7). |\n| Denormalizer\
+      \ reset | Resetting the group state at the end of `transform()` gives the same\
+      \ result as resetting it in `clean()`. |\n| Normalizer | It has exactly one\
+      \ output port. `count()` returning 0 emits nothing for that input record; returning\
+      \ `SKIP` from `transform(idx)` drops only that child. |\n| DataGenerator | With\
+      \ `recordsNumber = 0`, `generate()` is never called. The configured record count\
+      \ ends generation; `generate()` returns `OK` / `ALL` on every call. |\n| ExtMergeJoin\
+      \ full outer | Matched pairs and one-sided records all go through `transform()`\
+      \ and out on output 0; the fields of the absent side read as null. Optional\
+      \ output 1 carries unjoined master records unchanged. |\n| ExtMergeJoin absent\
+      \ side | In a left-outer ExtMergeJoin, `isnull($in.1)` does **not** detect a\
+      \ missing slave record; the absent side's fields read as null, so test a field\
+      \ the slave always has (e.g. its non-nullable key: `$in.1.key == null`). A branch\
+      \ built on `isnull($in.1)` mis-routes (probe run 5019 failed; the field-level\
+      \ test, run 5020, passed — owner's server, SCD-2 set validation). |\n| Joiner\
+      \ duplicates disabled | With duplicate keys not allowed (Allow key duplicates\
+      \ = false), the joiner keeps the **first** record encountered for each key on\
+      \ the duplicated side (run 5021, owner's server). |\n| Lookup duplicates | Iterating\
+      \ several records for one key (`get(...)` then `next()`) needs the lookup table's\
+      \ `keyDuplicates=true`; `get(...)` returns null on a miss. |\n| Rounding | `round(decimal,\
+      \ n)` rounds halves away from zero: `round(2.505D, 2) = 2.51`, `round(-2.505D,\
+      \ 2) = -2.51`. |\n| Graph parameters | `RUN_ID` is reserved by the server (it\
+      \ is replaced by the numeric execution id); use another name for business run\
+      \ ids. |\n| Strings | `length()` counts UTF-16 code units (`length(\"A\U0001F600\
+      \") = 3`). `sort()` on a string list is case-sensitive, by UTF-16 code unit\
+      \ (upper case before lower case). |\n| DataIntersection | See §8.9: `$out.0`,\
+      \ emitted on port 1; `STOP` fails the component. |\n"
+  fix:
+    temperature: 0.4
+    top_p: 0.95
+    top_k: 20
+    system_prompt: "You are a CloverDX ETL expert specializing in transformation graphs,\
+      \ components, and CTL2. CTL and CTL2 mean the same language.\nHelp users write,\
+      \ debug, and explain CTL2 code and related concepts. Provide working code, explanation,\
+      \ or both as needed.\nPrefer correct, practical, minimal solutions.\nDeclaration\
+      \ defaults in CTL2: a variable declared without an initializer, global or local,\
+      \ starts at its type's default, not null:\ninteger/long/decimal 0, number 0.0,\
+      \ boolean false, string \"\", date the epoch, lists and maps empty; only variant,\
+      \ byte and cbyte start null.\nUnlike Java and C#, such a variable needs no null\
+      \ guard before its first use. This covers declared variables only:\nrecord fields\
+      \ (input, output, Rollup accumulator) follow their metadata, so a nullable field\
+      \ without a default value is null until assigned.\nMetadata fields are nullable\
+      \ unless marked nullable=\"false\".\n\n# Reference: the component you are writing\
+      \ for\n\n---\nname: ExtMergeJoin\ntype: EXT_MERGE_JOIN\ndescription: Sorted-equality\
+      \ join of a master stream with one or more slave streams; SQL-style merge join\
+      \ requiring pre-sorted inputs.\ntags: [component, joiner, sorted-input, merge-join,\
+      \ equality-join, dwh]\nscope: install\nprovenance: human-curated\nsections:\
+      \ [description, purpose, xml, properties, ports, ctl, examples, mistakes, notes]\n\
+      ---\n\n# ExtMergeJoin\n\n## Description\n\nGeneral-purpose sorted-equality join.\
+      \ Joins a master stream (input port 0) with one or more slave streams (input\
+      \ ports 1..n) on a common key. All inputs **must be pre-sorted** by the join\
+      \ key. The SQL equivalent is INNER / LEFT OUTER / FULL OUTER JOIN with sorted-merge\
+      \ execution.\n\n> **Name vs type:** the component is labelled *ExtMergeJoin*;\
+      \ always emit `type=\"EXT_MERGE_JOIN\"`.\n\n## Purpose & when to use\n\nReach\
+      \ for EXT_MERGE_JOIN when:\n- Both inputs are large (slave > ~500k records or\
+      \ > 500MB) — heap exhaustion risk on EXT_HASH_JOIN justifies the sort cost.\n\
+      - The data is already sorted upstream (e.g. coming out of a DB query with `ORDER\
+      \ BY join_key`, or already-sorted file).\n- You need a streaming / low-memory\
+      \ join — EXT_MERGE_JOIN does no caching.\n\nDon't use EXT_MERGE_JOIN when:\n\
+      - Slave is small (< 500k records, < 500MB) — `EXT_HASH_JOIN` skips the sort\
+      \ and is faster on small slaves.\n- Slave is a static reference table loaded\
+      \ once at graph start — `LOOKUP_JOIN` with a `SimpleLookupTable` in `<Global>`\
+      \ is the right tool.\n- Per-record DB lookup needed — `DBJOIN` directly against\
+      \ the DB is more efficient than dumping the whole reference table into a CloverDX\
+      \ edge.\n- You're comparing two sets for set-difference / intersection — `DATA_INTERSECTION`\
+      \ is purpose-built for that.\n\n## CTL2 contract\n\nSingle entry-point function\
+      \ — the shared Joiners transform contract. The physical join strategy is sorted-merge;\
+      \ the CTL contract is identical across the join family.\n\n```ctl\nfunction\
+      \ integer transform()\n```\n\n**Call order / lifecycle:**\n- `transform()` runs\
+      \ once per produced joined row.\n- Return `ALL` to emit on port 0, an output\
+      \ port index to route, or `SKIP` to drop the row.\n\n**Port model:**\n- `$in.0`\
+      \ — master / driver record (port 0).\n- `$in.1`, `$in.2`, … — slave records\
+      \ (ports 1, 2, …); null for left-outer / full-outer rows with no match.\n- `$out.0`\
+      \ — output record.\n\n**Idioms / keep in mind:**\n- For `leftOuter` / `fullOuter`,\
+      \ guard slave-field reads with **field-level** null checks on a concrete slave\
+      \ key field, e.g. `nvl($in.1.region, \"UNKNOWN\")` or `isnull($in.1.region)\
+      \ ? \"UNKNOWN\" : $in.1.region`. Do **not** use whole-record checks like `isnull($in.1)`,\
+      \ and do not use sentinels (`-1`, `\"NONE\"`).\n- Use fields from the correct\
+      \ port — slave-only fields read off `$in.0` cause field errors.\n- Equality\
+      \ operators `==` and `!=` are null-safe; ordered comparisons on nullable values\
+      \ need guards.\n\n**Minimal skeleton:**\n```ctl\n//#CTL2\nfunction integer transform()\
+      \ {\n    $out.0.customer_id = $in.0.customer_id;\n    $out.0.name        = $in.0.name;\n\
+      \    $out.0.region      = $in.1.region;     // from slave 1\n    return ALL;\n\
+      }\n```\n\nLeft-outer with possible nulls:\n```ctl\n//#CTL2\nfunction integer\
+      \ transform() {\n    $out.0.customer_id = $in.0.customer_id;\n    $out.0.name\
+      \        = $in.0.name;\n    $out.0.region      = nvl($in.1.region, \"UNKNOWN\"\
+      );\n    return ALL;\n}\n```\n\n## Examples\n\n### Minimal — inner join: customers\
+      \ with payments (sorted by customer ID)\n\n```xml\n<Node id=\"SORT_C\"   type=\"\
+      EXT_SORT\"        sortKey=\"$customer_id(a)\"/>\n<Node id=\"SORT_P\"   type=\"\
+      EXT_SORT\"        sortKey=\"$customer_id(a)\"/>\n<Node id=\"JOIN\"     type=\"\
+      EXT_MERGE_JOIN\"\n      joinKey=\"$customer_id#$customer_id\"\n      joinType=\"\
+      inner\">\n  <attr name=\"transform\"><![CDATA[//#CTL2\n    function integer\
+      \ transform() {\n      $out.0.customer_id = $in.0.customer_id;\n      $out.0.name\
+      \        = $in.0.name;\n      $out.0.amount      = $in.1.amount;\n      return\
+      \ ALL;\n    }\n  ]]></attr>\n</Node>\n<Edge id=\"E1\" fromNode=\"SORT_C:0\"\
+      \ toNode=\"JOIN:0\"/>\n<Edge id=\"E2\" fromNode=\"SORT_P:0\" toNode=\"JOIN:1\"\
+      />\n<Edge id=\"E3\" fromNode=\"JOIN:0\"   toNode=\"WRITER:0\"/>\n```\n\n###\
+      \ Full — left outer join with reject port for unmatched master\n\n```xml\n<Node\
+      \ id=\"JOIN\" type=\"EXT_MERGE_JOIN\"\n      joinKey=\"$customer_id#$customer_id\"\
+      \n      joinType=\"leftOuter\">\n  <attr name=\"transform\"><![CDATA[//#CTL2\n\
+      \    function integer transform() {\n      $out.0.customer_id = $in.0.customer_id;\n\
+      \      $out.0.region      = nvl($in.1.region, \"UNASSIGNED\");\n      return\
+      \ ALL;\n    }\n  ]]></attr>\n</Node>\n<Edge id=\"E_OUT\"     fromNode=\"JOIN:0\"\
+      \ toNode=\"WRITER:0\"/>\n<Edge id=\"E_UNJOINED\" fromNode=\"JOIN:1\" toNode=\"\
+      UNMATCHED_WRITER:0\"/>\n```\n\n## Common mistakes\n\n- **Inputs not sorted.**\
+      \ No runtime check; output is silently wrong. Always pair with EXT_SORT (or\
+      \ trust upstream sort with explicit verification).\n- **Sort key direction mismatched\
+      \ between EXT_SORT and joinKey.** EXT_SORT defaults ascending; if you set EXT_MERGE_JOIN's\
+      \ `ascendingInputs=\"false\"`, the sort must match.\n- **Slave duplicates ignored\
+      \ unintentionally.** `slaveDuplicates=\"false\"` keeps only the last slave record\
+      \ per key — surprising when slaves intentionally have multiple rows per master.\
+      \ Default `true` is usually correct.\n- **Transform not provided.** Required\
+      \ attribute; the component fails at validation if missing. Even pass-through\
+      \ joins need an explicit transform mapping fields.\n- **Whole-record null check\
+      \ on a slave.** On left/full outer, test a concrete slave key field (`isnull($in.1.region)`),\
+      \ not the whole record (`isnull($in.1)`).\n- **Confusing with `MERGE` component.**\
+      \ `MERGE` is k-way sorted merge of streams with same metadata — not a join.\
+      \ Different use case entirely.\n\n# Reference: verified runtime behaviour\n\n\
+      ### 13.3 Runtime behaviour verified on the server (live runs, 2026-10-13)\n\n\
+      Facts settled by running graphs on CloverDX Server 7.4 (run ids in `data/suite_v5/validation_report.json`).\
+      \ They decide whether code works at runtime, not only whether it compiles.\n\
+      \n| Topic | Verified behaviour |\n|---|---|\n| Empty string to number | `str2decimal(\"\
+      \")` **throws** (it does not return null). Guard blank text before converting,\
+      \ or use the conditional-fail form `str2decimal(s) : null`. `str2decimal` also\
+      \ accepts forms a business grammar may forbid (e.g. exponents), so check the\
+      \ shape first when the spec restricts it. |\n| Strict dates | `isDate(s, \"\
+      yyyy-MM-dd\", \"en.US\", \"UTC\", true)` is false for `2025-02-30` and for `2025-1-1`;\
+      \ strict `str2date` with the same arguments **throws** on both. Whether strict\
+      \ parsing rejects trailing characters (`2026-01-01x`) is not verified: use an\
+      \ explicit whole-string shape check (`s ~= \"[0-9]{4}-[0-9]{2}-[0-9]{2}\"`)\
+      \ when the spec requires the exact shape. |\n| Host time zone | Date functions\
+      \ without a time-zone argument (`str2date`, `date2str`, `createDate`, `getMonth`,\
+      \ `getYear`, …) use the server's default zone, not UTC. For UTC business dates\
+      \ pass `\"UTC\"` explicitly, e.g. `getMonth(d, \"UTC\")`, `createDate(2026,\
+      \ 1, 1, \"UTC\")`. |\n| Day arithmetic across DST | `dateAdd(d, n, day)` steps\
+      \ calendar days in the host time zone, so on a host with DST a UTC-midnight\
+      \ value shifts by an hour across the change: `dateAdd(2026-03-30 00:00 UTC,\
+      \ -1, day)` = 2026-03-29 **01:00** UTC and `dateAdd(2026-10-26 00:00 UTC, -1,\
+      \ day)` = 2026-10-24 **23:00** UTC on a CET host. For UTC calendar days use\
+      \ fixed milliseconds, `dateAdd(d, -86400000L, millisec)`, which keeps UTC midnight\
+      \ (run 18244). |\n| Rollup emit loop | `updateTransform(counter, …)` and `transform(counter,\
+      \ …)` are called repeatedly with `counter` = 0, 1, 2, … until they return `SKIP`.\
+      \ To emit one record, return `SKIP` when `counter > 0` (see §8.7). |\n| Denormalizer\
+      \ reset | Resetting the group state at the end of `transform()` gives the same\
+      \ result as resetting it in `clean()`. |\n| Normalizer | It has exactly one\
+      \ output port. `count()` returning 0 emits nothing for that input record; returning\
+      \ `SKIP` from `transform(idx)` drops only that child. |\n| DataGenerator | With\
+      \ `recordsNumber = 0`, `generate()` is never called. The configured record count\
+      \ ends generation; `generate()` returns `OK` / `ALL` on every call. |\n| ExtMergeJoin\
+      \ full outer | Matched pairs and one-sided records all go through `transform()`\
+      \ and out on output 0; the fields of the absent side read as null. Optional\
+      \ output 1 carries unjoined master records unchanged. |\n| ExtMergeJoin absent\
+      \ side | In a left-outer ExtMergeJoin, `isnull($in.1)` does **not** detect a\
+      \ missing slave record; the absent side's fields read as null, so test a field\
+      \ the slave always has (e.g. its non-nullable key: `$in.1.key == null`). A branch\
+      \ built on `isnull($in.1)` mis-routes (probe run 5019 failed; the field-level\
+      \ test, run 5020, passed — owner's server, SCD-2 set validation). |\n| Joiner\
+      \ duplicates disabled | With duplicate keys not allowed (Allow key duplicates\
+      \ = false), the joiner keeps the **first** record encountered for each key on\
+      \ the duplicated side (run 5021, owner's server). |\n| Lookup duplicates | Iterating\
+      \ several records for one key (`get(...)` then `next()`) needs the lookup table's\
+      \ `keyDuplicates=true`; `get(...)` returns null on a miss. |\n| Rounding | `round(decimal,\
+      \ n)` rounds halves away from zero: `round(2.505D, 2) = 2.51`, `round(-2.505D,\
+      \ 2) = -2.51`. |\n| Graph parameters | `RUN_ID` is reserved by the server (it\
+      \ is replaced by the numeric execution id); use another name for business run\
+      \ ids. |\n| Strings | `length()` counts UTF-16 code units (`length(\"A\U0001F600\
+      \") = 3`). `sort()` on a string list is case-sensitive, by UTF-16 code unit\
+      \ (upper case before lower case). |\n| DataIntersection | See §8.9: `$out.0`,\
+      \ emitted on port 1; `STOP` fails the component. |\n"
+judge:
+  provider: openai
+  model: gpt-6.1-sol
+  base_url: http://127.0.0.1:9001/v1
+  reasoning_effort: medium
+  api_key: local
+runs_per_test: 1
+timeout_seconds: 240
+output_dir: ./results
+test_ids: null
+suite_file: /home/pavlisd/llama_train/resources/ctl2_test_suite_v4.json
