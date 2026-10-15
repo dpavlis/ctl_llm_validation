@@ -1,0 +1,28 @@
+# DataIntersection round-2b teacher check: c10 (c10_r019), thinking ON -- data/opcd/build_di2_tcheck.py
+judge:
+  api_key: local
+  base_url: http://127.0.0.1:9001/v1
+  model: gpt-6.1-sol
+  provider: openai
+  reasoning_effort: medium
+mut:
+  device_map: auto
+  dtype: bfloat16
+  enable_thinking: true
+  generate:
+    temperature: 0.4
+    top_k: 20
+    top_p: 0.95
+  max_new_tokens: 16384
+  mode: vllm
+  model_path: /home/pavlisd/exports/qwen38_rb1006_on
+  reasoning_effort: medium
+  run_label: qwen38_tcheck_di2_c10_on
+  vllm_model: c10_r019
+  vllm_url: http://127.0.0.1:3012
+output_dir: ./results
+runs_per_test: 1
+suite_file: /home/pavlisd/llama_train/data/opcd/teacher_check/suite_di2_plain.json
+test_ids: null
+timeout_seconds: 240
+training_config: configs/qwen38.yaml
