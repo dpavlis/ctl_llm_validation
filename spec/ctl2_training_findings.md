@@ -16,7 +16,14 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-15 with OPCD c10 and c11 (§3.22):
+Last updated 2026-10-15 (evening) with OPCD c12 (§3.23):
+- On the revised, unhinted DataIntersection prompts the guide teacher scores 0.88–0.90 and c10 0.16–0.23.
+- Distilling it (c12, 20 rounds) still did not teach the `$out.0` rule: held-out DI 0.19 → 0.16 off, `$out.1`/`$out.2`
+  in 27 of 28 answers.
+- Hard set 2 regressed (3 → 13 of 60).
+- Next is the base rebuild with the new DI and SCD-2 SFT/DPO sets.
+
+Earlier the same day, OPCD c10 and c11 (§3.22):
 - **c10** (c9 without training on truncated thinking-on samples) is the best model so far: thinking-off gap gains kept,
   thinking-on gap tests 0.852, fix 0.924.
 - **c11** added DataIntersection and SCD-2 prompt groups from the owner's SFT sets. It improved same-set holdouts but
@@ -1629,6 +1636,70 @@ Its loss is the c9 pattern again: longer thinking on SCD. The DI set has been re
   - `scripts/opcd_ckpt_check.sh`.
 - Result files: `results/results_qwen38_{ho2,gapho,v5gaps,confirm_ho,ckpt}_c1[01]*`.
 
+### 3.23 OPCD c12: unhinted DataIntersection prompts, a correct teacher, and the rule still does not transfer
+
+**Teacher check on the revised DI set** (ctl_lora_training `d80aaa5`: no hints, 10 whole-component prompts;
+`data/opcd/build_di2_tcheck.py`, 60 prompts × 3, judged against the verified answer):
+
+| | all, off / on | whole-component, off / on |
+|---|---|---|
+| teacher (rb1006 + rulev3 + DataIntersection guide + §8.9 + §13.3) | 0.88 / 0.90 | 0.95 / 0.95 |
+| c10 | 0.23 / 0.16 | 0.00 / 0.00 |
+| c11 | 0.28 / 0.24 | 0.03 / 0.00 |
+
+Without the hint, c10 and c11 write `$out.1`/`$out.2` and invent functions for the one-sided records, in both modes.
+c11's round-1 training raised only validate (0.42 → 0.65 off).
+
+**Run c12** (`configs/opcd_c12.yaml`, `data/opcd/build_c12.py`): from c10 round 19, 20 rounds:
+- the 50 revised DI prompts in both modes, with the guide teacher and no worked example (10 held out, 3 of them
+  whole-component);
+- the c9 gap prompts and hard sets 1–2 at weight 1;
+- no SCD.
+
+DI KL per token fell 0.09–0.11 → 0.04–0.05; the run was otherwise clean.
+
+| measure | c10 | c12 |
+|---|---|---|
+| DI holdouts, off / on (10 × 4) | 0.19 / 0.24 | 0.16 / 0.28 |
+| T53, off / on (n10) | 0.48 / 0.50 | 0.63 / 0.66 |
+| T54, off / on | 0.61 / 0.56 | 0.61 / 0.61 |
+| suite v5 gap tests, off / on (9 tests, n10) | 0.671 / **0.852** | 0.662 / 0.820 |
+| c9 gap holdouts, off / on | 0.477 / 0.745 | **0.563 / 0.797** |
+| G4 SCD holdout, thinking on (3 × 10) | 0.376 | **0.417** |
+| validate, thinking off, 9 reps (WRONG) | 0.872 (6.8%) | 0.878 (6.2%) |
+| validate / fix / generate (v4), thinking on | 0.781 / **0.924** / 0.972 | 0.829 / 0.882 / 0.976 |
+| T40 + T42 below full score | 8/40 | 10/40 |
+| hard set 2, belief claims (60) | 3 | **13** |
+
+- **The rule did not transfer.** In code answers on the held-out DI prompts, c12 writes `$out.1`/`$out.2` in 27 of 28
+  thinking off (c10: 28/28) and 24 of 28 thinking on. On T53 it does so in 10 of 10 samples; the T53 gain is on other
+  rubric items.
+- **On its own training prompts the student moved halfway.** Code samples with `$out.1`/`$out.2` went from 13 of 14
+  (round 0) to 5 of 13 (round 19).
+- **Hard set 2 (previous-record dates) regresses with every DI dose:** c10 3/60, c11 10/60, c12 13/60.
+- **Thinking-on gap tests dropped 0.852 → 0.820,** mostly T61 −0.10 and T57 −0.08. It is not thinking length: 2 of 110
+  answers failed to close `<think>`.
+- **Leaving SCD out helped:** the gap holdouts improved in both modes and G4 reached 0.417, the best yet.
+
+**Reading.**
+- **The teacher is not the bottleneck** (0.95 on whole-component prompts). Adding an explicit rule to its prompt would
+  change little.
+- **More dose would** probably move the training prompts further, but held-out transfer lags far behind, and the hard
+  set 2 regression grows with the dose.
+- **Unlike the declaration belief (§3.16), this is probably not a pretrained prior.** The corpus had no DataIntersection
+  examples before the owner's set, so `$out.N` is the obvious guess filling a gap, which SFT and the new DPO pairs
+  address directly.
+
+**Decision (owner, 2026-10-15):**
+- go straight to the base rebuild with the revised DI and SCD-2 SFT/DPO sets;
+- check T53/T54 and the DI holdouts on the new base before any further OPCD;
+- c12 is not adopted.
+
+**Practical notes:**
+- Adapter: `data/opcd/c12/round_019/adapter`.
+- Teacher check: `scripts/teacher_check_di2.sh`.
+- Result files: `results/results_qwen38_{tcheck_di2,ho2,gapho,v5gaps,confirm_ho}_c12*` and `*_tcheck_di2_*`.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number
@@ -2037,7 +2108,8 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 >
 > F. **Adopt c10?** It is the recommended ship candidate (best thinking-on and fix, thinking-off gains kept); c9 is superseded and c11 is not adopted. Owner decision open.
 >
-> I. **DataIntersection:** rerun the teacher check on the revised, unhinted DI prompts (ctl_lora_training `d80aaa5`).
+> I. ~~DataIntersection via OPCD~~ **Tried in c12 (§3.23): the rule does not transfer.** Decision: base rebuild first
+>    (K), then T53/T54 + DI holdouts on the new base. Was: rerun the teacher check on the revised, unhinted DI prompts (ctl_lora_training `d80aaa5`).
 >    If the teacher still beats c10 there, rebuild the DI group from c10 and gate on T53/T54 (n10, both modes), not on
 >    same-set holdouts.
 >
