@@ -7,6 +7,7 @@
 #   (needs the sampler logs/evals/opcd_vllm_serve.sh on :3011 / GPU 3; GPU 1 free. c4's comparison runs exist already.)
 cd /home/pavlisd/llama_train
 RUN=$1; LAST=${2:-019}; HO2=${HO2:-}   # HO2: an extra holdout suite run for this run and for BASE (c11: DataIntersection / SCD-2)
+# EVAL_SERVE: the eval server script for :3012 (default scripts/vllm_eval_serve.sh, base rb1006; c13: the rb1009 one)
 BASE=${BASE:-} AD=${RUN}_r$LAST; PY=~/venv/bin/python; L=logs/evals; K=logs/evals/locks
 SUITE4=$PWD/results/eval_snapshot_20261003/ctl2_test_suite_v4.json; SUITE5=$PWD/results/eval_snapshot_20261013/ctl2_test_suite_v5.json
 GAPS=${GAPS:-T44,T46,T57,T60,T61,T62,T63,T67,T73}
@@ -17,7 +18,7 @@ until curl -sf 127.0.0.1:3011/v1/models >/dev/null; do sleep 10; done   # the sa
 echo "$(date '+%m-%d %H:%M') $RUN train (GPU 1)"
 flock $K/gpu1.lock env CUDA_VISIBLE_DEVICES=1 $PY -u opcd.py train --config configs/opcd_$RUN.yaml > $L/opcd_${RUN}_train.log 2>&1 || { echo "$RUN train failed"; exit 1; }
 echo "$(date '+%m-%d %H:%M') $RUN train done"
-setsid nohup scripts/vllm_eval_serve.sh > $L/vllm_eval_serve.log 2>&1 < /dev/null & disown
+setsid nohup ${EVAL_SERVE:-scripts/vllm_eval_serve.sh} > $L/vllm_eval_serve.log 2>&1 < /dev/null & disown
 until curl -sf 127.0.0.1:3012/v1/models >/dev/null; do sleep 10; done
 for p in 3011 3012; do for a in $AD ${BASE:+${BASE}_r019}; do r=${a%%_*}; curl -sf -X POST 127.0.0.1:$p/v1/load_lora_adapter -H 'Content-Type: application/json' \
   -d "{\"lora_name\": \"$a\", \"lora_path\": \"$PWD/data/opcd/$r/round_${a#*_r}/adapter_vllm\"}" >/dev/null || echo "load $a on :$p: already loaded or failed"; done; done

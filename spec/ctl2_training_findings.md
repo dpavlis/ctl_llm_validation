@@ -16,7 +16,12 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-15 (evening) with OPCD c12 (§3.23):
+Last updated 2026-10-16 with rb1009 (§3.24): the base rebuild with the DataIntersection and SCD-2 SFT/DPO sets.
+- T53 thinking off goes 0.38 → 1.00 (no `$out.1`/`$out.2`).
+- Thinking on is about half fixed.
+- The rest is at rb1006 level, with the declaration belief back at base level until OPCD (c13) re-applies c4/c10.
+
+Earlier, 2026-10-15 (evening), OPCD c12 (§3.23):
 - On the revised, unhinted DataIntersection prompts the guide teacher scores 0.88–0.90 and c10 0.16–0.23.
 - Distilling it (c12, 20 rounds) still did not teach the `$out.0` rule: held-out DI 0.19 → 0.16 off, `$out.1`/`$out.2`
   in 27 of 28 answers.
@@ -1702,6 +1707,61 @@ DI KL per token fell 0.09–0.11 → 0.04–0.05; the run was otherwise clean.
 
 ---
 
+### 3.24 rb1009: the DataIntersection rule is learned through SFT/DPO, where OPCD failed
+
+**Run.** `configs/qwen38_rb1009.yaml` is the rb1006 recipe (§5 steps 1–2) on corpus ctl_lora_training `d80aaa5`.
+- **Added:**
+  - the run-verified DataIntersection set (60 SFT, 40 DPO; round 2b, unhinted);
+  - the SCD-2 set (60 SFT, 40 DPO);
+  - the corpus fixes since `a4d8274` (declaration-defaults audit).
+- **Excluded on purpose** (owner, 2026-10-15), so that the DI/SCD-2 effect is attributable:
+  - `CTL_LoRA_fix_defaults_explained.json` (rb1007: no effect on the belief, fix −0.03, roundHalfUp hallucination);
+  - `CTL_LoRA_declaration_defaults_contrast.json` (never trained).
+- **Size:** SFT 13,113 records (12,185 + 928 own traces), DPO 2,033 pairs; `build_sft_rebuild.py` now takes the extra
+  exclusions as arguments.
+- **Training:**
+  - SFT 4.3 h, DPO 0.6 h on one GPU;
+  - losses as rb1006 (SFT eval 0.1788 vs 0.1801; DPO eval 0.1203 vs 0.1194, eval reward accuracy 95.9% vs 98.0%);
+  - pre-flight clean.
+
+**Result vs rb1006** (`scripts/rb1009_eval.sh`, vLLM, gpt-6.1-sol; suite v5 tests n10; v4 n5; validate OFF 9 reps):
+
+| measure | rb1006 | rb1009 |
+|---|---|---|
+| **T53 DataIntersection, off / on** | 0.38 / 0.66 | **1.00** / 0.75 |
+| T54 DataIntersection, off / on | 0.79 / 0.71 | 0.81 / **0.86** |
+| T60 SCD Normalizer, off / on | 0.57 / 0.86 | 0.58 / **0.95** |
+| T61 SCD change log, off / on | 0.74 / 0.83 | 0.70 / 0.89 |
+| suite v5 gap tests (9), off / on | 0.647 / 0.835 | 0.676 / 0.845 |
+| v4 generate, off / on | 0.979 / 0.948 | 0.966 / 0.960 |
+| v4 validate, off (9 reps) / on | 0.886 / 0.762 | 0.861 / 0.787 |
+| validate WRONG, off / on | 7.5% / 14.9% | **5.7%** / 14.7% |
+| v4 fix, off / on | 0.564 / 0.760 | 0.544 / **0.826** |
+| T40 + T42 below full score (n20 each) | (belief 20/20 each, §3.16) | 40/40 |
+| hard sets 1 / 2 / 3, belief claims | 78% / 97% / 0% | 74% / 92% / 0% |
+
+- **T53 thinking off is solved.** `$out.1`/`$out.2` appear in 0 of 10 answers; c12 still had them in 10 of 10 after OPCD.
+  Some answers add unused per-port functions, which the judge accepts.
+- **Thinking on is half-way.** `$out.1`/`$out.2` remain in 6 of 10 T53 and 3 of 10 T54 answers.
+- **SCD thinking on improved** (T60 +0.09, T61 +0.06). Thinking off is flat.
+- **Nothing else moved beyond noise.** Thinking-off validate is −0.025 with fewer WRONG findings; fix thinking on +0.07.
+- **The declaration belief is at base level,** as expected: rb1009 has no OPCD. That is what c13 re-applies.
+
+**Reading.** One SFT/DPO rebuild taught what two OPCD runs (c11, c12) could not. `$out.N` was a gap in the corpus, not
+a pretrained prior, so the declaration-belief lesson (§3.16: SFT cannot move a prior) does not apply to it. Use the
+corpus for missing knowledge and OPCD for priors and for carrying knowledge into the other thinking mode.
+
+**Next: run c13** (`configs/opcd_c13.yaml`). It is one fresh adapter on rb1009 with:
+- c4's belief data and rulev3 teacher;
+- c10's gap prompts with the guide teachers;
+- the 50 DI prompts at weight 1;
+- 40 rounds.
+
+The gates are c10's plus T53/T54 in both modes. `scripts/opcd_gaps_run.sh` takes `EVAL_SERVE` for a base other than
+rb1006.
+
+---
+
 ## 4. Measurement — read this before trusting any older number
 
 ### 4.1 The eval configs were never equivalent
@@ -2104,7 +2164,12 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 ## 6. Open questions, in priority order
 
-> **2026-10-15 — current front (§3.22).**
+> **2026-10-16 — current front (§3.24).**
+>
+> L. **c13 on rb1009:** c4 + c10 + DI in one fresh adapter. If it keeps rb1009's T53 gain, restores c4's belief gates
+>    and c10's gap gains, it replaces c10 as the ship candidate.
+
+> **2026-10-15 front (§3.22).**
 >
 > F. **Adopt c10?** It is the recommended ship candidate (best thinking-on and fix, thinking-off gains kept); c9 is superseded and c11 is not adopted. Owner decision open.
 >
@@ -2119,7 +2184,7 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 >    - a length guard;
 >    - rely on the SCD-2 SFT/DPO set in the next base rebuild.
 >
-> K. **Fold c10 into the next base rebuild (C below),** together with the new DI and SCD-2 SFT/DPO sets.
+> K. ~~Fold c10 into the next base rebuild~~ **Done as rb1009 (§3.24) + c13.**
 
 > **2026-10-14 front (§3.21).**
 >
