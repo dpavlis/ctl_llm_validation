@@ -16,7 +16,13 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-16 with rb1009 (§3.24): the base rebuild with the DataIntersection and SCD-2 SFT/DPO sets.
+Last updated 2026-10-17 with OPCD c13/c13b on rb1009 (§3.25):
+- Best generate so far: gap tests 0.726 off / 0.894 on, T53 1.00 in both modes, G4 0.623.
+- c13b fixed T40, but T42 (previous-record date) still triggers in 16/20 samples, so fix thinking on is 0.814 against
+  c10's 0.924.
+- The rulev3 teacher itself fails T42 in 10/20.
+
+Earlier, 2026-10-16, rb1009 (§3.24): the base rebuild with the DataIntersection and SCD-2 SFT/DPO sets.
 - T53 thinking off goes 0.38 → 1.00 (no `$out.1`/`$out.2`).
 - Thinking on is about half fixed.
 - The rest is at rb1006 level, with the declaration belief back at base level until OPCD (c13) re-applies c4/c10.
@@ -1762,6 +1768,47 @@ rb1006.
 
 ---
 
+### 3.25 OPCD c13 and c13b on rb1009: the best generate model, one belief case left (T42)
+
+**c13** (`configs/opcd_c13.yaml`) is one fresh adapter on rb1009, 40 rounds, with:
+- c4's belief prompts with rulev3, hard set 2 at weight 3;
+- c10's gap prompts with the guide teachers;
+- the 50 revised DataIntersection prompts at weight 1.
+
+**c13b** (`configs/opcd_c13b.yaml`) continues c13 for 16 rounds with the belief prompts dominant, keeping a third of the
+gap and DI prompts (`data/opcd/c13b_keep.jsonl`).
+
+| measure | c10 (on rb1006) | c13 | c13b |
+|---|---|---|---|
+| suite v5 gap tests, off / on (9 tests, n10) | 0.671 / 0.852 | 0.720 / **0.910** | **0.726** / 0.894 |
+| c9 gap holdouts, off / on | 0.477 / 0.745 | 0.555 / 0.819 | 0.542 / 0.780 |
+| G4 SCD holdout, thinking on | 0.376 | 0.557 | **0.623** |
+| T53 DataIntersection, off / on | 0.48 / 0.50 | 1.00 / 0.92 | **1.00 / 1.00** |
+| T54, off / on | 0.61 / 0.56 | 0.97 / 0.93 | 0.97 / 0.84 |
+| validate, thinking off, 9 reps (WRONG) | 0.872 (6.8%) | 0.858 (5.8%) | 0.863 (**4.7%**) |
+| validate / fix / generate (v4), thinking on | 0.781 / **0.924** / 0.972 | 0.804 / 0.742 / 0.974 | 0.800 / 0.814 / 0.969 |
+| T40.FP1 / T42.FP6 belief traps (n20 each) | 0 / 2 | 13 / 12 | **1** / 16 |
+| hard sets 1 / 2 / 3, belief claims | 0 / 5% / 0 | 0 / 18% / 0.6% | 0 / 10% / 1.3% |
+| T60 SCD Normalizer, thinking off | **0.71** | 0.35 | 0.34 |
+
+- **Generate gains stack.** rb1009's DataIntersection knowledge plus c10's gap prompts give the best generate scores so
+  far, in both modes. `$out.1`/`$out.2` in T53 code: 0/10 in both modes for c13b.
+- **The diluted belief prompts let the belief back in.** In c13 they shared 40 rounds with the gap and DI prompts:
+  T40/T42 traps 13 and 12 of 20, fix thinking on 0.742.
+- **The focused stage (c13b) fixes T40 but not T42.** T42 is the previous-record date: a date carried from the
+  previous record starts at the epoch, so the first comparison is well-defined.
+- **The T42 failures are of two kinds.** Some samples still claim the date starts null. Others state the epoch default
+  correctly and then "fix" it with a null initializer and a guard, presented as a bug fix.
+- **The teacher is the limit.** rb1009 with rulev3 in its prompt triggers T42.FP6 in 10 of 20 samples
+  (`configs/eval_tcheck_t42_rulev3_rb1009_on.yaml`). On the training side, the set-2 prompts went to 4 of 38 belief
+  samples in c13b, yet T42 did not follow.
+- **T60 thinking off** (SCD Normalizer) dropped in both c13 and c13b, against 0.71 for c10. To investigate.
+
+**Status:** c13b is the stronger generate model; c10 is the stronger fix model, because of T42. Next is a targeted T42
+run with a teacher that passes T42, after its teacher check.
+
+---
+
 ## 4. Measurement — read this before trusting any older number
 
 ### 4.1 The eval configs were never equivalent
@@ -2164,7 +2211,17 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 ## 6. Open questions, in priority order
 
-> **2026-10-16 — current front (§3.24).**
+> **2026-10-17 — current front (§3.25).**
+>
+> M. **T42 (previous-record date):** the rulev3 teacher fails it in 10/20. Test a rule addition for carried-over values
+>    (teacher check on T42/T40 and hard set 2), then a short targeted run from c13b with that teacher on the set-2
+>    prompts only.
+>
+> N. **Ship candidate:** c13b for generate-heavy use, c10 for fix-heavy use, until M is resolved.
+>
+> O. **T60 thinking off** dropped in c13/c13b (0.71 → 0.35). Investigate before the next run.
+
+> **2026-10-16 front (§3.24).**
 >
 > L. **c13 on rb1009:** c4 + c10 + DI in one fresh adapter. If it keeps rb1009's T53 gain, restores c4's belief gates
 >    and c10's gap gains, it replaces c10 as the ship candidate.
