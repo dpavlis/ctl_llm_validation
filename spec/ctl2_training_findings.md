@@ -16,7 +16,12 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-17 with OPCD c13/c13b on rb1009 (§3.25):
+Last updated 2026-10-17 (evening) with OPCD c13c (§3.25):
+- A rulev6 teacher fixes T42: T40 + T42 at c10's level (8/40), no belief claims on any hard set.
+- Best generate and thinking-on validate so far.
+- c13c is the recommended ship candidate. Weak spots: T41's accumulator explanation, T60 thinking off.
+
+Earlier the same day, OPCD c13/c13b on rb1009 (§3.25):
 - Best generate so far: gap tests 0.726 off / 0.894 on, T53 1.00 in both modes, G4 0.623.
 - c13b fixed T40, but T42 (previous-record date) still triggers in 16/20 samples, so fix thinking on is 0.814 against
   c10's 0.924.
@@ -1768,7 +1773,7 @@ rb1006.
 
 ---
 
-### 3.25 OPCD c13 and c13b on rb1009: the best generate model, one belief case left (T42)
+### 3.25 OPCD c13, c13b and c13c on rb1009: the best model so far
 
 **c13** (`configs/opcd_c13.yaml`) is one fresh adapter on rb1009, 40 rounds, with:
 - c4's belief prompts with rulev3, hard set 2 at weight 3;
@@ -1804,8 +1809,49 @@ gap and DI prompts (`data/opcd/c13b_keep.jsonl`).
   samples in c13b, yet T42 did not follow.
 - **T60 thinking off** (SCD Normalizer) dropped in both c13 and c13b, against 0.71 for c10. To investigate.
 
-**Status:** c13b is the stronger generate model; c10 is the stronger fix model, because of T42. Next is a targeted T42
-run with a teacher that passes T42, after its teacher check.
+**c13c: a teacher that passes T42.**
+
+**Teacher check.** rulev6 = rulev3 + one paragraph: a global variable that carries a value from the previous record
+starts at its default (the epoch, 0, ""). A comparison against it on the first record is well-defined. Do not replace
+it with null plus a guard, or list it as a fix, unless the specification's first-record rule needs otherwise (a running
+minimum that starts at 0). On rb1009, thinking on (`configs/eval_rb1006_rulev6_*.yaml`):
+
+| teacher | T42 trap (n20) | T40 trap (n20) | v4 fix / generate / validate (n3) | validate WRONG |
+|---|---|---|---|---|
+| rulev3 | 10/20 | — | 0.870 / 0.989 / 0.793 | 15.4% |
+| rulev6 | **0/20** | 0/20 | **0.967** / 0.984 / 0.794 | 16.7% |
+
+Hard set 2 does not separate the two teachers (both 0/60). Its prompts are narrower than T42, a multi-defect
+fix-to-spec task where the model adds the guard "to be safe". So rulev6 replaces rulev3 as the main teacher for the
+thinking-on belief and hard prompts, not only on set 2. The thinking-off validate prompts stay replay-anchored to the
+plain model.
+
+**Run c13c** (`configs/opcd_c13c.yaml`): c13b + 16 rounds, same mix, rulev6 teacher.
+
+| measure | c10 | c13b | **c13c** |
+|---|---|---|---|
+| T42.FP6 trap (n20) | 2 | 16 | **6** |
+| T40 / T42 fix score (n25) | 0.99 / 0.87 | 0.94 / 0.77 | 0.98 / 0.85 |
+| T40 + T42 below full score | 8/40 | 20/40 | **8/40** |
+| hard sets 1 / 2 / 3, belief claims | 0 / 5% / 0 | 0 / 10% / 1.3% | **0 / 0 / 0** |
+| suite v5 gap tests, off / on | 0.671 / 0.852 | 0.726 / 0.894 | **0.727 / 0.909** |
+| c9 gap holdouts, off / on | 0.477 / 0.745 | 0.542 / 0.780 | 0.577 / 0.770 |
+| G4 SCD holdout, thinking on | 0.376 | 0.623 | **0.649** |
+| T53, off / on | 0.48 / 0.50 | 1.00 / 1.00 | **1.00 / 1.00** |
+| validate, thinking off, 9 reps (WRONG) | 0.872 (6.8%) | 0.863 (4.7%) | 0.853 (6.6%) |
+| validate / fix / generate (v4), thinking on | 0.781 / **0.924** / 0.972 | 0.800 / 0.814 / 0.969 | **0.850** / 0.826 / 0.970 |
+| T60 SCD Normalizer, thinking off | **0.71** | 0.34 | 0.38 |
+
+- **The belief is back to c10's level** (T40 + T42 8/40), with no belief claims on any hard set for the first time.
+- **c13b's generate and DI gains held;** thinking-on validate is the best so far.
+- **The remaining fix gap is T41** (Rollup accumulator). At n20, c13c scores 0.815 and c13b 0.838, each 13/20 below full
+  score, so rulev6 did not cause it. The code is fixed correctly, but the explanation calls a nullable accumulator field
+  zero-initialised. It is a weakness of the rb1009 line (c10 1.00, n5 only). A Rollup-prompt teacher with rulev4's
+  accumulator note, as in c7, is the candidate fix.
+- **T60 thinking off** remains low in the c13 line.
+
+**Status:** c13c is the recommended ship candidate. It is ahead of c10 on generate, DataIntersection, the belief hard
+sets and thinking-on validate; behind on fix thinking on (T41) and T60 thinking off.
 
 ---
 
@@ -2213,11 +2259,14 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 > **2026-10-17 — current front (§3.25).**
 >
-> M. **T42 (previous-record date):** the rulev3 teacher fails it in 10/20. Test a rule addition for carried-over values
+> M. ~~T42~~ **Done (c13c, rulev6 teacher): T42 trap 6/20, T40 + T42 8/40 as c10.** Was: the rulev3 teacher fails it in 10/20. Test a rule addition for carried-over values
 >    (teacher check on T42/T40 and hard set 2), then a short targeted run from c13b with that teacher on the set-2
 >    prompts only.
 >
-> N. **Ship candidate:** c13b for generate-heavy use, c10 for fix-heavy use, until M is resolved.
+> N. **Ship candidate: c13c** (recommended; owner decision open). Next: test it in the real agentic harness.
+>
+> P. **T41 (Rollup accumulator explanation)** in the rb1009 line: 13/20 below full score. Candidate: rulev4's accumulator
+>    note as the teacher for Rollup prompts (as c7).
 >
 > O. **T60 thinking off** dropped in c13/c13b (0.71 → 0.35). Investigate before the next run.
 
