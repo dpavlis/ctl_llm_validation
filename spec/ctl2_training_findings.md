@@ -16,7 +16,12 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-18 with c13d and the T41/T60 diagnosis (§3.25):
+Last updated 2026-10-18 (evening) with belief durability Part B (§3.26):
+- 230 of c13c's own belief-free answers in the SFT (rb1010a) remove most of the declaration belief from the base:
+  T40 0/20, T42 8/20, hard sets 1/38/4%, with no thinking-off validate damage.
+- DataIntersection regressed in both arms, so rebuild-to-rebuild variance is now being measured (rb1009 rerun).
+
+Earlier the same day, c13d and the T41/T60 diagnosis (§3.25):
 - c13d ≈ c13c; OPCD does not close T41 (0.815 → 0.840).
 - T41 and T60 go to a corpus brief for the next rebuild.
 
@@ -1904,6 +1909,54 @@ right, but the student moves slowly. Both gaps go to the corpus for the next reb
 
 ---
 
+### 3.26 Belief durability, Part B: the corpus can carry the declaration-belief fix (rb1010a/b)
+
+**Plan:** `spec/belief_durability_plan.md` Part B. c13c's own belief-free answers become SFT traces, so the next base
+starts without the belief and OPCD no longer has to remove it after every rebuild.
+
+**Pipeline:** `scripts/partb_run.sh`, resumed by `partb_resume.sh`; tooling in `data/build_belief_traces.py`.
+- **Sampling.** c13c sampled with a plain prompt:
+  - 358 belief-relevant prompts (dpodef1, dpodef3b, contrast, fix-to-spec), k4 thinking on plus k2 thinking-off validate;
+  - 118 gap/DI prompts.
+- **Filter.** A belief pre-scan, then the strict `self_distill.py filter` (compile, reference judge, claims audit) and
+  `assemble`. Kept:
+  - **belief traces: 274 prompts** (155 fix, 91 validate, 28 generate) from 638 accepted of 1,593 samples;
+  - **gap/DI traces: 44**. Many thinking-on gap samples hit the 6,144-token cap.
+- **Builds.** The rb1009 corpus exactly: 12,185 SFT, 2,033 DPO, the 464 own traces ×2. The new Rollup and Normalizer sets
+  are excluded; the builder now applies file exclusions to DPO files too.
+  - **rb1010a** = rb1009 + 230 belief traces ×1 (44 were over the 4,096 cutoff);
+  - **rb1010b** = rb1010a + 37 gap/DI traces.
+- **Gates:** `scripts/base_eval.sh`.
+
+| measure | rb1009 | **rb1010a** | rb1010b |
+|---|---|---|---|
+| T40 / T42 belief trap (n20) | 20 / 20 | **0 / 8** | 8 / 19 |
+| hard sets 1 / 2 / 3, belief claims | 74% / 92% / 11% | **1% / 38% / 4%** | 1% / 47% / 4% |
+| validate, thinking off, 9 reps (WRONG) | 0.861 (5.7%) | **0.878 (5.4%)** | 0.839 (7.9%) |
+| validate, thinking on (WRONG) | 0.787 (14.7%) | **0.836** (10.3%) | 0.860 (13.8%) |
+| fix, off / on | 0.544 / 0.826 | 0.622 / 0.830 | 0.458 / 0.872 |
+| generate v4, off / on | 0.966 / 0.960 | 0.961 / 0.969 | 0.962 / 0.961 |
+| suite v5 gap tests (9), off / on | 0.676 / 0.845 | 0.677 / **0.894** | 0.595 / 0.874 |
+| T53/T54 answers with `$out.1`/`$out.2`, off / on | 4/20 / 9/20 | **17/20 / 18/20** | 16/20 / 2/20 |
+| T41 (n20) | 0.988 | 0.845 | 0.900 |
+
+- **The belief transfers through the corpus.** rb1010a meets every success criterion in the plan:
+  - T40 and T42 at most 10/20 each;
+  - hard sets 1 and 2 at most 30% and 50%;
+  - thinking-off validate WRONG did not rise. rb1008's corpus traces raised it to 13–15%. The difference: these traces
+    are the model's own natural output, not a repaired minority, at about 2% of SFT records.
+- **DataIntersection regressed in both arms,** although its corpus data is identical. T41 slipped too.
+- **rb1010b is worse than rb1010a** on the belief and on validate, with only 37 records more.
+- **So two runs of the same recipe can differ a lot.** We have never measured that variance; every rebuild has been a
+  single run. rb1009's clean DataIntersection result may have been partly lucky.
+
+**Next:** retrain rb1009 unchanged with another seed (`configs/qwen38_rb1009s2.yaml`, seed 7) and run the same gates.
+- If the rerun also loses DataIntersection, Part B is a clean success, and rb1010a becomes the base for a shorter
+  Stage 3.
+- If it keeps DataIntersection, the belief traces interfere, and their content needs a look.
+
+---
+
 ## 4. Measurement — read this before trusting any older number
 
 ### 4.1 The eval configs were never equivalent
@@ -2331,6 +2384,9 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 >
 > P. ~~T41 via OPCD~~ **Tried in c13d: 0.815 → 0.840, n.s.** Moved to the corpus, together with the T60 multi-branch
 >    Normalizer counts: `spec/rollup_normalizer_corpus_brief.md`.
+>
+> R. **Part B result (§3.26):** the corpus carries the belief fix (rb1010a). DataIntersection regressed; an rb1009 seed
+>    rerun measures rebuild variance before rb1010a is adopted as the next base.
 >
 > Q. **Belief durability across rebuilds:** `spec/belief_durability_plan.md` covers it (canonical stage-3 configs and
 >    self-distilled c13c traces in the next rebuild).
