@@ -1868,6 +1868,14 @@ sets and thinking-on validate; behind on fix thinking on (T41) and T60 thinking 
 - **T60 thinking off is a single-test effect.** The G4 thinking-off holdout did not regress (c10 0.18, c13c 0.30). On
   T60 the entry functions are right, but `count()` disagrees with `transform(idx)` across the 12-branch spec without
   thinking (T60.1 missed 9/10). Thinking on scores 0.95.
+  - At n20 the drop is real: rb1009 0.584 → c13c 0.380.
+  - It builds up over c13's rounds: r9 0.49, r19 0.38, r29 0.40.
+  - The guide_NORMALIZER teacher scores 0.57 thinking off, equal to the base, so distilling the Normalizer gap prompts
+    thinking-off toward it cannot help.
+  - Untested option: train those prompts thinking-on only, with a plain-rb1009 anchor thinking-off
+    (`configs/opcd_c13e_draft.yaml`).
+- **T41 / T22 teachers, pooled n40** (two independent checks): rulev6 0.96 / 0.69, rulev7 0.97 / 0.69. The teachers are
+  equal on T41; rulev7's accumulator note matters only on hard set 3 part B (8/80 → 0/79 errors).
 
 **c13d** (`configs/opcd_c13d.yaml`) is c13c + 10 rounds with:
 - hard set 3 (part A weight 1, part B weight 3, as c7);
