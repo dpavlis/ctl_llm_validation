@@ -16,7 +16,11 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-17 (evening) with OPCD c13c (§3.25):
+Last updated 2026-10-18 with c13d and the T41/T60 diagnosis (§3.25):
+- c13d ≈ c13c; OPCD does not close T41 (0.815 → 0.840).
+- T41 and T60 go to a corpus brief for the next rebuild.
+
+Earlier, 2026-10-17 (evening), OPCD c13c (§3.25):
 - A rulev6 teacher fixes T42: T40 + T42 at c10's level (8/40), no belief claims on any hard set.
 - Best generate and thinking-on validate so far.
 - c13c is the recommended ship candidate. Weak spots: T41's accumulator explanation, T60 thinking off.
@@ -1853,6 +1857,43 @@ plain model.
 **Status:** c13c is the recommended ship candidate. It is ahead of c10 on generate, DataIntersection, the belief hard
 sets and thinking-on validate; behind on fix thinking on (T41) and T60 thinking off.
 
+**Diagnosis of the two weak spots (2026-10-17).**
+- **T41 is OPCD drift, not a teacher problem.** At n20, thinking on:
+  - rb1009 plain 0.988;
+  - the rulev6 teacher 0.978;
+  - c13c 0.815.
+
+  The student carries "declared variables are never null" over to Rollup accumulator fields, as c2 did. The c13 line
+  followed c4's recipe, which leaves out hard set 3.
+- **T60 thinking off is a single-test effect.** The G4 thinking-off holdout did not regress (c10 0.18, c13c 0.30). On
+  T60 the entry functions are right, but `count()` disagrees with `transform(idx)` across the 12-branch spec without
+  thinking (T60.1 missed 9/10). Thinking on scores 0.95.
+
+**c13d** (`configs/opcd_c13d.yaml`) is c13c + 10 rounds with:
+- hard set 3 (part A weight 1, part B weight 3, as c7);
+- thinking-on Rollup prompts scored by **rulev7** = rulev6 + rulev4's accumulator note (`component_teacher`).
+
+Teacher check on set 3 (k4): rulev6 makes 8/80 accumulator errors, rulev7 0/79. rulev7 does not help T41 directly
+(0.943 vs 0.978).
+
+| measure | c13c | c13d |
+|---|---|---|
+| T41 (n20) | 0.815 (13 below full) | 0.840 (10 below full) |
+| T22 (n20) | 0.44 | 0.44 (teacher 0.72) |
+| hard set 3 accumulator failures | 20/80 | 9/79 |
+| T42 trap (n25) | 10 | 7 |
+| gap tests, off / on | 0.727 / 0.909 | 0.730 / 0.917 |
+| G4 SCD holdout, thinking on | 0.649 | 0.689 |
+| validate / fix, thinking on | 0.850 / 0.826 | 0.759 / 0.798 |
+| validate thinking off, 9 reps (WRONG) | 0.853 (6.6%) | 0.858 (6.4%) |
+
+The thinking-on validate drop is mostly one test. T18 went 0.90 → 0.20 at n5, but both models give the same answer
+(correct findings and fix, without the requested ISSUES/VERDICT format), and the judge scored it inconsistently.
+
+**Conclusion.** c13d ≈ c13c. OPCD has reached its limit on the Rollup accumulator explanation (T41, T22): the teacher is
+right, but the student moves slowly. Both gaps go to the corpus for the next rebuild
+(`spec/rollup_normalizer_corpus_brief.md`). c13c stays the recommended ship candidate.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number
@@ -2265,8 +2306,11 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 >
 > N. **Ship candidate: c13c** (recommended; owner decision open). Next: test it in the real agentic harness.
 >
-> P. **T41 (Rollup accumulator explanation)** in the rb1009 line: 13/20 below full score. Candidate: rulev4's accumulator
->    note as the teacher for Rollup prompts (as c7).
+> P. ~~T41 via OPCD~~ **Tried in c13d: 0.815 → 0.840, n.s.** Moved to the corpus, together with the T60 multi-branch
+>    Normalizer counts: `spec/rollup_normalizer_corpus_brief.md`.
+>
+> Q. **Belief durability across rebuilds:** `spec/belief_durability_plan.md` covers it (canonical stage-3 configs and
+>    self-distilled c13c traces in the next rebuild).
 >
 > O. **T60 thinking off** dropped in c13/c13b (0.71 → 0.35). Investigate before the next run.
 
