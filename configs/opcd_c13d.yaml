@@ -1,0 +1,67 @@
+# On-policy context distillation, run c13d: c13c + hard set 3 (Rollup accumulator nullability), as c7 had (findings §3.25).
+# T41 diagnosis (n20, thinking on): rb1009 plain 0.988, the rulev6 teacher 0.978, c13c 0.815 (13/20 below full). The student
+# carries "declared variables are never null" over to Rollup accumulator fields (the c2 overshoot); the teacher is right,
+# and rulev7 (+ rulev4's accumulator note) does not help (0.943). The c13 line followed c4's recipe without hard set 3; c7
+# trained it (part B weight 3). Same mix and rulev6 teacher as c13c, plus set 3. 10 rounds. Set-3 holdouts (c5) stay held out.
+# Set-3 teacher check (k4, rb1009): rulev6 fails 8/80 accumulator items (part B), rulev7 0/79; so thinking-on Rollup prompts
+# under the rule teacher are scored by rulev7 (component_teacher, as c7 did with rulev4). Gap prompts keep their guide teachers.
+run: c13d
+init_adapter: data/opcd/c13c/round_015/adapter   # c13c final round
+base_model: /home/pavlisd/exports/qwen38_rb1009_sftdpo
+student: {"on": configs/eval_rb1006_on.yaml, "off": configs/eval_rb1006_off.yaml}   # system prompt + tokenizer only (identical tokenizer)
+teacher: {"on": configs/eval_rb1006_rulev6_on.yaml, "off": configs/eval_rb1006_rulev6_off.yaml}   # rulev6 = rulev3 + carried-over values
+rule_marker: "Declaration defaults in CTL2"
+modes: {generate: "on", fix: "on", validate: "on"}
+set_modes: {replay: {validate: "off"}}
+set_teacher: {replay: plain}
+component_teacher: {ROLLUP: acc}   # thinking-on Rollup prompts under the rule teacher get rulev7 (as c7 with rulev4)
+teachers:   # one per component; the gap prompts name theirs (generate_gaps_c9.jsonl "teacher")
+  acc: {"on": configs/eval_rb1006_rulev7_on.yaml, marker: "A Rollup accumulator is reset from its metadata before each group"}   # rulev7 = rulev6 + accumulator note
+  guide_REFORMAT: {"on": configs/opcd_c9_teachers/guide_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_PARTITION: {"on": configs/opcd_c9_teachers/guide_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_DENORMALIZER: {"on": configs/opcd_c9_teachers/guide_DENORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_DENORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_NORMALIZER: {"on": configs/opcd_c9_teachers/guide_NORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_NORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_ROLLUP: {"on": configs/opcd_c9_teachers/guide_ROLLUP_on.yaml, "off": configs/opcd_c9_teachers/guide_ROLLUP_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_REFORMAT: {"on": configs/opcd_c9_teachers/guide_dict_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_PARTITION: {"on": configs/opcd_c9_teachers/guide_dict_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_DATA_GENERATOR: {"on": configs/opcd_c9_teachers/guide_dict_DATA_GENERATOR_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_DATA_GENERATOR_off.yaml, marker: "# Reference: the component you are writing for"}
+
+  guide11_DATA_INTERSECTION: {"on": configs/opcd_c11_teachers/guide_DATA_INTERSECTION_on.yaml, "off": configs/opcd_c11_teachers/guide_DATA_INTERSECTION_off.yaml, marker: "# Reference: the component you are writing for"}
+
+prompts:
+  target:
+    - {run: dpodef1, split: train}       # 206: belief-prone fix / validate prompts (c4)
+    - {run: dpodef3b_plain}               # 53: declaration-contrast prompts (c4)
+  hard:
+    - {file: data/opcd/hard_cases.jsonl, weight: 1}    # set 1 (c4)
+    - {file: data/opcd/hard_cases2.jsonl, weight: 3}   # set 2: previous-record dates (as c13b)
+    - {file: data/opcd/hard_cases3.jsonl, weight_by_part: {A: 1, B: 3}}   # set 3 as in c7; B: Rollup accumulator nullability (T41/T22)
+    - {file: data/opcd/c13b_keep.jsonl, weight: 1, modes: ["on", "off"]}   # every 3rd gap and DI prompt (23 + 17), keeps c13's generate gains
+  hard_holdout: data/opcd/hard_holdout_c13d.json       # c3 + c9 + c12 holdouts, never trained
+  contrast: data/opcd/contrast_prompts.jsonl          # 60 corpus prompts where something really IS null (c4)
+  probe: {run: dpodef1, split: probe}
+  replay_share: 0.4
+  replay_task_mix: {generate: 0.4, validate: 0.35, fix: 0.25}
+
+lora: {r: 32, alpha: 32, dropout: 0.0, target: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]}
+
+train:
+  seed: 0
+  rounds: 10
+  prompts_per_round: 32
+  k: 2
+  steps_per_round: 2
+  lr: 2.0e-5
+  warmup_steps: 5
+  grad_clip: 1.0
+  adv_clip: null
+  quote_guard: true
+  skip_truncated: ["on"]     # c9 trained thinking-on SCD answers only as truncated thinking (Normalizer 64/64 at the cap);
+                              # it learned to think longer without concluding (G4 thinking-on -0.19, findings §3.21)
+  max_new_tokens: 6144
+  cutoff: 8192                # student prompt + completion; the teacher's guide prompt adds ~4.5k tokens to its scoring pass only
+  logits_chunk: 1024
+
+probe: {n: 20, k: 2, every: 4}
+
+sampler: {url: "http://127.0.0.1:3011", served_model: rb1009, concurrency: 32}
