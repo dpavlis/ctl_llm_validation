@@ -3,6 +3,8 @@
   cd ~/llama_train && ~/venv/bin/python data/build_sft_rebuild.py rb1006 data/sft_rebuild_20261006
   cd ~/llama_train && ~/venv/bin/python data/build_sft_rebuild.py rb1009 data/sft_rebuild_20261016 \
       CTL_LoRA_fix_defaults_explained.json CTL_LoRA_declaration_defaults_contrast.json   # extra SFT files to exclude
+  ... --sd=c13c_belief:1      # extra self-distilled trace runs (data/self_distill/RUN/selfdistill_RUN_train.json) x REPEAT
+                              # (spec/belief_durability_plan.md Part B); full1 and gen2full are always in, x2
 
 SFT  = every record in ctl_lora_training/sft_training_data/*.json (answer-only; minus EXCL), plus the
        self-distilled thinking traces of runs full1 + gen2full, each twice (minus stale traces listed in
@@ -20,7 +22,9 @@ from llamafactory.data.template import get_template_and_fix_tokenizer
 from llamafactory.hparams import DataArguments
 TAG,O=sys.argv[1],sys.argv[2]; os.makedirs(O,exist_ok=True)
 C="ctl_lora_training/sft_training_data/"
-EXCL={"CTL_LoRAT_reasoning_v2_agent_authored_20_fewshot.json"}|set(sys.argv[3:])
+EXTRA=sys.argv[3:]
+EXCL={"CTL_LoRAT_reasoning_v2_agent_authored_20_fewshot.json"}|{a for a in EXTRA if not a.startswith("--sd=")}
+SD_RUNS=[("full1",2),("gen2full",2)]+[(a[5:].split(":")[0],int(a[5:].split(":")[1]) if ":" in a else 1) for a in EXTRA if a.startswith("--sd=")]
 sft=[]
 for f in sorted(glob.glob(C+"*.json")):
     name=f.split("/")[-1]
@@ -31,17 +35,18 @@ n_corpus=len(sft)
 tok=AutoTokenizer.from_pretrained("/home/pavlisd/exports/qwen38_fix6_sftdpo",trust_remote_code=True)
 tpl=get_template_and_fix_tokenizer(tok,DataArguments(template="qwen3_8",enable_thinking=None,reasoning_effort="medium"))
 stale=json.load(open("data/self_distill/sd_stale.json"))
-sd_kept=[]; dropped={"stale":[],"over_4096":[]}
-for run in ("full1","gen2full"):
-    st={i for i,_ in stale[run]}
+sd_kept=[]; dropped={"stale":[],"over_4096":[]}; reps=dict(SD_RUNS)
+for run,_ in SD_RUNS:
+    st={i for i,_ in stale.get(run,[])}
     for r in json.load(open(f"data/self_distill/{run}/selfdistill_{run}_train.json")):
         if r["id"] in st: dropped["stale"].append(r["id"]); continue
         sysm=next((m["content"] for m in r["messages"] if m["role"]=="system"),None); conv=[m for m in r["messages"] if m["role"]!="system"]
         p,c=tpl.encode_oneturn(tok,conv,sysm)
         if len(p)+len(c)>4096: dropped["over_4096"].append(r["id"]); continue
         sd_kept.append((run,r))
-for rep in (1,2):
+for rep in (1,2,3,4):
     for run,r in sd_kept:
+        if rep>reps[run]: continue
         sft.append({"id":f"{TAG}-sd{rep}-{r['id']}","messages":[{"role":m["role"],"content":m["content"]} for m in r["messages"]],"source_file":f"self_distill/{run}","source_id":r["id"],"repeat":rep})
 json.dump(sft,open(f"{O}/CTL_LoRA_training_data_{TAG}.json","w"),ensure_ascii=False,indent=1)
 dpo=[]
@@ -58,5 +63,5 @@ for r in sft[:n_corpus]:
     sysm=next((m["content"] for m in r["messages"] if m["role"]=="system"),None); conv=[m for m in r["messages"] if m["role"]!="system"]
     p,c=tpl.encode_oneturn(tok,conv,sysm); L=len(p)+len(c); mx=max(mx,L)
 commit=subprocess.check_output(["git","-C","ctl_lora_training","rev-parse","--short","HEAD"]).decode().strip()
-json.dump({"corpus_commit":"ctl_lora_training "+commit,"corpus_records":n_corpus,"self_distill_kept":len(sd_kept),"self_distill_repeats":2,"dropped":dropped,"excluded_files":sorted(EXCL),"dpo_pairs":len(dpo),"dpo_by_file":Counter(x["source_file"] for x in dpo),"sft_by_file":Counter(r["source_file"] for r in sft[:n_corpus])},open(f"{O}/build_report.json","w"),indent=1)
-print("SFT",len(sft),"(corpus",n_corpus,"+ sd",len(sd_kept),"x2) | DPO",len(dpo),"| commit",commit,"| max corpus len",mx)
+json.dump({"corpus_commit":"ctl_lora_training "+commit,"corpus_records":n_corpus,"self_distill_kept":len(sd_kept),"self_distill_runs":{run:{"kept":sum(1 for x,_ in sd_kept if x==run),"repeat":n} for run,n in SD_RUNS},"dropped":dropped,"excluded_files":sorted(EXCL),"dpo_pairs":len(dpo),"dpo_by_file":Counter(x["source_file"] for x in dpo),"sft_by_file":Counter(r["source_file"] for r in sft[:n_corpus])},open(f"{O}/build_report.json","w"),indent=1)
+print("SFT",len(sft),"(corpus",n_corpus,"+ sd",{run:n for run,n in SD_RUNS},len(sd_kept),"traces) | DPO",len(dpo),"| commit",commit,"| max corpus len",mx)

@@ -80,23 +80,29 @@ Two parts:
 - **Dose.** rb1008 used ~10% of tokens and up to 4 traces per prompt on a narrow set. Part B uses one trace per prompt
   on a wider set, ×1, ~3% of tokens.
 
-**B1. Prompt pool.** About 600 belief-relevant prompts, all with the plain system prompt:
+**B1. Prompt pool.** `data/build_belief_traces.py select` builds it, all with the plain system prompt. Every prompt
+carries the corpus or run-verified reference answer the self-distill judge compares against.
 
-| source | prompts |
+Measured on corpus `d80aaa5`:
+
+| source | prompts kept |
 |---|---|
-| dpodef1 train | 206 |
-| dpodef3b (contrast) | 53 |
-| hard sets 1 and 3 (trainable parts) | ~70 |
-| contrast prompts (something really is null) | 60 |
-| corpus `CTL_LoRA_fix_defaults_explained.json` (prompts only; its answers stay excluded) | 80 |
-| corpus `CTL_LoRA_declaration_defaults_contrast.json` | 55 |
-| corpus `CTL_LoRA_fix_to_spec_explained.json` | 120 |
+| dpodef1 train (belief-prone fix / validate) | 206 |
+| dpodef3b (declaration contrast) | 53 |
+| contrast prompts (something really is null; reference looked up by record id) | 55 |
+| `CTL_LoRA_fix_to_spec_explained.json` (not already in dpodef1) | 44 |
+| **belief pool (arm a)** | **358** (232 fix, 84 validate, 42 generate) |
+| + c9 gap prompts (c9 holdouts excluded) | 68 |
+| + revised DataIntersection prompts (c12 holdouts excluded) | 50 |
+| **arm b pool** | **476** |
 
-- **Excluded:** every suite test (the T40/T42 shape especially), the 50 probe prompts, hard_holdout_c13, and hard
-  set 2 entirely, so that T42 and set 2 stay clean measures.
-- **Contrast prompts stay in on purpose.** They keep "really null" cases (nullable fields, outer-join slaves, missing
-  map keys) in the data, so the model does not overshoot into "nothing is null". That overshoot was c2's T22 failure
-  and the c13 line's T41 explanation.
+- Most of `fix_defaults_explained` (80) and `declaration_defaults_contrast` (55) are already in dpodef1/dpodef3b; 184
+  duplicates are dropped.
+- Validate prompts get a second entry sampled thinking off: 84 for arm a, 94 for arm b.
+- **Excluded:** eval data, suites v2–v5 and the frozen v5 snapshot, the 50 probe prompts, and **every hard-case set**. The
+  hard sets have no reference answers. They stay OPCD prompts and measures, so set 2 and T42 stay clean.
+- **Contrast prompts stay in on purpose.** They keep "really null" cases in the data, so the model does not overshoot
+  into "nothing is null". That overshoot was c2's T22 failure and the c13 line's T41 explanation.
 
 **B2. Sample c13c** on vLLM: rb1009 plus the `c13c_r015` adapter.
 - Plain system prompt (no rule), eval sampling (T = 0.4, top-p 0.95).
@@ -104,7 +110,8 @@ Two parts:
 - Thinking off, k = 2 for the validate prompts. Thinking-off validate is what rb1008 and dpodef2b damaged, so it also
   gets clean examples.
 
-**B3. Filter.** Reject a sample on any of:
+**B3. Filter.** `build_belief_traces.py sample` drops samples that hit the OPCD belief scan. Then the unchanged
+`self_distill.py filter` and `assemble` run, rejecting a sample on any of:
 - the belief regex (`opcd.scan_belief`) on thinking + answer;
 - the hard-case LLM judge (`data/opcd/eval_hard_cases.py` JUDGE_SYS, gpt-6.1-sol): any false claim about a declared
   variable, or a guard/initialiser added to avoid a null;
@@ -113,7 +120,11 @@ Two parts:
   filter;
 - more than 4,096 tokens (the SFT cutoff), or an unclosed `<think>`.
 
-Keep one accepted sample per prompt, preferring the shortest correct thinking. Prompts with no accepted sample are
+Smoke test (8 samples, 2026-10-18): the pipeline runs end to end. The judge is strict: 1 of 8 was accepted. It rejected
+false side-claims in otherwise correct fixes, and a DataIntersection answer with invented per-port callbacks. Expect
+roughly 150–300 accepted traces, not 400–500.
+
+Keep one accepted sample per prompt; `assemble` picks among the accepted. Prompts with no accepted sample are
 dropped, never repaired: repairs are off-policy, which was rb1008's and dpodef1's failure.
 
 **B4. Build two arms of rb1010** on 2 GPUs in parallel, about 5 h each. Both use corpus HEAD with the same exclusions
@@ -121,8 +132,8 @@ as rb1009.
 
 | arm | adds | purpose |
 |---|---|---|
-| **rb1010a** | the B3 belief traces, ×1 (~400–500 records) | does the corpus carry the belief fix? |
-| **rb1010b** | the same plus c13c's accepted answers on the c9 gap and DI prompts (same filter, reference judge) | does it also carry the generate gains of c10/c13? |
+| **rb1010a** | the B3 belief traces, ×1 (`--sd=c13c_belief:1`) | does the corpus carry the belief fix? |
+| **rb1010b** | the belief traces plus a second run on the gap and DI prompts (`select --gaps-only`; `--sd=c13c_belief:1 --sd=c13c_gaps:1`) | does it also carry the generate gains of c10/c13? |
 
 `data/build_sft_rebuild.py` takes the new trace runs as extra inputs, as it already takes `full1` and `gen2full`.
 
