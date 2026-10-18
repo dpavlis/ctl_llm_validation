@@ -2194,6 +2194,21 @@ directly.
 generate gaps; `scripts/opcd_c9_run.sh`). It improves thinking-off generation and keeps every c4 gate, but costs
 thinking-on SCD answers; whether it replaces c4 is open (§6).
 
+**Step 3 on a new base — the canonical stage** (spec/belief_durability_plan.md A1/A2, from c13 → c13c, §3.25):
+
+```bash
+setsid nohup scripts/opcd_stage3.sh <base export> <tag> > logs/evals/stage3_<tag>.log 2>&1 &
+```
+
+- It generates `configs/opcd_s3a-<tag>.yaml` and `opcd_s3b-<tag>.yaml` from the templates `configs/opcd_stage3{a,b}.yaml`:
+  - stage 3a: c13's mix with the rulev6 teacher, 40 rounds;
+  - stage 3b: the belief-focused c13c mix, 16 rounds.
+- It checks the belief anchor: belief prompts must be at least 30% of the non-replay prompt weight (rb1009: 0.50 and
+  0.82).
+- It trains both stages and runs the gates. `--dry-run` writes, prepares and checks without GPU work.
+- **Anchor rule for any OPCD run:** keep the belief prompts at least 30% of the non-replay pool, scored by rulev6, with
+  T40/T42 n20 and hard sets 1–3 as gates. c11–c13 regressed when new groups crowded them out.
+
 **Step 3c — c10** (§3.22), the recommended ship candidate: `configs/opcd_c10.yaml`, c9's recipe with
 `train.skip_truncated: ["on"]`, via `scripts/opcd_gaps_run.sh c10`. It keeps c9's thinking-off gain without the
 thinking-on cost.
