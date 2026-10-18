@@ -170,6 +170,8 @@ def cmd_sample(args) -> int:
     cfg = opcd.load_cfg(args.config)
     roles = opcd.Roles(cfg)
     sampler = opcd.VllmSampler(cfg, roles)
+    if args.url:
+        sampler.url = args.url.rstrip("/")
     name = args.adapter_name or Path(args.adapter).parent.parent.name + "_" + Path(args.adapter).parent.name.replace("round_", "r")
     r = requests.post(f"{sampler.url}/v1/load_lora_adapter", json={"lora_name": name, "lora_path": str(Path(args.adapter).resolve())},
                       timeout=600)
@@ -226,6 +228,7 @@ def main() -> int:
     p.add_argument("--config", default="configs/opcd_c13c.yaml", help="OPCD config: student prompts, sampling, sampler URL")
     p.add_argument("--adapter", required=True, help="the adapter_vllm directory to sample")
     p.add_argument("--adapter-name", default=None)
+    p.add_argument("--url", default=None, help="vLLM server URL (default: the OPCD config's sampler URL)")
     p.add_argument("--k", type=int, default=4)
     p.add_argument("--k-off", type=int, default=2)
     p.add_argument("--max-new", type=int, default=6144)

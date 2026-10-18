@@ -1,4 +1,4 @@
-# rulev7 = rulev6 + rulev4's Rollup accumulator note (T41: rb1009-line answers call a nullable accumulator field zero-initialised). Thinking OFF.
+# rulev7 = rulev6 + rulev4's Rollup accumulator note (T41: the c13 line calls nullable accumulator fields zero-initialised). Thinking OFF.
 training_config: configs/qwen38.yaml
 mut:
   mode: local

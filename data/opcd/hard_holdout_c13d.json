@@ -44,5 +44,5 @@
   "opcd_hard_33",
   "opcd_hard_38"
  ],
- "note": "c13d: hard_holdout_c13 + c5's set-3 holdouts (hard set 3 is trained from c13d on)"
+ "note": "c13d: hard_holdout_c13 + c5's set-3 holdouts (set 3 is trained from c13d on)"
 }
