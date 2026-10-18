@@ -4,6 +4,10 @@
 # suite v5 gap tests incl. T53/T54 n10 both modes, hard-case sets 1-3 k4. Stops both servers at the end.
 #   setsid nohup scripts/base_eval.sh /home/pavlisd/exports/qwen38_rb1010a_sftdpo rb1010a > logs/evals/rb1010a_eval.log 2>&1 &
 set -uo pipefail
+# one gate run at a time, on free GPUs (rebuilds may still be training on GPU 1 or 3)
+exec 9>/home/pavlisd/llama_train/logs/evals/locks/base_eval.lock; flock 9
+until [ "$(nvidia-smi -i 1 --query-gpu=memory.used --format=csv,noheader,nounits)" -lt 1000 ] && \
+      [ "$(nvidia-smi -i 3 --query-gpu=memory.used --format=csv,noheader,nounits)" -lt 1000 ]; do sleep 60; done
 cd /home/pavlisd/llama_train
 BASE=$1; TAG=$2; PY=~/venv/bin/python; L=logs/evals
 export PATH=/home/pavlisd/venv/bin:$PATH
