@@ -133,14 +133,14 @@ def cmd_select(args) -> int:
         di_ref = {r["id"]: sd._split_record(r)[1] for r in sd.read_records(C / "CTL_LoRA_dataintersection_sft.json")
                   if sd._split_record(r)}
         for f, src, refs in (("data/opcd/generate_gaps_c9.jsonl", "gaps", gap_ref), ("data/opcd/c12_di.jsonl", "di", di_ref)):
-            for p in sd.read_jsonl(ROOT / f):
+            for idx, p in enumerate(sd.read_jsonl(ROOT / f)):
                 if p["id"] in gap_held:
                     report[f"{src}:holdout"] += 1
                     continue
                 sent, added = sd.with_validate_format(p["user"]) if p["task_type"] == "validate" else (p["user"], False)
                 add({"prompt_id": sd.make_prompt_id(p["user"]), "task_type": p["task_type"], "component": p["component"],
                      "compile_bucket": sd.compile_bucket_for(p["component"], sd.main_ctl_block(refs.get(p["id"]) or "")),
-                     "source_file": f, "record_id": p["id"], "source_id": p["id"], "tags": [], "user": sent, "user_original": p["user"],
+                     "source_file": f, "source_origin": f"{src}_pool", "source_index": idx, "record_id": p["id"], "source_id": p["id"], "tags": [], "user": sent, "user_original": p["user"],
                      "format_instruction_added": added, "reference": refs.get(p["id"])}, src)
 
     seen, dedup = set(), []
@@ -200,6 +200,7 @@ def cmd_sample(args) -> int:
                 row = {"prompt_id": p["prompt_id"], "sample_idx": s["sample_idx"], "task_type": p["task_type"],
                        "mode": s["mode"], "thinking": s["thinking"] or "", "answer": s["answer"] or "",
                        "think_closed": s["think_closed"], "hit_cap": s["hit_cap"], "new_tokens": s["new_tokens"],
+                       "prompt_tokens": len(roles.ids("student", dict(p, mode=s["mode"]))),
                        "seed": seed, "system_prompt": roles.system("student", s["mode"], p["task_type"]),
                        "sampling": {"k": k, **{kk: roles.sampling(p)[kk] for kk in ("temperature", "top_p", "top_k")}},
                        "teacher_model": f"{cfg['base_model']} + {name}", "sampled_at": sd.now_iso()}
@@ -214,6 +215,26 @@ def cmd_sample(args) -> int:
     print(f"done: {dict(stats)} -> {sd.rel(shard)}")
     return 0
 
+
+
+def cmd_backfill(args) -> int:
+    """Add prompt_tokens (system + user under the student chat template, as sampled) to samples written before the
+    sampler recorded it; self_distill.py assemble needs it for the SFT cutoff."""
+    import opcd
+    out = sd.RUNS_DIR / args.run
+    cfg = opcd.load_cfg(args.config)
+    roles = opcd.Roles(cfg)
+    prompts = {p["prompt_id"]: p for p in sd.read_jsonl(out / "prompts.jsonl")}
+    for f in sorted(out.glob("samples*.jsonl")):
+        rows = sd.read_jsonl(f)
+        n = 0
+        for r in rows:
+            if "prompt_tokens" not in r:
+                r["prompt_tokens"] = len(roles.ids("student", dict(prompts[r["prompt_id"]], mode=r["mode"])))
+                n += 1
+        f.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
+        print(f"{sd.rel(f)}: prompt_tokens added to {n} of {len(rows)} samples")
+    return 0
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -234,8 +255,11 @@ def main() -> int:
     p.add_argument("--max-new", type=int, default=6144)
     p.add_argument("--batch", type=int, default=64)
     p.add_argument("--seed", type=int, default=0)
+    p = sub.add_parser("backfill", help="add prompt_tokens to samples written before the sampler recorded it")
+    p.add_argument("--run", required=True)
+    p.add_argument("--config", default="configs/opcd_c13c.yaml")
     args = ap.parse_args()
-    return {"select": cmd_select, "sample": cmd_sample}[args.cmd](args)
+    return {"select": cmd_select, "sample": cmd_sample, "backfill": cmd_backfill}[args.cmd](args)
 
 
 if __name__ == "__main__":

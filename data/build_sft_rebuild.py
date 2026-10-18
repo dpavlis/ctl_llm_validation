@@ -9,7 +9,8 @@
 SFT  = every record in ctl_lora_training/sft_training_data/*.json (answer-only; minus EXCL), plus the
        self-distilled thinking traces of runs full1 + gen2full, each twice (minus stale traces listed in
        data/self_distill/sd_stale.json and traces over 4096 tokens under the qwen3_8 template).
-DPO  = every ctl_lora_training/sft_training_data/CTL_LoRA_DPO_*.jsonl pair.
+DPO  = every ctl_lora_training/sft_training_data/CTL_LoRA_DPO_*.jsonl pair (minus EXCL: file names given as arguments
+       exclude SFT and DPO files alike).
 Eval = ctl_lora_training/sft_eval_data copies. Writes build_report.json (corpus commit, counts, drops).
 The trace inputs data/self_distill/{full1,gen2full}/selfdistill_*_train.json are committed.
 Register the four files in ~/LlamaFactory/data/dataset_info.json (it carries git skip-worktree) and copy
@@ -52,6 +53,7 @@ json.dump(sft,open(f"{O}/CTL_LoRA_training_data_{TAG}.json","w"),ensure_ascii=Fa
 dpo=[]
 for f in sorted(glob.glob(C+"CTL_LoRA_DPO_*.jsonl")):
     name=f.split("/")[-1]
+    if name in EXCL: continue
     for i,l in enumerate(open(f)):
         if not l.strip(): continue
         r=json.loads(l); x={k:r[k] for k in ("system","prompt","chosen","rejected")}; x.update(id=f"{TAG}dpo-{len(dpo)+1}",source_file=name,source_index=i,source_id=r.get("id")); dpo.append(x)
