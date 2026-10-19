@@ -4,6 +4,8 @@
 # already in stage 3a this collapses to 40 + 16 rounds. That equivalence is untested: the stage-3b gates decide.
 # TEMPLATE: written for rb1009; scripts/opcd_stage3.sh generates configs/opcd_s3b-TAG.yaml (run name, base_model, served_model,
 # init_adapter). The gates (scripts/opcd_gaps_run.sh) run after this part.
+# 2026-10-19 (first use, rb1011): + hard set 3 and the rulev7 Rollup teacher, as c13d added them (findings §3.25: set-3 part-B
+# accumulator mistakes 20 -> 9 of 80; T41 not moved). Set-3 holdouts stay held out (hard_holdout_c13d.json).
 run: s3b-rb1009
 init_adapter: data/opcd/s3a-rb1009/round_039/adapter   # stage 3a final round
 base_model: /home/pavlisd/exports/qwen38_rb1009_sftdpo
@@ -13,7 +15,9 @@ rule_marker: "Declaration defaults in CTL2"
 modes: {generate: "on", fix: "on", validate: "on"}
 set_modes: {replay: {validate: "off"}}
 set_teacher: {replay: plain}
+component_teacher: {ROLLUP: acc}   # thinking-on Rollup prompts under the rule teacher get rulev7 (as c13d)
 teachers:   # one per component; the gap prompts name theirs (generate_gaps_c9.jsonl "teacher")
+  acc: {"on": configs/eval_rb1006_rulev7_on.yaml, marker: "A Rollup accumulator is reset from its metadata before each group"}   # rulev7 = rulev6 + accumulator note
   guide_REFORMAT: {"on": configs/opcd_c9_teachers/guide_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
   guide_PARTITION: {"on": configs/opcd_c9_teachers/guide_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
   guide_DENORMALIZER: {"on": configs/opcd_c9_teachers/guide_DENORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_DENORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
@@ -32,8 +36,9 @@ prompts:
   hard:
     - {file: data/opcd/hard_cases.jsonl, weight: 1}    # set 1 (c4)
     - {file: data/opcd/hard_cases2.jsonl, weight: 3}   # set 2: previous-record dates (T42 shape)
+    - {file: data/opcd/hard_cases3.jsonl, weight_by_part: {A: 1, B: 3}}   # set 3 as in c13d; B: Rollup accumulator nullability (T41/T22)
     - {file: data/opcd/c13b_keep.jsonl, weight: 1, modes: ["on", "off"]}   # every 3rd gap and DI prompt (23 + 17), keeps c13's generate gains
-  hard_holdout: data/opcd/hard_holdout_c13.json       # c3 + c9 + c12 holdouts, never trained
+  hard_holdout: data/opcd/hard_holdout_c13d.json      # c3 + c9 + c12 + set-3 (c5) holdouts, never trained
   contrast: data/opcd/contrast_prompts.jsonl          # 60 corpus prompts where something really IS null (c4)
   probe: {run: dpodef1, split: probe}
   replay_share: 0.4
