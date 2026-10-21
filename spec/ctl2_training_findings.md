@@ -16,7 +16,13 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-18 (evening) with belief durability Part B (§3.26):
+Last updated 2026-10-20 with rebuild variance, rb1011 and Stage 3 on rb1011 (§3.27):
+- **New ship candidate: s3b-rb1011** (Stage 3 on rb1011). T40/T42 0/20 and 1/20, hard sets clean, T53 1.00 in both modes,
+  best thinking-on generate and validate, T41 0.868. Costs against c13c: G4 0.582 vs 0.649, T54 off 0.63 vs 0.97.
+- A seed rerun of rb1009 shows rebuild variance of about ±0.06–0.07 on validate and the gap tests; rb1009's
+  DataIntersection result was a lucky seed. The belief-trace effect is far beyond that variance.
+
+Earlier, 2026-10-18 (evening), belief durability Part B (§3.26):
 - 230 of c13c's own belief-free answers in the SFT (rb1010a) remove most of the declaration belief from the base:
   T40 0/20, T42 8/20, hard sets 1/38/4%, with no thinking-off validate damage.
 - DataIntersection regressed in both arms, so rebuild-to-rebuild variance is now being measured (rb1009 rerun).
@@ -1955,6 +1961,72 @@ starts without the belief and OPCD no longer has to remove it after every rebuil
   Stage 3.
 - If it keeps DataIntersection, the belief traces interfere, and their content needs a look.
 
+
+### 3.27 Rebuild variance (rb1009s2), rb1011, and Stage 3 on rb1011: the new ship candidate
+
+**Three runs, 2026-10-19:**
+- **rb1009s2:** rb1009 retrained unchanged with seed 7 (`configs/qwen38_rb1009s2.yaml`), the seed control for §3.26.
+- **rb1011:** rb1010a + the revised Rollup accumulator and Normalizer sets (`spec/rollup_normalizer_fix_brief.md`).
+  rb1010a's single run and the new sets cannot be separated (see variance below).
+- **s3b-rb1011:** the canonical Stage 3 (`scripts/opcd_stage3.sh`) on rb1011, 40 + 16 rounds. Stage 3b now also trains
+  hard set 3 (part B weight 3) and scores thinking-on Rollup prompts with the rulev7 teacher, as c13d did. The belief
+  anchor was 0.50 (3a) and 0.85 (3b).
+
+| measure | rb1009 | rb1009s2 | rb1011 | **s3b-rb1011** | c13c |
+|---|---|---|---|---|---|
+| T40 / T42 below full (n20) | 20 / 20 | 20 / 20 | 8 / 17 | **0 / 1** | 1 / 7 |
+| hard sets 1 / 2 / 3, belief claims | 74% / 92% / 11% | 64% / 95% / 11% | 0% / 57% / 5% | **0% / 0% / 1%** | 0% / 0% / 0% |
+| hard set 3 accumulator mistakes (of 80) | – | 28 | 22 | 18 | 20 |
+| validate off, 9 reps (WRONG) | 0.861 (5.7%) | 0.789 (7.3%) | **0.891 (6.5%)** | 0.869 (7.7%) | 0.853 (6.6%) |
+| on: validate / fix / generate | 0.787 / 0.826 / 0.960 | 0.727 / 0.863 / 0.977 | 0.829 / 0.821 / 0.974 | **0.853** / 0.798 / **0.979** | 0.850 / 0.826 / 0.970 |
+| suite v5 gap tests (9), off / on | 0.676 / 0.845 | 0.736 / 0.894 | 0.713 / 0.882 | **0.740** / 0.890 | 0.727 / **0.909** |
+| T53 score, off / on (n10) | 1.00 / – | 0.69 / 0.61 | 0.58 / 0.78 | **1.00 / 1.00** | 1.00 / 1.00 |
+| T54 score, off / on (n10) | – | 0.65 / 0.65 | 0.59 / 0.64 | 0.63 / 0.73 | **0.97 / 0.89** |
+| T60 off (n10) | – | 0.72 | 0.52 | 0.51 | 0.38 |
+| gap holdouts off / on; G4 | – | – | – | 0.542 / 0.771; 0.582 | 0.577 / 0.770; **0.649** |
+| T41 on (n20) | **0.988** | 0.97 (n25) | 0.82 (n25) | 0.868 | 0.815 |
+| T22 on (n20) | – | – | 0.442 | **0.508** | 0.442 |
+
+**Findings:**
+1. **Rebuild variance is large.** The same corpus and recipe with another seed moves:
+   - thinking-off validate by 0.07 (0.861 → 0.789);
+   - the gap tests by 0.06;
+   - DataIntersection from clean to `$out.1`/`$out.2` in 19/20 T53/T54 answers.
+
+   rb1009's DataIntersection result was a lucky seed. The rb1010a/b DataIntersection drop (§3.26) is variance, not the
+   belief traces. Single-run rebuild comparisons below about ±0.06 are not evidence.
+2. **The belief traces' effect is real.** Both rb1009 seeds have T40/T42 20/20 and hard set 1 at 64–74%. All three trace
+   builds (rb1010a, rb1010b, rb1011) have hard set 1 at 0–1%. T42 and set 2 still vary by run (8–17/20, 38–57%).
+3. **The revised Rollup/Normalizer sets show no measurable effect in one run.** T41 0.82 (rb1010a 0.845), T60 off 0.52,
+   hard set 3 mistakes 22/80.
+4. **Stage 3 on rb1011 (s3b-rb1011) is the best model so far** on the belief and on DataIntersection:
+   - **Belief:** T40 0/20 and T42 1/20, the first model with T42 near 0. Hard sets 1–3 are clean.
+   - **DataIntersection:** T53 1.00 in both modes from rb1011's 0.58 / 0.78. OPCD with the DataIntersection prompts makes
+     T53 reliable even when the rebuild did not learn it.
+   - **Other tests:**
+     - thinking-on generate 0.979 and validate 0.853, the best so far;
+     - T41 0.868 and T22 0.508 (n20), the best of the OPCD models;
+     - T60 off keeps the base's 0.51 (c13c lost it: 0.38).
+5. **Its costs against c13c:**
+   - G4 0.582 vs 0.649;
+   - T54 off 0.63 vs 0.97, inherited from rb1011 (0.59);
+   - thinking-on fix 0.798 vs 0.826;
+   - thinking-off validate WRONG 7.7% vs 6.6%.
+
+   The fix and validate differences are within run variance.
+6. **Hard set 3 and rulev7 in stage 3b barely help Rollup** (22 → 18 of 80 accumulator mistakes; c13d got 9 on rb1009).
+   All remaining mistakes are one kind: an uninitialized nullable accumulator field (18/40). The 5-sample T41 of 0.95
+   was luck; at n20 it is 0.868, against rb1009's 0.988.
+
+**Ship candidate: s3b-rb1011** (adapter `data/opcd/s3b-rb1011/round_015`, base `exports/qwen38_rb1011_sftdpo`),
+replacing c13c, unless G4 matters more than the belief and T41 gains.
+
+**Open:**
+- T41/T22: the accumulator nullability explanation is still not learned through the corpus or OPCD.
+- T54 and G4 lost ground against c13c.
+- T60 off: unchanged (0.51).
+- Any further single-seed rebuild comparison needs either a second seed or a larger effect than ±0.06.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number
@@ -2267,6 +2339,8 @@ setsid nohup scripts/opcd_stage3.sh <base export> <tag> > logs/evals/stage3_<tag
 - It checks the belief anchor: belief prompts must be at least 30% of the non-replay prompt weight (rb1009: 0.50 and
   0.82).
 - It trains both stages and runs the gates. `--dry-run` writes, prepares and checks without GPU work.
+- Since 2026-10-19 stage 3b also trains hard set 3 and scores thinking-on Rollup prompts with rulev7 (as c13d). On
+  rb1011 this produced the ship candidate s3b-rb1011 (§3.27); belief anchors 0.50 and 0.85.
 - **Anchor rule for any OPCD run:** keep the belief prompts at least 30% of the non-replay pool, scored by rulev6, with
   T40/T42 n20 and hard sets 1–3 as gates. c11–c13 regressed when new groups crowded them out.
 
@@ -2374,7 +2448,18 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 ## 6. Open questions, in priority order
 
-> **2026-10-17 — current front (§3.25).**
+> **2026-10-20 — current front (§3.27).**
+>
+> S. **Ship candidate: s3b-rb1011** (replaces c13c; owner decision open). Next: the real agentic harness.
+>
+> T. **Rollup accumulator nullability (T41/T22, hard set 3 part B):** not learned through the corpus sets, hard set 3 or
+>    rulev7. The remaining error is one kind: an uninitialized nullable accumulator field (18/40).
+>
+> U. **T54 and G4** are below c13c on s3b-rb1011. T54 is already low in the rb1011 base.
+>
+> V. **Rebuild variance:** compare rebuilds only with two seeds or effects above ±0.06.
+
+> **2026-10-17 front (§3.25).**
 >
 > M. ~~T42~~ **Done (c13c, rulev6 teacher): T42 trap 6/20, T40 + T42 8/40 as c10.** Was: the rulev3 teacher fails it in 10/20. Test a rule addition for carried-over values
 >    (teacher check on T42/T40 and hard set 2), then a short targeted run from c13b with that teacher on the set-2
