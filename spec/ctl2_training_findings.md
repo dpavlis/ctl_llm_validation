@@ -17,8 +17,12 @@ sample counts changed over time, so check which era a number comes from:
 optimise is retired.
 
 Last updated 2026-10-20 with rebuild variance, rb1011 and Stage 3 on rb1011 (§3.27):
-- **New ship candidate: s3b-rb1011** (Stage 3 on rb1011). T40/T42 0/20 and 1/20, hard sets clean, T53 1.00 in both modes,
-  best thinking-on generate and validate, T41 0.868. Costs against c13c: G4 0.582 vs 0.649, T54 off 0.63 vs 0.97.
+- **s3b-rb1011 (Stage 3 on rb1011) is not shown better than c13c** (review correction, 2026-10-21). It wins on T42 and
+  thinking-off validate; it loses on T54 (`$out.1` in 10/10 thinking-off answers), T40 compile errors and the thinking-on
+  gap tests. The rest is noise. The n20 confirmations settle it: **c13c stays the ship candidate** (T54 off 0.98 vs 0.60,
+  T40 2/45 vs 10/45 below full, T43 0.87 vs 0.68).
+- The belief fix overgeneralizes to Rollup accumulators ("nullable starts at zero"); that is the T41/T22 drop.
+- T18 rubric: any explicit lookup-miss handling counts (owner ruling); all stored T18 answers re-judged.
 - A seed rerun of rb1009 shows rebuild variance of about ±0.06–0.07 on validate and the gap tests; rb1009's
   DataIntersection result was a lucky seed. The belief-trace effect is far beyond that variance.
 
@@ -1962,7 +1966,7 @@ starts without the belief and OPCD no longer has to remove it after every rebuil
 - If it keeps DataIntersection, the belief traces interfere, and their content needs a look.
 
 
-### 3.27 Rebuild variance (rb1009s2), rb1011, and Stage 3 on rb1011: the new ship candidate
+### 3.27 Rebuild variance (rb1009s2), rb1011, and Stage 3 on rb1011 (s3b-rb1011: not shown better than c13c)
 
 **Three runs, 2026-10-19:**
 - **rb1009s2:** rb1009 retrained unchanged with seed 7 (`configs/qwen38_rb1009s2.yaml`), the seed control for §3.26.
@@ -2018,8 +2022,85 @@ starts without the belief and OPCD no longer has to remove it after every rebuil
    All remaining mistakes are one kind: an uninitialized nullable accumulator field (18/40). The 5-sample T41 of 0.95
    was luck; at n20 it is 0.868, against rb1009's 0.988.
 
-**Ship candidate: s3b-rb1011** (adapter `data/opcd/s3b-rb1011/round_015`, base `exports/qwen38_rb1011_sftdpo`),
-replacing c13c, unless G4 matters more than the belief and T41 gains.
+~~Ship candidate: s3b-rb1011, replacing c13c.~~ **Withdrawn 2026-10-21** after an independent review of the raw results
+(below). c13c remains the candidate until the step-2 confirmations are in.
+
+#### Review correction, 2026-10-21
+
+An independent review re-read the raw results. Its conclusions, spot-checked (T54 and T40 answers re-read):
+- **Within noise, though counted above as wins or costs:**
+  - thinking-on generate and validate;
+  - T41 (0.868 vs 0.815, n20) and T60 off (CI −0.04 to +0.30);
+  - G4 (−0.067, CI −0.165 to +0.041, n30).
+- **Real wins for s3b:**
+  - T42: 3/25 below full vs 11/25, but 10 of c13c's 11 are harmless extra null guards;
+  - thinking-off validate +0.016 (CI +0.002 to +0.031).
+- **Real losses for s3b:**
+  - **T54:** `$out.1`/`$out.2` in 10/10 thinking-off and 7/10 thinking-on answers (c13c 0/10 and 3/10). The graph fails at
+    init, yet the rubric still scores these answers 0.55–0.63. The `$out.0` rule was learned in T53's framing only.
+  - **T40:** compile errors such as `lastOrderDate = 0`. Pooled 4/25 below full vs 1/25; the single n20 gate run had 0/20.
+    The project's own rule asks for 2 × n20.
+  - **The 11 suite-v5 gap tests thinking on** (T53/T54 included): −0.029.
+- **Measure:** finding 4's "gap tests" use 9 tests and leave out T53/T54. With all 11, c13c leads in both modes.
+- **The T41 drop is the belief fix overgeneralizing:**
+  - Bases without belief training get T41.B2 WRONG in 0–3/25 samples.
+  - Every belief-trained model gets 8–17/25, whether the training came through SFT traces or OPCD.
+  - T22 thinking-off "starts at zero" claims grow with belief dose: rb1009s2 6/45, s3b 37/45.
+  - §3.25 called it OPCD drift; that was wrong.
+- **Hard set 3 by error direction** (part B accumulator prompts, k4; nullable-field errors are mostly "starts at zero"):
+
+  | model | nullable field wrong | (held out) | non-nullable wrong ("null") | metadata default wrong |
+  |---|---|---|---|---|
+  | rb1009 | 12/40 | 2/8 | 6/20 | 4/20 |
+  | rb1009s2 | 13/40 | 1/8 | 8/20 | 7/20 |
+  | rb1011 | 14/40 | 0/8 | 3/20 | 5/20 |
+  | c13c | 14/40 | 0/8 | 2/20 | 4/20 |
+  | c13d | **8/40** | 0/8 | 0/20 | 1/20 |
+  | s3b-rb1011 | **18/40** | 2/8 | 0/20 | 0/20 |
+
+  - Belief training removes the "non-nullable starts null" errors and adds "nullable starts at zero" ones. The single
+    mistake count hid that the errors changed direction.
+  - c13d (rulev7 on rb1009) is the only run that cut the nullable errors. s3b, with the same set and teacher on a
+    trace-trained base at belief anchor 0.85, did not.
+- **The variance estimate is weak.**
+  - The "±0.06–0.07" rests on one pair of seeds, and most of the validate gap is one test (T38, 1.00 → 0.00).
+  - The claim that the rb1010a/b DataIntersection drop is pure variance is overstated: 1 of 2 trace-free seeds was
+    clean, against 0 of 3 trace builds.
+- **Validate WRONG is dominated by two tests.**
+  - Excluding T18 and T22, thinking-off WRONG is 1.7% for s3b and 2.2% for c13c.
+  - T22 WRONG findings: s3b 43/135 vs c13c 28/135.
+- **T18 rubric** (owner ruling 2026-10-21, §7): any explicit lookup-miss handling now counts. All stored T18 answers were
+  re-judged (n45 off and n5 on per model). Thinking-off validate, 9 reps:
+
+  | model | T18 old → new | validate off old → new | WRONG old → new |
+  |---|---|---|---|
+  | rb1009 | 0.551 → 0.767 | 0.861 → 0.878 | 5.7% → 4.3% |
+  | rb1009s2 | 0.633 → 0.689 | 0.789 → 0.793 | 7.3% → 7.0% |
+  | rb1010a | 0.551 → 0.622 | 0.878 → 0.884 | 5.4% → 4.9% |
+  | rb1011 | 0.533 → 0.900 | 0.891 → **0.919** | 6.5% → **4.1%** |
+  | c10 | 0.644 → 0.922 | 0.872 → 0.893 | 6.8% → 5.0% |
+  | c13c | 0.589 → 0.789 | 0.853 → 0.869 | 6.6% → 5.3% |
+  | c13d | 0.589 → 0.778 | 0.858 → 0.873 | 6.4% → 5.1% |
+  | s3b-rb1011 | 0.511 → 0.811 | 0.869 → 0.892 | 7.7% → 5.8% |
+
+  Thinking-on changes are within the re-judge noise (n5).
+
+**Step-2 confirmations (2026-10-21, n20 each, fresh runs; pooled with the earlier runs where noted):**
+
+| test | c13c | s3b-rb1011 |
+|---|---|---|
+| T54 thinking off | **0.983**, 3/20 below full, `$out.1`/`$out.2` 0/20 | 0.600, 20/20 below full, `$out.1`/`$out.2` **20/20** |
+| T54 thinking on | 0.935, 4/20 below full | 0.904, 5/20 below full |
+| T40 on (pooled n45) | **0.976**, 2/45 below full | 0.899, 10/45 below full |
+| T43 on (pooled n25) | **0.870**, 11/25 below full | 0.684, 21/25 below full |
+
+- **T40:** s3b's failures are compile errors that fail the hard gate: a long or integer assigned to a date in `clean()`,
+  and a kept `list.contains()`.
+- **T43:** c13c's failures are explanation errors, such as an invented `equals(a, b)`, with correct code.
+- **Decision: c13c stays the ship candidate.** s3b-rb1011 loses on the runtime-relevant tests (T54 thinking off, T40, T43)
+  and wins only on T42's cosmetic guards and thinking-off validate.
+- Then the agentic harness, an accumulator-contrast OPCD with a low belief anchor and T54-framed DataIntersection
+  prompts, and execution-based scoring of the v5 generate tests.
 
 **Open:**
 - T41/T22: the accumulator nullability explanation is still not learned through the corpus or OPCD.
@@ -2450,12 +2531,15 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 > **2026-10-20 — current front (§3.27).**
 >
-> S. **Ship candidate: s3b-rb1011** (replaces c13c; owner decision open). Next: the real agentic harness.
+> S. **Ship candidate: c13c** (confirmed 2026-10-21, §3.27). s3b-rb1011 loses T54 thinking off (20/20 `$out.1`), T40
+>    (compile errors 10/45 vs 2/45) and T43 (0.68 vs 0.87). Next: the agentic harness.
 >
-> T. **Rollup accumulator nullability (T41/T22, hard set 3 part B):** not learned through the corpus sets, hard set 3 or
->    rulev7. The remaining error is one kind: an uninitialized nullable accumulator field (18/40).
+> T. **Rollup accumulator nullability (T41/T22, hard set 3 part B):** the belief fix overgeneralizes to "nullable
+>    accumulator starts at zero". Next: an OPCD run with accumulator contrast prompts, thinking-off Rollup validate prompts
+>    scored by rulev7, and a much lower belief anchor on trace-trained bases.
 >
-> U. **T54 and G4** are below c13c on s3b-rb1011. T54 is already low in the rb1011 base.
+> U. **T54:** `$out.1` in T54's framing ("emit on the matched stream"); add T54-framed DataIntersection prompts to OPCD.
+>    G4 is noise.
 >
 > V. **Rebuild variance:** compare rebuilds only with two seeds or effects above ±0.06.
 
@@ -2633,4 +2717,5 @@ checked with ctl_validate on CloverDX Server.
 | compiler, 2026-09-29 | writing `$out.1` on an unconnected port | compile error ("Cannot write to output port '1'"), not dead code; two Rollup references were held out for it |
 | compiler | EXT_FILTER | `FILTER_EXPR` needs the `//#CTL2` header; `job_validate` ignores params |
 | 2026-10-13 | DataIntersection | input 0 = A, input 1 = B; output 0 = A only, 1 = matches, 2 = B only. **CTL writes `$out.0`, which the component sends out on port 1** (corrects the 10-12 note that said `$out.1`; writing `$out.1` fails at init). `OK`/`0`/`1`/`ALL` emit, `SKIP` drops, `STOP` fails; ports 0 and 2 are pass-through. Live runs; `ctl2-basics.md` §8.9. |
+| 2026-10-21 | lookup miss handling (suite T18.B2) | any explicit miss handling is correct: fallback defaults, leaving nullable output fields null, `SKIP`, or routing to an error/reject port. The rubric no longer requires defaults; all stored T18 answers were re-judged (§3.27). |
 | live runs, 2026-10-13 | runtime behaviour | `str2decimal("")` throws; strict `isDate`/`str2date` reject `2025-02-30` and `2025-1-1` (strict `str2date` throws); date functions without a time zone use the host's; the Rollup emit functions repeat until `SKIP`; `round` rounds halves away from zero; full-outer ExtMergeJoin transforms one-sided records on output 0; lookup duplicates need `keyDuplicates=true`; `RUN_ID` is reserved. All in `ctl2-basics.md` §13.3 with run ids. |
