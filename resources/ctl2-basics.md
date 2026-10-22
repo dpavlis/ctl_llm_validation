@@ -164,6 +164,8 @@ Numeric widening chain, narrowest to widest: **`integer` -> `long` -> `number` -
 | `'single quoted'` | Only `\'` — backslash-n is literal |
 | `"""triple quoted"""` | None — real newlines preserved |
 
+**Regex in string literals.** In a double-quoted string a backslash must start one of the escapes above, so a regex escape must be doubled: `"[0-9]+(\\.[0-9]+)?"`, `"\\d+"`. A single backslash before any other character (`"\."`, `"\d"`) is a compile error, `Invalid escape sequence: \.`. A single-quoted string takes the backslash as written, so `'[0-9]+(\.[0-9]+)?'` is the same regex (compiler-verified with `ctl_validate`, 2026-10-22).
+
 ### 2.3 Complex Types
 
 ```ctl
@@ -214,6 +216,7 @@ const string[] TAGS = ["a", "b", "c"];
 ```
 - `const` prevents reassignment.
 - Outside functions: **global** (persists across records). Inside functions: **local**.
+- **Reserved names.** The date-unit keywords `millisec`, `second`, `minute`, `hour`, `day`, `week`, `month`, `year` (as in `dateAdd(d, 1, month)`) and the type names cannot be variable names. `integer month = getMonth(d, "UTC");` fails with the misleading `Syntax error on token 'integer'`; use `mon`, `orderYear` and the like. Metadata field names are not affected: `$in.0.month` and `$out.0.year` are valid (compiler-verified with `ctl_validate`, 2026-10-22).
 
 ---
 
@@ -246,6 +249,8 @@ const string[] TAGS = ["a", "b", "c"];
 | `>=` | `=>`, `.ge.` | |
 | `~=` | `.regex.` | Regex **whole-string** match. `"bookcase" ~= "book"` → false. |
 | `?=` | | Regex **contains**. `"miredo" ?= "redo"` → true. |
+
+There is **no `!~` operator**. Negate a match with `!(x ~= "re")` or `!matches(x, "re")`. `!x ~= "re"` applies `!` to the string and fails (`Operator '!' is not defined for type 'string'`) (compiler-verified with `ctl_validate`, 2026-10-22).
 
 Dotted alternatives must be surrounded by spaces.
 
@@ -296,6 +301,7 @@ result = condition ? valueIfTrue : valueIfFalse;
 // both branches must be the same type, OR both numeric with one upcastable
 // to the other per the widening chain in 2.1.2 (e.g. decimal : integer is valid)
 ```
+Return constants (`ALL`, `OK`, `SKIP`) cannot be ternary operands: `return hasCurrent ? ALL : 1;` and `b ? SKIP : ALL` are syntax errors (`Syntax error on token '?'`). Use `if (hasCurrent) return ALL; return 1;`. A ternary of plain integers (`b ? 0 : 1`) is valid (compiler-verified with `ctl_validate`, 2026-10-22).
 
 ### 3.7 Conditional Fail Expression
 
@@ -398,6 +404,8 @@ try {
 `sourceRow`, `sourceColumn`, `message`, `cause`, `stackTrace` (list[string]), `exceptionTrace` (list[string]).
 
 Limitations: one `catch` block, only `CTLException`, no `finally`.
+
+To fail on purpose, call `raiseError("message")`. There is no `raise` function or `throw`/`raise` statement (`Function 'raise' is not declared`) (compiler-verified with `ctl_validate`, 2026-10-22).
 
 ```ctl
 raiseError("Fatal: invalid data");   // aborts graph unless caught
