@@ -16,7 +16,16 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-20 with rebuild variance, rb1011 and Stage 3 on rb1011 (§3.27):
+Last updated 2026-10-22 with execution-based scoring and OPCD c14 (§3.28):
+- **Execution scoring** of the suite-v5 gap tests: the code is run on the server and every output row checked. Pass rates
+  are far below judge scores (c13c 0.44 off / 0.78 on vs judge 0.77 / 0.92). 151 answers scored 0.9 or higher by the
+  judge fail to run correctly. c13c is the best model by this measure too.
+- **c14** (Rollup accumulator set; rulev7 thinking on, plain anchor thinking off) cuts wrong accumulator explanations
+  (hard set 3 nullable 14 → 9/40) but not the T41/T22 scores. T22 thinking on drops to 0.30. **c13c stays the candidate.**
+- The accumulator metadata default applies to non-nullable fields only (§7, corrected 2026-10-22); T18 accepts any
+  explicit lookup-miss handling (§7, 2026-10-21).
+
+Earlier, 2026-10-20/21, rebuild variance, rb1011 and Stage 3 on rb1011 (§3.27):
 - **s3b-rb1011 (Stage 3 on rb1011) is not shown better than c13c** (review correction, 2026-10-21). It wins on T42 and
   thinking-off validate; it loses on T54 (`$out.1` in 10/10 thinking-off answers), T40 compile errors and the thinking-on
   gap tests. The rest is noise. The n20 confirmations settle it: **c13c stays the ship candidate** (T54 off 0.98 vs 0.60,
@@ -2108,6 +2117,106 @@ An independent review re-read the raw results. Its conclusions, spot-checked (T5
 - T60 off: unchanged (0.51).
 - Any further single-seed rebuild comparison needs either a second seed or a larger effect than ±0.06.
 
+
+### 3.28 Execution-based scoring of generate answers, and OPCD c14 (Rollup accumulator set): c13c stays
+
+#### Execution scoring
+
+**Method.** `data/suite_v5/exec_score.py` scores the 11 suite-v5 gap tests by running the code:
+- It puts each stored answer's CTL into the test's acceptance graph (`data/suite_v5/run_graphs/`) in place of the
+  reference.
+- It runs the graph on the CloverDX server (MiscExamples, `suite_v5/exec/`) and compares every output row with the
+  fixture.
+- A test with variants passes only if all variants pass.
+- Statuses: `pass`, `wrong_rows`, `runtime_error`, `init_error` (the CTL does not compile when the component starts,
+  e.g. `$out.1` on an unconnected port), `invalid`, `no_code`.
+
+Results are in `results/exec/exec_scores.json`. 1,980 answers were scored: 9 models × 2 modes × 11 tests × n10, plus the
+step-2 T54 runs.
+
+**Spot checks.** I re-read the failures; all were real model errors:
+- invented functions (`sendPort`, `date2year`);
+- wrong `isDate` arguments and syntax errors;
+- `$out.1` in DataIntersection;
+- wrong duplicate classification (T57).
+
+| model | pass rate off (judge mean) | pass rate on (judge mean) |
+|---|---|---|
+| **c13c** | **0.44** (0.77) | **0.78** (0.92) |
+| c14 | 0.40 (0.76) | 0.75 (0.91) |
+| c13d | 0.35 (0.78) | 0.76 (0.92) |
+| s3b-rb1011 | 0.30 (0.75) | 0.65 (0.89) |
+| rb1009s2 | 0.23 (0.72) | 0.52 (0.85) |
+| rb1009 | 0.19 (0.72) | 0.49 (0.84) |
+| rb1010a | 0.19 (0.68) | 0.58 (0.85) |
+| rb1011 | 0.15 (0.69) | 0.58 (0.85) |
+| c10 | 0.10 (0.65) | 0.53 (0.79) |
+
+(n110 per cell; standard error about ±0.045.)
+
+1. **The judge's partial credit hides failing code.**
+   - 151 answers scored 0.9 or higher by the judge fail on the server: 73 `init_error`, 60 `wrong_rows`, 16
+     `runtime_error`, 2 `invalid`.
+   - The reverse (an answer that passes but scores below 0.6) happened once.
+   - Judge means compress the differences: 0.65–0.78 off against pass rates of 0.10–0.44.
+2. **OPCD adds a lot of working code.**
+   - Thinking on, the rebuilds reach 0.49–0.58 and the c13 line 0.76–0.78.
+   - Thinking off, c13c reaches 0.44, against the rebuilds' 0.15–0.23.
+3. **Thinking-off generate is the largest real gap.**
+   - Even c13c passes only 44% of thinking-off answers.
+   - T61 and T63 pass in 0/10 thinking-off answers for every model, but in 6–9/10 thinking-on answers for the c13 line,
+     so the fixtures are passable.
+   - T57 is low in both modes for all models (0–6/10).
+4. **The ranking agrees with the n20 confirmations of §3.27:** c13c > c13d ≈ c14 > s3b-rb1011 > the plain rebuilds.
+
+**Use:** from now on, report the execution pass rate as the primary generate measure for the gap tests, next to the
+judge.
+
+#### OPCD c14
+
+**Setup** (`configs/opcd_c14.yaml`): c13c continued on rb1009 for 16 rounds. It uses c13d's mix plus the revised Rollup
+accumulator set (`data/opcd/build_c14.py`): 40 SFT and 30 DPO prompts, 10 SFT prompts held out, in both thinking modes.
+- **Thinking-on samples** are scored by rulev7. Its accumulator-default wording was corrected beforehand (§7, 2026-10-22).
+- **Thinking-off samples** are scored by plain rb1009 with the adapter off. A thinking-off teacher check (n20) showed why:
+
+  | thinking off, n20 | T41 mean | T41.B2 WRONG | T22.B1 caught |
+  |---|---|---|---|
+  | rulev7 | 0.767 | 2 | **1** |
+  | plain rb1009 | 0.688 | 1 | **11** |
+  | c13c | 0.588 | **15** | – |
+
+  Thinking off, the rule text suppresses the T22 finding (null `acc.count`); plain rb1009 has neither problem.
+- **Belief share:** 55% of the non-replay prompt weight.
+
+| measure | c13c | c14 |
+|---|---|---|
+| hard set 3: nullable field wrong / non-nullable wrong / metadata default wrong | 14/40, 2/20, 4/20 | **9/40, 0/20, 1/20** |
+| T41.B2 WRONG, thinking off / on (n20) | 15 / 12 | **10 / 9** |
+| T41 mean off / on (n20) | 0.588 / 0.815 | 0.595 / 0.843 |
+| T22 mean off / on (n20) | 0.079 / **0.442** | 0.092 / 0.300 |
+| T40 / T42 below full | 1/20 / 7/20 | 1/40 / 11/40 (2 × n20) |
+| T54 thinking off (n20) | 0.983 | 0.975 (`$out.1` 0/20) |
+| 11 gap tests off / on (n10) | 0.773 / 0.915 | 0.761 / 0.907 |
+| gap holdouts off / on; G4 | 0.577 / 0.770; 0.649 | 0.541 / **0.822**; 0.605 |
+| validate off ×9 (T18 re-judged); WRONG excluding T18/T22 | 0.869; 2.2% | 0.862; 2.7% |
+| on: validate / fix / generate (n5) | **0.850** / 0.826 / 0.970 | 0.791 / 0.854 / 0.983 |
+| execution pass rate off / on | **0.44 / 0.78** | 0.40 / 0.75 |
+| hard sets 1 / 2, belief claims | 0/160, 0/60 | 0/160, 2/60 |
+
+**Read:**
+- c14 cuts the wrong accumulator explanations everywhere they are measured: hard set 3, and T41.B2 in both modes.
+- The test scores do not follow. T41 is unchanged within noise, and T22 thinking on drops from 0.44 to 0.30.
+- T22's main failure is not a belief: no model notices that the two required lifecycle functions are missing (B4/B5
+  missed in nearly every sample).
+- Thinking-on validate is 0.06 lower in the n5 full-suite run.
+- **c13c stays the ship candidate.** More distillation toward the accumulator rule has diminishing returns.
+
+**Next:**
+- Run c13c in the agentic harness.
+- Use execution scoring as the generate measure.
+- Thinking-off generate is the main gap: T57, T60, T61 and T63.
+- T22 needs validate examples where `finishGroup` or `updateTransform` is missing, not more rule distillation.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number
@@ -2437,6 +2546,11 @@ thinking-on cost.
 - The hard-case sets: `data/opcd/eval_hard_cases.py`.
 - Real-world generate (suite v5, §3.20): `scripts/suite_v5_rw_run.sh ROUND`; for a model comparison, n10 on the
   21 discriminating tests (`TESTS=… RUNS=10`).
+- **Execution scoring** of suite-v5 generate answers (§3.28): `python data/suite_v5/exec_score.py <results files>`, which
+  needs the CloverDX server on :8083. Report its pass rate next to the judge score. Rank generate on the pass rate,
+  because generate rubrics give partial credit to code that cannot run.
+- Hard-set-3 accumulator errors: report them split by direction (nullable said to start at zero vs non-nullable said
+  to start null; §3.27).
 - Compare only within one path (HF or vLLM) and one judge (§4.6).
 
 **Deploy routed by task:**
@@ -2445,7 +2559,7 @@ thinking-on cost.
 |---|---|
 | validate | off |
 | fix | on |
-| generate | either |
+| generate | on (execution pass rate 0.78 on vs 0.44 off for c13c, §3.28) |
 
 ### The retired three-phase recipe (§1–§3.15), for the record
 
@@ -2529,7 +2643,19 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 ## 6. Open questions, in priority order
 
-> **2026-10-20 — current front (§3.27).**
+> **2026-10-22 — current front (§3.28).**
+>
+> W. **Ship candidate c13c**, confirmed by execution scoring. Next: the agentic harness.
+>
+> X. **Thinking-off generate** is the largest real gap: c13c passes 44% of answers when run. T57, T60, T61 and T63 are
+>    near 0 thinking off.
+>
+> Y. **T22:** the missed lifecycle functions (B4/B5), not the belief. It needs validate examples, not rule distillation.
+>
+> Z. **Measurement:** report execution pass rates (`data/suite_v5/exec_score.py`) for generate. Generate rubrics give
+>    partial credit to code that cannot run.
+
+> **2026-10-20 front (§3.27).**
 >
 > S. **Ship candidate: c13c** (confirmed 2026-10-21, §3.27). s3b-rb1011 loses T54 thinking off (20/20 `$out.1`), T40
 >    (compile errors 10/45 vs 2/45) and T43 (0.68 vs 0.87). Next: the agentic harness.
