@@ -48,7 +48,7 @@ words each appear in more than 3 records. Mask this way:
 | 4 | [ERROR] Rollup cannot initialize because `X` is not defined with its required lifecycle name. |
 | 4 | [ERROR] No callable `X` lifecycle definition is provided for accumulator NAME. |
 
-**Affected (35 records):**
+**Affected (28 records: 21 SFT, 7 DPO):**
 - SFT 001, 002, 003, 005, 006, 007, 009, 010, 012, 018–029;
 - DPO lines 1, 2, 3, 4, 10, 11, 12;
 - the DPO rejected answers built from them.
