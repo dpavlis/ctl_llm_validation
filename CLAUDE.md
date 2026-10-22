@@ -34,7 +34,12 @@ on-policy context distillation (OPCD).
 
 ## Shared machine
 
-- **GPUs:** use 1 and 3 by default; 0 and 2 are often used by another user (kobilv). Never touch other users' processes.
+- **GPUs:** the machine is shared and there are no fixed GPUs. Check `nvidia-smi` first and use what is free.
+  - For a job that needs two GPUs, prefer two that are close to each other (e.g. 0+1 or 2+3) if they are free; otherwise
+    take what is available.
+  - Never use a GPU another user's process is on, and never touch other users' processes.
+  - Several scripts default to GPUs 1 and 3 (`opcd_gaps_run.sh`: `TRAIN_GPU` / `SAMPLE_GPU`; the vLLM serve scripts set
+    `CUDA_VISIBLE_DEVICES`); override or adapt them to the GPUs you picked.
 - **Long jobs:** put them in a `#!/bin/bash -l` script and start it with `setsid nohup … &`. The tool shell does not
   load `OPENAI_API_KEY` or wandb. Check that evaluation logs show `Verdict:` lines.
 - **Stopping processes:** kill only your own PIDs, found with `ps -eo pid,user,args | awk …` on the python arguments.
@@ -44,8 +49,8 @@ on-policy context distillation (OPCD).
 - **One lane per session:** check `git log` and the running processes before reusing a config or run folder that
   another session may own.
 - **Ports:**
-  - vLLM sampler: 3011 (GPU 3);
-  - vLLM eval server: 3012 (GPU 1);
+  - vLLM sampler: 3011 (script default);
+  - vLLM eval server: 3012 (script default);
   - judge (gpt-6.1-sol): 127.0.0.1:9001;
   - CloverDX server (MCP: `ctl_validate`, graph runs): localhost:8083. After a reboot, start it by hand: `bash -lc
     ./bin/startup.sh` in `~/cloverserver/CloverDXServer.7.4.2.Tomcat-10.1.54`.
