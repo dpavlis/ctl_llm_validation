@@ -1,0 +1,90 @@
+# Work log
+
+Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
+
+## Where we are (2026-10-22)
+
+- **Ship candidate: c13c**, the rb1009 base plus OPCD adapter `data/opcd/c13c/round_015`. Confirmed by 20-sample checks
+  and by running the generated code on the server.
+- **Deploy with thinking on and a compile-and-retry loop:** 93% of c13c's gap-test answers are then fully correct, 78%
+  without the retry (§3.29). Not yet tried in the real agentic harness; that is the next important step.
+- **Biggest real gap:** generate without thinking. Only 44% of c13c's answers run correctly (§3.28).
+- **Corpus for the next rebuild:** the Rollup lifecycle validate set is ready. The syntax pitfalls brief
+  (`spec/ctl2_syntax_pitfalls_brief.md`) still has to be handed to the corpus authors.
+
+## 2026-10-22
+
+- **New measure: run the generated code.** `data/suite_v5/exec_score.py` runs each answer in its test graph and checks
+  every output row.
+  - Pass rates are far below judge scores: c13c 0.44 off / 0.78 on, against judge 0.77 / 0.92.
+  - 151 answers the judge scored 0.9 or higher do not work.
+  - **Decision:** rank generate on this pass rate from now on. (§3.28)
+- **OPCD c14** (Rollup accumulator set) fixed some wrong explanations but not the T41/T22 scores. **Decision:** keep
+  c13c; stop distilling toward the accumulator rule. (§3.28)
+- **Compile-and-retry:** feeding the server error back to c13c gives 0.78 → 0.93 thinking on, 0.44 → 0.51 off. (§3.29)
+- **Why code does not compile:** 89% of failures come from 11 causes, each confirmed with the compiler. Examples: `$out.1`
+  in DataIntersection, invented fields and functions, `!~`, `month` as a variable name, `str2date` argument order.
+  - The rules are now in `ctl2-basics.md` and the corpus reference.
+  - Corpus brief written: `spec/ctl2_syntax_pitfalls_brief.md`. (§3.29)
+- **Facts corrected** (server-verified):
+  - a Rollup accumulator's metadata default applies only to non-nullable fields; a nullable field starts null even with
+    a default;
+  - a missing Rollup lifecycle function fails the component at startup; it does not silently emit nothing.
+
+  The reference, the teachers, and the T41, T6 and T22 rubrics were updated. (§7)
+- **Rollup lifecycle validate set** (for T22): requested, delivered, and fixed over 3 rounds. **Accepted** for the next
+  rebuild.
+
+## 2026-10-21
+
+- **An independent review withdrew s3b-rb1011 as candidate.** It breaks T54 without thinking (`$out.1` in 20/20) and
+  makes compile errors on T40. Most of its "wins" were noise. **Decision: c13c stays.** (§3.27)
+- **Found:** the declaration-belief fix overgeneralizes. Models learn "nothing is null" and then misexplain nullable Rollup
+  accumulator fields (T41, T22). (§3.27)
+- **Your ruling on T18:** any explicit lookup-miss handling counts (SKIP, null, defaults, reject port). All stored answers
+  were re-judged. (§7)
+
+## 2026-10-19 / 20
+
+- **Rebuild variance is large.** Retraining rb1009 with another seed moved validate by 0.07 and lost DataIntersection.
+  rb1009's DataIntersection result was a lucky seed. Single-seed rebuild comparisons below about ±0.06 are not evidence.
+  (§3.27)
+- **rb1011** (rb1010a plus the revised Rollup/Normalizer sets): no measurable effect from the new sets.
+- **Stage 3 OPCD on rb1011 (s3b-rb1011)** was first called the new candidate, then withdrawn on 10-21.
+
+## 2026-10-18
+
+- **Part B:** putting c13c's own belief-free answers into the SFT corpus (rb1010a) removes most of the declaration belief
+  from the base model, without hurting validate. (§3.26)
+- **c13d:** OPCD does not fix T41. T41 and T60 went to a corpus brief (Rollup/Normalizer sets). (§3.25)
+
+## 2026-10-16 / 17
+
+- **rb1009 rebuild** with the DataIntersection and SCD-2 sets: T53 without thinking 0.38 → 1.00. (§3.24)
+- **OPCD c13 → c13c on rb1009:** a rulev6 teacher fixes T42. **c13c becomes the ship candidate.** (§3.25)
+
+## 2026-10-14 / 15
+
+- **c9/c10:** a component-guide teacher closes most thinking-off generate gaps; c10 (skip truncated samples) is the best of
+  that line. (§3.21, §3.22)
+- **c11/c12:** the DataIntersection rule does not transfer through OPCD → **decision: fix it in the corpus** (rebuild).
+  (§3.22, §3.23)
+
+## 2026-10-13
+
+- **Owner decision:** the recipe is rb1006 plus OPCD c4. The older three-phase recipe is retired. (§5)
+- **Suite v5:** 30 real-world generate tests added. The models tie there and share the same gaps. (§3.20)
+
+## 2026-10-06 – 10-09
+
+- **rb1006** (fix-to-spec explained set): fix with thinking 0.70 → 0.86. It becomes the base. (§3.16)
+- **The declaration belief** ("uninitialized variables are null") survived SFT, thinking traces and DPO (rb1007, rb1008,
+  dpodef1).
+- **Putting the rule in the system prompt fixes it,** so we distill that prompt into the model: on-policy context
+  distillation (dpodef2, then the OPCD runs c1–c8). (§3.19)
+- **Judge switched** to the local gpt-6.1-sol (10-09). Compare only within one judge. (§4.6)
+
+## Before 2026-10-01
+
+- Self-distillation, DPO rounds and targeted repairs gave no measurable gain. The three-phase recipe of that period is
+  documented in §1–§3.15 and retired.
