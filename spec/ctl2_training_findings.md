@@ -16,7 +16,13 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-22 with execution-based scoring and OPCD c14 (§3.28):
+Last updated 2026-10-22 (evening) with compile-and-retry and the causes of non-compiling code (§3.29):
+- **Thinking on plus a run-and-retry loop:** c13c's gap-test pass rate goes from 0.78 to 0.93. Thinking off: 0.44 → 0.51.
+- **89% of compile failures fall into 11 causes**, each compiler-confirmed. Examples: DataIntersection `$out.1`, invented
+  fields and functions, `!~`, time-unit names as variables, `str2date` argument order, `ALL` in a ternary.
+- **A missing Rollup lifecycle function fails the component at initialization** (live runs).
+
+Earlier the same day, execution-based scoring and OPCD c14 (§3.28):
 - **Execution scoring** of the suite-v5 gap tests: the code is run on the server and every output row checked. Pass rates
   are far below judge scores (c13c 0.44 off / 0.78 on vs judge 0.77 / 0.92). 151 answers scored 0.9 or higher by the
   judge fail to run correctly. c13c is the best model by this measure too.
@@ -2217,6 +2223,67 @@ accumulator set (`data/opcd/build_c14.py`): 40 SFT and 30 DPO prompts, 10 SFT pr
 - Thinking-off generate is the main gap: T57, T60, T61 and T63.
 - T22 needs validate examples where `finishGroup` or `updateTransform` is missing, not more rule distillation.
 
+
+### 3.29 Compile-and-retry, the causes of non-compiling code, and the Rollup lifecycle facts
+
+#### Compile-and-retry (c13c, 2026-10-22)
+
+**Method** (`data/suite_v5/exec_retry.py`):
+- Take every stored c13c gap-test answer that failed with an error an agent would see: `init_error`, `runtime_error` or
+  `invalid`. `wrong_rows` failures need the expected output, so they are left out.
+- Send the server's full error message back as the next user turn, in the same thinking mode with the same system
+  prompt, and execution-score the corrected code.
+- Repeat for up to 2 rounds.
+
+Results: `results/exec/retry_c13c.json`.
+
+| | retried | compile after retry | fully correct | pass rate (n110) |
+|---|---|---|---|---|
+| **thinking on** | 19 | 17 | **16** (14 after 1 round) | **0.78 → 0.93** |
+| thinking off | 36 | 26 | 8 | 0.44 → 0.51 |
+
+- **Thinking on:** a run-and-read-the-error loop recovers almost every compile failure. Thinking on plus retry is the
+  configuration to test in the agentic harness; it needs no training.
+- **Thinking off:** retries mostly turn compile errors into wrong rows (18/36). The non-compiling code was usually wrong
+  in its logic too.
+- **One misleading message:** T63's error says "Syntax error on token 'integer'". It does not tell the model that `month`
+  is a reserved word, so the retry cannot fix it (9 of the 10 that still fail to compile).
+
+#### Why generate code does not compile (all 9 models, 706 `init_error` answers, §3.28 data)
+
+630 of the 706 (89%) fall into 11 causes. Each rule was confirmed with `ctl_validate` on 2026-10-22:
+
+| cause | answers | correct form |
+|---|---|---|
+| DataIntersection writes `$out.1`/`$out.2` | 213 | `$out.0` only (§7) |
+| field not in the given metadata (e.g. `acc.receipt_id` in T57, `acc.first_audit_required` in T63) | 76 | use declared fields only |
+| regex negation `x !~ "re"` (no such operator) or `!x ~= "re"` (`!` binds to the string) | 74 | `!(x ~= "re")` |
+| time-unit keyword as a variable name: `month`, `year`, `week`, `day`, `hour`, `second` (reserved) | 74 | another name (`mon` compiles) |
+| invented functions: `raise`, `sendPort`, `getDictionaryValue`, `date2year` | 70 | `raiseError("…")`, documented functions |
+| `str2date`/`isDate(s, fmt, strict, tz)` | 43 | `(s, fmt, locale, tz, strict)` or `(s, fmt, strict)` |
+| undeclared variable | 27 | – |
+| `"\."` in a string literal (invalid escape) | 16 | `"\\."` |
+| `ALL` (or another return constant) as a ternary operand: `return b ? ALL : 1;` | 15 | `if`/`else`; `b ? 0 : 1` compiles |
+| other wrong arguments | 9 | – |
+| dictionary access `dictionary.X.Y` (nonexistent entries) | 9 | – |
+
+`ctl2-basics.md` covered the function signatures but not the reserved time-unit names, return constants in a ternary,
+`!~`, or string escaping in regexes. These four are added to the reference and §7.
+
+#### Rollup lifecycle (live probe, 2026-10-22)
+
+The T57 reference was run with lifecycle functions removed:
+- the full reference passes (run 21964);
+- with `finishGroup`, `updateTransform`, both of them, or `initGroup` removed, the component **fails at initialization**:
+  "Required function(s) finishGroup(), updateTransform() are missing!" (runs 21965–21968).
+
+A missing function does not make the group silently emit nothing. The rubric text of T6.7 and T22.B5 said it did; it was
+corrected (scoring unchanged).
+
+**Briefs written:**
+- `spec/rollup_lifecycle_validate_brief.md` (T22: missing lifecycle functions in validate, thinking off);
+- `spec/ctl2_syntax_pitfalls_brief.md` (the compile causes above).
+
 ---
 
 ## 4. Measurement — read this before trusting any older number
@@ -2643,7 +2710,15 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 ## 6. Open questions, in priority order
 
-> **2026-10-22 — current front (§3.28).**
+> **2026-10-22 (evening) — current front (§3.29).**
+>
+> AA. **Deploy configuration to test in the agentic harness:** c13c, thinking on, compile-and-run retry (0.93 on the gap
+>     tests).
+>
+> AB. **Syntax pitfalls corpus set** (`spec/ctl2_syntax_pitfalls_brief.md`) and the Rollup lifecycle validate set
+>     (`spec/rollup_lifecycle_validate_brief.md`), for the next rebuild.
+
+> **2026-10-22 — front (§3.28).**
 >
 > W. **Ship candidate c13c**, confirmed by execution scoring. Next: the agentic harness.
 >

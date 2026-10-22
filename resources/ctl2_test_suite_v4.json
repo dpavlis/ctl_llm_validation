@@ -368,7 +368,7 @@
           {
             "id": "T6.7",
             "check": "finishGroup(GroupAcc acc) function present and returning true (so the group is emitted).",
-            "rationale": "One of the five mandatory Rollup lifecycle functions. It also gates output: transform() is invoked for a group only when finishGroup() returns true, so omitting it means the group emits nothing. Computing avg_order_value in transform() instead of finishGroup() is a free choice and does not make finishGroup() itself optional."
+            "rationale": "One of the five mandatory Rollup lifecycle functions. It also gates output: transform() is invoked for a group only when finishGroup() returns true. Omitting it fails the component at initialization (\"Required function(s) finishGroup() are missing!\"; live run 21965), so the graph produces nothing. Computing avg_order_value in transform() instead of finishGroup() is a free choice and does not make finishGroup() itself optional."
           },
           {
             "id": "T6.8",
@@ -1267,7 +1267,7 @@
         {
           "id": "T22.B5",
           "code": "(no finishGroup(SalaryAcc acc) function defined)",
-          "description": "finishGroup(SalaryAcc acc) is missing. It is one of the five required Rollup lifecycle functions, and it is the one that gates group output: transform() is invoked for a group only when finishGroup() returns true. With finishGroup() absent the group produces no output at all, so none of the accumulated department totals are ever emitted. This is the most consequential omission in the snippet — the transform() body below it is unreachable.",
+          "description": "finishGroup(SalaryAcc acc) is missing. It is one of the five required Rollup lifecycle functions, and it is the one that gates group output: transform() is invoked for a group only when finishGroup() returns true. With finishGroup() absent the Rollup fails at initialization (\"Required function(s) finishGroup(), updateTransform() are missing!\"; live run 21967), so the graph fails before any record is processed and none of the department totals are emitted.",
           "correct_fix": "function boolean finishGroup(SalaryAcc acc) {\n    return true;\n}",
           "severity": "ERROR"
         },
@@ -1289,7 +1289,7 @@
         "fix_quality": {
           "T22.B1": "Must identify that acc.count is not initialised in initGroup and that CTL2 integer arithmetic on null throws. Must flag as ERROR. Must say initGroup should set acc.count = 0.",
           "T22.B4": "Must identify that updateTransform(integer counter, VoidMetadata groupAccumulator) is missing from the code. Must flag as ERROR — it is a required Rollup lifecycle function, not optional, regardless of whether updateGroup's return value causes it to be invoked.",
-          "T22.B5": "Must identify that finishGroup(SalaryAcc acc) is absent from the code. Must flag as ERROR. Credit requires naming finishGroup specifically — a generic remark that 'some lifecycle functions are missing' does not count. A model that names only updateTransform has NOT found this bug; score B5 MISSED even though B4 is CAUGHT. Ideally the model also explains the consequence: without finishGroup returning true, transform() is never invoked and the group emits nothing."
+          "T22.B5": "Must identify that finishGroup(SalaryAcc acc) is absent from the code. Must flag as ERROR. Credit requires naming finishGroup specifically — a generic remark that 'some lifecycle functions are missing' does not count. A model that names only updateTransform has NOT found this bug; score B5 MISSED even though B4 is CAUGHT. Ideally the model also explains the consequence: a missing lifecycle function fails the component at initialization (\"Required function(s) ... are missing!\"). An explanation that the group silently emits nothing is imprecise but does not by itself make the finding WRONG."
         },
         "verdict_expected": "FAIL",
         "scoring": {

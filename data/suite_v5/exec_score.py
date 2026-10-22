@@ -23,6 +23,7 @@ from mcp_batch import payload
 from graph_harness import D, R, parse_actual, normalized_rows
 
 SANDBOX = "MiscExamples"
+DETAIL_LEN = 300   # characters of a server error kept in the detail (exec_retry.py raises it to feed the full message back)
 TOOLS = {"task_workflow_get", "sandbox_write_file", "sandbox_read_file", "job_validate", "job_run", "job_await"}
 
 
@@ -73,7 +74,7 @@ async def score_one(call, m, code, key):
                                           content='<?xml version="1.0" encoding="UTF-8"?>\n' + xml))
     valid = await call("job_validate", dict(sandboxCode=SANDBOX, sandboxPath=gpath, timeoutSeconds=60))
     if valid.get("overall") != "PASS":
-        return "invalid", json.dumps(valid)[:600]
+        return "invalid", json.dumps(valid)[:2 * DETAIL_LEN]
     run = await call("job_run", dict(sandboxCode=SANDBOX, sandboxPath=gpath, params=m.get("parameters", {})))
     rid = run["runId"]
     done = await call("job_await", dict(runId=rid, timeoutSeconds=90))
@@ -83,8 +84,8 @@ async def score_one(call, m, code, key):
         return ("pass" if ok else "wrong_rows"), f"run {rid}: expected failure, got {done.get('status')} {str(err.get('message'))[:200]}"
     if done.get("status") != "FINISHED_OK":
         if "initialization failed" in str(err.get("message", "")).lower():   # CTL compiled in the component at init: e.g. $out.1 on an unconnected port
-            return "init_error", f"run {rid}: {err.get('componentId')} {str(err.get('message'))[:300]}"
-        return "runtime_error", f"run {rid}: {done.get('status')} {err.get('componentId')} {str(err.get('message'))[:300]}"
+            return "init_error", f"run {rid}: {err.get('componentId')} {str(err.get('message'))[:DETAIL_LEN]}"
+        return "runtime_error", f"run {rid}: {done.get('status')} {err.get('componentId')} {str(err.get('message'))[:DETAIL_LEN]}"
     bad = []
     for port, path in m["output_paths"].items():
         content = await call("sandbox_read_file", dict(sandboxCode=SANDBOX, sandboxPath=outs.get(path, path)))
