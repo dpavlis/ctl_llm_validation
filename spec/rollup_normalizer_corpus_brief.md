@@ -29,7 +29,8 @@ Rollup fix-to-spec task and a Rollup validate task; do not reuse their scenarios
 - **The accumulator is reset from its metadata before each group,** never carried over from the previous group.
   - A field without a metadata default starts **null when nullable**. Omitted nullability means nullable.
   - It starts at its **type's zero value when non-nullable**.
-  - An explicit metadata **default** supplies the starting value.
+  - An explicit metadata **default** supplies the starting value of a **non-nullable** field. A **nullable** field starts
+    null even when its metadata defines a default (live probe, run 5465; corrected 2026-10-22).
 - **Declared CTL variables** (global or local, not record fields) start at their type default, never null. The
   accumulator is a record, so its fields follow the metadata rules above, not the declared-variable rule.
 - **Every group has at least one record,** so a per-group count incremented in `updateGroup()` is at least 1 in

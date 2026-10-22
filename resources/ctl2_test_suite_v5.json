@@ -2755,7 +2755,7 @@
           "description": "initGroup() assigns every accumulator field except backorder_value. StockAcc.backorder_value omits nullability (so it is nullable) and has no metadata default, so the accumulator reset leaves it null at the start of every group (unlike a declared CTL2 variable, it does not start at its type default), and the first `acc.backorder_value + ...` throws on the null operand. Every warehouse with a backordered line fails, and warehouses without one would output a null backorder_value into a non-nullable field, against spec item 6.",
           "correct_fix": [
             "acc.backorder_value = 0D; in initGroup()",
-            "a metadata default of 0 on StockAcc.backorder_value, or declaring it nullable=\"false\" (the accumulator reset then starts it at zero)"
+            "declaring StockAcc.backorder_value nullable=\"false\" (the accumulator reset then starts it at zero), optionally with a metadata default of 0; a default of 0 alone does not fix it, because a nullable accumulator field starts null even with a metadata default"
           ]
         },
         {
@@ -2783,7 +2783,7 @@
         ],
         "fix_quality": {
           "T41.B1": "in() in either call form, or an explicit == ... || == ... test, is correct. Keeping the infix `in`, or inventing a contains()/includes() list method, is WRONG.",
-          "T41.B2": "Must assign backorder_value = 0D (or 0) in initGroup(). Guarding the addition with nvl(acc.backorder_value, 0D) also removes the failure and counts as CAUGHT, but note it as indirect: it leaves backorder_value null for warehouses with no backordered lines unless the output also defaults it. Claiming the field starts at 0 as a declared variable would, and that the line is fine, is WRONG. Adding default=\"0\" to backorder_value in the StockAcc metadata, or declaring it nullable=\"false\", is also a correct fix: the accumulator reset then starts it at zero.",
+          "T41.B2": "Must assign backorder_value = 0D (or 0) in initGroup(). Guarding the addition with nvl(acc.backorder_value, 0D) also removes the failure and counts as CAUGHT, but note it as indirect: it leaves backorder_value null for warehouses with no backordered lines unless the output also defaults it. Claiming the field starts at 0 as a declared variable would, and that the line is fine, is WRONG. Declaring backorder_value nullable=\"false\" in the StockAcc metadata (with or without default=\"0\") is also a correct fix: the accumulator reset then starts it at zero. Adding default=\"0\" alone is NOT a fix: the field stays nullable, and a nullable accumulator field starts null even with a metadata default (live probe, run 5465; owner ruling 2026-10-22).",
           "T41.B3": "Must make finishGroup() return true for every group. Moving the filter elsewhere (e.g. `return SKIP` in transform() for zero-backorder warehouses) is WRONG, since those warehouses must be output.",
           "T41.B4": "Any guard that yields null for a 0 backorder_count is correct. Defaulting avg_backorder_value to 0 is WRONG (spec item 7). Arguing that no guard is needed because a Rollup group always has a record is WRONG here: the divisor is the backordered subset, not the group size."
         },

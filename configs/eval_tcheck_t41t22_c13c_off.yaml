@@ -1,0 +1,48 @@
+# tcheck_t41t22_c13c_off: T22/T41 teacher check thinking off (step 2 OPCD prep, 2026-10-21); vLLM :3012 rb1009 base
+training_config: configs/qwen38.yaml
+mut:
+  mode: vllm
+  vllm_url: http://127.0.0.1:3012
+  vllm_model: c13c_r015
+  run_label: qwen38_tcheck_t41t22_c13c_off
+  model_path: /home/pavlisd/exports/qwen38_rb1006_on
+  dtype: bfloat16
+  device_map: auto
+  enable_thinking: false
+  reasoning_effort: medium
+  max_new_tokens: 16384
+  generate:
+    temperature: 0.4
+    top_p: 0.95
+    top_k: 20
+    system_prompt: 'You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2
+      mean the same language.
+
+      Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+
+      Prefer correct, practical, minimal solutions.
+
+      '
+  validate:
+    temperature: 0.4
+    top_p: 0.95
+    top_k: 20
+    system_prompt: 'You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2
+      mean the same language.
+
+      Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+
+      Prefer correct, practical, minimal solutions.
+
+      '
+judge:
+  provider: openai
+  model: gpt-6.1-sol
+  base_url: http://127.0.0.1:9001/v1
+  reasoning_effort: medium
+  api_key: local
+runs_per_test: 1
+timeout_seconds: 240
+output_dir: ./results
+test_ids: null
+suite_file: /home/pavlisd/llama_train/results/eval_snapshot_20261003/ctl2_test_suite_v4.json

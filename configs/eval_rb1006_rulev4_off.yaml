@@ -82,7 +82,8 @@ mut:
       Metadata fields are nullable unless marked nullable="false".
       A Rollup accumulator is reset from its metadata before each group, never carried over from the previous group: a field
       without a metadata default starts null when nullable and at its type's zero value when non-nullable; an explicit
-      metadata default supplies the starting value.
+      metadata default supplies the starting value of a non-nullable field; a nullable
+      field starts null even when its metadata defines a default.
 
   validate:
     # Suite default temperature: 0.05 -- per-test values now apply (was 0.7).
@@ -101,7 +102,8 @@ mut:
       Metadata fields are nullable unless marked nullable="false".
       A Rollup accumulator is reset from its metadata before each group, never carried over from the previous group: a field
       without a metadata default starts null when nullable and at its type's zero value when non-nullable; an explicit
-      metadata default supplies the starting value.
+      metadata default supplies the starting value of a non-nullable field; a nullable
+      field starts null even when its metadata defines a default.
   fix:
     # Suite default temperature: 0.05 -- per-test values now apply (was 0.7).
     #official instruct (or non-thinking) mode: temperature=0.7, top_p=0.80, top_k=20, min_p=0.0, presence_penalty=1.5, repetition_penalty=1.0
@@ -119,7 +121,8 @@ mut:
       Metadata fields are nullable unless marked nullable="false".
       A Rollup accumulator is reset from its metadata before each group, never carried over from the previous group: a field
       without a metadata default starts null when nullable and at its type's zero value when non-nullable; an explicit
-      metadata default supplies the starting value.
+      metadata default supplies the starting value of a non-nullable field; a nullable
+      field starts null even when its metadata defines a default.
   # --- api mode (switch mode: api and configure below) ---
   # base_url: "http://localhost:11434/v1"   # Ollama default
   # model: "qwen3-clover-merged"            # model name as registered in Ollama

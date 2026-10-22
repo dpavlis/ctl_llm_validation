@@ -48,7 +48,8 @@ mut:
       without a metadata default starts null when nullable and at its type''s zero
       value when non-nullable; an explicit
 
-      metadata default supplies the starting value.
+      metadata default supplies the starting value of a non-nullable field; a nullable
+      field starts null even when its metadata defines a default.
 
       '
   validate:
@@ -91,7 +92,8 @@ mut:
       without a metadata default starts null when nullable and at its type''s zero
       value when non-nullable; an explicit
 
-      metadata default supplies the starting value.
+      metadata default supplies the starting value of a non-nullable field; a nullable
+      field starts null even when its metadata defines a default.
 
       '
   fix:
@@ -134,7 +136,8 @@ mut:
       without a metadata default starts null when nullable and at its type''s zero
       value when non-nullable; an explicit
 
-      metadata default supplies the starting value.
+      metadata default supplies the starting value of a non-nullable field; a nullable
+      field starts null even when its metadata defines a default.
 
       '
 judge:

@@ -1,3 +1,5 @@
+# NOTE 2026-10-22: this check ran with the pre-correction accumulator wording ("an explicit metadata default supplies the
+# starting value"); a nullable field actually starts null even with a default (findings §7). Kept as run.
 # rulev7 teacher check on rb1009, full v4, thinking ON
 training_config: configs/qwen38.yaml
 mut:
