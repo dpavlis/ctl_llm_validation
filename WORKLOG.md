@@ -2,18 +2,42 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-10-22)
+## Where we are (2026-10-23)
 
 - **Ship candidate: c13c**, the rb1009 base plus OPCD adapter `data/opcd/c13c/round_015`. Confirmed by 20-sample checks
   and by running the generated code on the server.
 - **Deploy with thinking on and a compile-and-retry loop:** 93% of c13c's gap-test answers are then fully correct, 78%
   without the retry (§3.29). Not yet tried in the real agentic harness; that is the next important step.
 - **Biggest real gap:** generate without thinking. Only 44% of c13c's answers run correctly (§3.28).
-- **Corpus for the next rebuild:** the Rollup lifecycle validate set is ready. The syntax pitfalls brief
-  (`spec/ctl2_syntax_pitfalls_brief.md`) still has to be handed to the corpus authors.
+- **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
+  Rollup accumulator explanation (cause not found). Neither set is in the default rebuild recipe.
+
+## 2026-10-23
+
+- **rb1012** (rb1011 + the lifecycle and syntax sets), two seeds: **not adopted**. (§3.30)
+  - **Syntax set:** no measurable effect. Compile failures from the targeted rules were 28–40 against 36, inside seed
+    noise; the total swings 71–122 between seeds alone.
+  - **Lifecycle set:** no gain. Its premise was wrong: the plain rebuilds already catch T22's missing functions thinking
+    off (rb1011 43/40 of 45). The miss is specific to rb1009 and its OPCD line.
+  - **Regression in both seeds:** T22 "count starts at zero" 20 → 36/45; T41 0.82 → 0.72–0.76. No cause found in the
+    lifecycle set; only an ablation would tell.
+  - **Decision:** c13c stays the candidate. Syntax habits are handled by thinking on plus compile-and-retry.
+- **zeroDate records added to the corpus** (10 SFT, 6 DPO), written and server-verified here.
+  - rb1012s2 wrote the bare `zeroDate` 48 times. The corpus code always uses `zeroDate()`, but never explained it.
+  - The reference now says it is a function. (§3.30, §7)
 
 ## 2026-10-22
 
+- **Syntax pitfalls set** (80 SFT, 40 DPO) delivered and **accepted** after an independent check:
+  - all 185 compiler requests replayed with 0 differences;
+  - all 216 runtime graphs re-run with 0 differences.
+
+  Two small fixes were made directly: the PASS format, and a duplicated month computation.
+- **Rebuild rb1012 started** with both new sets, in two seeds because single-seed differences below ±0.06 are not
+  evidence. The corpus differs from rb1011 only by the two sets (+130 SFT, +65 DPO).
+  - **Success:** fewer compile failures by cause in the execution scoring, and T22's missing lifecycle functions found
+    thinking off.
+  - **Must not regress:** belief gates and thinking-off validate WRONG.
 - **New measure: run the generated code.** `data/suite_v5/exec_score.py` runs each answer in its test graph and checks
   every output row.
   - Pass rates are far below judge scores: c13c 0.44 off / 0.78 on, against judge 0.77 / 0.92.

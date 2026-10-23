@@ -930,7 +930,7 @@ LLM rule: unless row says otherwise, null primary string arg => string return nu
 | | `date randomDate(string from, string to, string fmt, string locale)` | |
 | | `date randomDate(string from, string to, string fmt, string locale, string tz)` | |
 | `today` | `date today()` | Current date and time. |
-| `zeroDate` | `date zeroDate()` | 1970-01-01 00:00:00 GMT. |
+| `zeroDate` | `date zeroDate()` | 1970-01-01 00:00:00 GMT. A function: call it as `zeroDate()`; the bare name `zeroDate` is read as a variable and fails with "Variable 'zeroDate' is not declared". A declared `date` without an initializer already holds this value; for an unknown date prefer null to a 1970 placeholder (compiler- and run-verified 2026-10-23). |
 
 Date format patterns: Java SimpleDateFormat — `yyyy`, `MM`, `dd`, `HH`, `mm`, `ss`, `SSS`, `EEE`, `MMM`, `z`/`Z`.
 

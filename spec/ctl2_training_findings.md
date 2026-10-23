@@ -16,7 +16,15 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-22 (evening) with compile-and-retry and the causes of non-compiling code (§3.29):
+Last updated 2026-10-23 with rb1012 (§3.30):
+- **The Rollup lifecycle and syntax pitfalls sets, trained in two seeds:**
+  - no measurable effect on their targets;
+  - a consistent accumulator regression (T22.B1 "starts at zero" 20 → 36/45; T41 0.82 → 0.72–0.76), cause not found.
+- **Not adopted.** c13c stays the ship candidate.
+- **Correction:** the plain rebuilds already catch T22's missing lifecycle functions thinking off. The miss is specific
+  to rb1009 and the OPCD line built on it.
+
+Earlier, 2026-10-22 (evening), compile-and-retry and the causes of non-compiling code (§3.29):
 - **Thinking on plus a run-and-retry loop:** c13c's gap-test pass rate goes from 0.78 to 0.93. Thinking off: 0.44 → 0.51.
 - **89% of compile failures fall into 11 causes**, each compiler-confirmed. Examples: DataIntersection `$out.1`, invented
   fields and functions, `!~`, time-unit names as variables, `str2date` argument order, `ALL` in a ternary.
@@ -2284,6 +2292,70 @@ corrected (scoring unchanged).
 - `spec/rollup_lifecycle_validate_brief.md` (T22: missing lifecycle functions in validate, thinking off);
 - `spec/ctl2_syntax_pitfalls_brief.md` (the compile causes above).
 
+
+### 3.30 rb1012: the Rollup lifecycle and syntax pitfalls sets, in two seeds — no gain, an accumulator regression
+
+**Setup.** rb1012 = rb1011's recipe on corpus `ctl_lora_training` 7191420:
+- same exclusions, and the c13c belief traces at ×1;
+- adds the Rollup lifecycle validate set (50 SFT, 25 DPO) and the CTL2 syntax pitfalls set (80 SFT, 40 DPO);
+- the build differs from rb1011 only by these two sets (`data/sft_rebuild_20261022_rb1012/build_report.json`).
+
+It was trained in two seeds: rb1012 (seed 42) and rb1012s2 (seed 7), `configs/qwen38_rb1012{,s2}.yaml`,
+`scripts/rb1012_run.sh`. Gates: `scripts/base_eval.sh`, plus execution scoring of the suite-v5 gap answers.
+
+| measure | rb1011 | **rb1012** | **rb1012s2** |
+|---|---|---|---|
+| compile failures from the syntax rules R1–R7, off+on (n220) | 36 | 40 | 28 |
+| all compile failures, off+on (n220) | 95 | 71 | 122 |
+| execution pass rate, off / on (n110 each) | 0.15 / 0.58 | 0.18 / 0.65 | 0.19 / 0.41 |
+| T22 thinking off: B4 / B5 (missing functions) caught (n45) | 43 / 40 | 32 / 32 | 29 / 34 |
+| T22 thinking off: B1 WRONG, "count starts at zero / has a default" (n45) | 20 | **36** | **36** |
+| T41 thinking on (n25) | 0.824 | 0.756 | 0.720 |
+| validate off ×9 excl. T18/T22 (WRONG) | 0.941 (2.3%) | 0.926 (2.0%) | 0.944 (3.4%) |
+| on: validate / fix / generate (n5) | 0.829 / 0.824 / 0.974 | 0.778 / 0.830 / 0.970 | 0.822 / 0.778 / 0.978 |
+| T40 / T42 below full (n20) | 8 / 17 | 4 / 12 | 3 / 20 |
+
+**Findings:**
+1. **The syntax set has no measurable effect.**
+   - Targeted compile failures: 28–40 against 36.
+   - The total swings from 71 to 122 between the two seeds alone. rb1012s2's excess is mostly one slip: `zeroDate`
+     written without parentheses, an undeclared variable, in 34 answers. `zeroDate()` is used about 500 times in the
+     corpus.
+   - 130 examples among 13.5k SFT records do not change these habits. The compile-and-retry loop fixes them (§3.29).
+2. **Correction to the lifecycle brief's premise** (and to §3.28's "no model notices the missing lifecycle functions").
+   That claim came from c13c, c14 and rb1009 runs.
+   - The plain trace-trained rebuilds already catch T22's missing functions thinking off: rb1011 43/40 of 45, rb1009s2
+     45/19.
+   - The miss is specific to rb1009 (2/0) and the OPCD line built on it.
+   - With the lifecycle set added, catching went down (29–34 of 45).
+3. **A consistent accumulator regression in both seeds.** T22.B1 "starts at zero / metadata supplies a default" WRONG
+   rose from 20 to 36/45, and T41 fell from 0.82 to 0.72–0.76.
+   - **Checked:** does the lifecycle set teach "uninitialized accumulator arithmetic is fine"?
+     - Its explanations state the nullable → null rule correctly: 12 sentences, and 1 sentence about zero, which is
+       correct.
+     - Its endorsed code does arithmetic on non-nullable accumulator fields without initialization (correct CTL2) at
+       the same density as the Rollup accumulator set rb1011 already trained on: 33 uses in 12 records, against 24 in
+       17.
+   - **Cause not found.** rb1011 is a single seed, so part of the gap may be its luck. Attributing it to one set would
+     need an ablation.
+4. Everything else is within noise: validate, generate, the belief gates and the execution pass rate.
+
+**Decision: rb1012 is not adopted. c13c stays the ship candidate.**
+- Neither new set goes into the default rebuild recipe until it shows a benefit.
+- The syntax habits are handled at inference: thinking on plus compile-and-retry.
+
+**zeroDate follow-up (2026-10-23).** rb1012s2 wrote `zeroDate` without parentheses 48 times, as a placeholder initial
+value.
+- **The corpus is clean.** All 430 code uses have the parentheses; the 7 without are prose (topic labels).
+- **The gap:** the corpus explained what `zeroDate()` returns, but never that it is a function, or when a placeholder date
+  is wrong.
+- **Added: `CTL_LoRA_zerodate_sft.json` (10) and `CTL_LoRA_DPO_zerodate.jsonl` (6).** Authored here
+  (`data/corpus_authoring/zerodate_records.py`) and verified on the server (`verify_zerodate.py`):
+  - all 21 code blocks compile or fail as intended, and every runnable answer gives the expected rows;
+  - the DPO rejected answers that compile give wrong rows (a fake 1970 date, `today()` as the cutoff).
+- **Reference:** the `zeroDate` row in `ctl2-basics.md` and the corpus compact reference now says it is a function.
+- **Expectations are low,** given point 1 above. The retry loop fixes this error directly, since the message names it.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number
@@ -2710,7 +2782,12 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 
 ## 6. Open questions, in priority order
 
-> **2026-10-22 (evening) — current front (§3.29).**
+> **2026-10-23 — current front (§3.30).**
+>
+> AC. **rb1012 not adopted:** the new sets showed no gain, and both seeds regressed on the accumulator explanation.
+>     Open: the cause. An ablation (rb1012 minus one set) would settle it, at about 5 hours × 2 seeds per arm.
+
+> **2026-10-22 (evening) — front (§3.29).**
 >
 > AA. **Deploy configuration to test in the agentic harness:** c13c, thinking on, compile-and-run retry (0.93 on the gap
 >     tests).
@@ -2725,7 +2802,8 @@ fix is a conflict to resolve before training (§2: 115 conflicting prompts cost 
 > X. **Thinking-off generate** is the largest real gap: c13c passes 44% of answers when run. T57, T60, T61 and T63 are
 >    near 0 thinking off.
 >
-> Y. **T22:** the missed lifecycle functions (B4/B5), not the belief. It needs validate examples, not rule distillation.
+> Y. ~~T22: the missed lifecycle functions (B4/B5)~~ **Corrected in §3.30:** the plain rebuilds catch them (rb1011 43/40 of
+>    45 thinking off). The miss is specific to rb1009 and its OPCD line, and the lifecycle set did not help.
 >
 > Z. **Measurement:** report execution pass rates (`data/suite_v5/exec_score.py`) for generate. Generate rubrics give
 >    partial credit to code that cannot run.
@@ -2918,6 +2996,7 @@ checked with ctl_validate on CloverDX Server.
 | compiler, 2026-09-29 | writing `$out.1` on an unconnected port | compile error ("Cannot write to output port '1'"), not dead code; two Rollup references were held out for it |
 | compiler | EXT_FILTER | `FILTER_EXPR` needs the `//#CTL2` header; `job_validate` ignores params |
 | 2026-10-13 | DataIntersection | input 0 = A, input 1 = B; output 0 = A only, 1 = matches, 2 = B only. **CTL writes `$out.0`, which the component sends out on port 1** (corrects the 10-12 note that said `$out.1`; writing `$out.1` fails at init). `OK`/`0`/`1`/`ALL` emit, `SKIP` drops, `STOP` fails; ports 0 and 2 are pass-through. Live runs; `ctl2-basics.md` §8.9. |
+| compiler + runs, 2026-10-23 | `zeroDate` | a function: `zeroDate()` returns 1970-01-01 00:00:00 GMT; the bare name fails with "Variable 'zeroDate' is not declared". A declared `date` without an initializer already holds the epoch (run-verified: `previous == zeroDate()` is true on the first record). For an unknown date prefer null to a 1970 placeholder. |
 | compiler, 2026-10-22 | syntax pitfalls (§3.29) | the date-unit keywords `millisec` … `year` cannot be variable names (`integer month` fails with "Syntax error on token 'integer'"; metadata fields named `month` are fine); return constants (`ALL`, `OK`, `SKIP`) cannot be ternary operands; there is no `!~`, and `!x ~= re` fails, so use `!(x ~= re)`; `"\."` is an invalid escape (use `"\\."` or a single-quoted string); `str2date`/`isDate` take the strict flag last, `(s, fmt, locale, tz, strict)`, never `(s, fmt, strict, tz)`; there is no `raise`, use `raiseError(msg)`. All in `ctl2-basics.md` §2.2, §2.4, §3.2, §3.6, §7. |
 | 2026-10-21 | lookup miss handling (suite T18.B2) | any explicit miss handling is correct: fallback defaults, leaving nullable output fields null, `SKIP`, or routing to an error/reject port. The rubric no longer requires defaults; all stored T18 answers were re-judged (§3.27). |
 | live runs, 2026-10-13 | runtime behaviour | `str2decimal("")` throws; strict `isDate`/`str2date` reject `2025-02-30` and `2025-1-1` (strict `str2date` throws); date functions without a time zone use the host's; the Rollup emit functions repeat until `SKIP`; `round` rounds halves away from zero; full-outer ExtMergeJoin transforms one-sided records on output 0; lookup duplicates need `keyDuplicates=true`; `RUN_ID` is reserved. All in `ctl2-basics.md` §13.3 with run ids. |

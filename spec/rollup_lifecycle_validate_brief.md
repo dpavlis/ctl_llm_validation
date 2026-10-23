@@ -1,5 +1,10 @@
 # Rollup validate set: missing lifecycle functions and accumulator initialisation
 
+> **Correction, 2026-10-23 (findings §3.30):** the premise below is wrong for the plain rebuilds. rb1011 catches T22's
+> missing functions thinking off in 43/40 of 45 samples, and rb1009s2 in 45/19. The miss is specific to rb1009 and the
+> OPCD line built on it. Trained into rb1012 (two seeds), the set did not raise catching (29–34/45), and both seeds
+> regressed on the accumulator explanation, cause not found. The set is delivered but not in the default recipe.
+
 **Write one new set in `ctl_lora_training/sft_training_data/`,** in the format and to the validation standard of the
 Rollup accumulator set (round 2):
 
