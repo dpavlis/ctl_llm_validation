@@ -31,6 +31,7 @@ on-policy context distillation (OPCD).
 | suite evaluation | `test.py <config> [--tests …] [--runs N]`, vLLM mode (`mut.mode: vllm`) |
 | re-judge stored answers | `data/rejudge_results.py` |
 | run generated code on the server | `data/suite_v5/exec_score.py` (pass rate), `data/suite_v5/exec_retry.py` (compile-and-retry) |
+| agentic harness (prompt → model → compile → run → error fed back → retry, execution-scored) | `agent_harness.py` (`pool` / `run` / `summary`), pools in `data/agent_harness/`, results in `results/agent_harness/`, `scripts/agent_harness_run.sh` |
 
 ## Shared machine
 

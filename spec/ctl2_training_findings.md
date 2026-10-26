@@ -16,7 +16,12 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-23 with rb1012 (§3.30):
+Last updated 2026-10-25 with the agentic harness (§3.31): c13c in a run-and-retry loop on 137 execution-scored tasks
+passes 0.69 thinking off / 0.88 thinking on after two error-feedback rounds (first attempt 0.65 / 0.82), and 0.80 / 0.92
+when the agent also sees the failing test rows. The one compile habit that survives feedback is a date-unit keyword used
+as a variable name.
+
+Earlier, 2026-10-23 with rb1012 (§3.30):
 - **The Rollup lifecycle and syntax pitfalls sets, trained in two seeds:**
   - no measurable effect on their targets;
   - a consistent accumulator regression (T22.B1 "starts at zero" 20 → 36/45; T41 0.82 → 0.72–0.76), cause not found.
@@ -2355,6 +2360,75 @@ value.
   - the DPO rejected answers that compile give wrong rows (a fake 1970 date, `today()` as the cutoff).
 - **Reference:** the `zeroDate` row in `ctl2-basics.md` and the corpus compact reference now says it is a function.
 - **Expectations are low,** given point 1 above. The retry loop fixes this error directly, since the message names it.
+
+---
+
+### 3.31 The agentic harness: c13c in a run-and-retry loop, scored by execution (2026-10-25)
+
+**Tool.** `agent_harness.py` adapts `mut_validate.py`'s loop to what an agent with the CloverDX MCP actually sees:
+prompt → model (vLLM) → `ctl_validate` → graph run against a fixture → the server's error text as the next user turn →
+retry, up to 2 rounds. The verdict is the output rows, never a judge. `pool` builds tasks from the 30 suite-v5
+real-world tests and from corpus SFT prompts joined to the corpus authors' fixture cases (the fixture's reference must pass
+first); `summary` reports pass@first, pass after each round, the residue and the §3.29 compile causes.
+
+**Pool 1** (`data/agent_harness/pool1.jsonl`): 137 tasks = 30 suite v5 + 107 corpus (SCD-2 31, syntax pitfalls 24,
+Rollup accumulator 28, Normalizer multi-row 24; 11 validate/explain prompts and 17 references that did not pass were
+dropped). The corpus sets postdate rb1009, so c13c has not trained on them. Generate 62, fix 75.
+
+**c13c, 1 sample per task, 2 feedback rounds** (`results/agent_harness/c13c_pool1.jsonl`, n137 per mode, ±0.08):
+
+| | thinking off | thinking on |
+|---|---|---|
+| pass@first | 0.65 | 0.82 |
+| pass after 2 rounds | **0.69** | **0.88** |
+| residue | wrong rows 32, compile 10 | wrong rows 12, compile 5 |
+| mean rounds used | 0.22 | 0.17 |
+
+| source (n per mode) | off first → final | on first → final |
+|---|---|---|
+| suite v5 real-world (30) | 0.30 → 0.43 | 0.73 → 0.83 |
+| syntax pitfalls (24) | 0.33 → 0.42 | 0.50 → 0.67 |
+| SCD-2 incl. DataIntersection (31) | 0.84 | 0.90 |
+| Rollup accumulator (28) | 0.82 | 0.89 |
+| Normalizer multi-row (24) | 0.88 | 1.00 |
+| task = fix (75) / generate (62) | 0.57 / 0.65 | 0.81 / 0.77 |
+
+**Findings:**
+1. **The loop is worth +0.04–0.13**, less than the 0.78 → 0.93 of §3.29, because the residue is mostly **wrong rows**
+   (32 of 42 thinking-off failures), which an error message never reaches. A `--rows-feedback` pass (the agent also
+   sees the failing test output) measures that ceiling; results follow.
+2. **One habit survives feedback:** a date-unit keyword as a variable name (`month`, `year`, `day`): 25 of the 36
+   thinking-off compile attempts and 13 of 24 thinking on. The server says "Syntax error on token 'integer'", which does
+   not name the cause, so 10 thinking-off and 5 thinking-on tasks stayed stuck through all rounds. A hint map on that
+   message in the agent is the cheapest fix there is.
+3. **DataIntersection is solved for c13c** in this loop: 23 of 24 pass at the first attempt (the `$out.0` rule holds on
+   the corpus SCD-2 prompts, not only in T53's framing).
+4. **The 30 real-world tests are the hard part:** thinking off 13/30 at the end, on 25/30. Thinking on is the deploy
+   configuration.
+5. **Harness artifacts fixed during the run** (both would have blamed the model): `ctl_validate` has no graph context, so
+   its errors about lookup tables, sequences or dictionary entries are ignored and the graph run compiles for real; for
+   DataIntersection it must get the one CTL output metadata, not the three physical ports.
+
+**Rows feedback** (`--rows-feedback`, `results/agent_harness/c13c_pool1_rows.jsonl`, 2026-10-26): the agent also sees
+the failing test output (row counts, first differing row, expected vs got), as it would when the user runs a test.
+
+| | thinking off | thinking on |
+|---|---|---|
+| pass@first | 0.65 | 0.82 |
+| after 2 rounds, errors only (above) | 0.69 | 0.88 |
+| **after 2 rounds, errors + rows** | **0.80** | **0.92** |
+| suite v5 real-world (30) | 0.40 → 0.73 | 0.80 → 0.93 |
+| residue | wrong rows 17, compile 11 | wrong rows 4, compile 7 |
+
+- Seeing the wrong rows is worth another +0.11 off / +0.04 on; the real-world tests go to 22/30 off and 28/30 on. With
+  thinking on, the loop leaves 4 wrong-rows and 7 compile failures in 137 tasks; the compile residue is still the
+  date-unit variable name.
+- Thinking off with test feedback (0.80) reaches where thinking on without it was (0.82). The deploy choice is therefore
+  thinking on with both feedbacks (0.92), or thinking off with both for latency (0.80).
+
+**Open:** n>1 samples for a confidence interval below ±0.08; the `--tweak` pool (new-domain
+prompts with LLM-written fixtures, accepted only when the reference reproduces the LLM's own expected rows) is written
+but not yet run.
 
 ### 3.32 rb1012 DPO isolation: the accumulator regression is not in the DPO pairs (2026-10-26)
 

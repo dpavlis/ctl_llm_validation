@@ -2,12 +2,13 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-10-23)
+## Where we are (2026-10-25)
 
 - **Ship candidate: c13c**, the rb1009 base plus OPCD adapter `data/opcd/c13c/round_015`. Confirmed by 20-sample checks
   and by running the generated code on the server.
-- **Deploy with thinking on and a compile-and-retry loop:** 93% of c13c's gap-test answers are then fully correct, 78%
-  without the retry (§3.29). Not yet tried in the real agentic harness; that is the next important step.
+- **Deploy with thinking on and a compile-and-retry loop.** In the agentic harness (§3.31) c13c passes 88% of 137
+  execution-scored tasks thinking on with error feedback, 92% when the failing test rows are fed back too (28/30 real-world
+  suite tests); thinking off 69% / 80%.
 - **Biggest real gap:** generate without thinking. Only 44% of c13c's answers run correctly (§3.28).
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is **not** in the DPO pairs
@@ -28,6 +29,18 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **The shared run-history log `logs/Qwen3.8-27B.yaml` was torn** by concurrent `train.py`/`test.py` writes on 10-25
   around 21:16. From then on, every run's final log append failed; results were not affected. The log was repaired, and
   a backup kept. Parallel runs will tear it again until the writers take a lock.
+
+## 2026-10-25
+
+- **Agentic harness built** (`agent_harness.py`, from `mut_validate.py` + `exec_retry.py`): prompt → model → compile →
+  run → error fed back → retry, verdict by output rows. Pool 1: 137 execution-scored tasks (30 suite v5 + 107 corpus
+  prompts c13c never trained on).
+- **c13c in the loop:** 0.65 → 0.69 thinking off, 0.82 → 0.88 on, after two feedback rounds. Real-world suite tests:
+  13/30 off, 25/30 on. The residue is wrong rows; the compile habit that survives is `month`/`year` as a variable name,
+  because the server's message does not name it. DataIntersection: 23/24 first try. With the failing test rows fed back
+  as well: 0.80 off / 0.92 on; real-world suite 22/30 off, 28/30 on. (§3.31)
+- Briefs written for two experiments to hand to another agent: `spec/exec_rft_pilot_brief.md` (execution-verified
+  on-policy training) and `spec/rb1012_dpo_isolation_brief.md` (is the rb1012 regression the DPO pairs?).
 
 ## 2026-10-23
 
