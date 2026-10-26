@@ -1,0 +1,65 @@
+# On-policy context distillation, run c13: c4 + c10 + DataIntersection in ONE fresh adapter on the rb1009 base (findings §3.24).
+# rb1009 = rb1006 recipe + the DataIntersection / SCD-2 SFT+DPO sets: T53 thinking-off 0.38 -> 1.00, but the declaration
+# belief is back at base level (T40/T42 40/40, hard set 1 74%, set 2 92%) and thinking-on T53 still writes $out.1/$out.2 (6/10).
+# This run re-applies, from a fresh LoRA (c7 showed one run matches the c2 -> c3 -> c4 chain):
+#   - c4's belief data and rulev3 teacher (dpodef1 train, dpodef3b_plain, hard sets 1-2, contrast prompts);
+#   - c10's generate-gap prompts with the component-guide teachers, both modes, truncated thinking-on samples skipped;
+#   - the 50 revised DataIntersection prompts at weight 1 (guide teacher), for the thinking-on gap.
+# student: rb1009 + LoRA, plain prompt; teacher: rb1009 (adapter off) + rulev3 (+ component guide per prompt).
+run: c13
+base_model: /home/pavlisd/exports/qwen38_rb1009_sftdpo
+student: {"on": configs/eval_rb1006_on.yaml, "off": configs/eval_rb1006_off.yaml}   # system prompt + tokenizer only (identical tokenizer)
+teacher: {"on": configs/eval_rb1006_rulev3_on.yaml, "off": configs/eval_rb1006_rulev3_off.yaml}
+rule_marker: "Declaration defaults in CTL2"
+modes: {generate: "on", fix: "on", validate: "on"}
+set_modes: {replay: {validate: "off"}}
+set_teacher: {replay: plain}
+teachers:   # one per component; the gap prompts name theirs (generate_gaps_c9.jsonl "teacher")
+  guide_REFORMAT: {"on": configs/opcd_c9_teachers/guide_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_PARTITION: {"on": configs/opcd_c9_teachers/guide_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_DENORMALIZER: {"on": configs/opcd_c9_teachers/guide_DENORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_DENORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_NORMALIZER: {"on": configs/opcd_c9_teachers/guide_NORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_NORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_ROLLUP: {"on": configs/opcd_c9_teachers/guide_ROLLUP_on.yaml, "off": configs/opcd_c9_teachers/guide_ROLLUP_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_REFORMAT: {"on": configs/opcd_c9_teachers/guide_dict_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_PARTITION: {"on": configs/opcd_c9_teachers/guide_dict_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_DATA_GENERATOR: {"on": configs/opcd_c9_teachers/guide_dict_DATA_GENERATOR_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_DATA_GENERATOR_off.yaml, marker: "# Reference: the component you are writing for"}
+
+  guide11_DATA_INTERSECTION: {"on": configs/opcd_c11_teachers/guide_DATA_INTERSECTION_on.yaml, "off": configs/opcd_c11_teachers/guide_DATA_INTERSECTION_off.yaml, marker: "# Reference: the component you are writing for"}
+
+prompts:
+  target:
+    - {run: dpodef1, split: train}       # 206: belief-prone fix / validate prompts (c4)
+    - {run: dpodef3b_plain}               # 53: declaration-contrast prompts (c4)
+  hard:
+    - {file: data/opcd/hard_cases.jsonl, weight: 1}    # set 1 (c4)
+    - {file: data/opcd/hard_cases2.jsonl, weight: 3}   # set 2: previous-record dates (c4 weight; c11/c12 regressed it)
+    - {file: data/opcd/generate_gaps_c9.jsonl, weight: 2, modes: ["on", "off"]}   # c10's 68 gap prompts x both modes
+    - {file: data/opcd/c12_di.jsonl, weight: 1, modes: ["on", "off"]}            # 50 revised DataIntersection prompts
+  hard_holdout: data/opcd/hard_holdout_c13.json       # c3 + c9 + c12 holdouts, never trained
+  contrast: data/opcd/contrast_prompts.jsonl          # 60 corpus prompts where something really IS null (c4)
+  probe: {run: dpodef1, split: probe}
+  replay_share: 0.4
+  replay_task_mix: {generate: 0.4, validate: 0.35, fix: 0.25}
+
+lora: {r: 32, alpha: 32, dropout: 0.0, target: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]}
+
+train:
+  seed: 0
+  rounds: 40
+  prompts_per_round: 32
+  k: 2
+  steps_per_round: 2
+  lr: 2.0e-5
+  warmup_steps: 5
+  grad_clip: 1.0
+  adv_clip: null
+  quote_guard: true
+  skip_truncated: ["on"]     # c9 trained thinking-on SCD answers only as truncated thinking (Normalizer 64/64 at the cap);
+                              # it learned to think longer without concluding (G4 thinking-on -0.19, findings §3.21)
+  max_new_tokens: 6144
+  cutoff: 8192                # student prompt + completion; the teacher's guide prompt adds ~4.5k tokens to its scoring pass only
+  logits_chunk: 1024
+
+probe: {n: 20, k: 2, every: 4}
+
+sampler: {url: "http://127.0.0.1:3024", served_model: rb1011_dpoiso_D, concurrency: 32}

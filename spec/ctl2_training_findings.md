@@ -2356,6 +2356,41 @@ value.
 - **Reference:** the `zeroDate` row in `ctl2-basics.md` and the corpus compact reference now says it is a function.
 - **Expectations are low,** given point 1 above. The retry loop fixes this error directly, since the message names it.
 
+### 3.32 rb1012 DPO isolation: the accumulator regression is not in the DPO pairs (2026-10-26)
+
+Details, hand check and commands: `spec/rb1012_dpo_isolation_findings.md` (brief `spec/rb1012_dpo_isolation_brief.md`).
+
+**Setup.** The DPO phase alone, rerun on rb1011's SFT adapter with rb1011's DPO hyperparameters
+(`configs/qwen38_rb1011_dpoiso_*.yaml`, `scripts/dpoiso_run.sh`):
+- **A:** rb1011's 2083 pairs;
+- **B:** A plus the 25 lifecycle pairs;
+- **C:** A plus the lifecycle and 40 syntax pairs, which is rb1012's DPO data.
+
+| measure (n) | rb1011 | rb1012 / s2 | A | B | C |
+|---|---|---|---|---|---|
+| T22 off: B1 WRONG (45) | 20 | 36 / 36 | 19 | 15 | 18 |
+| T22 off: B4 / B5 caught (45) | 43 / 40 | 32 / 32, 29 / 34 | 45 / 35 | 45 / 42 | 44 / 42 |
+| T41 on (25) | 0.824 | 0.756 / 0.720 | 0.832 | 0.794 | 0.852 |
+| hard 3: nullable / non-nullable / default wrong (40/20/20) | 14/3/5 | 16/0/4, 11/3/8 | 14/3/6 | 17/1/7 | 14/2/5 |
+| validate off ×9 excl. T18/T22 (WRONG) | 0.941 (2.3%) | 0.926 / 0.944 | 0.935 (2.1%) | 0.952 (1.3%) | 0.957 (1.0%) |
+
+Differences of B and C against A are all inside their 95% CIs, except B5 caught (+0.16 [+0.01, +0.30]).
+
+**Findings:**
+1. **The DPO phase reproduces.** A matches rb1011 within a few points on every measure. Rebuild seed variance therefore
+   comes mainly from SFT.
+2. **Neither the lifecycle pairs (B) nor rb1012's full DPO set (C) causes the regression.**
+   - Arm D (only the 5 minimal "starts at zero" pairs) was not needed.
+   - There is no likelihood-displacement signature: arm A, which never saw those pairs, states a zero default in 15 of
+     its 19 B1 WRONG answers.
+3. **The regression is in rb1012's SFT phase:** the 130 new SFT records, or SFT-seed luck. rb1011 is one seed; both
+   rb1012 seeds share the data.
+
+**Next, proposed:**
+- rb1012's SFT adapter plus rb1011's DPO data (about 1.3 GPU-h), to confirm the regression is in the SFT phase;
+- an rb1011 seed-7 rebuild (about 6 GPU-h), to tell whether rb1011's 20/45 was a lucky seed;
+- an SFT ablation (about 24 GPU-h), only if the rb1011 seed control points at the records.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number

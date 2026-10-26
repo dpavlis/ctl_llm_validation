@@ -10,7 +10,24 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   without the retry (§3.29). Not yet tried in the real agentic harness; that is the next important step.
 - **Biggest real gap:** generate without thinking. Only 44% of c13c's answers run correctly (§3.28).
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
-  Rollup accumulator explanation (cause not found). Neither set is in the default rebuild recipe.
+  Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is **not** in the DPO pairs
+  (§3.32); it sits in rb1012's SFT phase (the new SFT records, or seed luck).
+
+## 2026-10-26
+
+- **rb1012 DPO isolation:** the accumulator regression is not caused by DPO. (§3.32, `spec/rb1012_dpo_isolation_findings.md`)
+  - **Setup:** the DPO phase alone, rerun on rb1011's SFT adapter.
+  - **Results:** rb1011's pairs (A) reproduce rb1011: T22 "starts at zero" 19 against 20/45, T41 0.83 against 0.82.
+    Adding the 25 lifecycle pairs (B: 15/45, 0.79), or all of rb1012's DPO pairs (C: 18/45, 0.85), does not bring back
+    rb1012's 36/45.
+  - **Conclusions:**
+    - the DPO phase adds little noise;
+    - the regression comes from rb1012's SFT phase, either the 130 new SFT records or SFT-seed luck.
+  - **Proposed next:** rb1012's SFT adapter plus rb1011's DPO (about 1.3 GPU-h) and an rb1011 seed-7 rebuild (about
+    6 GPU-h). These decide whether an SFT ablation (about 24 GPU-h) is needed.
+- **The shared run-history log `logs/Qwen3.8-27B.yaml` was torn** by concurrent `train.py`/`test.py` writes on 10-25
+  around 21:16. From then on, every run's final log append failed; results were not affected. The log was repaired, and
+  a backup kept. Parallel runs will tear it again until the writers take a lock.
 
 ## 2026-10-23
 
