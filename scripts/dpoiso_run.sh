@@ -3,6 +3,9 @@
 # (configs/qwen38_rb1011_dpoiso_<arm>.yaml, data from data/build_dpoiso.py), export, then serve it on the same GPU (port
 # 302N, N = arm's position A=1 .. D=4) and measure:
 #   thinking off: validate-only n5 x9 (T22 n45 inside), hard set 3 k4;  thinking on: T41 n25, T40/T42 n20.
+# Follow-up arms (§3.32 "what would settle it"), same measurements:
+#   E  rb1012's SFT adapter + rb1011's DPO pairs (configs/qwen38_rb1012sft_rb1011dpo.yaml), port 3025
+#   S  rb1011's full recipe (SFT + DPO) with seed 7 (configs/qwen38_rb1011s2.yaml), port 3026
 # One worker per free GPU takes arms from a shared queue, so a GPU that frees later can join with a second start:
 #   GPUS="0 2" ARMS="A B C" setsid nohup scripts/dpoiso_run.sh > logs/dpoiso_run.log 2>&1 &
 #   GPUS="1" ARMS="" setsid nohup scripts/dpoiso_run.sh > logs/dpoiso_run_g1.log 2>&1 &    # joins the existing queue
@@ -15,11 +18,17 @@ ts() { date '+%m-%d %H:%M'; }
 pop() { ( flock 9; a=$(head -n 1 $Q); [ -n "$a" ] && sed -i 1d $Q; echo $a ) 9>$Q.lock; }
 
 arm() {   # $1 arm, $2 GPU
-  local a=$1 g=$2 T=rb1011_dpoiso_$1 P=302$(( $(printf '%d' "'$1") - 64 ))
+  local a=$1 g=$2 T=rb1011_dpoiso_$1 P=302$(( $(printf '%d' "'$1") - 64 )) X="--sft-adapter $SFT"
+  case $a in
+    E) T=rb1012sft_rb1011dpo; P=3025
+       X="--sft-adapter /home/pavlisd/LlamaFactory/saves/qwen38-27B-rb1012/2026-10-22-19-53-15_sft/checkpoint-2262" ;;
+    S) T=rb1011s2; P=3026; X="" ;;
+  esac
+  local C=configs/qwen38_rb1011_dpoiso_$a.yaml; [ -f configs/qwen38_$T.yaml ] && C=configs/qwen38_$T.yaml
   local E=/home/pavlisd/exports/qwen38_${T}_sftdpo
-  echo "$(ts) $a: train on GPU $g"
-  ( cd ~/LlamaFactory && CUDA_VISIBLE_DEVICES=$g $PY ~/llama_train/train.py ~/llama_train/configs/qwen38_rb1011_dpoiso_$a.yaml \
-      --sft-adapter $SFT --skip-post-sft ) > logs/dpoiso_${a}_train.log 2>&1
+  echo "$(ts) $a: train $C on GPU $g"
+  ( cd ~/LlamaFactory && CUDA_VISIBLE_DEVICES=$g $PY ~/llama_train/train.py ~/llama_train/$C $X --skip-post-sft ) \
+      > logs/dpoiso_${a}_train.log 2>&1
   [ -f $E/config.json ] || { echo "$(ts) $a: TRAIN/EXPORT FAILED (logs/dpoiso_${a}_train.log)"; return; }
   echo "$(ts) $a: exported, serving on GPU $g :$P"
   sed -e "s/CUDA_VISIBLE_DEVICES=1/CUDA_VISIBLE_DEVICES=$g/" -e "s/--port 3012/--port $P/" \

@@ -151,6 +151,39 @@ one GPU.
 
 Items 1 and 2 together cost about 7 GPU-h and decide whether the ablation is needed at all.
 
+## Follow-up check 1 (2026-10-26): rb1012's SFT adapter + rb1011's DPO pairs
+
+**Setup.** Arm E: rb1012's SFT adapter (`saves/qwen38-27B-rb1012/2026-10-22-19-53-15_sft/checkpoint-2262`, seed 42)
+plus rb1011's 2083 DPO pairs (`clover_dpo_dpoiso_A`), with rb1011's DPO hyperparameters.
+- **Config:** `configs/qwen38_rb1012sft_rb1011dpo.yaml`; `scripts/dpoiso_run.sh` arm E.
+- **Training:** 521 steps, train loss 0.3609. Same measurements as A–C.
+
+| measure (n) | A (rb1011 SFT + rb1011 DPO) | **E (rb1012 SFT + rb1011 DPO)** E − A [95% CI] | rb1012 (rb1012 SFT + rb1012 DPO) |
+|---|---|---|---|
+| T22 off: B1 WRONG (45) | 19 | **28** +.20 [−.01, +.38] | 36 |
+| T22 off: B4 caught (45) | 45 | **33** −.27 [−.41, −.13] | 32 |
+| T22 off: B5 caught (45) | 35 | 36 +.02 [−.15, +.19] | 32 |
+| T41 on (25) | 0.832 | **0.768** −.06 [−.18, +.06] | 0.756 |
+| T41 on: B2 WRONG (25) | 15 | 14 | 17 |
+| hard 3: nullable / non-nullable / default wrong | 14/3/6 | 10/0/7 | 16/0/4 |
+| validate off ×9 excl. T18/T22 | 0.935 (2.1%) | 0.911 −.02 [−.04, −.00] (3.3%) | 0.926 (2.0%) |
+| T40 / T42 below full (20) | 8 / 18 | 3 / 12 | 4 / 12 |
+
+**Reading:**
+- **With rb1011's DPO pairs on top, rb1012's SFT adapter reproduces most of rb1012's profile:**
+  - B4 catching drops to rb1012's level (33 against 32), the one difference whose CI excludes zero;
+  - T41 sits at rb1012's level;
+  - the T40/T42 pattern matches rb1012's exactly (3/12 against 4/12);
+  - B1 WRONG rises to 28/45, about halfway to 36 (CI just touches zero).
+- **This confirms the verdict:** the regression comes with rb1012's SFT adapter, not its DPO pairs.
+- **The DPO data may matter at the margin:** rb1012's own DPO gave 36 on the same SFT adapter, against E's 28. That gap
+  is within noise at n45 (Newcombe roughly ±0.19).
+- **One hint at the records over seed luck, not proof:** the lifecycle SFT set was written to raise B4/B5 catching, yet
+  rb1012's SFT lowers B4 (45 → 33).
+- **Still open: the SFT records or the seed.** It needs the rb1011 seed-7 rebuild (about 6 GPU-h, 5.5 h wall).
+  `configs/qwen38_rb1011s2.yaml` and `scripts/dpoiso_run.sh` arm S are ready. It was started and stopped on request
+  before training anything, and its partial run folder was removed.
+
 ## Operational notes
 
 - `scripts/dpoiso_run.sh` first hung after arms A/B for about 1.5 h. Its `wait` also waited for the vLLM server it had

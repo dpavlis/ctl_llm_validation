@@ -15,7 +15,7 @@ import argparse, ast, collections, glob, json, math, re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-RUNS = ["rb1011", "rb1012", "rb1012s2"] + [f"rb1011_dpoiso_{a}" for a in "ABCD"]
+RUNS = ["rb1011", "rb1012", "rb1012s2"] + [f"rb1011_dpoiso_{a}" for a in "ABCD"] + ["rb1012sft_rb1011dpo", "rb1011s2"]
 REF = "rb1011_dpoiso_A"
 
 

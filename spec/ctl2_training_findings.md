@@ -2460,8 +2460,18 @@ Differences of B and C against A are all inside their 95% CIs, except B5 caught 
 3. **The regression is in rb1012's SFT phase:** the 130 new SFT records, or SFT-seed luck. rb1011 is one seed; both
    rb1012 seeds share the data.
 
+**Check 1 (2026-10-26): rb1012's SFT adapter plus rb1011's DPO pairs** reproduces most of rb1012's profile:
+- B1 WRONG 28/45 (A 19, rb1012 36);
+- B4 caught 33/45, against A's 45 (−0.27 [−0.41, −0.13]);
+- T41 0.768 (rb1012 0.756);
+- T40/T42 below full 3/12 (rb1012 4/12).
+
+**Confirmed: the regression comes with rb1012's SFT adapter.** Whether it comes from the SFT records or the seed is
+still open.
+
 **Next, proposed:**
-- rb1012's SFT adapter plus rb1011's DPO data (about 1.3 GPU-h), to confirm the regression is in the SFT phase;
+- ~~rb1012's SFT adapter plus rb1011's DPO data (about 1.3 GPU-h), to confirm the regression is in the SFT phase~~ (done
+  above);
 - an rb1011 seed-7 rebuild (about 6 GPU-h), to tell whether rb1011's 20/45 was a lucky seed;
 - an SFT ablation (about 24 GPU-h), only if the rb1011 seed control points at the records.
 

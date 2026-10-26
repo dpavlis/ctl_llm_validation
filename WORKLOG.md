@@ -24,8 +24,15 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   - **Conclusions:**
     - the DPO phase adds little noise;
     - the regression comes from rb1012's SFT phase, either the 130 new SFT records or SFT-seed luck.
-  - **Proposed next:** rb1012's SFT adapter plus rb1011's DPO (about 1.3 GPU-h) and an rb1011 seed-7 rebuild (about
-    6 GPU-h). These decide whether an SFT ablation (about 24 GPU-h) is needed.
+  - **Check 1 done: rb1012's SFT adapter plus rb1011's DPO pairs** reproduces most of rb1012's profile:
+    - T22 B1 WRONG 28/45;
+    - B4 caught 33 against 45/45 (CI excludes zero);
+    - T41 0.77;
+    - the same T40/T42 pattern.
+
+    The regression comes with rb1012's SFT adapter.
+  - **Still open:** the SFT records or the seed. It needs the rb1011 seed-7 rebuild (about 5.5 h; config and run script
+    ready, not started). That decides whether an SFT ablation (about 24 GPU-h) is needed.
 - **The shared run-history log `logs/Qwen3.8-27B.yaml` was torn** by concurrent `train.py`/`test.py` writes on 10-25
   around 21:16. From then on, every run's final log append failed; results were not affected. The log was repaired, and
   a backup kept. Parallel runs will tear it again until the writers take a lock.
