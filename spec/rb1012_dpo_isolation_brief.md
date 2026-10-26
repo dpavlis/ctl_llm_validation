@@ -96,3 +96,29 @@ they were judged by the same judge on the vLLM path; otherwise rerun.
 - Change rubrics, references or `ctl2-basics.md`.
 - Touch `~/venv`, other users' processes (GPUs 0 and 2 are in use by another user's vLLM), or other sessions'
   uncommitted files.
+
+---
+
+## Addendum (2026-10-26): the rb1011 seed-7 rebuild is a variance control, not only an rb1012 question
+
+The DPO-only arms (`spec/rb1012_dpo_isolation_findings.md`) cleared the DPO pairs and showed the regression travels with
+rb1012's SFT adapter. The remaining question, SFT records or SFT seed, is decided by the rb1011 seed-7 rebuild
+(`configs/qwen38_rb1011s2.yaml`, `scripts/dpoiso_run.sh` arm S, started 2026-10-26 on GPU 1). Whichever way it lands,
+the lifecycle and syntax sets stay out of the recipe (no gain in two seeds, §3.30), and the 24 GPU-h SFT ablation is
+**not** to be run on this evidence.
+
+**What the run is for:** the second rebuild-to-rebuild variance pair on the current recipe. Every rebuild comparison
+rests on one pair (rb1009 vs rb1009s2, §3.27), which the 10-21 review called weak (one pair; most of its validate gap is
+one test). rb1011 vs rb1011s2 doubles that evidence, and §3.32 already showed the DPO phase contributes almost no noise,
+so the pair measures SFT-seed variance.
+
+**Report, beyond the arm-S measurements the script runs (T22 n45 off, T41 n25 on, T40/T42 n20, validate off ×9, hard
+set 3 by direction):**
+1. the suite-v5 gap tests at n10 in both modes with `exec_score.py` (pass rate), and the thinking-on full suite at n5
+   (validate / fix / generate), so the pair covers the same gates as the rb1009 pair;
+2. a table **rb1011 | rb1011s2 | spread**, next to **rb1009 | rb1009s2 | spread**, for every gate — the spread per gate
+   is the number to carry forward;
+3. the T22.B1 verdict on the rb1012 question (near 36/45: rb1011 was the lucky seed; near 20: the SFT records), stated
+   as a by-product;
+4. an update to findings §4.7's variance rule from the two pairs: the per-gate spread to treat as noise for single-seed
+   rebuild comparisons, replacing the single "±0.06–0.07".
