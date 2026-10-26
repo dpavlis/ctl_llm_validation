@@ -10,3 +10,5 @@ data/sft_rebuild_*/
 data/opcd/c[0-9]*/
 data/opcd/vllm_check/
 data/opcd/hard_eval/
+data/exec_rft/
+data/opcd/exec_rft*/

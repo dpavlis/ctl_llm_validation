@@ -14,6 +14,12 @@ evaluation (system prompt, template, enable_thinking, reasoning_effort).
   python opcd.py smoke   --config configs/opcd_c1.yaml      # 4 prompts, repeated steps on one batch: KL must fall
   python opcd.py train   --config configs/opcd_c1.yaml      # rounds; resumes after the last finished round
   python opcd.py export  --config configs/opcd_c1.yaml --round N --out /home/pavlisd/exports/<name>
+
+Execution-verified samples (prompts.exec, the exec-RFT pilot, spec/exec_rft_pilot_brief.md): the student's own answers
+that ran correctly on the CloverDX server (scripts/exec_rft/sample_score.py) join the non-replay prompt pool as fixed
+samples. They are not resampled or teacher-scored: an "sft" sample is trained by NLL on its tokens (rejection-sampling
+fine-tuning), a "dpo" sample (a passer and a failing answer to the same prompt and mode) by the DPO loss against the
+initial adapter's log-probs. Belief and replay prompts are sampled and scored as before, so the anchors stay in the mix.
 """
 from __future__ import annotations
 
@@ -25,7 +31,7 @@ import re
 import shutil
 import sys
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from unittest import mock
 
@@ -62,7 +68,7 @@ def cmd_prepare(cfg: dict) -> None:
     out = cfg["_out"]
     out.mkdir(parents=True, exist_ok=True)
     pc = cfg["prompts"]
-    sets: dict[str, list[dict]] = {"target": [], "hard": [], "contrast": [], "probe": [], "replay": []}
+    sets: dict[str, list[dict]] = {"target": [], "hard": [], "contrast": [], "probe": [], "replay": [], "exec": []}
     for s in pc["target"]:
         sets["target"] += read_prompts(s)
     hard_files = pc.get("hard") or []
@@ -93,14 +99,18 @@ def cmd_prepare(cfg: dict) -> None:
     if pc.get("contrast"):  # corpus prompts where something really IS null (data/opcd/select_contrast.py)
         sets["contrast"] = sd.read_jsonl(Path(pc["contrast"]))
     sets["probe"] = read_prompts(pc["probe"])
+    if pc.get("exec"):
+        sets["exec"] = exec_rows(pc["exec"], cfg["train"]["seed"])
     used = {p["prompt_id"] for k in ("target", "hard", "contrast", "probe") for p in sets[k]}
     assert not ({p["prompt_id"] for p in sets["probe"]} & {p["prompt_id"] for k in ("target", "hard", "contrast") for p in sets[k]}), \
         "probe prompts overlap the training prompts"
 
     excluded, _ = sd.load_exclusion_set()
     pool, _ = sd.build_pool(excluded)
+    if pc.get("exec"):  # neither the exec pool nor its holdout may come back as replay prompts
+        used |= {sd.make_prompt_id(r["prompt"]) for f in (pc["exec"]["pool"], pc["exec"]["holdout"]) for r in sd.read_jsonl(Path(f))}
     pool = [p for p in pool if p["prompt_id"] not in used]
-    n_train = len(sets["target"]) + len(sets["hard"]) + len(sets["contrast"])
+    n_train = len(sets["target"]) + len(sets["hard"]) + len(sets["contrast"]) + len(sets["exec"])
     n_replay = math.ceil(n_train * pc["replay_share"] / (1 - pc["replay_share"]))
     rng = random.Random(cfg["train"]["seed"])
     for task, share in pc["replay_task_mix"].items():
@@ -108,7 +118,7 @@ def cmd_prepare(cfg: dict) -> None:
         sets["replay"] += rng.sample(cand, min(len(cand), round(n_replay * share)))
 
     keep = ("prompt_id", "task_type", "component", "source_file", "record_id", "user", "weight", "teacher", "mode",
-            "teacher_context")
+            "teacher_context", "exec_kind", "completion_ids", "rejected_ids", "exec_status")
     rows = [{**{k: p.get(k) for k in keep}, "set": name} for name, ps in sets.items() for p in ps]
     seen, dedup = set(), []
     for r in rows:  # a prompt in two training sets is trained once
@@ -116,9 +126,54 @@ def cmd_prepare(cfg: dict) -> None:
             continue
         seen.add(r["prompt_id"]); dedup.append(r)
     (out / "prompts.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in dedup))
-    rep = Counter(f"{r['set']}:{r['task_type']}" for r in dedup)
+    rep = Counter(f"{r['set']}:{r['task_type']}" + (f":{r['mode']}:{r['exec_kind']}" if r["set"] == "exec" else "") for r in dedup)
     print(json.dumps(dict(sorted(rep.items())), indent=1))
     print(f"-> {sd.rel(out / 'prompts.jsonl')} ({len(dedup)} prompts; pool after exclusions {len(pool)})")
+
+
+def exec_rows(ec: dict, seed: int) -> list[dict]:
+    """Fixed training samples from execution-scored student samples (prompts.exec):
+      samples: [jsonl, ...]   scripts/exec_rft/sample_score.py output (prompt_id, mode, sample_idx, status, completion_ids)
+      pool / holdout: jsonl   only pool prompts are used; the holdout is never trained
+      per_prompt: 2           passers kept per (prompt, mode) that has 1..k-1 passers (all-pass / all-fail: no signal)
+      weight: 1               draw weight of each row in the non-replay pool
+      dpo: {min_pairs: 100, per_prompt: 2, prefer: [init_error, ...]}   pairs passer vs failing answer, same prompt and
+                              mode; built only if at least min_pairs exist (else SFT only, reported)."""
+    pool = {r["id"]: r for r in sd.read_jsonl(Path(ec["pool"]))}
+    held = {r["id"] for r in sd.read_jsonl(Path(ec["holdout"]))}
+    assert not held & set(pool), "exec pool and holdout overlap"
+    by = defaultdict(list)
+    for f in ec["samples"]:
+        for s in sd.read_jsonl(Path(f)):
+            if s["prompt_id"] in pool:
+                by[s["prompt_id"], s["mode"]].append(s)
+    rng = random.Random(seed)
+    rows, pairs = [], []
+    dc = ec.get("dpo") or {}
+    prefer = dc.get("prefer", ["init_error", "invalid", "runtime_error", "wrong_rows", "no_code"])
+    for (pid, mode), smps in sorted(by.items()):
+        smps = sorted(smps, key=lambda s: s["sample_idx"])
+        ok = [s for s in smps if s["status"] == "pass" and not s.get("hit_cap")]
+        bad = [s for s in smps if s["status"] not in ("pass", "harness_error") and not s.get("hit_cap")]
+        if not ok or len(ok) == len(smps):
+            continue
+        p = pool[pid]
+        base = dict(task_type=p["task"], component=p["component"], source_file=p["source_file"], record_id=p["source_id"],
+                    user=p["prompt"], mode=mode, weight=ec.get("weight", 1), set="exec")
+        chosen = rng.sample(ok, min(len(ok), ec.get("per_prompt", 2)))
+        for s in chosen:
+            rows.append(dict(base, prompt_id=f"{pid}:{mode}:s{s['sample_idx']}", exec_kind="sft", completion_ids=s["completion_ids"],
+                             exec_status="pass"))
+        bad = sorted(bad, key=lambda s: (prefer.index(s["status"]) if s["status"] in prefer else len(prefer), s["sample_idx"]))
+        for c, r in zip(chosen[:dc.get("per_prompt", 2)], bad):
+            pairs.append(dict(base, prompt_id=f"{pid}:{mode}:d{c['sample_idx']}-{r['sample_idx']}", exec_kind="dpo",
+                              completion_ids=c["completion_ids"], rejected_ids=r["completion_ids"], exec_status=r["status"]))
+    if dc and len(pairs) >= dc.get("min_pairs", 100):
+        rows += pairs
+        print(f"exec: {len(rows) - len(pairs)} SFT samples + {len(pairs)} DPO pairs")
+    else:
+        print(f"exec: {len(rows)} SFT samples; DPO {'not configured' if not dc else f'skipped ({len(pairs)} pairs < min_pairs)'}")
+    return rows
 
 
 # ----------------------------------------------------------------------------- model / tokenization
@@ -474,13 +529,29 @@ class Trainer:
         return tc["lr"] * min(1.0, (step + 1) / max(1, tc["warmup_steps"]))
 
     def train_minibatch(self, smps: list[dict]) -> dict:
-        """One optimizer step over smps (each with prompt_ids, completion_ids, r = teacher logps)."""
+        """One optimizer step over smps (each with prompt_ids, completion_ids, r = teacher logps). Fixed exec samples
+        (loss "nll" / "dpo") are normalized apart from the teacher-scored ones: NLL by its own token count times
+        train.exec_weight, DPO per pair times train.exec_dpo_weight, so their share does not shift the OPCD scale."""
         import torch
+        import torch.nn.functional as F
         tc = self.cfg["train"]
         self.model.train()
         self.opt.zero_grad(set_to_none=True)
-        n_tok = sum(len(s["completion_ids"]) for s in smps)
+        fixed = [s for s in smps if s.get("loss") in ("nll", "dpo")]
+        smps = [s for s in smps if s.get("loss") not in ("nll", "dpo")]
+        n_tok = max(1, sum(len(s["completion_ids"]) for s in smps))
         stats = []
+        by_kind, prev = {}, None
+
+        def mark(kind):  # train.grad_norm_by_kind: the norm each kind adds to the accumulated gradient (smoke checks)
+            nonlocal prev
+            if not tc.get("grad_norm_by_kind"):
+                return
+            cur = [p.grad.detach().float().clone() if p.grad is not None else torch.zeros_like(p, dtype=torch.float32)
+                   for p in self.params]
+            d = cur if prev is None else [c - q for c, q in zip(cur, prev)]
+            by_kind[kind] = round(float(torch.sqrt(sum((x * x).sum() for x in d))), 4)
+            prev = cur
         for s in smps:
             if "r_topk_idx" in s:  # option B: soft cross-entropy against the teacher's top-k at each position
                 idx = s["r_topk_idx"].to(self.model.device, torch.long)
@@ -502,13 +573,45 @@ class Trainer:
             s["kl_max"] = round(float(kl.max()), 2)
             s["flagged"] = flagged_tokens(self.roles, s["completion_ids"], -kl)
             stats.append(float(kl.sum()))
+        if smps:
+            mark("opcd")
+        nll = [s for s in fixed if s["loss"] == "nll"]
+        n_nll = max(1, sum(len(s["completion_ids"]) for s in nll))
+        nll_sum = 0.0
+        for s in nll:
+            lp = completion_logps(self.model, s["prompt_ids"], s["completion_ids"], grad=True, chunk=tc["logits_chunk"])
+            (-tc.get("exec_weight", 1.0) * lp.sum() / n_nll).backward()
+            s["nll"] = round(float(-lp.detach().mean()), 4)
+            nll_sum += float(-lp.detach().sum())
+        if nll:
+            mark("nll")
+        dpo = [s for s in fixed if s["loss"] == "dpo"]
+        dpo_stats = []
+        for s in dpo:
+            beta = tc.get("exec_dpo_beta", 0.1)
+            lc = completion_logps(self.model, s["prompt_ids"], s["completion_ids"], grad=True, chunk=tc["logits_chunk"]).sum()
+            lr_ = completion_logps(self.model, s["prompt_ids"], s["rejected_ids"], grad=True, chunk=tc["logits_chunk"]).sum()
+            margin = beta * ((lc - s["ref"][0]) - (lr_ - s["ref"][1]))
+            (-tc.get("exec_dpo_weight", 1.0) * F.logsigmoid(margin) / len(dpo)).backward()
+            s["dpo_margin"] = round(float(margin.detach()), 4)
+            dpo_stats.append(float(margin.detach()))
+        if dpo:
+            mark("dpo")
         gn = torch.nn.utils.clip_grad_norm_(self.params, tc["grad_clip"])
         for g in self.opt.param_groups:
             g["lr"] = self.lr_at(self.step)
         self.opt.step()
         self.step += 1
-        return {"step": self.step, "tokens": n_tok, "kl_per_token": round(sum(stats) / n_tok, 4),
-                "grad_norm": round(float(gn), 3), "lr": self.lr_at(self.step - 1)}
+        out = {"step": self.step, "tokens": n_tok if smps else 0, "kl_per_token": round(sum(stats) / n_tok, 4),
+               "grad_norm": round(float(gn), 3), "lr": self.lr_at(self.step - 1)}
+        if nll:
+            out.update(exec_sft=len(nll), exec_tokens=n_nll, nll_per_token=round(nll_sum / n_nll, 4))
+        if dpo:
+            out.update(exec_dpo=len(dpo), dpo_margin=round(sum(dpo_stats) / len(dpo), 4),
+                       dpo_acc=round(sum(m > 0 for m in dpo_stats) / len(dpo), 3))
+        if by_kind:
+            out["grad_norm_by_kind"] = by_kind
+        return out
 
     def save(self, d: Path) -> None:
         import torch
@@ -529,6 +632,15 @@ def scan(smp: dict) -> dict:
 
 def summarize(smps: list[dict]) -> dict:
     out = {}
+    ex = [s for s in smps if s["set"] == "exec"]
+    smps = [s for s in smps if s["set"] != "exec"]
+    if ex:
+        sft = [s for s in ex if "nll" in s]
+        dpo = [s for s in ex if "dpo_margin" in s]
+        out["exec"] = {"sft": len(sft), "dpo": len(dpo), "by_mode": dict(Counter(s["mode"] for s in ex)),
+                       "nll_per_token": round(sum(s["nll"] * len(s["completion_ids"]) for s in sft) / max(1, sum(len(s["completion_ids"]) for s in sft)), 4),
+                       "dpo_margin": round(sum(s["dpo_margin"] for s in dpo) / len(dpo), 4) if dpo else None,
+                       "median_tokens": sorted(len(s["completion_ids"]) for s in ex)[len(ex) // 2]}
     for name, sel in (("all", smps), ("target", [s for s in smps if s["set"] in ("target", "hard")]),
                       ("hard", [s for s in smps if s["set"] == "hard"]), ("contrast", [s for s in smps if s["set"] == "contrast"]),
                       ("replay", [s for s in smps if s["set"] == "replay"]),
@@ -550,7 +662,7 @@ def summarize(smps: list[dict]) -> dict:
 
 
 def write_samples(path: Path, smps: list[dict]) -> None:
-    drop = ("completion_ids", "prompt_ids", "r", "user", "r_topk_lp", "r_topk_idx", "teacher_context")
+    drop = ("completion_ids", "prompt_ids", "r", "user", "r_topk_lp", "r_topk_idx", "teacher_context", "rejected_ids")
     path.write_text("".join(json.dumps({k: v for k, v in s.items() if k not in drop}, ensure_ascii=False) + "\n"
                             for s in smps))
 
@@ -561,6 +673,14 @@ def score_and_train(trainer: Trainer, smps: list[dict], steps: int) -> list[dict
     keep = []
     for s in smps:
         s["prompt_ids"] = roles.ids("student", s)
+        if s["set"] == "exec":  # fixed execution-verified sample: no teacher pass
+            longest = max(len(s["completion_ids"]), len(s.get("rejected_ids") or []))
+            if len(s["prompt_ids"]) + longest > tc.get("cutoff_exec", tc["cutoff"]):
+                s["skipped"] = "cutoff"
+                continue
+            s["loss"] = s["exec_kind"].replace("sft", "nll")
+            keep.append(s)
+            continue
         if len(s["prompt_ids"]) + len(s["completion_ids"]) > tc["cutoff"]:
             s["skipped"] = "cutoff"
             continue
@@ -607,7 +727,7 @@ def round_prompts(cfg: dict, prompts: list[dict], rnd: int) -> list[dict]:
     n_rep = round(n * cfg["prompts"]["replay_share"])
     out = []
     hw = int(cfg["prompts"].get("hard_weight", 1))
-    for off, names, cnt in ((0, ("target", "hard", "contrast"), n - n_rep), (500, ("replay",), n_rep)):
+    for off, names, cnt in ((0, ("target", "hard", "contrast", "exec"), n - n_rep), (500, ("replay",), n_rep)):
         pool = [p for p in prompts if p["set"] in names
                 for _ in range(int(p.get("weight") or (hw if p["set"] == "hard" else 1)))]
         start = rnd * cnt
@@ -617,6 +737,48 @@ def round_prompts(cfg: dict, prompts: list[dict], rnd: int) -> list[dict]:
             random.Random(tc["seed"] * 1000 + off + ep).shuffle(order)
             out.append(order[pos])
     return out
+
+
+def exec_sample(roles: Roles, p: dict, dpo_ref: dict) -> dict:
+    """A fixed execution-verified sample (prompts.exec) in the shape of a sampled one."""
+    comp = p["completion_ids"]
+    raw = roles.tok.decode(comp, skip_special_tokens=True)
+    thinking, answer = split_thinking(raw, thinking_enabled=(p["mode"] == "on"))
+    s = {"prompt_id": p["prompt_id"], "set": "exec", "task_type": p["task_type"], "component": p.get("component"),
+         "mode": p["mode"], "sample_idx": 0, "teacher": "exec", "exec_kind": p["exec_kind"], "exec_status": p.get("exec_status"),
+         "completion_ids": comp, "raw": raw, "thinking": thinking, "answer": answer, "think_closed": True, "hit_cap": False,
+         "new_tokens": len(comp), "gen_s": 0.0, "user": p["user"]}
+    if p["exec_kind"] == "dpo":
+        s["rejected_ids"], s["ref"] = p["rejected_ids"], dpo_ref.get(p["prompt_id"])  # None only past cutoff_exec
+    s.update(scan(s))
+    return s
+
+
+def exec_dpo_refs(model, roles: Roles, prompts: list[dict], out: Path, tc: dict, fresh: bool) -> dict:
+    """Reference log-probs (sequence sums) of every exec DPO pair under the INITIAL adapter, computed once before the
+    first step and kept in exec_dpo_ref.json (a resumed run must find them there)."""
+    import torch
+    path = out / "exec_dpo_ref.json"
+    pairs = [p for p in prompts if p["set"] == "exec" and p.get("exec_kind") == "dpo"]
+    if not pairs:
+        return {}
+    ref = json.loads(path.read_text()) if path.exists() else {}
+    todo = [p for p in pairs if p["prompt_id"] not in ref]
+    if todo and not fresh:
+        raise SystemExit(f"{path}: {len(todo)} DPO reference log-probs missing on resume (they must come from the initial adapter)")
+    model.eval()
+    for i, p in enumerate(todo, 1):
+        ids = roles.ids("student", p)
+        if len(ids) + max(len(p["completion_ids"]), len(p["rejected_ids"])) > tc.get("cutoff_exec", tc["cutoff"]):
+            continue  # skipped at training time too
+        with torch.no_grad():
+            ref[p["prompt_id"]] = [float(completion_logps(model, ids, p[k], grad=False, chunk=tc["logits_chunk"]).sum())
+                                   for k in ("completion_ids", "rejected_ids")]
+        if i % 20 == 0:
+            print(f"exec DPO reference log-probs {i}/{len(todo)}", flush=True)
+            path.write_text(json.dumps(ref))
+    path.write_text(json.dumps(ref))
+    return ref
 
 
 def cmd_train(cfg: dict, args) -> None:
@@ -642,6 +804,7 @@ def cmd_train(cfg: dict, args) -> None:
     if probe and last is None and not (out / "probe_000.json").exists():
         print("probe before training (round 0) ...", flush=True)
         sd.write_json(out / "probe_000.json", run_probe(sampler, probe, pcfg["k"], tc["max_new_tokens"], 7))
+    dpo_ref = exec_dpo_refs(model, roles, prompts, out, tc, fresh=last is None)
     first = 0 if last is None else last + 1
     rounds = args.rounds or tc["rounds"]
     for rnd in range(first, rounds):
@@ -649,7 +812,8 @@ def cmd_train(cfg: dict, args) -> None:
         d.mkdir(parents=True, exist_ok=True)
         t0 = time.monotonic()
         batch = round_prompts(cfg, prompts, rnd)
-        smps = []
+        smps = [exec_sample(roles, p, dpo_ref) for p in batch if p["set"] == "exec"]
+        batch = [p for p in batch if p["set"] != "exec"]
         jobs = [(p, tc["seed"] + rnd * 7919 + int(p["prompt_id"][:8], 16) % 1_000_000) for p in batch]
         for i, (p, got) in enumerate(zip(batch, sampler.sample_many(jobs, tc["k"], tc["max_new_tokens"])), 1):
             for s in got:
@@ -664,7 +828,7 @@ def cmd_train(cfg: dict, args) -> None:
         trainer.save(d)
         sampler.publish(d / "adapter", f"{cfg['run']}_r{rnd:03d}")
         write_samples(d / "samples.jsonl", smps)
-        met = {"round": rnd, "steps": logs, "summary": summarize([s for s in smps if "kl_mean" in s]),
+        met = {"round": rnd, "steps": logs, "summary": summarize([s for s in smps if "kl_mean" in s or s.get("loss") in ("nll", "dpo")]),
                "skipped_cutoff": sum(s.get("skipped") == "cutoff" for s in smps),
                "skipped_truncated": sum(s.get("skipped") == "truncated" for s in smps),
                "sample_min": round(t_s / 60, 1), "train_min": round((time.monotonic() - t0 - t_s) / 60, 1)}
@@ -684,8 +848,16 @@ def cmd_smoke(cfg: dict, args) -> None:
     roles = Roles(cfg)
     prompts = sd.read_jsonl(cfg["_out"] / "prompts.jsonl")
     pick, want = [], [("target", "fix"), ("target", "fix"), ("target", "validate"), ("replay", "generate")]
+    if args.exec:  # exec smoke: one live teacher-scored sample per kind plus fixed exec samples (2 SFT on/off, 2 DPO)
+        want = [("target", "fix"), ("target", "validate"), ("replay", "generate")]
     for st, tt in want:
         pick.append(next(p for p in prompts if p["set"] == st and p["task_type"] == tt and p not in pick))
+    fixed = []
+    if args.exec:
+        ex = [p for p in prompts if p["set"] == "exec"]
+        for kind, mode in (("sft", "on"), ("sft", "off"), ("dpo", "on"), ("dpo", "off")):
+            sel = sorted((p for p in ex if p["exec_kind"] == kind and p["mode"] == mode), key=lambda p: len(p["completion_ids"]))
+            fixed.append(sel[len(sel) // 2])   # median length: the gradient scale of a typical sample (DPO grows with length)
     # what the student and the teacher see
     for p in pick[:1] + pick[2:3]:
         for role in ("student", "teacher"):
@@ -693,8 +865,10 @@ def cmd_smoke(cfg: dict, args) -> None:
             txt = roles.tok.decode(ids)
             print(f"--- {role} / {p['task_type']} ({roles.mode(p)}): {len(ids)} prompt tokens; "
                   f"rule present: {cfg['rule_marker'] in txt}; tail: {txt[-80:]!r}")
-    model = load_model(cfg)
+    model = load_model(cfg, Path(cfg["init_adapter"]) if args.exec and cfg.get("init_adapter") else None)
     tc = dict(cfg["train"]); tc["lr"] = args.lr or tc["lr"]
+    if args.exec:
+        tc["grad_norm_by_kind"] = True
     if args.loss == "topk":
         tc["loss_by_teacher"] = {"teacher": "topk"}
     cfg = {**cfg, "train": tc}
@@ -709,17 +883,28 @@ def cmd_smoke(cfg: dict, args) -> None:
         s["prompt_ids"] = roles.ids("student", s)
         s["r"] = teacher_logps(model, roles, s, tc["logits_chunk"],
                                k=tc.get("topk_k", 64) if loss_mode(cfg, roles, s) == "topk" else None)
+    if fixed:
+        ref = exec_dpo_refs(model, roles, fixed, out, tc, fresh=True)
+        for p in fixed:
+            s = exec_sample(roles, p, ref)
+            s["prompt_ids"] = roles.ids("student", s)
+            s["loss"] = s["exec_kind"].replace("sft", "nll")
+            smps.append(s)
+            print(f"exec {s['exec_kind']}/{s['mode']}: {len(s['completion_ids'])} tok"
+                  + (f", rejected {len(s['rejected_ids'])} tok ({p.get('exec_status')})" if s["exec_kind"] == "dpo" else ""), flush=True)
     hist = []
     for i in range(args.steps):
         t0 = time.monotonic()
         lg = trainer.train_minibatch(smps)
         lg["sec"] = round(time.monotonic() - t0, 1)
-        lg["per_sample_kl"] = [s["kl_mean"] for s in smps]
+        lg["per_sample_kl"] = [s.get("kl_mean") for s in smps]
         hist.append(lg)
         print(f"step {i}: {lg}", flush=True)
     import torch
     write_samples(out / "samples.jsonl", smps)
     rep = {"steps": hist, "kl_fell": hist[-1]["kl_per_token"] < hist[0]["kl_per_token"],
+           **({"nll_fell": hist[-1]["nll_per_token"] < hist[0]["nll_per_token"],
+               "dpo_margin_rose": hist[-1]["dpo_margin"] > hist[0]["dpo_margin"]} if fixed else {}),
            "finite": all(math.isfinite(h["kl_per_token"]) for h in hist),
            "peak_mem_gb": round(torch.cuda.max_memory_allocated() / 2**30, 1),
            "flagged_first_sample": smps[0]["flagged"]}
@@ -755,6 +940,7 @@ def main() -> None:
     ap.add_argument("--lr", type=float, help="smoke: override the learning rate")
     ap.add_argument("--max-new", type=int, help="smoke: max new tokens per sample")
     ap.add_argument("--loss", choices=("rl", "topk"), default="rl", help="smoke: loss for the teacher samples")
+    ap.add_argument("--exec", action="store_true", help="smoke: add fixed exec SFT / DPO samples (prompts.exec)")
     ap.add_argument("--round", type=int, help="export: round number")
     ap.add_argument("--adapter", help="export: adapter dir (instead of --round)")
     ap.add_argument("--out", help="export: output dir")

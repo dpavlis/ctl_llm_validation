@@ -1,0 +1,66 @@
+# Exec-RFT pilot, round 1 (spec/exec_rft_pilot_brief.md): c13c continued on its own execution-verified answers.
+# c13c's answers to 257 corpus generate / fix-to-spec prompts (data/exec_rft/pool.jsonl, built by scripts/exec_rft/build_pool.py;
+# 40 more held out) were sampled k=8 in both thinking modes and run on the CloverDX server (scripts/exec_rft/sample_score.py,
+# results/exec_rft/samples_{on,off}.jsonl). For every (prompt, mode) with 1-7 passers, up to 2 passers are trained by NLL
+# (rejection-sampling fine-tuning) and, with >= 100 pairs, passer-vs-failure DPO pairs (preferring init_error rejects).
+# They are fixed samples (opcd.py prompts.exec): sampled once from c13c, not resampled or teacher-scored.
+# Anchors (findings §5 step 3): c13c's belief prompts (target, contrast, hard sets 1-2) keep their rulev6 teacher, replay keeps the
+# plain-model anchor, both sampled live as in c13c; c13c's gap/DI keep prompts (c13b_keep, guide teachers) are left out so the
+# generate signal comes from execution only. Per-step hyperparameters are c13c's (lr, k, prompts and steps per round).
+run: exec_rft1
+init_adapter: data/opcd/c13c/round_015/adapter   # c13c
+base_model: /home/pavlisd/exports/qwen38_rb1009_sftdpo
+student: {"on": configs/eval_rb1006_on.yaml, "off": configs/eval_rb1006_off.yaml}   # system prompt + tokenizer only (identical tokenizer)
+teacher: {"on": configs/eval_rb1006_rulev6_on.yaml, "off": configs/eval_rb1006_rulev6_off.yaml}   # c13c's rule teacher
+rule_marker: "Declaration defaults in CTL2"
+modes: {generate: "on", fix: "on", validate: "on"}
+set_modes: {replay: {validate: "off"}}
+set_teacher: {replay: plain}
+
+prompts:
+  target:
+    - {run: dpodef1, split: train}       # 206: belief-prone fix / validate prompts (c4)
+    - {run: dpodef3b_plain}               # 53: declaration-contrast prompts (c4)
+  hard:
+    - {file: data/opcd/hard_cases.jsonl, weight: 1}    # set 1 (c4)
+    - {file: data/opcd/hard_cases2.jsonl, weight: 3}   # set 2: previous-record dates (as c13c)
+  hard_holdout: data/opcd/hard_holdout_c13.json       # c3 + c9 + c12 holdouts, never trained
+  contrast: data/opcd/contrast_prompts.jsonl          # 60 corpus prompts where something really IS null (c4)
+  probe: {run: dpodef1, split: probe}
+  replay_share: 0.4
+  replay_task_mix: {generate: 0.4, validate: 0.35, fix: 0.25}
+  exec:
+    samples: [results/exec_rft/samples_on.jsonl, results/exec_rft/samples_off.jsonl]
+    pool: data/exec_rft/pool.jsonl
+    holdout: data/exec_rft/holdout.jsonl
+    per_prompt: 2
+    weight: 1
+    dpo: {min_pairs: 100, per_prompt: 2, prefer: [init_error, invalid, runtime_error, wrong_rows, no_code]}
+
+lora: {r: 32, alpha: 32, dropout: 0.0, target: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]}
+
+train:
+  seed: 0
+  rounds: 57                  # every exec sample drawn once: 706 exec rows are 65% of the non-replay weight (belief 377), 19 non-replay draws per round
+  prompts_per_round: 32
+  k: 2
+  steps_per_round: 2
+  lr: 2.0e-5
+  warmup_steps: 5
+  grad_clip: 1.0
+  adv_clip: null
+  quote_guard: true
+  skip_truncated: ["on"]
+  max_new_tokens: 6144
+  cutoff: 8192                # live samples: student prompt + completion
+  cutoff_exec: 16384          # exec samples were sampled with the full 16k context; they need no teacher pass
+  logits_chunk: 1024
+  exec_weight: 1.0            # NLL per exec token. Smoke on median-length samples (logs/exec_rft/smoke.log): gradient norm
+                              # NLL 0.17 vs OPCD 0.14, so 1.0 keeps them level
+  exec_dpo_weight: 0.02       # DPO per pair: unweighted norm 16 at step 0 (~110x OPCD; it would set the update direction alone
+                              # under clipping + Adam); 0.02 brings it to ~0.3
+  exec_dpo_beta: 0.1
+
+probe: {n: 20, k: 2, every: 4}
+
+sampler: {url: "http://127.0.0.1:3011", served_model: rb1009, concurrency: 32}

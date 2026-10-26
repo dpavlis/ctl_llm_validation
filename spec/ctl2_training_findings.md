@@ -2475,6 +2475,18 @@ still open.
 - an rb1011 seed-7 rebuild (about 6 GPU-h), to tell whether rb1011's 20/45 was a lucky seed;
 - an SFT ablation (about 24 GPU-h), only if the rb1011 seed control points at the records.
 
+### 3.33 Exec-RFT pilot: c13c trained on its own server-verified answers — no gain (2026-10-26)
+
+Details: `spec/exec_rft_pilot_findings.md` (brief `spec/exec_rft_pilot_brief.md`). Pool: 297 corpus generate/fix prompts
+with verified fixtures (257 train, 40 held out; no suite overlap). c13c at k8 passes 0.642 off / 0.718 on; 96 / 127
+prompts have 1–7 passers. Round 1 (`configs/opcd_exec_rft1.yaml`, 57 rounds on c13c): 375 passers by NLL + 331
+passer-vs-failure DPO pairs (weight 0.02), belief prompts 0.35 of the non-replay weight, replay 0.4. Against c13c (3 × n10
+gap runs vs 2 × n10): execution pass rate off 0.403 → 0.373 (−0.03 [−0.11, +0.05]), on 0.761 → 0.800 (+0.04 [−0.03,
++0.11]); held-out pool off 0.672 → 0.694 (+0.02 [−0.03, +0.07]), on 0.666 → 0.672 (+0.01 [−0.05, +0.06]); the 11 compile
+causes off 55 → 61, on 27 → 26 (2 runs each). Belief gates unchanged (hard sets, T40 2/40, T42 13/40, hard set 3 14/40
+nullable); validate off ×9 WRONG 2.2% → 0.9%; on n5 validate/fix/generate 0.814/0.844/0.968. T54 off `$out.1`/`$out.2`
+8/40 against 0/50 (+0.20 [+0.08, +0.35]); gate ≤ 1/20 failed (2/20). c13c's run-to-run spread: ±0.03 per n10 run.
+
 ---
 
 ## 4. Measurement — read this before trusting any older number

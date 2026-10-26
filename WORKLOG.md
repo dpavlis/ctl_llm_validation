@@ -2,7 +2,7 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-10-25)
+## Where we are (2026-10-26)
 
 - **Ship candidate: c13c**, the rb1009 base plus OPCD adapter `data/opcd/c13c/round_015`. Confirmed by 20-sample checks
   and by running the generated code on the server.
@@ -10,11 +10,29 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   execution-scored tasks thinking on with error feedback, 92% when the failing test rows are fed back too (28/30 real-world
   suite tests); thinking off 69% / 80%.
 - **Biggest real gap:** generate without thinking. Only 44% of c13c's answers run correctly (§3.28).
+- **Training on the model's own server-verified answers (exec-RFT) did not help** (§3.33): one round moved neither the
+  gap-test pass rate nor a held-out pool, and pushed T54 thinking off back to `$out.1`. Not adopted.
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is **not** in the DPO pairs
   (§3.32); it sits in rb1012's SFT phase (the new SFT records, or seed luck).
 
 ## 2026-10-26
+
+- **Exec-RFT pilot on c13c: no gain, not adopted.** (§3.33, `spec/exec_rft_pilot_findings.md`)
+  - **Setup:** 297 corpus generate/fix prompts with server-verified fixtures (40 held out). c13c sampled 8 answers per
+    prompt in both modes, each run on the server. Its passing answers (375, by NLL) and passer-vs-failure pairs (331, light
+    DPO) were trained for one round, with c13c's belief and replay anchors in the mix.
+  - **Result:** execution pass rate on the gap tests −0.03 off, +0.04 on; on the held-out pool +0.02 / +0.01. All inside
+    the 95% CIs and inside c13c's own ±0.03 run-to-run spread. The compile habits did not move (`month` as a variable name
+    not at all).
+  - **Side effects:** belief gates unchanged; thinking-off validate WRONG 2.2% → 0.9%; T54 thinking off regressed
+    (`$out.1` 8/40 against 0/50), which fails its gate.
+  - **Why little could move:** 57–68% of prompts were all-pass or all-fail for c13c, so only 200 prompt-modes gave
+    signal; the habits occur in ~12% of samples.
+  - **Decision:** no second round. A full run would need harder prompts (c13c at 1–4 of 8, gap-test-like), prompts that
+    invite each habit, and a token-level signal.
+  - **Tooling kept:** `scripts/exec_rft/` (pool builder, k-sample execution scorer, cause tally, gates), `opcd.py`
+    `prompts.exec` (fixed NLL/DPO samples next to OPCD anchors).
 
 - **rb1012 DPO isolation:** the accumulator regression is not caused by DPO. (§3.32, `spec/rb1012_dpo_isolation_findings.md`)
   - **Setup:** the DPO phase alone, rerun on rb1011's SFT adapter.
