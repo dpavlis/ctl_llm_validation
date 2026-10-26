@@ -2,7 +2,7 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-10-26)
+## Where we are (2026-10-26, evening)
 
 - **Ship candidate: c13c**, the rb1009 base plus OPCD adapter `data/opcd/c13c/round_015`. Confirmed by 20-sample checks
   and by running the generated code on the server.
@@ -13,8 +13,8 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **Training on the model's own server-verified answers (exec-RFT) did not help** (§3.33): one round moved neither the
   gap-test pass rate nor a held-out pool, and pushed T54 thinking off back to `$out.1`. Not adopted.
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
-  Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is **not** in the DPO pairs
-  (§3.32); it sits in rb1012's SFT phase (the new SFT records, or seed luck).
+  Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
+  (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
 
 ## 2026-10-26
 
@@ -54,6 +54,15 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **The shared run-history log `logs/Qwen3.8-27B.yaml` was torn** by concurrent `train.py`/`test.py` writes on 10-25
   around 21:16. From then on, every run's final log append failed; results were not affected. The log was repaired, and
   a backup kept. Parallel runs will tear it again until the writers take a lock.
+
+## 2026-10-26 (evening)
+
+- **rb1011 seed 7 (rb1011s2):** T22.B1 13/45 — the rb1012 accumulator regression is in its 130 new SFT records, not seed
+  luck (§3.34). Neither set goes into the recipe; the SFT ablation is not run (no gain to recover).
+- **Second variance pair.** Between seeds of one recipe: generate/fix/gap judge ±0.01–0.05, thinking-off validate 0.04–0.13,
+  execution pass rate up to 0.14, single tests up to 1.0 (T22.B4 2 → 45). §4.7 now carries per-gate noise bands; a
+  single-test result of one rebuild is never a property of the corpus.
+- CloverDX server hung (listening, not answering) and was restarted by hand.
 
 ## 2026-10-25
 

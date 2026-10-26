@@ -16,7 +16,11 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-25 with the agentic harness (§3.31): c13c in a run-and-retry loop on 137 execution-scored tasks
+Last updated 2026-10-26 with rb1011 seed 7 (§3.34): the rb1012 accumulator regression comes from its SFT records (rb1011
+seeds 20 and 13/45 on T22.B1, rb1012 seeds 36 and 36); and a second rebuild-variance pair: aggregates move 0.01–0.05
+between seeds, thinking-off validate 0.04–0.13, the execution pass rate up to 0.14, single tests up to 1.0 (§4.7 rule).
+
+Earlier, 2026-10-25 with the agentic harness (§3.31): c13c in a run-and-retry loop on 137 execution-scored tasks
 passes 0.69 thinking off / 0.88 thinking on after two error-feedback rounds (first attempt 0.65 / 0.82), and 0.80 / 0.92
 when the agent also sees the failing test rows. The one compile habit that survives feedback is a date-unit keyword used
 as a variable name.
@@ -2489,6 +2493,58 @@ nullable); validate off ×9 WRONG 2.2% → 0.9%; on n5 validate/fix/generate 0.8
 
 ---
 
+### 3.34 rb1011 seed 7 (rb1011s2): the rb1012 regression is in its SFT records, and a second rebuild-variance pair (2026-10-26)
+
+**Setup.** rb1011's recipe and data, seed 7 instead of 42 (`configs/qwen38_rb1011s2.yaml`, `scripts/dpoiso_run.sh` arm S,
+export `~/exports/qwen38_rb1011s2_sftdpo`). Gates on the vLLM path, judge gpt-6.1-sol; the arm-S set from §3.32 plus the
+suite-v5 gap tests n10 both modes with execution scoring and the thinking-on full suite n5
+(`scripts/rb1011s2_extra_gates.sh`, `results/exec/gaps_rb1011s2.json`).
+
+**1. The rb1012 accumulator regression comes from its SFT records, not from seed luck.** T22.B1 "starts at zero / has a
+default" WRONG: rb1011 seeds 20 and **13** of 45; rb1012 seeds 36 and 36. T41 thinking on: rb1011 seeds 0.824 / 0.754,
+rb1012 seeds 0.756 / 0.720 — the T41 drop is inside seed variance, the T22.B1 jump is not. Together with §3.32 (the DPO
+pairs are cleared; rb1012's SFT adapter carries the profile), the 130 lifecycle + syntax SFT records are the cause.
+Which of the two sets, and how 130 records among 13.5k do it, is not known; the SFT ablation (24 GPU-h) is not run
+because neither set showed a gain (§3.30) and neither goes into the recipe either way.
+
+**2. Rebuild-to-rebuild variance, two pairs on the current recipe:**
+
+| gate | rb1009 | rb1009s2 | spread | rb1011 | rb1011s2 | spread |
+|---|---|---|---|---|---|---|
+| validate off ×9, excl. T18/T22 (n495) | 0.955 | 0.822 | **0.13** | 0.941 | 0.898 | 0.04 |
+| validate off: WRONG share of findings | 1.2% | 4.5% | 3.3 pts | 2.3% | 3.9% | 1.6 pts |
+| gap tests (11) judge mean off / on (n110) | 0.718 / 0.838 | 0.724 / 0.846 | 0.01 / 0.01 | 0.689 / 0.850 | 0.674 / 0.830 | 0.02 / 0.02 |
+| gap tests execution pass rate off / on (n110) | 0.19 / 0.49 | 0.23 / 0.52 | 0.04 / 0.03 | 0.15 / 0.58 | 0.12 / 0.44 | 0.03 / **0.14** |
+| thinking on, full suite n5: validate / fix / generate | 0.787 / 0.826 / 0.960 | 0.727 / 0.863 / 0.977 | 0.06 / 0.04 / 0.02 | 0.829 / 0.821 / 0.974 | 0.882 / 0.816 / 0.980 | 0.05 / 0.01 / 0.01 |
+| T41 on (n25) | 0.988 | 0.970 | 0.02 | 0.824 | 0.754 | 0.07 |
+| T22 off: B1 WRONG (n45) | 19 | 16 | 3 | 20 | 13 | 7 |
+| T22 off: B4 / B5 caught (n45) | 2 / 0 | 45 / 19 | **43 / 19** | 43 / 40 | 42 / 23 | 1 / **17** |
+| T40 / T42 below full (n20) | 20 / 20 | 20 / 20 | 0 | 8 / 17 | 8 / 17 | 0 |
+| hard set 3: nullable said to start at zero (k4, 40) | 12 | 13 | 1 | 14 | 16 | 2 |
+
+(rb1009 and rb1009s2 validate numbers are after the T18 re-judge; the gap-test execution rates are from §3.28.)
+
+**Read:**
+- **Aggregate scores are stable to about ±0.02–0.05:** generate and fix (full suite), the gap-test judge mean, and hard
+  set 3 move 0.01–0.05 between seeds. Thinking-on validate moves 0.05–0.06.
+- **Thinking-off validate is the noisy aggregate:** 0.04 in one pair, 0.13 in the other (rb1009s2 lost T38 entirely).
+  The WRONG share moves by 1.6–3.3 points, which is the whole range the project has been reading as model differences.
+- **The execution pass rate thinking on moved 0.14 in the rb1011 pair** (0.58 → 0.44), with the judge mean moving 0.02.
+  The judge compresses; the executor does not. n110 single-run execution differences below ~0.1 are not evidence between
+  rebuilds (OPCD continuations are tighter, ±0.03 per n10 run, §3.33).
+- **Single tests at n20–45 swing by 0.2–1.0 between seeds** (T22.B4 2 → 45, B5 0 → 19 and 40 → 23). A single-test result
+  of one rebuild is not a property of the recipe or the corpus. §3.30's "the B4/B5 miss is specific to rb1009" is such a
+  seed effect, and so is T22.B5 here.
+- **T40/T42 and the hard sets are seed-stable**, in both the belief-free (rb1009: 20/20) and the trace-trained (rb1011:
+  8/17) state. The belief traces' effect (§3.26, §3.27) stands.
+
+**Rule (replaces §4.7's single "±0.06–0.07"):** between single-seed rebuilds treat as noise: validate off ±0.10 (WRONG
+share ±3 points), thinking-on validate ±0.06, generate/fix ±0.04, gap-test judge mean ±0.03, gap-test execution pass
+rate ±0.10 at n110, any single test at n≤45 ±0.3. A claimed rebuild effect needs two seeds or a difference well beyond
+these; T40/T42 and the hard sets can be read from one seed.
+
+---
+
 ## 4. Measurement — read this before trusting any older number
 
 ### 4.1 The eval configs were never equivalent
@@ -2700,6 +2756,10 @@ Several thinking-off "regressions" in §3.19 (c3 8.4%, c4 7.4%) were mostly that
 Other single-run figures are also noisy:
 - T42 at n20 gave 12/20 on HF and 4/20 on vLLM for the same model (c4).
 - T33 gave 0.93 on HF and 0.73 on vLLM for rb1006.
+
+**Rebuild-to-rebuild (seed) variance, two pairs (§3.34, 2026-10-26):** between single-seed rebuilds treat as noise
+validate off ±0.10 (WRONG share ±3 points), thinking-on validate ±0.06, generate/fix ±0.04, gap-test judge mean ±0.03,
+gap-test execution pass rate ±0.10 at n110, any single test at n≤45 ±0.3. T40/T42 and the hard sets are seed-stable.
 
 **Rules:**
 - Thinking-off validate: 9 reps (9 min on vLLM).
