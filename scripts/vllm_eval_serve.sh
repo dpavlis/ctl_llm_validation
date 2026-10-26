@@ -1,5 +1,5 @@
 #!/bin/bash -l
-# Start: setsid nohup scripts/vllm_eval_serve.sh > logs/evals/vllm_eval_serve.log 2>&1 &   (GPU 1, set its power limit first)
+# Start: setsid nohup scripts/vllm_eval_serve.sh > logs/evals/vllm_eval_serve.log 2>&1 &   (GPU 1)
 # Evaluation vLLM server (test.py mut.mode: vllm): rb1006 base + hot-loaded LoRA adapters, GPU 1, port 3012.
 export CUDA_HOME=/home/pavlisd/cuda-home PATH=/home/pavlisd/cuda-home/bin:$PATH
 CU13=/home/pavlisd/vllm-venv/lib/python3.12/site-packages/nvidia/cu13

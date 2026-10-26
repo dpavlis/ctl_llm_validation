@@ -7,9 +7,7 @@ RUN=$1; G=$2; LAST=$(printf "%03d" $3); AD=${RUN}_r$LAST
 cd /home/pavlisd/llama_train
 PY=~/venv/bin/python; L=logs/evals; K=logs/evals/locks; SUITE=/home/pavlisd/llama_train/results/eval_snapshot_20261003/ctl2_test_suite_v4.json
 export PATH=/home/pavlisd/venv/bin:$PATH TMPDIR=/home/pavlisd/venv-ds-tmp
-pl() { for g in 0 1 2 3; do sudo -n nvidia-smi -i $g -pl 450 >/dev/null; l=$(nvidia-smi -i $g --query-gpu=power.limit --format=csv,noheader,nounits | cut -d. -f1); [ "$l" -le 450 ] || { echo "GPU $g limit is $l W -- stopping"; exit 1; }; done; }
 t() { log=$1; shift; s=$(date +%s); CUDA_VISIBLE_DEVICES="" $PY -u test.py "$@" --workers 32 --suite-file $SUITE > $L/$log.log 2>&1; echo "$(date '+%m-%d %H:%M') $RUN $log done ($(( ($(date +%s)-s)/60 )) min)"; }
-pl
 echo "$(date '+%m-%d %H:%M') $RUN train (GPU $G)"
 flock $K/gpu$G.lock env CUDA_VISIBLE_DEVICES=$G $PY -u opcd.py train --config configs/opcd_$RUN.yaml > $L/opcd_${RUN}_train.log 2>&1 || { echo "$RUN train failed"; exit 1; }
 echo "$(date '+%m-%d %H:%M') $RUN train done"

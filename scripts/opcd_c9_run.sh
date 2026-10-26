@@ -9,7 +9,6 @@ RUN=c9; LAST=019; AD=c9_r$LAST; PY=~/venv/bin/python; L=logs/evals; K=logs/evals
 SUITE4=$PWD/results/eval_snapshot_20261003/ctl2_test_suite_v4.json; SUITE5=$PWD/results/eval_snapshot_20261013/ctl2_test_suite_v5.json
 GAPS=T44,T46,T57,T60,T61,T62,T63,T67,T73
 export PATH=/home/pavlisd/venv/bin:$PATH TMPDIR=/home/pavlisd/venv-ds-tmp
-for g in 1 3; do sudo -n nvidia-smi -i $g -pl 450 >/dev/null; l=$(nvidia-smi -i $g --query-gpu=power.limit --format=csv,noheader,nounits | cut -d. -f1); [ "$l" -le 450 ] || { echo "GPU $g limit $l W"; exit 1; }; done
 mkdir -p $K
 echo "$(date '+%m-%d %H:%M') $RUN train (GPU 1)"
 flock $K/gpu1.lock env CUDA_VISIBLE_DEVICES=1 $PY -u opcd.py train --config configs/opcd_$RUN.yaml > $L/opcd_${RUN}_train.log 2>&1 || { echo "$RUN train failed"; exit 1; }

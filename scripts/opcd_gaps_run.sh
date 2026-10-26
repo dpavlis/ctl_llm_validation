@@ -15,7 +15,6 @@ BASE=${BASE:-} AD=${RUN}_r$LAST; PY=~/venv/bin/python; L=logs/evals; K=logs/eval
 SUITE4=$PWD/results/eval_snapshot_20261003/ctl2_test_suite_v4.json; SUITE5=$PWD/results/eval_snapshot_20261013/ctl2_test_suite_v5.json
 GAPS=${GAPS:-T44,T46,T57,T60,T61,T62,T63,T67,T73}
 export PATH=/home/pavlisd/venv/bin:$PATH TMPDIR=/home/pavlisd/venv-ds-tmp
-for g in $TG $SG; do sudo -n nvidia-smi -i $g -pl 450 >/dev/null; l=$(nvidia-smi -i $g --query-gpu=power.limit --format=csv,noheader,nounits | cut -d. -f1); [ "$l" -le 450 ] || { echo "GPU $g limit $l W"; exit 1; }; done
 mkdir -p $K
 until curl -sf 127.0.0.1:$SP/v1/models >/dev/null; do sleep 10; done   # the sampler must answer before training starts
 echo "$(date '+%m-%d %H:%M') $RUN train (GPU $TG)"
