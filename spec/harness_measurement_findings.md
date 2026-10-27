@@ -329,11 +329,30 @@ rb1012, the only model trained on the lifecycle records, is highest, as expected
 - an efficiency remark (syntax_r2_01);
 - a contract-guaranteed delimiter flagged as ERROR (syntax_r3_05).
 
-**8 cannot be decided from the code alone.** They are precedence or edge-case claims (T46, T55, T56, T58, T67, T69,
-rollup_acc 007/018) on inputs the fixture may not cover. They would need server probes; not done.
+**The other 8 are false too, by server probe (2026-10-27).** These were precedence or edge-case claims (T46, T55, T56,
+T58, T67, T69, rollup_acc 007/018) on inputs the fixture might not cover.
+- **Method:** `scripts/harness_measurement/probe_controls.py` gave each reference a small input built to trigger one
+  recurring claim (32 probes, results in `results/agent_harness/control_probes.json`). Each run's output was compared
+  with what the task's requirements prescribe.
+- **Result:** all 32 runs finished OK and every output matched the requirements, so no claimed defect exists.
 
-So the control false-alarm rate is an upper bound, but most of it is real: at least 11 of the 19 flagged controls are
-wrong claims, and they recur across seeds and models.
+| control | claims probed (how often they recur in the [ERROR] lines) | server result |
+|---|---|---|
+| T46 | sign rule applied to an unknown movement (6); zero quantity; 9-digit or comma unit value passes; malformed value throws | unknown movement gets only MOVEMENT; zero gets QTY; 9 digits and `1,234.50` get VALUE; a malformed value is rejected without an exception |
+| T55 | VOID garbage parsed (4); bank-only context empty or from the invoice (4); bare `-` / `.` accepted (3); null or ` VOID ` state; repair row's expected_amount should be 0 | VOID contributes 0 (bank-only: UNPLANNED, matched: omitted); bank-only rows carry bank context; `-` and `.` get AMOUNT_TEXT; null and ` VOID ` get REPAIR as stated; the repair row keeps the invoice's null |
+| T56 | winner fields leak into the next key (4); null `==` null false or throws (5); complete loses to incomplete (3); pre-epoch | each key emits its own row; null/null reaches the revision tie-break; mixed null/real never throws and real wins; complete outranks; pre-epoch ordered correctly |
+| T58 | REMOVE retracts only the first or last duplicate (12); next group keeps old context | all duplicates retracted, a later ADD survives; each group takes its own first record |
+| T67 | baseline not reset at trip change (6); duplicate after a gap compared with the wrong sample (4); `7.5` rejected | a new trip ignores the old baseline; the duplicate is compared with the gap sample as requirement 7 says; `7.5` accepted, `7.` and `50.1` faulty |
+| T69 | NEW_BAD/OLD_BAD precedence reversed; unit label keeps a space | NEW_BAD (requirement 4: it outranks); ` kw ` → `KW:12.34`, blank unit → `:12.34` |
+| rollup_acc 007 / 018 | `initGroup` ordinal starts at 2 or skips groups (27); accumulators carry over between groups | batch_group 1, 2, 3 including an all-null group; counts, peaks and positions reset per group |
+
+- **Not probed:** the T67 claims about `getOutputPortOnError`. No input reaches an exception, since grammar is checked
+  before parsing. By reading, state is updated only after every statement that could throw. Compile and port-style
+  claims (T55 "bulk copy does not compile", "`return 0`") are already refuted, because the reference passed on the server.
+
+So **all 19 flagged controls are false alarms**: the control false-alarm rate is the true precision failure, not an upper
+bound. The commonest single claim, "an `initGroup` counter numbers the first group 2", is wrong on the server, as is the
+belief that Rollup or Denormalizer state leaks between groups. Both are candidates for the corpus.
 
 ## Indications
 
@@ -370,8 +389,8 @@ wrong claims, and they recur across seeds and models.
    - The verdict follows: thinking off says FAIL on 27–41% of clean code. The judge's WRONG share (2–4% of findings)
      hides this, because a review usually has one finding and the false alarm is that finding.
    - **This is the largest validate defect measured so far, larger than any recall gap:** thinking off flags a third of
-     correct code, about half of the claims are verifiably false (§7 facts: DataIntersection `$out.0`, accumulator
-     defaults, UTC arithmetic), and the rest are unverified.
+     correct code, and every flagged control is a false alarm: 11 by §7 facts or the server run (DataIntersection
+     `$out.0`, accumulator defaults, UTC arithmetic), 8 by server probe (32 probes, all as required).
 4. **Which measure should gate validate from now on:** B1 in the `_fmt` condition, both modes.
    - **Gate on:** defect recall (n338 per mode) and control false alarm (n100 per mode).
    - **Seed spread:** recall ±0.02, verdict ±0.01, false alarm ±0.04 (rb1011 pair); compare the judge's 0.04–0.13.

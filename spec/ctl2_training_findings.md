@@ -2573,8 +2573,10 @@ Details: `spec/harness_measurement_findings.md` (Part B).
   put the pair 0.04 and 1.7 WRONG points apart (§3.34); the ground truth does not reproduce that gap.
 - **c13c − rb1011 off:** recall −0.07 [−0.12, −0.02], from missing Rollup lifecycle functions. rb1012, trained on the
   lifecycle set, is best on that kind.
-- **Clean-code false alarm:** thinking off puts an [ERROR] on 28–41% of clean, server-passing code. At least 11 of the 19
-  flagged controls are verifiably false claims (DataIntersection `$out.0`, accumulator defaults, UTC arithmetic).
+- **Clean-code false alarm:** thinking off puts an [ERROR] on 28–41% of clean, server-passing code. All 19 flagged
+  controls are false alarms: 11 by §7 facts (DataIntersection `$out.0`, accumulator defaults, UTC arithmetic), 8 by
+  server probes (`probe_controls.py`, 32 probes, every output as required; e.g. `initGroup` counters number the first
+  group 1, and Denormalizer/Rollup state does not leak between groups).
 - **Format:** without the format prompt (test.py's path), 44–71% of thinking-on answers have no VERDICT line and untagged
   findings. Parser recall then measures format; rb1012 and c13c −0.25 against rb1011 there.
 - **Proposal:** gate validate on B1 `_fmt` defect recall (±0.05) and control false alarm (±0.08), both modes.

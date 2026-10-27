@@ -52,8 +52,8 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
     - rb1012, trained on that set, is best there (0.73).
   - **Seed spread:** recall ±0.02, false alarm ±0.04; the judge put the same pair 0.04 apart. The judge's rb1011s2
     deficit is not reproduced.
-  - **Largest finding:** thinking off puts an [ERROR] on 28–41% of clean, server-passing code (thinking on 7–14%). At
-    least 11 of 19 flagged controls are verifiably false claims.
+  - **Largest finding:** thinking off puts an [ERROR] on 28–41% of clean, server-passing code (thinking on 7–14%). All
+    19 flagged controls are false claims: 11 by §7 facts, 8 by server probe (32 probes, all as required).
   - **Format:** test.py's validate path sends no output format; then 44–71% of thinking-on answers have no VERDICT line,
     so parser scores need the format prompt.
   - **Proposal:** gate validate on planted-defect recall and clean-code false alarm (format prompt, both modes, about
