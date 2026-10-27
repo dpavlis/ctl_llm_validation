@@ -121,7 +121,7 @@ def boot_diff(S, m1, m0, mode, key, sel, B=2000, seed=0):
 
 
 def main(a):
-    recs = {r["id"]: r for f in RECORDS if f.exists() for r in map(json.loads, f.read_text().splitlines())}
+    recs = {r["id"]: r for f in [Path(x) for x in a.records] if f.exists() for r in map(json.loads, f.read_text().splitlines())}
     S = {}             # (model, mode, rid) -> list of per-answer measures; flattened below
     rows = collections.defaultdict(list)
     for model in a.models:
@@ -225,5 +225,7 @@ if __name__ == "__main__":
     ap.add_argument("models", nargs="+")
     ap.add_argument("--diff", nargs="*", default=["rb1011s2:rb1011", "rb1012:rb1011", "c13c:rb1011"],
                     help="model pairs A:B for A − B")
+    ap.add_argument("--records", nargs="*", default=[str(x) for x in RECORDS],
+                    help="ground-truth record files (default: B1 + B2); e.g. validate_mutants_tweak.jsonl for B1-tweak")
     ap.add_argument("--out", default=str(ROOT / "results/agent_harness/validate_gt_table.md"))
     main(ap.parse_args())

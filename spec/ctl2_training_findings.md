@@ -2838,6 +2838,57 @@ without judging anything, so check the judged count.
 
 ---
 
+### 4.8 Validate is gated on ground truth, not on the judge (2026-10-27)
+
+> **Added 2026-10-27**, from §3.35 (`spec/harness_measurement_findings.md`, Part B).
+
+**Rule.** A validate comparison or gate uses the parser-scored planted-defect sets, in the suite's output-format
+condition (`gen_answers.py --format`), both thinking modes, 2 runs per record:
+- **B1** `data/agent_harness/validate_mutants.jsonl`: 169 single defects planted in pool-1 references, each confirmed
+  failing on the server, plus 50 clean controls (the references, which pass).
+- **B1-tweak** `data/agent_harness/validate_mutants_tweak.jsonl`: the same construction on the pool_tweak references
+  (§3.36), which no model was trained on. B1's references are corpus code that rb1011/rb1012 saw in SFT and c13c did
+  not (27 of its 30 lifecycle mutants come from the Rollup-accumulator set), so cross-model claims use B1-tweak; B1 is
+  kept for continuity with §3.35.
+
+**Report:** defect recall (a finding names the anchor), recall by defect kind, the **clean-code false-alarm rate** (any
+`[ERROR]` on a control; this is the precision number "precision over recall" refers to), control verdict PASS, and
+findings per answer. Severity is not scored (§3.35: the null-guard kind is ill-posed under §7).
+
+**Noise bands** (rb1011 vs rb1011s2 on B1: recall ±0.02, verdict ±0.01, false alarm ±0.04): treat recall differences
+within ±0.05, false-alarm differences within ±0.08 (100 control answers per mode) and single-kind differences within
+±0.15 (n60) as noise.
+
+**The judge suite** (validate ×9, WRONG rate excluding T18/T22) is still reported for what the parser cannot see
+(explanation quality, multi-finding reviews, T18/T22 rubric items), but its aggregate moves 0.04–0.13 between seeds of
+one recipe (§3.34) and did not reproduce on ground truth (§3.35), so judge validate differences below 0.04 are not
+evidence.
+
+**c13c's baselines** (format condition, 2 runs; `results/agent_harness/validate_gt_table_fmt.md`,
+`validate_gt_tweak_table_fmt.md`):
+
+| set | mode | defect recall | missing-lifecycle recall | control false alarm | control verdict PASS |
+|---|---|---|---|---|---|
+| B1 (169 + 50) | off | 0.75 [0.71, 0.80] | 0.18 (n60) | 0.41 [0.32, 0.51] | 0.59 |
+| B1 | on | 0.86 [0.81, 0.89] | 0.35 | 0.14 [0.09, 0.22] | 0.86 |
+| B1-tweak (146 + 50) | off | 0.80 [0.76, 0.85] | 0.31 (n32) | 0.24 [0.17, 0.33] | 0.73 |
+| B1-tweak | on | 0.89 [0.85, 0.92] | 0.28 | 0.08 [0.04, 0.15] | 0.92 |
+
+- B1-tweak (built 2026-10-27, seed 12, `scripts/harness_measurement/make_mutants_tweak.sh`): 30 each of unconnected
+  port, unknown field, inverted condition and wrong return, 16 missing lifecycle (all 16 Rollup tasks), 10 null guard,
+  50 controls (Reformat 12, Normalizer 12, DataIntersection 12, Rollup 11, Partition 2, ExtMergeJoin 1). The
+  `Component type:` header of the pool_tweak prompts is dropped from the review prompts (19 of 165 contradict the task).
+- **The lifecycle gap is real, not code familiarity:** on references c13c never saw it still passes a Rollup with a
+  lifecycle function missing in 7 of 10 answers (0.31 / 0.28 recall).
+- **The false-alarm rate depends on the reference style.** On B1 the Rollup controls (corpus accumulator code) draw an
+  [ERROR] 0.80 of the time thinking off; on B1-tweak's LLM-written Rollups 0.09. B1-tweak's thinking-off false alarms
+  (16 of 50 controls flagged in at least one run) are of another kind: nullable fields compared or assigned without a
+  guard "can throw" (6), decimal / integer arithmetic claims ("decimal divided by an integer literal truncates", "an
+  integer literal compared with a decimal does not compile"; the reference compiled and passed) (4), and rule
+  misreadings (6). The null claims were not probed; the fixtures may not contain the null. The arithmetic and compile
+  claims are refuted by the passing run.
+- All 19 B1 controls any model flagged were false (11 by §7, 8 by server probe, §3.35).
+
 ## 5. Recommended pipeline
 
 > **Rewritten 2026-10-12.** The current model is **rb1006 + the OPCD c4 adapter** (§3.16, §3.19). The

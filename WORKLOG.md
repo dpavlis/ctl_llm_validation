@@ -11,13 +11,40 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   suite tests); thinking off 69% / 80%. It holds on 165 fresh-domain prompts nobody here wrote (§3.36): 86% / 91%
   thinking on, within ±0.08 of pool 1's corpus tasks.
 - **Biggest real gap:** generate without thinking. Only 44% of c13c's answers run correctly (§3.28).
-- **Validate has a ground-truth measure now** (§3.35): planted server-confirmed defects, parser-scored. It shows
-  thinking-off validate flags 28–41% of clean code with an [ERROR], and it does not reproduce the judge's 0.04 seed gap.
+- **Validate is gated on ground truth now** (§3.35, §4.8): planted server-confirmed defects, parser-scored, sets B1 and
+  B1-tweak. Thinking-off validate flags 24–41% of clean code with an [ERROR]; c13c misses a removed Rollup lifecycle
+  function 7 times in 10; the judge's 0.04 seed gaps are not reproduced. Next: `spec/validate_precision_brief.md`.
 - **Training on the model's own server-verified answers (exec-RFT) did not help** (§3.33): one round moved neither the
   gap-test pass rate nor a held-out pool, and pushed T54 thinking off back to `$out.1`. Not adopted.
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-10-27 (evening)
+
+- **Validate gate adopted: the planted-defect ground truth, not the judge** (`CLAUDE.md` measurement rules, findings §4.8).
+  Both modes, format prompt, 2 runs; report defect recall and the clean-code false-alarm rate; bands recall ±0.05, false
+  alarm ±0.08, one kind ±0.15. Judge validate differences below 0.04 are seed noise. The judge suite stays for what the
+  parser cannot see.
+- **B1-tweak built and c13c measured** (`data/agent_harness/validate_mutants_tweak.jsonl`, 146 server-confirmed defects +
+  50 controls from the pool_tweak references, which no model was trained on). Reason: B1's references are pool-1 corpus
+  code; 27 of its 30 lifecycle mutants come from the Rollup-accumulator set that rb1011/rb1012 saw in SFT and c13c did
+  not, so cross-model claims on B1 are confounded.
+  - c13c thinking off: recall 0.80, false alarm 0.24 (B1: 0.75 / 0.41); thinking on 0.89 / 0.08 (B1: 0.86 / 0.14).
+  - **The lifecycle gap is real** (0.31 / 0.28 recall on code it never saw).
+  - **The false-alarm rate depends on the reference style:** B1's corpus Rollup controls are flagged 0.80 of the time
+    thinking off, B1-tweak's LLM-written Rollups 0.09; on B1-tweak the false alarms are null-guard "can throw" claims,
+    decimal/integer arithmetic claims and rule misreadings instead (not probed).
+- **Checked the two harness-measurement findings** (§3.35, §3.36): the headline numbers reproduce from the raw files
+  (pool_tweak pass rates; c13c control false alarms 41/100 off, 14/100 on; lifecycle recall 11/60). The lifecycle misses
+  are "ISSUES: none, VERDICT: PASS" on Rollups the server rejects at init. One caveat added (the B1 familiarity confound
+  above).
+- **Next experiment: `spec/validate_precision_brief.md`** — OPCD on validate-shaped prompts where the teacher has the
+  server's verdict on the code under review in context (clean references and planted mutants from the exec-RFT pool
+  minus pool 1 and the holdout), gated on B1 / B1-tweak and the generate gates. Motivation: c13c's T40/T42 belief fix
+  did not transfer to reviews (it still writes "never initialized" on clean Rollup code), and the recurring false claims
+  are a short, refuted list. `spec/retry_distill_brief.md` stays queued behind it; its sampling phase can run on the
+  other free GPU meanwhile.
 
 ## 2026-10-27
 

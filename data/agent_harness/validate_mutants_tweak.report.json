@@ -1,0 +1,92 @@
+{
+ "records": 196,
+ "by_kind": {
+  "unconnected_port": 30,
+  "unknown_field": 30,
+  "inverted_condition": 30,
+  "missing_lifecycle": 16,
+  "null_guard_removed": 10,
+  "wrong_return": 30,
+  "control": 50
+ },
+ "by_kind_component": {
+  "control": {
+   "Rollup": 11,
+   "Reformat": 12,
+   "DataIntersection": 12,
+   "Normalizer": 12,
+   "Partition": 2,
+   "ExtMergeJoin": 1
+  },
+  "inverted_condition": {
+   "Normalizer": 11,
+   "Reformat": 14,
+   "Rollup": 4,
+   "DataIntersection": 1
+  },
+  "missing_lifecycle": {
+   "Rollup": 16
+  },
+  "null_guard_removed": {
+   "DataIntersection": 2,
+   "Normalizer": 4,
+   "Rollup": 2,
+   "Reformat": 2
+  },
+  "unconnected_port": {
+   "Reformat": 7,
+   "DataIntersection": 8,
+   "Normalizer": 11,
+   "Rollup": 4
+  },
+  "unknown_field": {
+   "Reformat": 11,
+   "DataIntersection": 8,
+   "Normalizer": 9,
+   "Rollup": 2
+  },
+  "wrong_return": {
+   "Normalizer": 9,
+   "DataIntersection": 9,
+   "Reformat": 12
+  }
+ },
+ "by_server_status": {
+  "unconnected_port:init_error": 30,
+  "unknown_field:invalid": 30,
+  "inverted_condition:wrong_rows": 30,
+  "missing_lifecycle:init_error": 16,
+  "null_guard_removed:runtime_error": 6,
+  "null_guard_removed:wrong_rows": 4,
+  "wrong_return:wrong_rows": 30,
+  "control:pass": 50
+ },
+ "verified_before_sampling": {
+  "unknown_field": 162,
+  "unconnected_port": 162,
+  "wrong_return": 105,
+  "inverted_condition": 90,
+  "null_guard_removed": 10,
+  "missing_lifecycle": 16
+ },
+ "tries": {
+  "inverted_condition:pass": 4,
+  "inverted_condition:runtime_error": 2,
+  "inverted_condition:wrong_rows": 88,
+  "missing_lifecycle:init_error": 16,
+  "null_guard_removed:pass": 6,
+  "null_guard_removed:runtime_error": 6,
+  "null_guard_removed:wrong_rows": 4,
+  "unconnected_port:init_error": 162,
+  "unknown_field:invalid": 162,
+  "wrong_return:wrong_rows": 105
+ },
+ "candidate_pairs": {
+  "unconnected_port": 162,
+  "unknown_field": 162,
+  "wrong_return": 105,
+  "inverted_condition": 90,
+  "null_guard_removed": 14,
+  "missing_lifecycle": 16
+ }
+}

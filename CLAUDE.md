@@ -62,7 +62,13 @@ on-policy context distillation (OPCD).
 
 - **Generate is the primary objective.** Rank it on the execution pass rate (`exec_score.py`), not the judge score: the
   generate rubrics give partial credit to code that does not run. Validate gains must not cost generate.
-- **Validate:** precision over recall. Report the WRONG rate excluding T18/T22, which are dominated by rubric effects.
+- **Validate:** precision over recall. The gate is the judge-free ground truth (§3.35, §4.8): planted server-confirmed
+  defects and clean controls, parser-scored with the suite's output-format prompt, both thinking modes
+  (`scripts/harness_measurement/{gen_answers.py --format, score_validate.py}`; sets `data/agent_harness/validate_mutants.jsonl`
+  and `validate_mutants_tweak.jsonl`). Report defect recall and the clean-code false-alarm rate (any `[ERROR]` on a
+  control); the false-alarm rate is the precision number. Noise bands: recall ±0.05, false alarm ±0.08, one kind ±0.15.
+  The judge suite stays for what the parser cannot see (explanations, multi-finding reviews); its WRONG rate
+  (excluding T18/T22) is reported, but judge validate differences below 0.04 are seed noise (§3.34, §3.35).
 - **T40/T42:** n20, run twice, before any gate decision. Report hard set 3 split by error direction.
 - **Noise:** state the n and a confidence interval for every claimed difference.
   - Rebuild-to-rebuild (seed) variance is about ±0.06–0.07 on validate and the gap tests.

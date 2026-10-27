@@ -221,6 +221,9 @@ def requirements(prompt):
                prompt, flags=re.S)
     # instructions about a (now absent) faulty version: they would point the reviewer at a defect that is not there
     t = re.sub(r"(?m)^Current code:\s*$", "", t)
+    # pool_tweak prompts carry a "Component type:" header copied from the source set, 19 of 165 contradicting the task
+    # (§3.36); the validate prompt already names the component, so the header is dropped
+    t = re.sub(r"(?im)^Component type:[^\n]*\n?", "", t)
     for s in [r"The only reported defect[^.\n]*\.", r"Review and fix this[^.\n]*\.", r"(?m)(^|(?<=\. ))(Fix|Repair|Correct)\b(?! (this|the)\b)[^.\n]*\.",
               r"Repair its CTL[^.\n]*\.", r"(List|Give|Justify)\b[^.\n]*\b(change|correction|repair|reason)s?\b[^.\n]*\."]:
         t = re.sub(s, "", t)
