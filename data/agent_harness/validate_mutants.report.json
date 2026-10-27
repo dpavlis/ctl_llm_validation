@@ -1,0 +1,101 @@
+{
+ "records": 219,
+ "by_kind": {
+  "inverted_condition": 30,
+  "unconnected_port": 29,
+  "unknown_field": 30,
+  "wrong_return": 28,
+  "null_guard_removed": 22,
+  "missing_lifecycle": 30,
+  "control": 50
+ },
+ "by_kind_component": {
+  "control": {
+   "Normalizer": 10,
+   "DataIntersection": 10,
+   "Rollup": 10,
+   "Reformat": 10,
+   "ExtMergeJoin": 1,
+   "Partition": 3,
+   "Denormalizer": 2,
+   "DataGenerator": 2,
+   "Standalone / pure function": 2
+  },
+  "inverted_condition": {
+   "Reformat": 14,
+   "Normalizer": 10,
+   "Rollup": 3,
+   "Partition": 2,
+   "DataIntersection": 1
+  },
+  "missing_lifecycle": {
+   "Rollup": 30
+  },
+  "null_guard_removed": {
+   "Reformat": 8,
+   "Normalizer": 3,
+   "Rollup": 9,
+   "Partition": 1,
+   "Denormalizer": 1
+  },
+  "unconnected_port": {
+   "Reformat": 11,
+   "Normalizer": 7,
+   "DataIntersection": 3,
+   "Rollup": 8
+  },
+  "unknown_field": {
+   "Reformat": 11,
+   "Rollup": 7,
+   "Normalizer": 8,
+   "DataIntersection": 3,
+   "ExtMergeJoin": 1
+  },
+  "wrong_return": {
+   "Reformat": 8,
+   "DataIntersection": 3,
+   "Normalizer": 16,
+   "Denormalizer": 1
+  }
+ },
+ "by_server_status": {
+  "inverted_condition:wrong_rows": 29,
+  "inverted_condition:runtime_error": 1,
+  "unconnected_port:init_error": 29,
+  "unknown_field:invalid": 30,
+  "wrong_return:wrong_rows": 28,
+  "null_guard_removed:runtime_error": 15,
+  "null_guard_removed:wrong_rows": 7,
+  "missing_lifecycle:init_error": 30,
+  "control:pass": 50
+ },
+ "verified_before_sampling": {
+  "unknown_field": 131,
+  "unconnected_port": 131,
+  "inverted_condition": 43,
+  "null_guard_removed": 22,
+  "wrong_return": 70,
+  "missing_lifecycle": 31
+ },
+ "tries": {
+  "inverted_condition:pass": 41,
+  "inverted_condition:runtime_error": 1,
+  "inverted_condition:wrong_rows": 42,
+  "missing_lifecycle:init_error": 31,
+  "null_guard_removed:pass": 16,
+  "null_guard_removed:runtime_error": 15,
+  "null_guard_removed:wrong_rows": 7,
+  "unconnected_port:init_error": 131,
+  "unknown_field:invalid": 131,
+  "wrong_return:wrong_rows": 70
+ },
+ "candidate_pairs": {
+  "unconnected_port": 131,
+  "unknown_field": 131,
+  "null_guard_removed": 26,
+  "inverted_condition": 63,
+  "wrong_return": 70,
+  "missing_lifecycle": 31
+ },
+ "note": "3 Standalone-library mutants dropped after generation (their transform is the harness wrapper); generator updated to skip them"
+}

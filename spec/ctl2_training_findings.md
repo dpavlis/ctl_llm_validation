@@ -16,7 +16,12 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-26 with rb1011 seed 7 (§3.34): the rb1012 accumulator regression comes from its SFT records (rb1011
+Last updated 2026-10-27 with validate ground truth (§3.35): planted, server-confirmed defects scored by a parser.
+rb1011, rb1011s2 and rb1012 recall 0.81–0.82 of the defects thinking off, c13c 0.75 (it misses removed Rollup
+functions); the rb1011 seed pair agrees to ±0.02, where the judge separated it by 0.04. Thinking off flags 28–41% of clean code
+with an [ERROR].
+
+Earlier, 2026-10-26 with rb1011 seed 7 (§3.34): the rb1012 accumulator regression comes from its SFT records (rb1011
 seeds 20 and 13/45 on T22.B1, rb1012 seeds 36 and 36); and a second rebuild-variance pair: aggregates move 0.01–0.05
 between seeds, thinking-off validate 0.04–0.13, the execution pass rate up to 0.14, single tests up to 1.0 (§4.7 rule).
 
@@ -2542,6 +2547,33 @@ because neither set showed a gain (§3.30) and neither goes into the recipe eith
 share ±3 points), thinking-on validate ±0.06, generate/fix ±0.04, gap-test judge mean ±0.03, gap-test execution pass
 rate ±0.10 at n110, any single test at n≤45 ±0.3. A claimed rebuild effect needs two seeds or a difference well beyond
 these; T40/T42 and the hard sets can be read from one seed.
+
+### 3.35 Validate ground truth: planted, server-confirmed defects scored by a parser (2026-10-27)
+
+Details: `spec/harness_measurement_findings.md` (Part B).
+- **Data:**
+  - 169 planted defects in pool-1 references (missing Rollup lifecycle function 30, unconnected `$out.N` 29, unknown
+    field 30, `return SKIP` 28, inverted threshold 30, removed null guard 22), each confirmed failing on the server;
+  - 50 unchanged controls;
+  - 93 corpus validate records (training data, reported apart).
+- **Scoring:** parser only.
+- **Run:** c13c, rb1011, rb1011s2, rb1012, both modes, 2 runs, with and without the suite's output-format system prompt.
+
+| `_fmt`, off / on | c13c | rb1011 | rb1011s2 | rb1012 |
+|---|---|---|---|---|
+| defect recall (n338) | 0.75 / 0.86 | 0.82 / 0.88 | 0.81 / 0.86 | 0.81 / 0.91 |
+| missing-lifecycle recall (n60) | 0.18 / 0.35 | 0.60 / 0.48 | 0.40 / 0.32 | 0.73 / 0.60 |
+| [ERROR] on clean controls (n100) | 0.41 / 0.14 | 0.35 / 0.11 | 0.34 / 0.07 | 0.28 / 0.08 |
+
+- **Seed pair rb1011s2 − rb1011:** recall −0.01 / −0.02, false alarm −0.01 / −0.04, all CIs within ±0.06. The judge
+  put the pair 0.04 and 1.7 WRONG points apart (§3.34); the ground truth does not reproduce that gap.
+- **c13c − rb1011 off:** recall −0.07 [−0.12, −0.02], from missing Rollup lifecycle functions. rb1012, trained on the
+  lifecycle set, is best on that kind.
+- **Clean-code false alarm:** thinking off puts an [ERROR] on 28–41% of clean, server-passing code. At least 11 of the 19
+  flagged controls are verifiably false claims (DataIntersection `$out.0`, accumulator defaults, UTC arithmetic).
+- **Format:** without the format prompt (test.py's path), 44–71% of thinking-on answers have no VERDICT line and untagged
+  findings. Parser recall then measures format; rb1012 and c13c −0.25 against rb1011 there.
+- **Proposal:** gate validate on B1 `_fmt` defect recall (±0.05) and control false alarm (±0.08), both modes.
 
 ---
 

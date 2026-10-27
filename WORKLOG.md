@@ -2,7 +2,7 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-10-26, evening)
+## Where we are (2026-10-27)
 
 - **Ship candidate: c13c**, the rb1009 base plus OPCD adapter `data/opcd/c13c/round_015`. Confirmed by 20-sample checks
   and by running the generated code on the server.
@@ -10,11 +10,33 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   execution-scored tasks thinking on with error feedback, 92% when the failing test rows are fed back too (28/30 real-world
   suite tests); thinking off 69% / 80%.
 - **Biggest real gap:** generate without thinking. Only 44% of c13c's answers run correctly (§3.28).
+- **Validate has a ground-truth measure now** (§3.35): planted server-confirmed defects, parser-scored. It shows
+  thinking-off validate flags 28–41% of clean code with an [ERROR], and it does not reproduce the judge's 0.04 seed gap.
 - **Training on the model's own server-verified answers (exec-RFT) did not help** (§3.33): one round moved neither the
   gap-test pass rate nor a held-out pool, and pushed T54 thinking off back to `$out.1`. Not adopted.
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-10-27
+
+- **Validate ground truth (Part B of the harness-measurement brief).** (§3.35, `spec/harness_measurement_findings.md`)
+  - **Setup:**
+    - 169 single defects planted in pool-1 references, each confirmed failing on the CloverDX server, plus 50 clean
+      controls;
+    - answers scored by a parser, no judge;
+    - c13c, rb1011, rb1011s2 and rb1012, both modes, with the suite's output-format system prompt.
+  - **Recall:** rb1011 0.82 / 0.88 (off / on), rb1011s2 0.81 / 0.86, rb1012 0.81 / 0.91, c13c 0.75 / 0.86.
+    - c13c's gap is missing Rollup lifecycle functions (0.18 off).
+    - rb1012, trained on that set, is best there (0.73).
+  - **Seed spread:** recall ±0.02, false alarm ±0.04; the judge put the same pair 0.04 apart. The judge's rb1011s2
+    deficit is not reproduced.
+  - **Largest finding:** thinking off puts an [ERROR] on 28–41% of clean, server-passing code (thinking on 7–14%). At
+    least 11 of 19 flagged controls are verifiably false claims.
+  - **Format:** test.py's validate path sends no output format; then 44–71% of thinking-on answers have no VERDICT line,
+    so parser scores need the format prompt.
+  - **Proposal:** gate validate on planted-defect recall and clean-code false alarm (format prompt, both modes, about
+    25 min per model), and stop reading 0.04-level judge validate differences.
 
 ## 2026-10-26
 

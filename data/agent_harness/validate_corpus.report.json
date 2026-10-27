@@ -1,0 +1,31 @@
+{
+ "records": 93,
+ "by_set_truth": {
+  "corpus_scd2:PASS": 8,
+  "corpus_scd2:FAIL": 5,
+  "corpus_syntax_pitfalls:PASS": 5,
+  "corpus_rollup_acc:PASS": 6,
+  "corpus_rollup_acc:FAIL": 9,
+  "corpus_normalizer_multi:PASS": 7,
+  "corpus_dataintersection:FAIL": 4,
+  "corpus_dataintersection:PASS": 7,
+  "corpus_zerodate:FAIL": 1,
+  "corpus_zerodate:PASS": 2,
+  "corpus_rollup_lifecycle:FAIL": 26,
+  "corpus_rollup_lifecycle:PASS": 13
+ },
+ "issues_per_fail_record": {
+  "1": 24,
+  "2": 10,
+  "3": 7,
+  "4": 4
+ },
+ "issue_severity": {
+  "ERROR": 70,
+  "WARNING": 11
+ },
+ "dropped": {
+  "syntax_pitfalls:ambiguous_anchor": 10,
+  "rollup_lifecycle:ambiguous_anchor": 1
+ }
+}
