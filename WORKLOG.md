@@ -8,7 +8,8 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   and by running the generated code on the server.
 - **Deploy with thinking on and a compile-and-retry loop.** In the agentic harness (§3.31) c13c passes 88% of 137
   execution-scored tasks thinking on with error feedback, 92% when the failing test rows are fed back too (28/30 real-world
-  suite tests); thinking off 69% / 80%.
+  suite tests); thinking off 69% / 80%. It holds on 165 fresh-domain prompts nobody here wrote (§3.36): 86% / 91%
+  thinking on, within ±0.08 of pool 1's corpus tasks.
 - **Biggest real gap:** generate without thinking. Only 44% of c13c's answers run correctly (§3.28).
 - **Validate has a ground-truth measure now** (§3.35): planted server-confirmed defects, parser-scored. It shows
   thinking-off validate flags 28–41% of clean code with an [ERROR], and it does not reproduce the judge's 0.04 seed gap.
@@ -19,6 +20,26 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
 
 ## 2026-10-27
+
+- **Fresh-domain pool (Part A of the harness-measurement brief): c13c holds.** (§3.36,
+  `spec/harness_measurement_findings.md`)
+  - **Pool:** gpt-6.1-sol rewrote the generate prompts of the runtime-harness corpus sets into new domains and wrote
+    fixtures. Tasks were kept only if their reference reproduced the expected rows on the server: 190 of 322 (59%).
+    - One fixture-prompt fix, for Rollup: 0 of 20 accepted before it.
+    - Hand check: 12 of 15 passed; the 3 failures were prose questions. The pool-wide drop of prose questions removed 25.
+    - Final pool 165 tasks (`data/agent_harness/pool_tweak.jsonl`, evaluation only).
+  - **Run:** c13c as pool 1 was run, both modes, 2 runs per task.
+  - **Result, against pool 1's 107 corpus tasks (95% CI):**
+    - thinking on: 0.81 / 0.86 / 0.91 (first / error feedback / rows feedback), differences −0.02 / −0.01 / −0.01
+      (±0.07–0.09);
+    - thinking off: 0.72 / 0.80 / 0.89, differences −0.01 / +0.06 / +0.07 (±0.09–0.11).
+  - **Weak spots:** DataIntersection 0.83 / 0.85; thinking on writes `$out.1`/`$out.2` in 13 of 51 DataIntersection
+    tasks; SCD-2 rewrites 0.68 / 0.76; thinking off `isDate`/`str2date` argument order.
+  - **Caveats:**
+    - 19 prompts carry a contradictory component header; the result is the same without them.
+    - The acceptance filter under-samples pitfall-inviting tasks.
+  - **Incident:** the first run was killed at 23:24 by Part B's `run_models.sh` cleanup, which kills any server named
+    rb1009. The failed records were rerun; `run_c13c.sh` now serves the base as `rb1009_hm`.
 
 - **Validate ground truth (Part B of the harness-measurement brief).** (§3.35, `spec/harness_measurement_findings.md`)
   - **Setup:**

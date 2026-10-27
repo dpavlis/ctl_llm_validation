@@ -1,0 +1,48 @@
+{
+ "sample": "15 seed-101 tasks, stratified: 5 DataIntersection, 5 Reformat, 4 Normalizer, 1 Partition (random.Random(0))",
+ "criteria": "prompt self-contained (metadata, rules); component type right; expected rows follow from the prompt's rules (traced by hand row by row), not only from the reference",
+ "pass": {
+  "tweak_55990a3296": "Normalizer, 6-rule posting table; all 15 inputs traced",
+  "tweak_f040825482": "DataIntersection; prompt never names the component (ports 0=A-only/1=both/2=B-only identify it); header says 'component type: unknown'; rows correct",
+  "tweak_82676578a6": "Normalizer payroll; truncation toward zero on negative minutes, midnight crossing; rows correct",
+  "tweak_ba7cc242a9": "Reformat; strict dates, trim/blank, defect count; rows correct",
+  "tweak_82e82b413d": "Normalizer, 8 precedence rules; rows correct",
+  "tweak_cf284c4fcd": "Reformat carried state; asks for CTL2 logic plus two design questions; rows correct",
+  "tweak_af55638cf7": "Normalizer, compact metadata notation (! / ?); rows correct",
+  "tweak_6f92092bcb": "Partition; rows correct",
+  "tweak_5d2998ab22": "DataIntersection, blank vs null tier, 500-point threshold; rows correct",
+  "tweak_5012a92e92": "Reformat SCD2 deltas against last accepted version; rows correct",
+  "tweak_c74d8901f2": "Reformat; rows correct",
+  "tweak_e555276a55": "Reformat; regex whole-string, tab trimming; rows correct"
+ },
+ "fail": {
+  "tweak_22ff0e0bc8": "not a code task: 'Explain how to route physical output 2'",
+  "tweak_cfef2bea4d": "not a code task: 'No code: list exact fields and types'",
+  "tweak_59c934dc2a": "not a code task: 'Validate our DATA_INTERSECTION design ... Does this design meet the requirement?'"
+ },
+ "consequence": "all 3 failures are prose questions whose corpus original was filed as generate; merge_pools.py drops every task whose corpus answer has no CTL code unless the rewrite asks for CTL (13 of 86 in seed 101, which includes these 3)",
+ "post_run_flags": {
+  "note": "found in the c13c run analysis (2026-10-27), not by the hand check; kept in the pool as run, reported with and without (spec/harness_measurement_findings.md)",
+  "tasks": {
+   "tweak_5c51ac39b1": "header says component type JOIN, task is DATA_INTERSECTION",
+   "tweak_17d03508af": "header says component type DATA_INTERSECTION, task is NORMALIZER",
+   "tweak_525a3d90b0": "header says component type DATA_INTERSECTION, task is REFORMAT",
+   "tweak_0165165d59": "header says component type DATA_INTERSECTION, task is REFORMAT",
+   "tweak_f040825482": "header says component type UNKNOWN, task is DATA_INTERSECTION",
+   "tweak_b2b4c70895": "header says component type JOIN, task is DATA_INTERSECTION",
+   "tweak_c344db6240": "header says component type DATA_INTERSECTION, task is NORMALIZER",
+   "tweak_9cfdb1fbed": "header says component type DATA_INTERSECTION, task is NORMALIZER",
+   "tweak_f5b0a02537": "header says component type DATA_INTERSECTION, task is REFORMAT",
+   "tweak_df8acbd594": "header says component type JOIN, task is DATA_INTERSECTION",
+   "tweak_9d7a4b5e3e": "header says component type JOIN, task is DATA_INTERSECTION",
+   "tweak_dba012e9f6": "header says component type DATA_INTERSECTION, task is NORMALIZER; asks for keys from 'the sequence' the graph does not define",
+   "tweak_628ca6e2a6": "header says component type JOIN, task is DATA_INTERSECTION",
+   "tweak_e738de0f71": "header says component type JOIN, task is DATA_INTERSECTION",
+   "tweak_71bc1b94ca": "header says component type DATA_INTERSECTION, task is REFORMAT",
+   "tweak_68fd68fa25": "header says component type DATA_INTERSECTION, task is REFORMAT",
+   "tweak_66de14ea65": "header says component type DATA_INTERSECTION, task is REFORMAT",
+   "tweak_da6a2c25b3": "header says component type JOIN, task is DATA_INTERSECTION",
+   "tweak_a7e2fff9e3": "header says component type JOIN, task is DATA_INTERSECTION"
+  }
+ }
+}

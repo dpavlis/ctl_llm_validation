@@ -16,7 +16,11 @@ sample counts changed over time, so check which era a number comes from:
 **The current recipe is in §5:** rb1006 plus OPCD c4 (owner decision 2026-10-13). The three-phase pipeline that sections §1–§3.15
 optimise is retired.
 
-Last updated 2026-10-27 with validate ground truth (§3.35): planted, server-confirmed defects scored by a parser.
+Last updated 2026-10-27 with the fresh-domain pool (§3.36): on 165 LLM-rewritten, server-verified tasks in new domains,
+c13c's agentic-harness pass rate matches pool 1's corpus tasks (thinking on 0.86 / 0.91 after error / rows feedback,
+differences −0.01, CIs ±0.08); weak spots are DataIntersection `$out.1` writes thinking on and SCD-2 rewrites.
+
+Earlier, 2026-10-27 with validate ground truth (§3.35): planted, server-confirmed defects scored by a parser.
 rb1011, rb1011s2 and rb1012 recall 0.81–0.82 of the defects thinking off, c13c 0.75 (it misses removed Rollup
 functions); the rb1011 seed pair agrees to ±0.02, where the judge separated it by 0.04. Thinking off flags 28–41% of clean code
 with an [ERROR].
@@ -2574,6 +2578,33 @@ Details: `spec/harness_measurement_findings.md` (Part B).
 - **Format:** without the format prompt (test.py's path), 44–71% of thinking-on answers have no VERDICT line and untagged
   findings. Parser recall then measures format; rb1012 and c13c −0.25 against rb1011 there.
 - **Proposal:** gate validate on B1 `_fmt` defect recall (±0.05) and control false alarm (±0.08), both modes.
+
+### 3.36 Fresh-domain pool: c13c holds its agentic-harness pass rate on prompts nobody here wrote (2026-10-27)
+
+Details: `spec/harness_measurement_findings.md` (Part A).
+- **Pool:** 165 tasks (`data/agent_harness/pool_tweak.jsonl`, evaluation only).
+  - gpt-6.1-sol rewrote corpus generate prompts into new domains and wrote fixtures; a task was kept only if its
+    reference reproduced the expected rows on the server (190 of 322).
+  - 25 prose questions were dropped after the hand check (12 of 15 passed).
+  - 19 kept prompts have a contradictory component header (reported with and without).
+- **Run:** c13c, exactly as pool 1 (§3.31), `--runs 2`, n330 per cell.
+
+| pass rate, off / on | pool 1 corpus (107) | pool_tweak (165) | difference, 95% CI off / on |
+|---|---|---|---|
+| first attempt | 0.73 / 0.83 | 0.72 / 0.81 | −0.01 (±0.11) / −0.02 (±0.09) |
+| after error feedback | 0.75 / 0.87 | 0.80 / 0.86 | +0.06 (±0.10) / −0.01 (±0.08) |
+| after rows feedback | 0.81 / 0.92 | 0.89 / 0.91 | +0.07 (±0.09) / −0.01 (±0.07) |
+
+- **Verdict: c13c holds.** No difference outside its CI; a drop of 0.1 is excluded, one of 0.05 is not. The same holds
+  without the 19 flawed prompts.
+- **Weak spots:**
+  - DataIntersection 0.83 / 0.85;
+  - thinking on, `$out.1`/`$out.2` writes in 13 of 51 DataIntersection tasks (pool 1: 0 of 10); the rewritten prompts
+    name each port's consumer;
+  - SCD-2 rewrites 0.68 / 0.76;
+  - thinking off, `isDate`/`str2date` argument order (22 of 417 attempts).
+- **Caveat:** the acceptance filter keeps tasks a strong model's reference passes. Date-unit-name errors fall from 15%
+  to 3% of thinking-off attempts, so pool_tweak under-samples pitfall-inviting tasks.
 
 ---
 

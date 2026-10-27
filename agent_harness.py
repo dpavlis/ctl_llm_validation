@@ -11,7 +11,8 @@ Three subcommands:
              --suite               the 11 suite-v5 gap tests (data/suite_v5/run_graphs manifests + generate_rw.json)
              --corpus SFT FIXTURES corpus SFT records joined to the authors' fixture cases by id (several pairs allowed);
                                    the fixture's own reference is run first and the task is kept only if it passes
-             --tweak SFT N         N prompts rewritten by the tweak LLM into a new domain (mut_validate --tweak), with a
+             --tweak SFT [SFT ...] the generate prompts of these files rewritten by the tweak LLM into a new domain
+                                   (mut_validate --tweak; --seed picks the domains, --tweak-n caps the count), with a
                                    fixture and reference written by the same LLM; kept only if the reference produces the
                                    LLM's own expected rows (two derivations must agree)
   run      run the loop on a pool: --model on a vLLM server, both thinking modes, --runs samples per task, --rounds
@@ -78,7 +79,8 @@ def cause_of(msg):
 # ----------------------------------------------------------------------------------------------------------- pool
 def rec_xml(meta):
     """Corpus metadata dict -> the <Record> XML graph_harness expects."""
-    out = [f'<Record name="{meta["name"]}" type="delimited" fieldDelimiter="|" recordDelimiter="\\n" nullValue="__NULL__">']
+    name = re.sub(r"\W", "_", meta["name"]) or "rec"       # LLM-written fixtures use names like "Middle result"
+    out = [f'<Record name="{name}" type="delimited" fieldDelimiter="|" recordDelimiter="\\n" nullValue="__NULL__">']
     for f in meta["fields"]:
         a = f'name="{f["name"]}" type="{f["type"]}" nullable="{str(f.get("nullable", True)).lower()}"'
         for k in ("length", "scale"):
@@ -208,18 +210,21 @@ async def pool_cmd(a):
             fh.write(json.dumps(t, ensure_ascii=False) + "\n")
     report = dict(tasks=len(tasks), by_source=collections.Counter(t["source"] for t in tasks),
                   by_component=collections.Counter(t["component"] for t in tasks),
-                  by_task=collections.Counter(t["task"] for t in tasks), rejected=rejected)
+                  by_task=collections.Counter(t["task"] for t in tasks), by_set=collections.Counter(t.get("set") for t in tasks if t.get("set")),
+                  rejected=rejected)
     out.with_suffix(".report.json").write_text(json.dumps(report, indent=1) + "\n")
     print(json.dumps(report, indent=1))
 
 
 # ----------------------------------------------------------------------------------------------- tweak (LLM-made tasks)
+# The ROLLUP and reserved-word rules were added after seed 101 (spec/harness_measurement_findings.md): every Rollup
+# reference failed to compile ($acc.x, missing lifecycle functions, `record`/`input`/`trace` as names, server-verified).
 FIXTURE_SYSTEM = """\
 You are a CloverDX / CTL2 test author. You get a CTL2 code-generation task. Write an acceptance fixture for it and a
 reference solution, as ONE JSON object and nothing else:
 
 {
-  "component": "REFORMAT" | "ROLLUP" | "NORMALIZER" | "DENORMALIZER" | "PARTITION" | "DATA_INTERSECTION" | "EXT_MERGE_JOIN",
+  "component": "REFORMAT" | "ROLLUP" | "NORMALIZER" | "DENORMALIZER" | "PARTITION" | "DATA_INTERSECTION" | "EXT_MERGE_JOIN" | "EXT_HASH_JOIN",
   "input_metadata": [{"name": "...", "fields": [{"name": "...", "type": "string|integer|long|decimal|number|boolean|date", "nullable": true|false, "length": 18, "scale": 2}]}],
   "output_metadata": [ ...same shape, one entry per output port... ],
   "accumulator_metadata": { ...same shape... } | null,
@@ -240,6 +245,15 @@ Rules:
 - For DATA_INTERSECTION, output_metadata has ONE entry (the matched output) and "expected" has OUTPUT_0 (A-only rows,
   input-0 metadata), OUTPUT_1 (matched rows) and OUTPUT_2 (B-only rows, input-1 metadata).
 - The reference solution must be complete, correct CTL2 for that component, using only the declared fields.
+- ROLLUP references define all five functions, with the accumulator record as a typed parameter (the name is the
+  accumulator_metadata name; fields are read and written as acc.field, never $acc.field or $out.0 in updateGroup):
+    function void initGroup(AccName acc) { ... }
+    function boolean updateGroup(AccName acc) { ...; return false; }
+    function boolean finishGroup(AccName acc) { ...; return true; }
+    function integer updateTransform(integer counter, AccName acc) { return SKIP; }
+    function integer transform(integer counter, AccName acc) { if (counter != 0) return SKIP; $out.0.x = ...; return ALL; }
+- Do not use record, input, line, trace, or a date unit (day, month, year, hour, ...) as a variable or
+  parameter name; they are reserved in CTL2.
 """
 
 
@@ -249,44 +263,95 @@ def parse_json_object(raw):
     return json.loads(m.group(1)) if m else None
 
 
+TWEAK_COMPONENT = [(r"\bDataIntersection\b|\bdata\s*intersection\b", "DATA_INTERSECTION"),
+                   (r"\bExtHashJoin\b|\bhash\s*join\b", "EXT_HASH_JOIN"), (r"\bExtMergeJoin\b|\bmerge\s*join\b", "EXT_MERGE_JOIN")]
+
+
+def tweak_component(prompt):
+    """The component named to the tweak LLM: review_judge's bucket, but the joiners by name (its bucket is just JOIN)."""
+    from dpo_forge.review_judge import infer_component_type_from_prompt
+    for pat, name in TWEAK_COMPONENT:
+        if re.search(pat, prompt, re.I):
+            return name
+    return infer_component_type_from_prompt(prompt)
+
+
 async def tweak_pool(call, a, rejected):
-    """mut_validate --tweak: rewrite SFT prompts into new domains; then let the same LLM write fixture + reference."""
+    """mut_validate --tweak: rewrite SFT prompts into new domains; then let the same LLM write fixture + reference.
+
+    Every generate prompt of the --tweak SFT files (shuffled by --seed, the first --tweak-n if given) is rewritten once,
+    --tweak-concurrency at a time. Each rejection is appended to <out>.rejected.jsonl with its reason and the raw
+    fixture, so the rejection causes can be read."""
     import yaml
     sys.path.insert(0, str(ROOT))
-    from dpo_forge.review_judge import ReviewJudgeClient, infer_component_type_from_prompt, pick_business_domain
+    from dpo_forge.review_judge import ReviewJudgeClient, pick_business_domain
     cfg = yaml.safe_load(Path(a.tweak_config).read_text())
     llm = ReviewJudgeClient(cfg["tweak_llm"], log_file=None)
-    sft_path, n = a.tweak[0], int(a.tweak[1])
-    prompts = load_sft(sft_path)
-    rng = random.Random(a.seed)
-    ids = [i for i in prompts if task_kind(prompts[i]) == "generate"]
-    rng.shuffle(ids)
+    # the fixture answer (3 ports x up to 15 rows + reference) and its reasoning do not fit tweak_llm's 8k budget
+    fixture_llm = ReviewJudgeClient(dict(cfg["tweak_llm"], max_completion_tokens=a.fixture_tokens), log_file=None)
+    items = []
+    for sft_path in a.tweak:
+        prompts = load_sft(sft_path)
+        items += [(Path(sft_path).stem, i, prompts[i]) for i in sorted(prompts) if task_kind(prompts[i]) == "generate"]
+    random.Random(a.seed).shuffle(items)
+    items = items[:a.tweak_n] if a.tweak_n else items
+    rej_path = Path(a.out).with_suffix(".rejected.jsonl")
+    rej_path.unlink(missing_ok=True)
+    sem, lock = asyncio.Semaphore(a.tweak_concurrency), asyncio.Lock()
     tasks = []
-    for i in ids:
-        if len(tasks) >= n:
-            break
-        comp = infer_component_type_from_prompt(prompts[i])
-        try:
-            new_prompt = llm.tweak(prompts[i], comp, business_domain=pick_business_domain(random.Random(i + str(a.seed))))
-            raw = llm._call(FIXTURE_SYSTEM, "## Task\n\n" + new_prompt, purpose="tweak")
-            c = parse_json_object(raw)
-            assert c and c.get("reference_code") and c.get("inputs") and c.get("expected"), "no fixture JSON"
+
+    async def locked(n, args):
+        async with lock:
+            return await call(n, args)
+
+    async def one(sft, i, prompt):
+        async with sem:
+            comp = tweak_component(prompt)
+            domain = pick_business_domain(random.Random(i + str(a.seed)))
+            rec = dict(set=sft, origin=i, seed=a.seed, component_hint=comp, domain=domain)
+
+            def reject(reason, detail="", **kw):
+                rejected[f"tweak_{reason}"] += 1
+                rec.update(reason=reason, detail=detail[:3000], **kw)
+                with open(rej_path, "a") as fh:
+                    fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                print(f"  tweak {reason:24s} {i} {detail[:140]}", flush=True)
+
+            try:
+                new_prompt = await asyncio.to_thread(llm.tweak, prompt, comp, business_domain=domain)
+            except Exception as exc:  # noqa: BLE001
+                return reject("llm_error", str(exc))
+            if not new_prompt or len(new_prompt) < 100:
+                return reject("no_prompt", new_prompt or "")
+            try:
+                raw = await asyncio.to_thread(fixture_llm._call, FIXTURE_SYSTEM, "## Task\n\n" + new_prompt, "tweak")
+            except Exception as exc:  # noqa: BLE001
+                return reject("llm_error", str(exc), prompt=new_prompt)
+            try:
+                c = parse_json_object(raw)
+            except Exception:  # noqa: BLE001
+                c = None
+            if not (c and c.get("reference_code") and c.get("inputs") and c.get("expected")):
+                return reject("no_json", raw[-1500:], prompt=new_prompt)
             c["code"] = c.pop("reference_code")
-            c["component"] = c["component"].upper()
+            c["component"] = str(c.get("component", "")).upper()
             label = f"AH_tweak_{hashlib.sha256(new_prompt.encode()).hexdigest()[:10]}"
-            m = build_manifest(label, case_to_spec(c), c["code"])
-        except Exception as exc:  # noqa: BLE001
-            rejected["tweak_error"] += 1
-            print("  tweak error", i, str(exc)[:200], flush=True)
-            continue
-        st, det = await verify(call, m, c["code"])
-        if st != "pass":
-            rejected[f"tweak_reference_{st}"] += 1
-            print("  tweak reference fails", i, st, det[:160], flush=True)
-            continue
-        tasks.append(dict(id=label[3:], source="tweak", origin=i, component=c["component"], task="generate",
-                          prompt=new_prompt, system=SYSTEM, manifests=[m]))
-        print("  tweak kept", i, "->", label, flush=True)
+            try:
+                m = build_manifest(label, case_to_spec(c), c["code"])
+            except Exception as exc:  # noqa: BLE001
+                return reject("build_error", f"{type(exc).__name__}: {exc}", prompt=new_prompt, fixture=c)
+            try:
+                st, det = await verify(locked, m, c["code"])
+            except Exception as exc:  # noqa: BLE001
+                st, det = "harness_error", str(exc)
+            if st != "pass":
+                return reject(f"reference_{st}", det, prompt=new_prompt, fixture=c)
+            tasks.append(dict(id=label[3:], source="tweak", set=sft, origin=i, seed=a.seed, domain=domain,
+                              component=c["component"], task="generate", prompt=new_prompt, system=SYSTEM, manifests=[m]))
+            rejected["tweak_kept"] += 1
+            print(f"  tweak kept {i} -> {label} ({c['component']})", flush=True)
+
+    await asyncio.gather(*(one(*x) for x in items))
     return tasks
 
 
@@ -567,7 +632,10 @@ if __name__ == "__main__":
     p = sub.add_parser("pool")
     p.add_argument("--suite", action="store_true")
     p.add_argument("--corpus", nargs="*", metavar="SFT_JSON FIXTURES_JSON", help="pairs: SFT file then its fixtures file")
-    p.add_argument("--tweak", nargs=2, metavar=("SFT_JSON", "N"))
+    p.add_argument("--tweak", nargs="+", metavar="SFT_JSON", help="rewrite the generate prompts of these SFT files")
+    p.add_argument("--tweak-n", type=int, help="only the first N of the shuffled prompts")
+    p.add_argument("--tweak-concurrency", type=int, default=6)
+    p.add_argument("--fixture-tokens", type=int, default=32768, help="completion budget of the fixture call (with reasoning)")
     p.add_argument("--tweak-config", default="configs/mut_validate_qwen38.yaml")
     p.add_argument("--seed", type=int, default=7)
     p.add_argument("--out", required=True)

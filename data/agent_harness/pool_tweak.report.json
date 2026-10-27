@@ -1,0 +1,81 @@
+{
+ "tasks": 165,
+ "accepted_by_server": 190,
+ "dropped_after_review": 25,
+ "dropped_by_reason": {
+  "prose_origin": 25
+ },
+ "dropped": {
+  "tweak_881872075f": "prose_origin",
+  "tweak_22ff0e0bc8": "prose_origin",
+  "tweak_59c934dc2a": "prose_origin",
+  "tweak_f2e75d2e36": "prose_origin",
+  "tweak_32c07bc300": "prose_origin",
+  "tweak_597c736da5": "prose_origin",
+  "tweak_463e8fab18": "prose_origin",
+  "tweak_9d67919a75": "prose_origin",
+  "tweak_4420f27aff": "prose_origin",
+  "tweak_a9490bad22": "prose_origin",
+  "tweak_fe0a831cc0": "prose_origin",
+  "tweak_cfef2bea4d": "prose_origin",
+  "tweak_25a9f6e36f": "prose_origin",
+  "tweak_5fea91a91c": "prose_origin",
+  "tweak_8d1cd963a8": "prose_origin",
+  "tweak_71e81f92b6": "prose_origin",
+  "tweak_cc351d4ac4": "prose_origin",
+  "tweak_b2fe8389ae": "prose_origin",
+  "tweak_f16c0d2cb1": "prose_origin",
+  "tweak_83eca4e3db": "prose_origin",
+  "tweak_30c0f1588a": "prose_origin",
+  "tweak_993727251a": "prose_origin",
+  "tweak_c8840c26ed": "prose_origin",
+  "tweak_7637d431d9": "prose_origin",
+  "tweak_d896b986e9": "prose_origin"
+ },
+ "tried": 322,
+ "acceptance_rate": 0.59,
+ "rejections": {
+  "reference_init_error": 94,
+  "reference_wrong_rows": 14,
+  "reference_runtime_error": 14,
+  "no_json": 6,
+  "reference_invalid": 4
+ },
+ "seeds": {
+  "s101": {
+   "kept": 86,
+   "tried": 146
+  },
+  "s102": {
+   "kept": 88,
+   "tried": 146
+  },
+  "s103r": {
+   "kept": 5,
+   "tried": 10
+  },
+  "s104r": {
+   "kept": 4,
+   "tried": 10
+  },
+  "s105r": {
+   "kept": 7,
+   "tried": 10
+  }
+ },
+ "by_set": {
+  "CTL_LoRA_dataintersection_sft": 41,
+  "CTL_LoRA_scd2_sft": 36,
+  "CTL_LoRA_normalizer_multirow_sft": 30,
+  "CTL_LoRA_syntax_pitfalls_sft": 42,
+  "CTL_LoRA_rollup_accumulator_sft": 16
+ },
+ "by_component": {
+  "DATA_INTERSECTION": 51,
+  "REFORMAT": 48,
+  "NORMALIZER": 47,
+  "PARTITION": 2,
+  "EXT_MERGE_JOIN": 1,
+  "ROLLUP": 16
+ }
+}
