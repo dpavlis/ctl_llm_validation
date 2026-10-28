@@ -20,6 +20,13 @@ that ran correctly on the CloverDX server (scripts/exec_rft/sample_score.py) joi
 samples. They are not resampled or teacher-scored: an "sft" sample is trained by NLL on its tokens (rejection-sampling
 fine-tuning), a "dpo" sample (a passer and a failing answer to the same prompt and mode) by the DPO loss against the
 initial adapter's log-probs. Belief and replay prompts are sampled and scored as before, so the anchors stay in the mix.
+
+Server-verdict reviews (valprec1, spec/validate_precision_brief.md): a hard file may carry, per prompt, `system_extra`
+(appended to the system prompt of every role, e.g. the suite's validate output format for half the prompts),
+`teacher_context` (the server's verdict on the reviewed code plus a fact sheet; teacher only) and `tag` (per-round stats).
+Its `validate_format: false` keeps the user message as written (no format instruction appended). train.context_guard
+(a regex) drops a sample that matches it in a teacher-context prompt: a student that says the code "was run on the
+server" would be rewarded by a teacher that was told so.
 """
 from __future__ import annotations
 
@@ -69,8 +76,8 @@ def cmd_prepare(cfg: dict) -> None:
     out.mkdir(parents=True, exist_ok=True)
     pc = cfg["prompts"]
     sets: dict[str, list[dict]] = {"target": [], "hard": [], "contrast": [], "probe": [], "replay": [], "exec": []}
-    for s in pc["target"]:
-        sets["target"] += read_prompts(s)
+    for s in pc["target"]:  # {run|file, split?, weight?}: weight draws each prompt n times as often (valprec1)
+        sets["target"] += [dict(p, weight=s["weight"]) if s.get("weight") else p for p in read_prompts(s)]
     hard_files = pc.get("hard") or []
     hard_files = [hard_files] if isinstance(hard_files, str) else hard_files
     held = set(json.load(open(pc["hard_holdout"]))["holdout"]) if pc.get("hard_holdout") else set()
@@ -79,6 +86,7 @@ def cmd_prepare(cfg: dict) -> None:
         weight_map = hf.get("weight_by_part") if isinstance(hf, dict) else None  # {part: weight}, e.g. set 3 A/B
         both = hf.get("modes") if isinstance(hf, dict) else None  # e.g. [on, off]: each prompt once per thinking mode (c9)
         ctx = hf.get("teacher_context_field") if isinstance(hf, dict) else None  # e.g. worked_example (c11, SDFT-style)
+        vfmt = hf.get("validate_format", True) if isinstance(hf, dict) else True  # false: the prompt's own format (valprec1)
         hf = hf["file"] if isinstance(hf, dict) else hf
         if not Path(hf).exists():
             raise SystemExit(f"hard-case file missing: {hf}")
@@ -86,7 +94,7 @@ def cmd_prepare(cfg: dict) -> None:
             if h["id"] in held:
                 continue  # measured with data/opcd/eval_hard_cases.py --holdout, never trained
             h.setdefault("prompt_id", sd.make_prompt_id(h["user"]))
-            if h["task_type"] == "validate":
+            if h["task_type"] == "validate" and vfmt:
                 h["user"], _ = sd.with_validate_format(h["user"])
             h.setdefault("record_id", h.get("id"))
             h["weight"] = (weight_map or {}).get(h.get("part"), weight)
@@ -98,6 +106,8 @@ def cmd_prepare(cfg: dict) -> None:
                 sets["hard"].append(h)
     if pc.get("contrast"):  # corpus prompts where something really IS null (data/opcd/select_contrast.py)
         sets["contrast"] = sd.read_jsonl(Path(pc["contrast"]))
+        if pc.get("contrast_weight"):
+            sets["contrast"] = [dict(p, weight=pc["contrast_weight"]) for p in sets["contrast"]]
     sets["probe"] = read_prompts(pc["probe"])
     if pc.get("exec"):
         sets["exec"] = exec_rows(pc["exec"], cfg["train"]["seed"])
@@ -118,7 +128,7 @@ def cmd_prepare(cfg: dict) -> None:
         sets["replay"] += rng.sample(cand, min(len(cand), round(n_replay * share)))
 
     keep = ("prompt_id", "task_type", "component", "source_file", "record_id", "user", "weight", "teacher", "mode",
-            "teacher_context", "exec_kind", "completion_ids", "rejected_ids", "exec_status")
+            "teacher_context", "exec_kind", "completion_ids", "rejected_ids", "exec_status", "system_extra", "tag")
     rows = [{**{k: p.get(k) for k in keep}, "set": name} for name, ps in sets.items() for p in ps]
     seen, dedup = set(), []
     for r in rows:  # a prompt in two training sets is trained once
@@ -270,6 +280,8 @@ class Roles:
     def ids(self, role: str, p: dict) -> list[int]:
         mode, task = self.mode(p), p["task_type"]
         system = self.system(role, mode, task)
+        if p.get("system_extra"):  # per-prompt system addition seen by every role (valprec1: the output format)
+            system += p["system_extra"]
         if role != "student" and p.get("teacher_context"):  # per-prompt teacher context, e.g. a verified worked example (c11)
             system += "\n\n" + p["teacher_context"]
         msgs = [{"role": "system", "content": system}, {"role": "user", "content": p["user"]}]
@@ -661,8 +673,28 @@ def summarize(smps: list[dict]) -> dict:
     return out
 
 
+def tag_summary(smps: list[dict]) -> dict:
+    """Per tag (valprec1: review_clean / review_planted, format / plain, mode): samples, trained, guard rejections, KL."""
+    out = {}
+    for s in smps:
+        if not s.get("tag"):
+            continue
+        for key in (s["tag"], f"{s['tag']}:{s['mode']}"):
+            d = out.setdefault(key, {"samples": 0, "trained": 0, "context_quote": 0, "cite_guarded": 0, "kl_tok": 0.0, "tok": 0})
+            d["samples"] += 1
+            d["context_quote"] += s.get("skipped") == "context_quote"
+            d["cite_guarded"] += bool(s.get("teacher_override"))
+            if "kl_mean" in s:
+                d["trained"] += 1
+                d["kl_tok"] += s["kl_mean"] * len(s["completion_ids"]); d["tok"] += len(s["completion_ids"])
+    for d in out.values():
+        d["kl_per_token"] = round(d.pop("kl_tok") / max(1, d["tok"]), 4); d.pop("tok")
+    return out
+
+
 def write_samples(path: Path, smps: list[dict]) -> None:
-    drop = ("completion_ids", "prompt_ids", "r", "user", "r_topk_lp", "r_topk_idx", "teacher_context", "rejected_ids")
+    drop = ("completion_ids", "prompt_ids", "r", "user", "r_topk_lp", "r_topk_idx", "teacher_context", "rejected_ids",
+            "system_extra")
     path.write_text("".join(json.dumps({k: v for k, v in s.items() if k not in drop}, ensure_ascii=False) + "\n"
                             for s in smps))
 
@@ -689,6 +721,9 @@ def score_and_train(trainer: Trainer, smps: list[dict], steps: int) -> list[dict
         # learned to think longer without concluding (findings §3.21).
         if s.get("hit_cap") and s["mode"] in (tc.get("skip_truncated") or ()):
             s["skipped"] = "truncated"
+            continue
+        if tc.get("context_guard") and s.get("teacher_context") and re.search(tc["context_guard"], s["raw"], re.I):
+            s["skipped"] = "context_quote"
             continue
         if tc.get("quote_guard") and roles.teacher_role(s) != "student" and CITE.search(s["raw"]):
             s["teacher_override"] = "student"
@@ -818,8 +853,9 @@ def cmd_train(cfg: dict, args) -> None:
         for i, (p, got) in enumerate(zip(batch, sampler.sample_many(jobs, tc["k"], tc["max_new_tokens"])), 1):
             for s in got:
                 s["user"] = p["user"]; s.update(scan(s))
-                if p.get("teacher_context"):
-                    s["teacher_context"] = p["teacher_context"]
+                for f in ("teacher_context", "system_extra", "tag"):
+                    if p.get(f):
+                        s[f] = p[f]
             smps += got
             print(f"r{rnd} sample {i}/{len(batch)} {p['set']}/{p['task_type']}/{got[0]['mode']} "
                   f"{[s['new_tokens'] for s in got]} tok, {got[0]['gen_s']}s, belief {[int(s['belief']) for s in got]}", flush=True)
@@ -831,6 +867,8 @@ def cmd_train(cfg: dict, args) -> None:
         met = {"round": rnd, "steps": logs, "summary": summarize([s for s in smps if "kl_mean" in s or s.get("loss") in ("nll", "dpo")]),
                "skipped_cutoff": sum(s.get("skipped") == "cutoff" for s in smps),
                "skipped_truncated": sum(s.get("skipped") == "truncated" for s in smps),
+               "skipped_context_quote": sum(s.get("skipped") == "context_quote" for s in smps),
+               "by_tag": tag_summary(smps),
                "sample_min": round(t_s / 60, 1), "train_min": round((time.monotonic() - t0 - t_s) / 60, 1)}
         if probe and pcfg.get("every") and (rnd + 1) % pcfg["every"] == 0:
             met["probe"] = run_probe(sampler, probe, pcfg["k"], tc["max_new_tokens"], 7)
@@ -852,6 +890,9 @@ def cmd_smoke(cfg: dict, args) -> None:
         want = [("target", "fix"), ("target", "validate"), ("replay", "generate")]
     for st, tt in want:
         pick.append(next(p for p in prompts if p["set"] == st and p["task_type"] == tt and p not in pick))
+    if args.review:  # valprec1: one clean and one planted review prompt (teacher context, format / plain system prompt)
+        for t in ("review_clean", "review_planted"):
+            pick.append(next(p for p in prompts if (p.get("tag") or "").startswith(t)))
     fixed = []
     if args.exec:
         ex = [p for p in prompts if p["set"] == "exec"]
@@ -859,13 +900,14 @@ def cmd_smoke(cfg: dict, args) -> None:
             sel = sorted((p for p in ex if p["exec_kind"] == kind and p["mode"] == mode), key=lambda p: len(p["completion_ids"]))
             fixed.append(sel[len(sel) // 2])   # median length: the gradient scale of a typical sample (DPO grows with length)
     # what the student and the teacher see
-    for p in pick[:1] + pick[2:3]:
+    for p in pick[:1] + pick[2:3] + (pick[-2:] if args.review else []):
         for role in ("student", "teacher"):
             ids = roles.ids(role, p)
             txt = roles.tok.decode(ids)
             print(f"--- {role} / {p['task_type']} ({roles.mode(p)}): {len(ids)} prompt tokens; "
-                  f"rule present: {cfg['rule_marker'] in txt}; tail: {txt[-80:]!r}")
-    model = load_model(cfg, Path(cfg["init_adapter"]) if args.exec and cfg.get("init_adapter") else None)
+                  f"rule present: {cfg['rule_marker'] in txt}; server context present: {'CloverDX server' in txt}; "
+                  f"output format present: {'VERDICT: PASS | FAIL' in txt}; tail: {txt[-80:]!r}")
+    model = load_model(cfg, Path(cfg["init_adapter"]) if (args.exec or args.review) and cfg.get("init_adapter") else None)
     tc = dict(cfg["train"]); tc["lr"] = args.lr or tc["lr"]
     if args.exec:
         tc["grad_norm_by_kind"] = True
@@ -877,6 +919,7 @@ def cmd_smoke(cfg: dict, args) -> None:
     for p in pick:
         for s in sample(model, roles, p, 1, args.max_new or tc["max_new_tokens"], 1234):
             s["user"] = p["user"]; s.update(scan(s)); smps.append(s)
+            s.update({f: p[f] for f in ("teacher_context", "system_extra", "tag") if p.get(f)})
             print(f"sampled {p['set']}/{p['task_type']}/{s['mode']}: {s['new_tokens']} tok in {s['gen_s']}s, "
                   f"think_closed {s['think_closed']}, belief {s['belief']}", flush=True)
     for s in smps:
@@ -941,6 +984,7 @@ def main() -> None:
     ap.add_argument("--max-new", type=int, help="smoke: max new tokens per sample")
     ap.add_argument("--loss", choices=("rl", "topk"), default="rl", help="smoke: loss for the teacher samples")
     ap.add_argument("--exec", action="store_true", help="smoke: add fixed exec SFT / DPO samples (prompts.exec)")
+    ap.add_argument("--review", action="store_true", help="smoke: add one clean and one planted review prompt (valprec1)")
     ap.add_argument("--round", type=int, help="export: round number")
     ap.add_argument("--adapter", help="export: adapter dir (instead of --round)")
     ap.add_argument("--out", help="export: output dir")

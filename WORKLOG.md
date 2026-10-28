@@ -2,7 +2,7 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-10-27)
+## Where we are (2026-10-28)
 
 - **Ship candidate: c13c**, the rb1009 base plus OPCD adapter `data/opcd/c13c/round_015`. Confirmed by 20-sample checks
   and by running the generated code on the server.
@@ -13,12 +13,64 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **Biggest real gap:** generate without thinking. Only 44% of c13c's answers run correctly (§3.28).
 - **Validate is gated on ground truth now** (§3.35, §4.8): planted server-confirmed defects, parser-scored, sets B1 and
   B1-tweak. Thinking-off validate flags 24–41% of clean code with an [ERROR]; c13c misses a removed Rollup lifecycle
-  function 7 times in 10; the judge's 0.04 seed gaps are not reproduced. Next: `spec/validate_precision_brief.md`.
+  function 7 times in 10; the judge's 0.04 seed gaps are not reproduced. **valprec1 (§3.37) not adopted:** OPCD with
+  the server's verdict in the teacher's context makes thinking-on reviews the best yet (B1 false alarm 0.14 → 0.01,
+  lifecycle recall 0.35 → 0.83) and lifts thinking-off lifecycle recall (0.18 → 0.67) at no generate cost. But the
+  thinking-off false-alarm rate did not fall, and on the plain test.py path it doubled (0.30 → 0.61). Next: valprec2
+  with ≥ 50% clean reviews.
 - **Training on the model's own server-verified answers (exec-RFT) did not help** (§3.33): one round moved neither the
   gap-test pass rate nor a held-out pool, and pushed T54 thinking off back to `$out.1`. Not adopted.
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-10-28
+
+- **valprec1 gates** (`spec/validate_precision_findings.md`, findings §3.37). **Not adopted; a second round with a
+  rebalanced review set is next.**
+  - **Thinking on:** better than c13c on both ground-truth sets.
+    - B1: false alarm 0.14 → 0.01 (−0.13 [−0.23, −0.05]), recall 0.86 → 0.96, lifecycle 0.35 → 0.83.
+    - B1-tweak: false alarm 0.08 → 0.04, recall 0.89 → 0.97.
+  - **Thinking off, with the format:** lifecycle recall 0.18 → 0.67 (B1) and 0.31 → 0.75 (B1-tweak), and recall
+    +0.10. The false alarm did not move: B1 0.41 → 0.35, B1-tweak 0.24 → 0.23, both within noise. The gate needed −0.08.
+  - **Thinking off, plain (the test.py path):** false alarm 0.30 → **0.61** (+0.31 [+0.20, +0.42]); judge WRONG 2.2% →
+    3.8%.
+    - New false claims: DataIntersection `$out.0` "wrong port", getDayOfWeek / getMinute signatures, "unreachable
+      return", more requirement misreadings.
+    - Kept: initGroup ordinal, UTC-millisecond DST, null-compare as ERROR.
+    - The clean / plain / off review slot is the only one whose KL did not converge (0.19 → 0.095). It had 160 samples
+      against about 550 per planted slot (78% of reviews were planted).
+  - **Fact sheet:** it removed the claims it refutes (decimal / integer "truncates" / "does not compile", null to a
+    local). The §7 severity sentence moved nothing: null-compare findings are still ERROR.
+  - **Generate and belief hold:**
+    - gap tests off 0.406 vs 0.403; on 0.715 vs 0.761 (−0.045, inside ±0.06 but at its edge);
+    - harness first attempt 0.65 / 0.79 vs 0.65 / 0.82;
+    - T40/T42, hard sets, T54 0/20: as c13c or better;
+    - context guard never fired.
+  - **valprec2 proposal:**
+    - clean reviews ≥ 50% of review weight, clean / plain / off over-sampled;
+    - compile-type mutants down-sampled;
+    - controls for the surviving claims;
+    - a teacher line that names [WARNING] for data-dependent nulls;
+    - add B1 plain thinking on to the gates.
+
+## 2026-10-27 (night)
+
+- **valprec1 started** (`spec/validate_precision_brief.md`, `spec/validate_precision_findings.md`, findings §3.37): OPCD on
+  c13c with validate reviews whose teacher sees the CloverDX server's verdict on the code under review.
+  - **Fact probes first** (29 runs, `results/validate_precision/fact_probes.json`): an unguarded `>`/`<`, arithmetic, `!`
+    or `if` on a null **does throw** (NullPointerException); `==`/`!=` with null and assigning null to a local do not;
+    decimal / integer is a decimal (7.50 / 2 = 3.75) and a decimal compared with an integer literal compiles; UTC
+    millisecond arithmetic has no DST shift. So B1-tweak's "nullable compared without a guard can throw" is true, but
+    data-dependent: the teacher's fact sheet calls it a WARNING (§7), never an ERROR. The decimal claims are false.
+  - **Data:** 160 exec-RFT references (pool minus the 97 B1 references; holdout unread) → 160 clean + 553 server-confirmed
+    planted reviews (seed 13, every confirmed mutant), each in both modes with the output format in one of them: 1426
+    rows. Exclusions checked against pool 1, pool_tweak, B1, B1-tweak and the holdout (3 `c13b_keep` DI prompts were
+    holdout prompts and were dropped from the anchor).
+  - **Run:** c13c's anchors at ×2 weight so reviews are 61% of the non-replay weight; 123 rounds (each review row once),
+    ~7 min per round; `opcd.py` gained a per-prompt system addition, a context-quote guard and per-tag stats. Smoke: KL
+    falls; review samples start at KL 0.09–0.15 per token against ≤ 0.03 for the anchors. Gates run automatically after
+    training (`scripts/validate_precision/run.sh` → `gates.sh`).
 
 ## 2026-10-27 (evening)
 

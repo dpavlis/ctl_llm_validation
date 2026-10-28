@@ -1,0 +1,104 @@
+{
+ "records": 713,
+ "by_kind": {
+  "unconnected_port": 157,
+  "unknown_field": 157,
+  "wrong_return": 92,
+  "missing_lifecycle": 51,
+  "inverted_condition": 42,
+  "null_guard_removed": 54,
+  "control": 160
+ },
+ "by_kind_component": {
+  "control": {
+   "Reformat": 36,
+   "Normalizer": 37,
+   "Rollup": 51,
+   "DataIntersection": 22,
+   "Denormalizer": 9,
+   "ExtHashJoin": 2,
+   "ExtMergeJoin": 1,
+   "Partition": 1,
+   "DATA_GENERATOR": 1
+  },
+  "inverted_condition": {
+   "Reformat": 10,
+   "Normalizer": 14,
+   "Rollup": 17,
+   "Partition": 1
+  },
+  "missing_lifecycle": {
+   "Rollup": 51
+  },
+  "null_guard_removed": {
+   "Normalizer": 5,
+   "Denormalizer": 9,
+   "Rollup": 29,
+   "Reformat": 11
+  },
+  "unconnected_port": {
+   "Normalizer": 37,
+   "Reformat": 36,
+   "ExtHashJoin": 2,
+   "DataIntersection": 20,
+   "Rollup": 51,
+   "Denormalizer": 9,
+   "ExtMergeJoin": 1,
+   "DATA_GENERATOR": 1
+  },
+  "unknown_field": {
+   "Rollup": 51,
+   "DataIntersection": 20,
+   "Normalizer": 37,
+   "DATA_GENERATOR": 1,
+   "Reformat": 36,
+   "Denormalizer": 9,
+   "ExtMergeJoin": 1,
+   "ExtHashJoin": 2
+  },
+  "wrong_return": {
+   "Normalizer": 37,
+   "DataIntersection": 15,
+   "Reformat": 30,
+   "Denormalizer": 9,
+   "ExtMergeJoin": 1
+  }
+ },
+ "by_server_status": {
+  "unconnected_port:init_error": 157,
+  "unknown_field:invalid": 157,
+  "wrong_return:wrong_rows": 92,
+  "missing_lifecycle:init_error": 51,
+  "inverted_condition:wrong_rows": 42,
+  "null_guard_removed:runtime_error": 31,
+  "null_guard_removed:wrong_rows": 23,
+  "control:pass": 160
+ },
+ "verified_before_sampling": {
+  "unknown_field": 157,
+  "unconnected_port": 157,
+  "wrong_return": 92,
+  "missing_lifecycle": 51,
+  "inverted_condition": 42,
+  "null_guard_removed": 54
+ },
+ "tries": {
+  "inverted_condition:pass": 43,
+  "inverted_condition:wrong_rows": 42,
+  "missing_lifecycle:init_error": 51,
+  "null_guard_removed:pass": 22,
+  "null_guard_removed:runtime_error": 31,
+  "null_guard_removed:wrong_rows": 23,
+  "unconnected_port:init_error": 157,
+  "unknown_field:invalid": 157,
+  "wrong_return:wrong_rows": 92
+ },
+ "candidate_pairs": {
+  "unconnected_port": 157,
+  "unknown_field": 157,
+  "wrong_return": 92,
+  "null_guard_removed": 70,
+  "missing_lifecycle": 51,
+  "inverted_condition": 58
+ }
+}

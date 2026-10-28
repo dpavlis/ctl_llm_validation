@@ -22,6 +22,11 @@ The prompt is "Validate this <component> against its metadata and requirements."
 instruction sentences and code blocks removed + the code; no hint about the defect.
 
     ~/venv/bin/python scripts/harness_measurement/make_mutants.py --out data/agent_harness/validate_mutants.jsonl
+
+--exec-rft: the source tasks are exec-RFT pool records (data/exec_rft/pool.jsonl: one `manifest`, graphs under
+data/exec_rft/graphs/), minus every task whose reference is a pool-1 reference (B1) — the training set of the
+validate-precision OPCD run (spec/validate_precision_brief.md). --per-kind 0 / --controls -1 keep every confirmed
+mutant / every reference.
 """
 import argparse, asyncio, collections, json, random, re, sys, xml.etree.ElementTree as E
 from pathlib import Path
@@ -33,7 +38,8 @@ import agent_harness as AH   # noqa: E402  (read-only use: graph paths, scorer, 
 LIFECYCLE = ["finishGroup", "updateTransform", "initGroup", "updateGroup"]
 COMP_NAME = {"REFORMAT": "Reformat", "ROLLUP": "Rollup", "NORMALIZER": "Normalizer", "DENORMALIZER": "Denormalizer",
              "PARTITION": "Partition", "DATA_INTERSECTION": "DataIntersection", "DATAINTERSECTION": "DataIntersection",
-             "EXT_MERGE_JOIN": "ExtMergeJoin", "EXTMERGEJOIN": "ExtMergeJoin", "EXT_HASH_JOIN": "ExtHashJoin"}
+             "EXT_MERGE_JOIN": "ExtMergeJoin", "EXTMERGEJOIN": "ExtMergeJoin", "EXT_HASH_JOIN": "ExtHashJoin",
+             "EXTHASHJOIN": "ExtHashJoin", "DATAGENERATOR": "DataGenerator"}
 SEVERITY = dict(missing_lifecycle="ERROR", unconnected_port="ERROR", unknown_field="ERROR", wrong_return="ERROR",
                 inverted_condition="ERROR|WARNING", null_guard_removed="WARNING")
 
@@ -246,6 +252,29 @@ def build_prompt(task, code):
             f"{requirements(task['prompt'])}\n\n```ctl\n{code.strip()}\n```")
 
 
+def load_exec_rft(path, exclude_pools):
+    """exec-RFT records in the pool-1 shape (manifests list, source = corpus set), with the graph harness pointed at
+    data/exec_rft/. Tasks whose reference hash is in an excluded pool (pool 1 = B1's references) are dropped."""
+    AH.H.D = ROOT / "data/exec_rft"
+    AH.H.R = AH.X.R = AH.H.D / "graphs"
+    excl = {m["reference_sha256"] for f in exclude_pools for l in Path(f).read_text().splitlines() if l.strip()
+            for m in json.loads(l)["manifests"]}
+    tasks, dropped = [], 0
+    for l in Path(path).read_text().splitlines():
+        if not l.strip():
+            continue
+        r = json.loads(l)
+        if r["manifest"]["reference_sha256"] in excl:
+            dropped += 1; continue
+        tasks.append(dict(r, manifests=[r["manifest"]], source=r["set"]))
+    print(f"exec-RFT: {len(tasks)} tasks, {dropped} dropped (reference in {', '.join(map(str, exclude_pools))})", flush=True)
+    return tasks
+
+
+def fixture_rows(t):
+    return sum(len(x) for x in t["manifests"][0]["fixture"]["inputs"])
+
+
 def task_meta(task):
     m = task["manifests"][0]
     root = E.parse(AH.graph_path(m)).getroot()
@@ -259,7 +288,8 @@ def task_meta(task):
 
 # ------------------------------------------------------------------------------------------------------- main
 async def main(a):
-    tasks = [json.loads(l) for l in Path(a.pool).read_text().splitlines() if l.strip()]
+    tasks = load_exec_rft(a.pool, a.exclude) if a.exec_rft else \
+        [json.loads(l) for l in Path(a.pool).read_text().splitlines() if l.strip()]
     rng = random.Random(a.seed)
     todo = []        # (task, kind, [candidates]) — candidates tried in shuffled order until one fails on the server
     for t in tasks:
@@ -315,6 +345,7 @@ async def main(a):
                                                 component=comp_name(t["component"]), kind=kind, truth="FAIL",
                                                 anchor=c["anchor"], anchor_res=c["anchor_res"], site=c["site"],
                                                 severity=SEVERITY[kind], server_status=worst, server_detail=det[:600],
+                                                input_rows=fixture_rows(t), task=t.get("task"),
                                                 prompt=build_prompt(t, c["code"]), code=c["code"]))
                             break
 
@@ -327,15 +358,16 @@ async def main(a):
     for kind, rs in by_kind.items():
         rng.shuffle(rs)
         rs.sort(key=lambda r: sum(x["component"] == r["component"] for x in rs))   # rarer components first
-        kept += rs[:a.per_kind]
+        kept += rs[:a.per_kind] if a.per_kind > 0 else rs
     ctl_tasks = [t for t in tasks if "_code" in t]
     rng.shuffle(ctl_tasks)
     seen = collections.Counter()
     ctl_tasks.sort(key=lambda t: seen.update([comp_name(t["component"])]) or seen[comp_name(t["component"])])
-    for t in ctl_tasks[:a.controls]:
+    for t in ctl_tasks[:a.controls] if a.controls >= 0 else ctl_tasks:
         kept.append(dict(id=f"{t['id']}__control", task_id=t["id"], source=t["source"], component=comp_name(t["component"]),
                          kind="control", truth="PASS", anchor=None, anchor_res=[], site="", severity=None,
                          server_status="pass", server_detail="reference passes its acceptance graph",
+                         input_rows=fixture_rows(t), task=t.get("task"),
                          prompt=build_prompt(t, t["_code"]), code=t["_code"]))
     with open(out, "w") as fh:
         for r in kept:
@@ -360,10 +392,14 @@ if __name__ == "__main__":
     ap.add_argument("--per-kind", type=int, default=30)
     ap.add_argument("--controls", type=int, default=50)
     ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--exec-rft", action="store_true", help="--pool is an exec-RFT pool (one manifest per record)")
+    ap.add_argument("--exclude", nargs="*", default=[str(ROOT / "data/agent_harness/pool1.jsonl")],
+                    help="--exec-rft: drop tasks whose reference hash is in these pools")
     ap.add_argument("--dry", action="store_true", help="only list the mutation sites and print sample prompts")
     a = ap.parse_args()
     if a.dry:
-        tasks = [json.loads(l) for l in Path(a.pool).read_text().splitlines() if l.strip()]
+        tasks = load_exec_rft(a.pool, a.exclude) if a.exec_rft else \
+            [json.loads(l) for l in Path(a.pool).read_text().splitlines() if l.strip()]
         c = collections.Counter()
         for t in tasks:
             code = reference(t["manifests"][0]); meta = task_meta(t)

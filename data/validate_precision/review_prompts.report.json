@@ -1,0 +1,93 @@
+{
+ "prompts": 713,
+ "rows": 1426,
+ "by_kind": {
+  "unconnected_port": 157,
+  "unknown_field": 157,
+  "wrong_return": 92,
+  "missing_lifecycle": 51,
+  "inverted_condition": 42,
+  "null_guard_removed": 54,
+  "control": 160
+ },
+ "by_kind_component": {
+  "control": {
+   "Normalizer": 37,
+   "DataIntersection": 22,
+   "Reformat": 36,
+   "Rollup": 51,
+   "ExtHashJoin": 2,
+   "Denormalizer": 9,
+   "Partition": 1,
+   "DataGenerator": 1,
+   "ExtMergeJoin": 1
+  },
+  "inverted_condition": {
+   "Rollup": 17,
+   "Reformat": 10,
+   "Partition": 1,
+   "Normalizer": 14
+  },
+  "missing_lifecycle": {
+   "Rollup": 51
+  },
+  "null_guard_removed": {
+   "Denormalizer": 9,
+   "Rollup": 29,
+   "Normalizer": 5,
+   "Reformat": 11
+  },
+  "unconnected_port": {
+   "Rollup": 51,
+   "DataIntersection": 20,
+   "Reformat": 36,
+   "Denormalizer": 9,
+   "Normalizer": 37,
+   "ExtHashJoin": 2,
+   "DataGenerator": 1,
+   "ExtMergeJoin": 1
+  },
+  "unknown_field": {
+   "Rollup": 51,
+   "Reformat": 36,
+   "DataIntersection": 20,
+   "Normalizer": 37,
+   "Denormalizer": 9,
+   "DataGenerator": 1,
+   "ExtMergeJoin": 1,
+   "ExtHashJoin": 2
+  },
+  "wrong_return": {
+   "Reformat": 30,
+   "DataIntersection": 15,
+   "Normalizer": 37,
+   "Denormalizer": 9,
+   "ExtMergeJoin": 1
+  }
+ },
+ "by_tag_mode": {
+  "review_clean:fmt:on": 80,
+  "review_clean:plain:off": 80,
+  "review_clean:plain:on": 80,
+  "review_clean:fmt:off": 80,
+  "review_planted:fmt:on": 278,
+  "review_planted:plain:off": 278,
+  "review_planted:plain:on": 275,
+  "review_planted:fmt:off": 275
+ },
+ "by_server_status": {
+  "unconnected_port:init_error": 157,
+  "unknown_field:invalid": 157,
+  "wrong_return:wrong_rows": 92,
+  "missing_lifecycle:init_error": 51,
+  "inverted_condition:wrong_rows": 42,
+  "null_guard_removed:runtime_error": 31,
+  "null_guard_removed:wrong_rows": 23,
+  "control:pass": 160
+ },
+ "context_chars": {
+  "min": 2455,
+  "max": 2844
+ },
+ "facts_chars": 2129
+}

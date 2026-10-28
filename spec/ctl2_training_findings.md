@@ -2608,6 +2608,41 @@ Details: `spec/harness_measurement_findings.md` (Part A).
 - **Caveat:** the acceptance filter keeps tasks a strong model's reference passes. Date-unit-name errors fall from 15%
   to 3% of thinking-off attempts, so pool_tweak under-samples pitfall-inviting tasks.
 
+
+### 3.37 Validate-precision OPCD (valprec1): the server's verdict as teacher context (2026-10-27..28, not adopted)
+
+Details: `spec/validate_precision_findings.md` (brief `spec/validate_precision_brief.md`). c13c continued on 1426 validate
+reviews (160 clean exec-RFT references + 553 server-confirmed planted defects, both modes, half with the output format);
+the rulev6 teacher additionally sees the server's verdict on the reviewed code and a fact sheet of §7 / server-probed
+facts. Probes for the sheet: an unguarded relational or arithmetic use of a null throws (a WARNING under §7, data
+dependent); `==`/`!=` with null, null assignment, decimal / integer division and decimal-vs-integer comparison are safe.
+Anchors as c13c at ×2 weight (reviews 61% of the non-replay weight), 123 rounds. Gates: B1 / B1-tweak false alarm and
+recall, gap-test execution pass rate, harness first attempt, T40/T42, hard sets, T54, judge regression check.
+
+**Results** (round 122 vs c13c, 2 runs per record, paired-bootstrap 95% CIs):
+
+| set | mode | false alarm | defect recall | lifecycle recall |
+|---|---|---|---|---|
+| B1, format | on | 0.14 → **0.01** (−0.13 [−0.23, −0.05]) | 0.86 → 0.96 | 0.35 → 0.83 |
+| B1, format | off | 0.41 → 0.35 (−0.06 [−0.14, +0.02]) | 0.75 → 0.85 | 0.18 → 0.67 |
+| B1, plain (test.py path) | off | 0.30 → **0.61** (+0.31 [+0.20, +0.42]) | 0.69 → 0.83 | 0.18 → 0.77 |
+| B1-tweak, format | on | 0.08 → 0.04 | 0.89 → 0.97 | 0.28 → 0.78 |
+| B1-tweak, format | off | 0.24 → 0.23 (−0.01 [−0.10, +0.08]) | 0.80 → 0.91 | 0.31 → 0.75 |
+
+- **Thinking-off false alarm (the gate):** the hypothesis was below 0.25 / 0.15; it failed. Without the format it
+  doubled, and the judge's thinking-off WRONG share rose 2.2% → 3.8%.
+- **Claims that disappeared:** the ones the fact sheet refutes (decimal / integer arithmetic, null assigned to a local).
+- **Claims that stayed:** null comparisons as ERROR (the §7 severity line did not move them), initGroup ordinals, UTC
+  DST.
+- **New false claims** (thinking off, plain): DataIntersection `$out.0` "wrong port", getDayOfWeek / getMinute
+  signatures, "unreachable return".
+- **Training:** the clean / plain / thinking-off slot is the only one whose KL did not converge. It had 160 samples
+  against about 550 per planted slot.
+- **Generate and belief hold:** gap tests 0.406 / 0.715 vs 0.403 / 0.761 (on −0.045, inside ±0.06); harness first
+  attempt 0.65 / 0.79 vs 0.65 / 0.82; T40/T42, hard sets 1–3, T54 0/20 as c13c or better.
+- **Decision:** not adopted. The method works thinking on; the next round rebalances to ≥ 50% clean reviews with the
+  clean / plain / off slot over-sampled, down-samples compile-type mutants, adds controls for the surviving claims and a
+  teacher line naming [WARNING] for data-dependent nulls.
 ---
 
 ## 4. Measurement — read this before trusting any older number
