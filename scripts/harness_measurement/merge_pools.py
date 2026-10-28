@@ -8,6 +8,7 @@ Tasks are deduplicated by id (the hash of the rewritten prompt). Two kinds of dr
 The report sums the per-seed rejection counters and adds the acceptance rate.
 
     ~/venv/bin/python scripts/harness_measurement/merge_pools.py [--drop data/agent_harness/pool_tweak.dropped.json]
+    # a second batch (retry-distill training pool): --dir data/agent_harness/tweak_retry --exclude data/agent_harness/pool_tweak.jsonl
 """
 import argparse, collections, glob, json, re
 from pathlib import Path
@@ -30,10 +31,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--drop")
     ap.add_argument("--out", default=str(D / "pool_tweak.jsonl"))
+    ap.add_argument("--dir", default=str(D / "tweak"), help="folder of the per-seed pools (default data/agent_harness/tweak)")
+    ap.add_argument("--exclude", nargs="*", default=[], help="pools whose task ids are dropped (e.g. pool_tweak.jsonl for a training batch)")
     a = ap.parse_args()
+    exclude = {json.loads(l)["id"] for f in a.exclude for l in Path(f).read_text().splitlines()}
     drop = {d["id"]: d["why"] for d in json.loads(Path(a.drop).read_text())} if a.drop else {}
     tasks, rejected, seeds = {}, collections.Counter(), {}
-    for p in sorted((D / "tweak").glob("s*.jsonl")):
+    for p in sorted(Path(a.dir).glob("s*.jsonl")):
         if p.name.endswith(".rejected.jsonl"):
             continue
         rep = json.loads(p.with_suffix(".report.json").read_text())
@@ -42,7 +46,8 @@ def main():
                              tried=sum(v for k, v in rep["rejected"].items() if k.startswith("tweak_")))
         for l in p.read_text().splitlines():
             t = json.loads(l)
-            tasks.setdefault(t["id"], t)
+            if t["id"] not in exclude:
+                tasks.setdefault(t["id"], t)
     answers = corpus_answers()
     for t in tasks.values():
         if not CODE_RE.search(answers.get(t["origin"]) or "") and not ASKS_CTL_RE.search(t["prompt"]):

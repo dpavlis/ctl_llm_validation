@@ -72,6 +72,30 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
     falls; review samples start at KL 0.09–0.15 per token against ≤ 0.03 for the anchors. Gates run automatically after
     training (`scripts/validate_precision/run.sh` → `gates.sh`).
 
+## 2026-10-28 (early) — retry-distill data step 1 done
+
+- Sampling run for `spec/retry_distill_brief.md` finished (c13c, GPU 2, 23:02–04:29): training pool
+  `data/agent_harness/pool_retry.jsonl` (160 exec-RFT prompts not in pool 1, holdout excluded) × 4 runs × 2 modes, 2
+  feedback rounds with `--rows-feedback` → `results/agent_harness/c13c_pool_retry_rows.jsonl` (1,280 records, 0 model
+  errors; summary `.summary.md`; script `scripts/retry_distill_sample.sh`).
+- First attempt 0.51 off / 0.65 on, final 0.75 / 0.89 (this pool is harder than pool 1: 0.65 / 0.82 first there).
+- **Triples (attempt 0 failed, later attempt passed): 150 off (66 distinct prompts) + 149 on (80 prompts) = 299.**
+  By attempt-0 cause: wrong_rows 56/62 (off/on), undeclared_variable 28/9, wrong_arguments 18/23, out_port 1/14,
+  regex_negation 4/10, other 31/13, runtime 7/8. By set: syntax_pitfalls 54/59, scd2 23/26, rollup_accumulator 19/19,
+  normalizer_multirow 19/20, dataintersection 18/11, rollup_lifecycle 12/5, zerodate 5/9.
+- Note: thinking on is *worse* than off on DataIntersection here (first 0.53 vs 0.59, final 0.72 vs 0.90; 23 compile
+  errors, mostly `$out.1`), consistent with §3.36.
+- **Step 1b, the second `--tweak` batch (same day, 10:00–17:28):** seeds 201–202 on the six sets + 203–205 Rollup-only
+  (`scripts/retry_distill_tweak.sh`; `merge_pools.py --dir/--exclude`) → `data/agent_harness/pool_retry_tweak.jsonl`,
+  190 tasks (acceptance 0.66; DI 49, Reformat 47, Normalizer 49, Rollup 42; zerodate kept none, 22 prose-origin
+  dropped), no overlap with pool_tweak by id. c13c sampled the same way → `results/agent_harness/c13c_pool_retry_tweak_rows.jsonl`
+  (1,520 records, 0 model errors). First 0.64 off / 0.70 on, final 0.81 / 0.85. **Triples 131 off (57 prompts) + 120 on
+  (63 prompts) = 251.** Causes: wrong_rows 45/64, other compile 22/4, out_port 4/22, undeclared_variable 21/3,
+  wrong_arguments 18/8, reserved_time_unit 6/13. Thinking on again loses most on DataIntersection (`$out.1`).
+- **Training pool total: 550 triples** (281 off / 269 on) over 350 prompts; the §3.29 habits (`$out.1`, time-unit names,
+  argument order, undeclared variables) are all present. Training waits for the validate-precision run (valprec1) and
+  starts from the winning adapter.
+
 ## 2026-10-27 (evening)
 
 - **Validate gate adopted: the planted-defect ground truth, not the judge** (`CLAUDE.md` measurement rules, findings §4.8).
