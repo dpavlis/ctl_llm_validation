@@ -2,7 +2,7 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-10-28)
+## Where we are (2026-10-29)
 
 - **Ship candidate: c13c**, the rb1009 base plus OPCD adapter `data/opcd/c13c/round_015`. Confirmed by 20-sample checks
   and by running the generated code on the server.
@@ -13,16 +13,53 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **Biggest real gap:** generate without thinking. Only 44% of c13c's answers run correctly (§3.28).
 - **Validate is gated on ground truth now** (§3.35, §4.8): planted server-confirmed defects, parser-scored, sets B1 and
   B1-tweak. Thinking-off validate flags 24–41% of clean code with an [ERROR]; c13c misses a removed Rollup lifecycle
-  function 7 times in 10; the judge's 0.04 seed gaps are not reproduced. **valprec1 (§3.37) not adopted:** OPCD with
-  the server's verdict in the teacher's context makes thinking-on reviews the best yet (B1 false alarm 0.14 → 0.01,
-  lifecycle recall 0.35 → 0.83) and lifts thinking-off lifecycle recall (0.18 → 0.67) at no generate cost. But the
-  thinking-off false-alarm rate did not fall, and on the plain test.py path it doubled (0.30 → 0.61). Next: valprec2
-  with ≥ 50% clean reviews.
+  function 7 times in 10; the judge's 0.04 seed gaps are not reproduced.
+- **valprec2 (§3.38) is the validate successor candidate,** pending a generate check.
+  - **Method:** OPCD with the server's verdict in the teacher's context, rebalanced to 68% clean reviews.
+  - **Thinking-off false alarm, format path:** B1 0.41 → 0.25, B1-tweak 0.24 → 0.15.
+  - **Plain path:** back at c13c's 0.30 (valprec1 had doubled it).
+  - **Thinking on:** the best reviewer so far: false alarm 0.00–0.03, recall 0.96; plain-path recall 0.29 → 0.87.
+  - **Generate:** every gate is inside its band, but all four point estimates are 0.02–0.04 below c13c.
+  - **Next:** a fresh-domain harness check (pool_tweak, `--runs 2`) decides adoption.
 - **Training on the model's own server-verified answers (exec-RFT) did not help** (§3.33): one round moved neither the
   gap-test pass rate nor a held-out pool, and pushed T54 thinking off back to `$out.1`. Not adopted.
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-10-29 — valprec2 gates
+
+- **valprec2 gates** (`spec/validate_precision2_findings.md`, findings §3.38). **Successor candidate, not yet adopted.**
+  - **Run:** c13c + OPCD, 156 rounds, with clean reviews at 68% of the review weight (round 1: 22%), claim controls ×2,
+    compile-type mutants down-sampled, the CLEAN2 severity / "it compiled" line, and FACTS2.
+    - FACTS2's server probes: getDayOfWeek 1 = Monday … 7 = Sunday; date parts take a time zone; else-if (true) compiles.
+    - The clean / plain / off KL converged (0.168 → 0.005).
+  - **Interruption:** the trainer died in round 10 when `/home` hit 100%.
+    - I pruned valprec1's per-round weights for rounds 000–121 (about 290 GB) and resumed after round 9.
+    - `scripts/validate_precision/prune_rounds.sh` now keeps only the newest 2 rounds' weights while a run trains.
+  - **Thinking-off false alarm:**
+    - B1 with the format: 0.41 → 0.25 (−0.16 [−0.27, −0.06]; vs valprec1 −0.10);
+    - B1-tweak with the format: 0.24 → 0.15 (−0.09 [−0.19, +0.01]);
+    - B1 plain: 0.31, at c13c (valprec1 0.61).
+    - The fall is mostly requirement misreadings.
+    - These stay: null "throws" as ERROR (no move to WARNING), Rollup group state, the DataIntersection `$out.0` port
+      claim, and Sunday = 1 in 1 of 2 runs.
+  - **Thinking on:** false alarm 0.03 / 0.02, recall 0.96, lifecycle 0.83. Plain thinking on: false alarm 0.00, recall
+    0.87 (c13c 0.29).
+  - **Plain answers drift from the layout:** without a format instruction, 26% of thinking-off answers lose
+    `ISSUES:` / `VERDICT:`.
+    - The parser then under-reads recall (plain thinking on reads as 0.02).
+    - The findings use a format-independent re-score.
+  - **Generate, belief and judge:**
+    - gap tests 0.382 / 0.736 (c13c 0.403 / 0.761);
+    - harness first attempt 0.617 / 0.785 (0.650 / 0.825);
+    - all inside the bands but all below c13c;
+    - T40/T42, hard sets, T54 as c13c;
+    - judge WRONG share 2.6% (gate 2.5%, c13c 2.2%; inside noise);
+    - fix n5 0.826 → 0.922.
+  - **Next:** a fresh-domain harness on pool_tweak (`--runs 2`, both modes) against §3.36. Adopt if generate is within
+    ±0.03 of c13c.
+- **`gates_table.py`** takes an optional LAST argument for the round label.
 
 ## 2026-10-28
 

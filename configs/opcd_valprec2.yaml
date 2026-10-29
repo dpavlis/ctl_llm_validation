@@ -1,0 +1,75 @@
+# Validate-precision OPCD, round 2 (spec/validate_precision2_brief.md; round 1 = opcd_valprec1.yaml, findings §3.37). Changes from
+# round 1: the review file review_prompts_v2.jsonl (clean >= 50% of review weight, clean/plain/off and claim controls weighted
+# via row_weight, compile-type mutants down-sampled to 30 each, CLEAN2 + FACTS2 teacher context); rounds from the weights.
+# Round 1 header:
+# Validate-precision OPCD, round 1 (spec/validate_precision_brief.md): c13c continued on validate reviews whose teacher has
+# the CloverDX server's verdict on the very code under review in context. Review prompts (scripts/validate_precision/):
+# every exec-RFT pool reference that is not a pool-1 (B1) reference, unchanged ("clean": it compiled and produced exactly the
+# required rows) and with every server-confirmed planted defect (make_mutants.py --exec-rft, seed 13), each in both thinking
+# modes; half the rows carry the suite's validate output format in the system prompt (system_extra), half do not. The teacher
+# (rulev6, c13c's) gets per prompt: the verdict ("produced exactly the required rows" / the init error or first row
+# difference) + a fact sheet of section-7 / server-probed facts (build_context.py FACTS; probes results/validate_precision/
+# fact_probes.json). The student sees only the review prompt. A sample that quotes the context (context_guard) is dropped.
+# Anchors as c13c: belief prompts with the rulev6 teacher (target, contrast, hard sets 1-2), c13b_keep (gap / DI generate prompts
+# with their guide teachers, both modes), replay 0.4 with the plain-model anchor. Per-step hyperparameters are c13c's.
+run: valprec2
+init_adapter: data/opcd/c13c/round_015/adapter   # c13c
+base_model: /home/pavlisd/exports/qwen38_rb1009_sftdpo
+student: {"on": configs/eval_rb1006_on.yaml, "off": configs/eval_rb1006_off.yaml}   # system prompt + tokenizer only (identical tokenizer)
+teacher: {"on": configs/eval_rb1006_rulev6_on.yaml, "off": configs/eval_rb1006_rulev6_off.yaml}   # c13c's rule teacher
+rule_marker: "Declaration defaults in CTL2"   # rulev6 text, the first entry of the reviews' fact sheet
+modes: {generate: "on", fix: "on", validate: "on"}
+set_modes: {replay: {validate: "off"}}
+set_teacher: {replay: plain}
+teachers:   # one per component; the gap prompts name theirs (generate_gaps_c9.jsonl "teacher")
+  guide_REFORMAT: {"on": configs/opcd_c9_teachers/guide_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_PARTITION: {"on": configs/opcd_c9_teachers/guide_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_DENORMALIZER: {"on": configs/opcd_c9_teachers/guide_DENORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_DENORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_NORMALIZER: {"on": configs/opcd_c9_teachers/guide_NORMALIZER_on.yaml, "off": configs/opcd_c9_teachers/guide_NORMALIZER_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_ROLLUP: {"on": configs/opcd_c9_teachers/guide_ROLLUP_on.yaml, "off": configs/opcd_c9_teachers/guide_ROLLUP_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_REFORMAT: {"on": configs/opcd_c9_teachers/guide_dict_REFORMAT_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_REFORMAT_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_PARTITION: {"on": configs/opcd_c9_teachers/guide_dict_PARTITION_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_PARTITION_off.yaml, marker: "# Reference: the component you are writing for"}
+  guide_dict_DATA_GENERATOR: {"on": configs/opcd_c9_teachers/guide_dict_DATA_GENERATOR_on.yaml, "off": configs/opcd_c9_teachers/guide_dict_DATA_GENERATOR_off.yaml, marker: "# Reference: the component you are writing for"}
+
+  guide11_DATA_INTERSECTION: {"on": configs/opcd_c11_teachers/guide_DATA_INTERSECTION_on.yaml, "off": configs/opcd_c11_teachers/guide_DATA_INTERSECTION_off.yaml, marker: "# Reference: the component you are writing for"}
+
+prompts:
+  target:
+    - {run: dpodef1, split: train, weight: 3}   # 206: belief-prone fix / validate prompts (c4); x3 (valprec1 x2) to keep reviews at ~63%
+    - {run: dpodef3b_plain, weight: 2}          # 53: declaration-contrast prompts (c4)
+  # Anchor weights are c13c's x2 as valprec1, dpodef1 x3, so the review weight (1893) is ~63% of the non-replay weight.
+  hard:
+    - {file: data/opcd/hard_cases.jsonl, weight: 2}    # set 1 (c4)
+    - {file: data/opcd/hard_cases2.jsonl, weight: 6}   # set 2: previous-record dates (as c13c, x2)
+    - {file: data/validate_precision/c13b_keep_no_holdout.jsonl, weight: 2, modes: ["on", "off"]}   # c13b_keep (gap / DI generate prompts that keep c13's generate gains) minus the 3 DI prompts in the exec-RFT holdout
+    - {file: data/validate_precision/review_prompts_v2.jsonl, weight: 1, teacher_context_field: teacher_context, validate_format: false}
+                                                       # server-verdict reviews, one row per (prompt, mode); see header
+  hard_holdout: data/opcd/hard_holdout_c13.json       # c3 + c9 + c12 holdouts, never trained
+  contrast: data/opcd/contrast_prompts.jsonl          # 60 corpus prompts where something really IS null (c4)
+  contrast_weight: 2
+  probe: {run: dpodef1, split: probe}
+  replay_share: 0.4
+  replay_task_mix: {generate: 0.4, validate: 0.35, fix: 0.25}
+
+lora: {r: 32, alpha: 32, dropout: 0.0, target: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]}
+
+train:
+  seed: 0
+  rounds: 156                 # the review weight (1893 at 63% of ~19 non-replay draws per round) drawn about once
+  prompts_per_round: 32
+  k: 2
+  steps_per_round: 2
+  lr: 2.0e-5
+  warmup_steps: 5
+  grad_clip: 1.0
+  adv_clip: null
+  quote_guard: true
+  context_guard: "(was|been) (compiled and )?(run|executed) (on|against)|on the CloverDX server|\\bthe fixture\\b|server('s)? (run|verdict|result)|produced exactly the required"   # quotes of the teacher context
+  skip_truncated: ["on"]
+  max_new_tokens: 6144
+  cutoff: 8192
+  logits_chunk: 1024
+
+probe: {n: 20, k: 2, every: 4}
+
+sampler: {url: "http://127.0.0.1:3013", served_model: rb1009_vp, concurrency: 32}   # not "rb1009": run_models.sh kills that name

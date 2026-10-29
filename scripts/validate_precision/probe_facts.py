@@ -57,6 +57,17 @@ PROBES = [
      'long a = date2long(str2date("2026-03-28 12:00:00", "yyyy-MM-dd HH:mm:ss", "en.US", "UTC")); '
      'long c = date2long(str2date("2026-03-30 12:00:00", "yyyy-MM-dd HH:mm:ss", "en.US", "UTC")); r = toString((c - a) / 3600000L);',
      VAL_ROW),
+    # round 2 (spec/validate_precision2_brief.md): valprec1's new false claims; t = 2026-03-29 00:00 UTC, a Sunday
+    ("dow_sunday_tz", "getDayOfWeek(date, tz) numbering (claim: 1 = Sunday)", 'r = toString(getDayOfWeek($in.0.t, "UTC"));', VAL_ROW),
+    ("dow_sunday_plus1", "getDayOfWeek of the next day, a Monday (dateAdd day is in the server zone: crosses the DST change, lands on Sunday 23:00 UTC)", 'r = toString(getDayOfWeek(dateAdd($in.0.t, 1, day), "UTC"));', VAL_ROW),
+    ("dow_monday_utc", "getDayOfWeek of Monday 2026-03-30 12:00 UTC",
+     'r = toString(getDayOfWeek(str2date("2026-03-30 12:00:00", "yyyy-MM-dd HH:mm:ss", "en.US", "UTC"), "UTC"));', VAL_ROW),
+    ("dow_saturday_utc", "getDayOfWeek of Saturday 2026-03-28 12:00 UTC",
+     'r = toString(getDayOfWeek(str2date("2026-03-28 12:00:00", "yyyy-MM-dd HH:mm:ss", "en.US", "UTC"), "UTC"));', VAL_ROW),
+    ("minute_tz", "getMinute(date, tz) has no time-zone overload", 'r = toString(getMinute($in.0.t, "UTC"));', VAL_ROW),
+    ("hour_tz", "getHour(date, tz) has no time-zone overload", 'r = toString(getHour($in.0.t, "UTC"));', VAL_ROW),
+    ("else_if_true_return", "a statement after an if / else if (true) chain that returns in every branch is unreachable and does not compile",
+     'if ($in.0.i > 100) { $out.0.result = "a"; return ALL; } else if (true) { $out.0.result = "b"; return ALL; }', VAL_ROW),
 ]
 
 

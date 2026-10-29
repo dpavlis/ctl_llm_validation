@@ -13,8 +13,13 @@ Every fact in FACTS is in findings §7 or was run on the server; the source is n
 prompt. Exclusions are re-checked: no task of pool 1 / pool_tweak, no exec-RFT holdout task, no code of B1 / B1-tweak.
 
     ~/venv/bin/python scripts/validate_precision/build_context.py
+    ~/venv/bin/python scripts/validate_precision/build_context.py --round2 --out data/validate_precision/review_prompts_v2.jsonl
+
+--round2 (spec/validate_precision2_brief.md): every clean prompt in both conditions (format / plain) and both modes,
+clean / plain / thinking off x2 and claim controls (constructs valprec1 falsely flagged) x2 more via `row_weight`;
+unconnected_port / unknown_field down-sampled to 30 each (stratified by component); CLEAN2 and FACTS2 for the teacher.
 """
-import argparse, collections, hashlib, json, random, sys
+import argparse, collections, hashlib, json, random, re, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -59,10 +64,21 @@ FACTS = "\n".join([
     "requirements do not mention) is a WARNING, never an ERROR.",
 ])
 
+# round 2: valprec1's new false claims, probed on the server (results/validate_precision/fact_probes_v2.json:
+# dow_sunday_tz 7, dow_monday_utc 1, dow_saturday_utc 6, minute_tz / hour_tz compile, else_if_true_return compiles and runs)
+FACTS2 = FACTS + "\n" + "\n".join([
+    "- getDayOfWeek returns 1 for Monday through 7 for Sunday. getDayOfWeek, getHour and getMinute accept an optional "
+    "time-zone argument, e.g. getMinute(d, \"UTC\").",
+    "- A statement after an if / else if (true) chain whose branches all return still compiles.",
+])
+
 CLEAN = ("This code was compiled and run on the CloverDX server against the task's fixture ({n} input rows) and produced "
          "exactly the required output rows. Report an [ERROR] only for a violation of a stated requirement or a compiler "
          "rule that you can point to in the code; a run that met the requirements cannot have one. Do not invent inputs "
          "the task does not describe. If nothing qualifies, answer ISSUES: none, VERDICT: PASS.")
+CLEAN2 = CLEAN.replace(" If nothing qualifies", " It compiled, so nothing in it is a compile error, an undeclared function or a "
+                       "wrong signature. A null in a nullable field that neither the fixture nor the requirements mention is at "
+                       "most a [WARNING], never an [ERROR]. If nothing qualifies")
 PLANTED = ("This code was run on the CloverDX server: {status}: {detail}. Find the statement responsible and report it "
            "as the finding; do not report anything else as an ERROR unless you can point to it.")
 STATUS = {"invalid": "graph validation failed", "init_error": "the component failed at initialization",
@@ -73,6 +89,25 @@ def detail(r):
     d = r["server_detail"].strip()
     d = d.replace("Graph validation failed: ", "")
     return " ".join(d.split())[:500]
+
+
+CLAIMS = {   # (record, non-null field names) -> bool; constructs valprec1 falsely flagged on clean code (findings, B1 plain thinking off)
+    "di_out0": lambda r, nul: r["component"] == "DataIntersection" and "$out.0" in r["code"],
+    "initgroup_state": lambda r, nul: bool(re.search(r"function\s+void\s+initGroup[^{]*\{[^}]*(\+\+|=\s*\w+\s*\+|=\s*0|=\s*null|=\s*false|=\s*true)", r["code"])),
+    "ms_date_arith": lambda r, nul: bool(re.search(r"date2long|86400000|millisec", r["code"])),
+    "nullable_ordered_cmp": lambda r, nn: any(f not in nn for f in re.findall(r"\$in\.\d\.(\w+)\s*(?:<=|>=|<|>)(?!>)", r["code"])
+                                               + re.findall(r"(?:<=|>=|<|>)\s*\$in\.\d\.(\w+)", r["code"])),
+    "date_part_tz": lambda r, nul: bool(re.search(r"get(DayOfWeek|Minute|Hour)\s*\([^;]*,\s*\"", r["code"])),
+}
+
+
+def non_null_fields(prompt):
+    """Fields the prompt declares non-nullable: XML nullable="false" or a "name: type (required ...)" description. CloverDX
+    fields are nullable by default, so every other field (most prompts state no nullability) counts as nullable."""
+    head = prompt.split("```")[0]
+    out = {m.group(1) for m in re.finditer(r'<Field name="(\w+)"[^>]*nullable="false"', head)}
+    out |= {m.group(1) for m in re.finditer(r"\b(\w+): \w+\b[^;\n]*?\((required|non-null|not null)[^)]*\)", head)}
+    return out
 
 
 def sha(code):
@@ -96,31 +131,57 @@ def main(a):
     by_kind = collections.defaultdict(list)
     for r in sorted(recs, key=lambda r: r["id"]):
         by_kind[r["kind"]].append(r)
+    claim_counts = collections.Counter()
+    if a.round2:   # down-sample the compile-type kinds, stratified by component (seed 13 as the mutant builder)
+        drng = random.Random(13)
+        for kind in ("unconnected_port", "unknown_field"):
+            comp = collections.defaultdict(list)
+            for r in by_kind[kind]:
+                comp[r["component"]].append(r)
+            n, keep = len(by_kind[kind]), []
+            for c, rs in sorted(comp.items()):
+                drng.shuffle(rs)
+                keep += rs[:max(1, round(30 * len(rs) / n))]
+            by_kind[kind] = sorted(keep[:30], key=lambda r: r["id"])
     rows = []
     for kind, rs in sorted(by_kind.items()):
         rng.shuffle(rs)
         for i, r in enumerate(rs):
             clean = kind == "control"
-            verdict = CLEAN.format(n=r["input_rows"]) if clean else \
+            facts = FACTS2 if a.round2 else FACTS
+            verdict = (CLEAN2 if a.round2 else CLEAN).format(n=r["input_rows"]) if clean else \
                 PLANTED.format(status=STATUS[r["server_status"]], detail=detail(r))
+            claims = [c for c, f in CLAIMS.items() if f(r, non_null_fields(r["prompt"]))] if clean else []
+            claim_counts.update(claims)
             fmt_mode = "on" if i % 2 == 0 else "off"   # the mode in which this prompt carries the output format
-            for mode in ("on", "off"):
-                fmt = mode == fmt_mode
-                rows.append(dict(id=f"vp_{r['id']}:{mode}", task_type="validate", component=r["component"],
+            conds = [(m, f) for m in ("on", "off") for f in (True, False)] if (clean and a.round2) else \
+                [(m, m == fmt_mode) for m in ("on", "off")]
+            for mode, fmt in conds:
+                w = 1
+                if a.round2 and clean:
+                    w = (2 if (mode == "off" and not fmt) else 1) * (2 if claims else 1)
+                rows.append(dict(id=f"vp_{r['id']}:{mode}{'' if not (clean and a.round2) else (':fmt' if fmt else ':plain')}",
+                                 task_type="validate", component=r["component"],
                                  source_file=f"exec_rft:{r['source']}", record_id=r["task_id"], user=r["prompt"],
                                  prompt_id=f"{sd.make_prompt_id(r['prompt'] + ('|fmt' if fmt else ''))}:{mode}", mode=mode,
-                                 system_extra=FORMAT if fmt else "", teacher_context=verdict + "\n\n" + FACTS,
+                                 system_extra=FORMAT if fmt else "", teacher_context=verdict + "\n\n" + facts,
                                  tag=f"review_{'clean' if clean else 'planted'}:{'fmt' if fmt else 'plain'}",
-                                 kind=kind, server_status=r["server_status"], anchor=r["anchor"]))
+                                 kind=kind, server_status=r["server_status"], anchor=r["anchor"], row_weight=w, claims=claims))
     out = Path(a.out)
     out.write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in rows))
-    rep = dict(prompts=len(recs), rows=len(rows),
-               by_kind=collections.Counter(r["kind"] for r in recs),
+    rep = dict(prompts=sum(map(len, by_kind.values())), rows=len(rows),
+               weight=dict(total=sum(x["row_weight"] for x in rows),
+                           clean=sum(x["row_weight"] for x in rows if x["kind"] == "control"),
+                           by_tag_mode=collections.Counter({f"{x['tag']}:{x['mode']}": 0 for x in rows})),
+               claim_controls=claim_counts,
+               by_kind={k: len(v) for k, v in sorted(by_kind.items())},
                by_kind_component={k: collections.Counter(r["component"] for r in v) for k, v in sorted(by_kind.items())},
                by_tag_mode=collections.Counter(f"{x['tag']}:{x['mode']}" for x in rows),
-               by_server_status=collections.Counter(f"{r['kind']}:{r['server_status']}" for r in recs),
+               by_server_status=collections.Counter(f"{r['kind']}:{r['server_status']}" for v in by_kind.values() for r in v),
                context_chars=dict(min=min(len(x["teacher_context"]) for x in rows), max=max(len(x["teacher_context"]) for x in rows)),
-               facts_chars=len(FACTS))
+               facts_chars=len(FACTS2 if a.round2 else FACTS))
+    for x in rows:
+        rep["weight"]["by_tag_mode"][f"{x['tag']}:{x['mode']}"] += x["row_weight"]
     out.with_suffix(".report.json").write_text(json.dumps(rep, indent=1) + "\n")
     print(json.dumps(rep, indent=1))
 
@@ -130,4 +191,5 @@ if __name__ == "__main__":
     ap.add_argument("--review", default=str(ROOT / "data/validate_precision/review_mutants.jsonl"))
     ap.add_argument("--out", default=str(ROOT / "data/validate_precision/review_prompts.jsonl"))
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--round2", action="store_true", help="valprec2 review set (spec/validate_precision2_brief.md)")
     main(ap.parse_args())

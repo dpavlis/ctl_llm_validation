@@ -97,7 +97,7 @@ def cmd_prepare(cfg: dict) -> None:
             if h["task_type"] == "validate" and vfmt:
                 h["user"], _ = sd.with_validate_format(h["user"])
             h.setdefault("record_id", h.get("id"))
-            h["weight"] = (weight_map or {}).get(h.get("part"), weight)
+            h["weight"] = (weight_map or {}).get(h.get("part"), weight) * int(h.get("row_weight", 1))  # row_weight: valprec2
             if ctx:
                 h["teacher_context"] = h[ctx]
             if both:

@@ -2643,6 +2643,50 @@ recall, gap-test execution pass rate, harness first attempt, T40/T42, hard sets,
 - **Decision:** not adopted. The method works thinking on; the next round rebalances to ≥ 50% clean reviews with the
   clean / plain / off slot over-sampled, down-samples compile-type mutants, adds controls for the surviving claims and a
   teacher line naming [WARNING] for data-dependent nulls.
+
+### 3.38 Validate-precision OPCD, round 2 (valprec2): rebalanced to clean reviews (2026-10-28..29, successor candidate)
+
+Details: `spec/validate_precision2_findings.md` (brief `spec/validate_precision2_brief.md`). Same method as §3.37 on c13c,
+rebalanced:
+- clean reviews are 68% of the review weight (§3.37: 22%), every reference in all four conditions, clean / plain / off
+  ×2;
+- claim controls ×2 (nullable ordered comparison 61, initGroup state 40, DataIntersection `$out.0` 22);
+- compile-type mutants down-sampled to 30 each;
+- the teacher's clean context adds "it compiled, so no compile claims; an unmentioned nullable null is at most a
+  [WARNING]";
+- the fact sheet adds server-probed facts: getDayOfWeek 1 = Monday … 7 = Sunday; date parts take a time zone; a
+  statement after an else-if (true) chain compiles.
+
+156 rounds; the clean / plain / off KL converged (0.168 → 0.005; §3.37 0.19 → 0.095).
+
+**Results** (round 155, 2 runs per record, paired-bootstrap 95% CIs; c13c → valprec1 → valprec2):
+
+| set | mode | false alarm | defect recall | lifecycle recall |
+|---|---|---|---|---|
+| B1, format | off | 0.41 → 0.35 → **0.25** (vs c13c −0.16 [−0.27, −0.06]; vs valprec1 −0.10 [−0.19, −0.03]) | 0.75 → 0.85 → 0.88 | 0.18 → 0.67 → 0.73 |
+| B1-tweak, format | off | 0.24 → 0.23 → **0.15** (−0.09 [−0.19, +0.01]) | 0.80 → 0.91 → 0.88 | 0.31 → 0.75 → 0.72 |
+| B1, plain (test.py path) | off | 0.30 → 0.61 → **0.31** | 0.60 → 0.78 → 0.64 (ERROR + anchor, format-independent) | |
+| B1, format | on | 0.14 → 0.01 → 0.03 | 0.86 → 0.96 → 0.96 | 0.35 → 0.83 → 0.83 |
+| B1, plain | on | 0.04 → – → **0.00** | 0.29 → – → **0.87** (format-independent) | |
+
+- **Thinking-off false alarm fell** with the format and is back to c13c on the plain path. The gain is mostly
+  requirement misreadings (28 → 9 on B1); null "throws", Rollup group state and the DataIntersection `$out.0` port claim
+  stay.
+- **Severity:** null findings on controls are still ERRORs (B1 10 / 0). The server-refuted "getDayOfWeek Sunday = 1"
+  claim survives in 1 of 2 runs.
+- **Plain answers drift from the layout:** without a format instruction, 26% of thinking-off and 74% of thinking-on
+  answers drop `ISSUES:` / `VERDICT:`, so the parser under-reads plain recall. The table uses a format-independent
+  re-score.
+- **Generate and belief within the bands, all point estimates slightly below c13c:**
+  - gap tests 0.382 / 0.736 vs 0.403 / 0.761;
+  - harness first attempt 0.617 / 0.785 vs 0.650 / 0.825;
+  - thinking-off first-attempt compile errors +0.07 (−0.01, +0.14);
+  - T40/T42, hard sets, T54 0/20 as c13c.
+
+  The judge WRONG share is 2.6% (c13c 2.2%, gate 2.5%). Fix on n5 is 0.826 → 0.922.
+- **Decision:** successor candidate. Adopt if the fresh-domain harness (pool_tweak, `--runs 2`, both modes) confirms
+  generate within ±0.03 of c13c (§3.36). Leave the remaining thinking-off false alarms to the system prompt or the retry
+  loop rather than a third round.
 ---
 
 ## 4. Measurement — read this before trusting any older number

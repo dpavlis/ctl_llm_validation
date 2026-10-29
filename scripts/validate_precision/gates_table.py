@@ -8,7 +8,7 @@ vLLM path and judge. The validate ground-truth gates are score_validate.py's (re
   (mean, WRONG share), full v4 thinking on n5 (validate / fix / generate)
 Differences carry a 95% CI (Newcombe for proportions, Welch for means); samples are treated as independent.
 
-    ~/venv/bin/python scripts/validate_precision/gates_table.py [RUN] > results/validate_precision/gates_valprec1.md
+    ~/venv/bin/python scripts/validate_precision/gates_table.py [RUN [LAST]] > results/validate_precision/gates_valprec1.md
 """
 import collections, glob, json, re, sys
 from pathlib import Path
@@ -21,6 +21,7 @@ from dpoiso_table import newcombe, welch, jr  # noqa: E402
 
 RES = ROOT / "results"
 RUN = sys.argv[1] if len(sys.argv) > 1 else "valprec1"
+LAST = sys.argv[2] if len(sys.argv) > 2 else "122"
 FILES = {"c13c": E.FILES["c13c"],
          RUN: dict(off_x9=sorted(glob.glob(str(RES / f"results_qwen38_vp_v4_{RUN}_off_2*.json"))),
                    on_full=sorted(glob.glob(str(RES / f"results_qwen38_vp_v4_{RUN}_on_2*.json"))),
@@ -117,7 +118,7 @@ def main():
         a, b = A[f"on_{ty}"], B[f"on_{ty}"]
         rows.append((f"thinking on, full v4 n5: {ty} mean (n)", f"{sum(a) / len(a):.3f} ({len(a)})", f"{sum(b) / len(b):.3f} ({len(b)})",
                      E.fmt_d(welch(b, a))))
-    print(f"| gate | c13c | {RUN} (round 122) | difference, 95% CI |")
+    print(f"| gate | c13c | {RUN} (round {int(LAST)}) | difference, 95% CI |")
     print("|---|---|---|---|")
     for r in rows:
         print("| " + " | ".join(r) + " |")
