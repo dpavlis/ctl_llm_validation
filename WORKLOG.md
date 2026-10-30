@@ -27,11 +27,37 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
     ±0.04).
   - **Still open:** thinking-off false alarms (null as ERROR, initGroup state, DataIntersection `$out.0`). These are
     left to the system prompt or the retry loop.
+- **Training on the model's own harness-corrected answers (retry1) did not help either** (§3.39): +0.10 first-attempt
+  pass on the fresh-domain pool thinking off, but gap-test execution pass −0.06 off / −0.15 on, no-code answers thinking
+  on, the accumulator belief back in hard set 2. Not adopted; the compile-and-retry loop at inference does the same job.
 - **Training on the model's own server-verified answers (exec-RFT) did not help** (§3.33): one round moved neither the
   gap-test pass rate nor a held-out pool, and pushed T54 thinking off back to `$out.1`. Not adopted.
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-10-30 — retry1 gates, disk and server cleanup
+
+- **retry1 (retry-loop distillation) not adopted** (`spec/retry_distill_findings.md`, findings §3.39).
+  - **Data:** 453 triples (281 off / 172 on) from two new pools sampled by c13c in the harness, feedback references
+    stripped; 906 exec rows, 67 rounds from c13c (`data/opcd/retry1/round_066`).
+  - **Gain:** pool_tweak thinking off first attempt 0.72 → 0.82 (+0.10 [+0.04, +0.17]), compile errors 0.13 → 0.05;
+    DataIntersection `$out.1` thinking on 20 → 6 of 102.
+  - **Loss:** gap-test execution pass off 0.40 → 0.34, on 0.76 → 0.62 (CI excludes 0); 12/330 thinking-on answers with
+    no code; hard set 2 belief claims 1 → 10 of 60; B1-tweak thinking-off false alarm 0.24 → 0.33. Pool 1, T40/T42,
+    T54, validate judge suite flat.
+  - **Hand check:** gains are corrected logic slips; losses are new habits not in the targets (createDate without time
+    zone, accumulator reset to 0, reserved-token globals).
+  - **Lesson:** exec SFT/DPO rows from Rollup fix tasks carry the accumulator belief in code, invisible to the OPCD
+    probes (same as exec-RFT and rb1012). Any retry: thinking-off compile-error triples only, accumulator rows out.
+- **Disk:** `/home` free 304 GB → 3.5 TB. Pruned retry1 / exec_rft1 per-round weights (`scripts/disk_cleanup.sh`,
+  KEEP_ROUND extended to retry1 r066, valprec1 r122, valprec2 r155) and deleted one 3.2 TB CloverDX output CSV from a
+  runaway Rollup in my pool_retry sampling on 10-28.
+- **Harness and exec_score now cap and clean up:** every candidate graph's writer gets `recordsCount` = max(1000,
+  10 × expected rows) and the graph plus its outputs are deleted from the sandbox after scoring (`agent_harness.py`,
+  `data/suite_v5/exec_score.py`; a capped output is noted in the wrong-rows detail). Verified on the server.
+- **Uncommitted:** `scripts/retry_distill/*`, `configs/opcd_retry1.yaml`, `configs/eval_rd_*.yaml`,
+  `data/retry_distill/*`, `data/agent_harness/pool_retry_on.jsonl`, the harness and exec_score edits.
 
 ## 2026-10-30 — valprec2 adopted
 

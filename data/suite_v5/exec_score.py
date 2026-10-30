@@ -24,7 +24,8 @@ from graph_harness import D, R, parse_actual, normalized_rows
 
 SANDBOX = "MiscExamples"
 DETAIL_LEN = 300   # characters of a server error kept in the detail (exec_retry.py raises it to feed the full message back)
-TOOLS = {"task_workflow_get", "sandbox_write_file", "sandbox_read_file", "job_validate", "job_run", "job_await"}
+TOOLS = {"task_workflow_get", "sandbox_write_file", "sandbox_read_file", "sandbox_delete_file", "job_validate", "job_run", "job_await"}
+CAP_MIN, CAP_FACTOR = 1000, 10   # a writer stops after max(CAP_MIN, CAP_FACTOR x expected rows) records (a runaway transform once wrote 3.2 TB)
 
 
 def guard(name, args):
@@ -50,26 +51,57 @@ def extract_code(answer):
     return code if code.startswith("//#CTL2") else "//#CTL2\n" + code
 
 
-def candidate_graph(m, code, key):
+def candidate_graph_capped(m, code, key):
     """The label's acceptance graph with the Test node's CTL replaced and outputs redirected under suite_v5/exec/."""
     root = E.parse(R / m["label"] / "graph" / Path(m["graph_file"]).name).getroot()
     test = root.find(".//Node[@id='Test']")
     attrs = [a for a in test.findall("attr") if (a.text or "").lstrip().startswith("//#CTL2")]
     assert len(attrs) == 1, (m["label"], [a.get("name") for a in test.findall("attr")])
     attrs[0].text = code
-    outs = {}
-    for a in root.iter("attr"):
-        if a.get("name") == "fileURL" and (a.text or "").startswith("suite_v5/data-out/"):
-            new = f"suite_v5/exec/out/{key}_{Path(a.text).name}"
-            outs[a.text] = new
-            a.text = new
-    return E.tostring(root, encoding="unicode"), outs
+    outs, caps = {}, {}
+    for node in root.iter("Node"):
+        for a in node.findall("attr"):
+            if a.get("name") == "fileURL" and (a.text or "").startswith("suite_v5/data-out/"):
+                old = a.text
+                outs[old] = a.text = f"suite_v5/exec/out/{key}_{Path(old).name}"
+                caps[old] = record_cap(m, old)
+                if node.get("recordsCount") is None and node.find("attr[@name='recordsCount']") is None:
+                    node.set("recordsCount", str(caps[old]))
+    return E.tostring(root, encoding="unicode"), outs, caps
+
+
+def record_cap(m, path):
+    """Output record cap of one writer (recordsCount), from the fixture's expected rows on that port."""
+    port = next((p for p, x in m["output_paths"].items() if x == path), None)
+    expected = m["fixture"]["expected"].get(port, []) if port is not None else []
+    return max(CAP_MIN, CAP_FACTOR * len(expected))
+
+
+def candidate_graph(m, code, key):
+    """(xml, outs) of candidate_graph_capped, for callers that predate the record cap (scripts/exec_rft/common.py)."""
+    xml, outs, _ = candidate_graph_capped(m, code, key)
+    return xml, outs
+
+
+async def delete_quiet(call, path):
+    try:
+        await call("sandbox_delete_file", dict(sandboxCode=SANDBOX, sandboxPath=path))
+    except Exception:  # noqa: BLE001  (never written, or already gone)
+        pass
 
 
 async def score_one(call, m, code, key):
-    """Run one variant; returns (status, detail)."""
-    xml, outs = candidate_graph(m, code, key)
+    """Run one variant; returns (status, detail). The graph and its outputs are deleted from the server afterwards."""
+    xml, outs, caps = candidate_graph_capped(m, code, key)
     gpath = f"suite_v5/exec/graph/{key}.grf"
+    try:
+        return await _score_one(call, m, xml, outs, caps, gpath)
+    finally:
+        for p in [gpath] + list(outs.values()):
+            await delete_quiet(call, p)
+
+
+async def _score_one(call, m, xml, outs, caps, gpath):
     await call("sandbox_write_file", dict(sandboxCode=SANDBOX, sandboxPath=gpath,
                                           content='<?xml version="1.0" encoding="UTF-8"?>\n' + xml))
     valid = await call("job_validate", dict(sandboxCode=SANDBOX, sandboxPath=gpath, timeoutSeconds=60))
@@ -99,7 +131,8 @@ async def score_one(call, m, code, key):
         if actual != expected:
             first = next((i for i in range(max(len(actual), len(expected)))
                           if i >= len(actual) or i >= len(expected) or actual[i] != expected[i]), None)
-            bad.append(f"port {port}: {len(actual)} rows vs {len(expected)} expected; first diff at row {first}")
+            capped = f" (output capped at {caps[path]} records)" if len(actual) >= caps.get(path, 1 << 60) else ""
+            bad.append(f"port {port}: {len(actual)} rows{capped} vs {len(expected)} expected; first diff at row {first}")
     return ("wrong_rows" if bad else "pass"), f"run {rid}: " + ("; ".join(bad) or "rows match")
 
 

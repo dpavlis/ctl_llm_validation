@@ -62,9 +62,9 @@ fi
 # ------------------------------------------------------------------ 3. OPCD run folders: per-round adapters (1.2–2.4 GB each)
 # KEEP whole final round for referenced runs; prompts/samples/metrics/probes stay everywhere; delete other round_* dirs.
 # Runs with nothing referenced any more lose all rounds (their metrics.json / samples.jsonl / probes stay).
-declare -A KEEP_ROUND=( [c13c]=round_015 [c4]=round_015 [c10]=round_019 [c13d]=round_009 [c14]=round_015 [s3b-rb1011]=round_015 )
+declare -A KEEP_ROUND=( [c13c]=round_015 [c4]=round_015 [c10]=round_019 [c13d]=round_009 [c14]=round_015 [s3b-rb1011]=round_015 [exec_rft1]=round_056 [retry1]=round_066 [valprec1]=round_122 [valprec2]=round_155 )
 if [ "$OPCD" = 1 ]; then
-  echo "== 3. data/opcd: round adapters (keeping the final round of c13c c4 c10 c13d c14 s3b-rb1011)"
+  echo "== 3. data/opcd: round adapters (keeping the final round of c13c c4 c10 c13d c14 s3b-rb1011 exec_rft1 retry1)"
   for d in "$LT"/data/opcd/*/; do
     run=$(basename "$d"); [ -d "$d/round_000" ] || continue
     keep=${KEEP_ROUND[$run]:-}

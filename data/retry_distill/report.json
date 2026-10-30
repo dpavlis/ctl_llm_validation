@@ -1,0 +1,456 @@
+{
+ "stats": {
+  "off_triples": 281,
+  "off_kept": 281,
+  "on_triples": 232,
+  "on_kept": 172,
+  "on_dropped": 60
+ },
+ "patterns": {
+  "off": {
+   "previous_attempt": 2,
+   "_sentences_removed": 108,
+   "error_message": 13,
+   "failed": 9,
+   "fix_corrected": 75,
+   "user_ran": 9
+  },
+  "on": {
+   "user_ran": 171,
+   "_sentences_removed": 2307,
+   "error_message": 389,
+   "fix_corrected": 1231,
+   "wrong_output": 160,
+   "failed": 122,
+   "previous_attempt": 231,
+   "feedback": 3
+  }
+ },
+ "dropped": [
+  [
+   "on",
+   "rft_lifecycle_sft_004",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_lifecycle_sft_004",
+   4,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_lifecycle_sft_004",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_lifecycle_sft_022",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_lifecycle_sft_022",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_lifecycle_sft_022",
+   4,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_normalizer_multirow_dpo_010",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_normalizer_multirow_dpo_012",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_normalizer_sft_003",
+   2,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "rft_normalizer_sft_024",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_normalizer_sft_024",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_normalizer_sft_024",
+   4,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_rollup_accumulator_dpo_008",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_rollup_accumulator_dpo_008",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_scd2_dpo_016",
+   1,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "rft_scd2_dpo_025",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_scd2_dpo_026",
+   2,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "rft_scd2_dpo_026",
+   4,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "rft_scd2_dpo_027",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_scd2_dpo_040",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_syntax_pitfalls_dpo_031",
+   2,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "rft_syntax_pitfalls_sft_066",
+   4,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_syntax_pitfalls_sft_070",
+   1,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "rft_syntax_r4_06",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_syntax_r4_06",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_syntax_r4_06",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_syntax_r4_08",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_syntax_r4_08",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_syntax_r5_04",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_syntax_r5_04",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_syntax_r6_04",
+   1,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "rft_zerodate_sft_002",
+   1,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "rft_zerodate_sft_004",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_zerodate_sft_004",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "rft_zerodate_sft_006",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_f379430bf7",
+   2,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "tweak_a2ee83eb68",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_a2ee83eb68",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_a2ee83eb68",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_b7f1445baa",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_7aafe4bfa3",
+   4,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "tweak_17429f9907",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_eedc686b3b",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_9b35f347cc",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_dad4c544dd",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_bde7cf5993",
+   2,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "tweak_bde7cf5993",
+   4,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "tweak_0f43734719",
+   4,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_30f94b9623",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_f943d0cc25",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_717e9d0d17",
+   4,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_30f94b9623",
+   4,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_4ed4da565b",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_aacc5154f0",
+   1,
+   "thinking shrank too much"
+  ],
+  [
+   "on",
+   "tweak_f1c044aff2",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_ba6ed1baf4",
+   3,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_1a41646b15",
+   2,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_20a7de129f",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_1a41646b15",
+   1,
+   "still refers to the error"
+  ],
+  [
+   "on",
+   "tweak_20a7de129f",
+   3,
+   "still refers to the error"
+  ]
+ ],
+ "prompts": 396,
+ "by_component": {
+  "DATA_INTERSECTION": 82,
+  "ROLLUP": 106,
+  "NORMALIZER": 65,
+  "REFORMAT": 131,
+  "EXT_HASH_JOIN": 2,
+  "PARTITION": 2,
+  "DENORMALIZER": 8
+ },
+ "by_set": {
+  "dataintersection": 24,
+  "rollup_lifecycle": 12,
+  "normalizer_multirow": 25,
+  "rollup_accumulator": 28,
+  "scd2": 35,
+  "syntax_pitfalls": 76,
+  "zerodate": 8,
+  "CTL_LoRA_dataintersection_sft": 45,
+  "CTL_LoRA_syntax_pitfalls_sft": 84,
+  "CTL_LoRA_rollup_accumulator_sft": 20,
+  "CTL_LoRA_scd2_sft": 21,
+  "CTL_LoRA_normalizer_multirow_sft": 18
+ },
+ "by_cause": {
+  "off": {
+   "other": 53,
+   "undeclared_variable": 49,
+   "out_port": 5,
+   "wrong_rows": 101,
+   "runtime_error": 15,
+   "unknown_function": 5,
+   "wrong_arguments": 36,
+   "regex_negation": 6,
+   "invalid_escape": 2,
+   "reserved_time_unit": 6,
+   "type_mismatch": 2,
+   "ternary_constant": 1
+  },
+  "on": {
+   "out_port": 24,
+   "type_mismatch": 6,
+   "wrong_rows": 108,
+   "runtime_error": 6,
+   "other": 3,
+   "wrong_arguments": 19,
+   "unknown_function": 1,
+   "regex_negation": 1,
+   "undeclared_variable": 1,
+   "unknown_field": 1,
+   "reserved_time_unit": 2
+  }
+ },
+ "target_tokens": {
+  "off": {
+   "n": 281,
+   "median": 378,
+   "max": 1953
+  },
+  "on": {
+   "n": 172,
+   "median": 1274,
+   "max": 5239
+  }
+ }
+}

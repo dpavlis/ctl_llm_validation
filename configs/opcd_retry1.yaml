@@ -1,0 +1,64 @@
+# Retry-loop distillation, round 1 (spec/retry_distill_brief.md): c13c continued on its own corrected second attempts.
+# Data: agent_harness.py on c13c (k = 4 runs, both modes, 2 feedback rounds with --rows-feedback) over pool_retry (160 exec-RFT
+# prompts not in pool 1) and pool_retry_tweak (190 LLM-rewritten tasks, seeds 201-205); thinking on was re-sampled with the
+# thinking text stored. Every triple (attempt 0 failed, a later attempt passed) is one pool prompt `<task>:r<run>` with two
+# fixed samples (scripts/retry_distill/build_samples.py): the corrected answer, re-tokenized under the plain prompt with the
+# sentences that refer to the feedback stripped, trained by NLL; and the failed attempt 0 as the rejected side of a DPO pair.
+# Anchors, per-step hyperparameters, loss weights: exactly configs/opcd_exec_rft1.yaml (c13c's belief prompts with the rulev6
+# teacher, replay 0.4 with the plain anchor; c13b_keep left out). Rounds: every exec row drawn once (set by scripts/retry_distill/run.sh
+# from the prepared prompt pool).
+run: retry1
+init_adapter: data/opcd/c13c/round_015/adapter   # c13c
+base_model: /home/pavlisd/exports/qwen38_rb1009_sftdpo
+student: {"on": configs/eval_rb1006_on.yaml, "off": configs/eval_rb1006_off.yaml}
+teacher: {"on": configs/eval_rb1006_rulev6_on.yaml, "off": configs/eval_rb1006_rulev6_off.yaml}
+rule_marker: "Declaration defaults in CTL2"
+modes: {generate: "on", fix: "on", validate: "on"}
+set_modes: {replay: {validate: "off"}}
+set_teacher: {replay: plain}
+
+prompts:
+  target:
+    - {run: dpodef1, split: train}
+    - {run: dpodef3b_plain}
+  hard:
+    - {file: data/opcd/hard_cases.jsonl, weight: 1}
+    - {file: data/opcd/hard_cases2.jsonl, weight: 3}
+  hard_holdout: data/opcd/hard_holdout_c13.json
+  contrast: data/opcd/contrast_prompts.jsonl
+  probe: {run: dpodef1, split: probe}
+  replay_share: 0.4
+  replay_task_mix: {generate: 0.4, validate: 0.35, fix: 0.25}
+  exec:
+    samples: [data/retry_distill/samples_on.jsonl, data/retry_distill/samples_off.jsonl]
+    pool: data/retry_distill/pool.jsonl           # one prompt per triple: <task_id>:r<run>
+    holdout: data/exec_rft/holdout.jsonl          # the exec-RFT holdout stays held out (also excluded from replay)
+    per_prompt: 1                                 # each triple has exactly one passer (the corrected answer) ...
+    weight: 1
+    dpo: {min_pairs: 100, per_prompt: 1, prefer: [compile_error, init_error, invalid, runtime_error, wrong_rows, no_code]}   # ... and one failure
+
+lora: {r: 32, alpha: 32, dropout: 0.0, target: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]}
+
+train:
+  seed: 0
+  rounds: 67                  # every exec row drawn once: 906 exec rows, 377 belief weight, 13.6 exec draws per round
+  prompts_per_round: 32
+  k: 2
+  steps_per_round: 2
+  lr: 2.0e-5
+  warmup_steps: 5
+  grad_clip: 1.0
+  adv_clip: null
+  quote_guard: true
+  skip_truncated: ["on"]
+  max_new_tokens: 6144
+  cutoff: 8192
+  cutoff_exec: 16384
+  logits_chunk: 1024
+  exec_weight: 1.0
+  exec_dpo_weight: 0.02
+  exec_dpo_beta: 0.1
+
+probe: {n: 20, k: 2, every: 4}
+
+sampler: {url: "http://127.0.0.1:3011", served_model: rb1009, concurrency: 32}

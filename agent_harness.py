@@ -357,7 +357,7 @@ async def tweak_pool(call, a, rejected):
 
 # -------------------------------------------------------------------------------------------------- server side
 def guard(name, args):
-    assert name in X.TOOLS | {"ctl_validate"}, name
+    assert name in X.TOOLS | {"ctl_validate", "sandbox_delete_file"}, name
     if "sandboxCode" in args:
         p = args["sandboxPath"]
         assert args["sandboxCode"] == SANDBOX and p.startswith("suite_v5/") and ".." not in Path(p).parts, args
@@ -380,26 +380,62 @@ def graph_path(m):
     raise FileNotFoundError(m["label"])
 
 
+CAP_MIN, CAP_FACTOR = 1000, 10   # a writer stops after max(CAP_MIN, CAP_FACTOR x expected rows) records
+
+
+def record_cap(m, path):
+    """Output record cap of one writer: a runaway transform once wrote a 3.2 TB file (2026-10-28)."""
+    port = next((p for p, x in m["output_paths"].items() if x == path), None)
+    expected = m["fixture"]["expected"].get(port, []) if port is not None else []
+    return max(CAP_MIN, CAP_FACTOR * len(expected))
+
+
 def candidate_graph(m, code, key):
-    """The acceptance graph with the Test node's CTL replaced and outputs redirected under suite_v5/agent/out/."""
+    """(xml, outs) of candidate_graph_capped, for callers that predate the record cap (probe_controls.py)."""
+    xml, outs, _ = candidate_graph_capped(m, code, key)
+    return xml, outs
+
+
+def candidate_graph_capped(m, code, key):
+    """The acceptance graph with the Test node's CTL replaced, outputs redirected under suite_v5/agent/out/ and every
+    writer capped (recordsCount) so a transform that never stops emitting cannot fill the disk."""
     root = E.parse(graph_path(m)).getroot()
     test = root.find(".//Node[@id='Test']")
     attrs = [a for a in test.findall("attr") if (a.text or "").lstrip().startswith("//#CTL2")]
     assert len(attrs) == 1, (m["label"], [a.get("name") for a in test.findall("attr")])
     attrs[0].text = code
-    outs = {}
-    for a in root.iter("attr"):
-        if a.get("name") == "fileURL" and (a.text or "").startswith("suite_v5/data-out/"):
-            new = f"{PREFIX}out/{key}_{Path(a.text).name}"
-            outs[a.text] = new
-            a.text = new
-    return E.tostring(root, encoding="unicode"), outs
+    outs, caps = {}, {}
+    for node in root.iter("Node"):
+        for a in node.findall("attr"):
+            if a.get("name") == "fileURL" and (a.text or "").startswith("suite_v5/data-out/"):
+                old = a.text
+                outs[old] = a.text = f"{PREFIX}out/{key}_{Path(old).name}"
+                caps[old] = record_cap(m, old)
+                if node.get("recordsCount") is None and node.find("attr[@name='recordsCount']") is None:
+                    node.set("recordsCount", str(caps[old]))
+    return E.tostring(root, encoding="unicode"), outs, caps
+
+
+async def delete_quiet(call, path):
+    try:
+        await call("sandbox_delete_file", dict(sandboxCode=SANDBOX, sandboxPath=path))
+    except Exception:  # noqa: BLE001  (never written, or already gone)
+        pass
 
 
 async def score(call, m, code, key):
-    """exec_score.score_one with the graph and outputs under suite_v5/agent/ and a row-level detail for wrong rows."""
-    xml, outs = candidate_graph(m, code, key)
+    """exec_score.score_one with the graph and outputs under suite_v5/agent/ and a row-level detail for wrong rows.
+    The graph and its outputs are deleted from the server afterwards (the code and the detail stay in the results)."""
+    xml, outs, caps = candidate_graph_capped(m, code, key)
     gpath = f"{PREFIX}graph/{key}.grf"
+    try:
+        return await _score(call, m, xml, outs, caps, gpath)
+    finally:
+        for p in [gpath] + list(outs.values()):
+            await delete_quiet(call, p)
+
+
+async def _score(call, m, xml, outs, caps, gpath):
     await call("sandbox_write_file", dict(sandboxCode=SANDBOX, sandboxPath=gpath,
                                           content='<?xml version="1.0" encoding="UTF-8"?>\n' + xml))
     valid = await call("job_validate", dict(sandboxCode=SANDBOX, sandboxPath=gpath, timeoutSeconds=60))
@@ -430,7 +466,8 @@ async def score(call, m, code, key):
         if actual != expected:
             i = next((i for i in range(max(len(actual), len(expected)))
                       if i >= len(actual) or i >= len(expected) or actual[i] != expected[i]), 0)
-            bad.append(f"output port {port}: {len(actual)} rows, expected {len(expected)}; first difference at row {i}: "
+            capped = f" (output capped at {caps[path]} records)" if len(actual) >= caps.get(path, 1 << 60) else ""
+            bad.append(f"output port {port}: {len(actual)} rows{capped}, expected {len(expected)}; first difference at row {i}: "
                        f"expected {json.dumps(expected[i] if i < len(expected) else None, ensure_ascii=False)}, "
                        f"got {json.dumps(actual[i] if i < len(actual) else None, ensure_ascii=False)}")
     return ("wrong_rows" if bad else "pass"), ("; ".join(bad) or "rows match")
@@ -515,6 +552,8 @@ async def run_cmd(a):
                         msgs.append({"role": "assistant", "content": answer})
                         code = X.extract_code(text)
                         att = dict(round=rnd, think_chars=len(think_text or ""), completion_tokens=ntok, answer=answer)
+                        if think_text:  # kept for retry-loop distillation targets (spec/retry_distill_brief.md)
+                            att["think"] = think_text
                         if code is None:
                             att.update(status="no_code", detail="no CTL code block in the answer"); rec["attempts"].append(att); break
                         att["code_sha"] = hashlib.sha256(code.encode()).hexdigest()[:12]

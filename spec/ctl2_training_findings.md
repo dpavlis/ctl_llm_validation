@@ -2692,6 +2692,26 @@ rebalanced:
   than a third round.
 ---
 
+### 3.39 Retry-loop distillation (retry1): training c13c on its own harness-corrected answers (2026-10-29..30, not adopted)
+
+Details: `spec/retry_distill_findings.md` (brief `spec/retry_distill_brief.md`). c13c sampled two new pools (160 exec-RFT
+prompts not in pool 1, 190 rewritten tasks) in the agentic harness, k = 4, two feedback rounds; 453 triples (attempt 0
+failed on the server, a later attempt passed; 281 thinking off, 172 on after stripping the feedback references) became
+906 exec SFT + DPO rows, trained 67 rounds from c13c with exec_rft1's anchors (`configs/opcd_retry1.yaml`).
+
+- **Met on the fresh-domain pool thinking off:** first-attempt pass 0.72 → 0.82 (+0.10 [+0.04, +0.17], n 330), compile
+  errors 0.13 → 0.05; thinking on +0.05 (CI includes 0), DataIntersection `$out.1` first attempts 20 → 6 of 102.
+- **Missed on the primary objective:** gap-test execution pass off 0.40 → 0.34 (−0.06 [−0.14, +0.01]), on 0.76 → 0.62
+  (−0.15 [−0.21, −0.08]); wrong rows and runtime errors up in both modes; 12/330 thinking-on answers without code
+  (c13c 2). Pool 1 inside noise; the §3.29 syntax habits unchanged.
+- **Belief back:** hard set 2 claims 1 → 10 of 60, T63 null into a non-nullable field 15/30, while the OPCD belief
+  probes stayed 0/40: the belief rides in the Rollup fix rows' code (as in §3.32, §3.33). T40/T42, T54 flat.
+- **Validate:** judge suite flat; ground truth B1-tweak recall identical, thinking-off false alarm 0.24 → 0.33.
+- **Hand check** (10 changed pool-1 first attempts): gains are corrected logic slips; losses are new habits absent from
+  the targets (createDate without a time zone, accumulator reset to 0, globals named with reserved tokens).
+- **Not adopted.** The inference-time loop recovers most of the gain already (pool_tweak final: c13c 0.80 / 0.86 vs
+  retry1 0.84 / 0.91). A retry would use thinking-off compile-error triples only, with the accumulator rows excluded.
+
 ## 4. Measurement — read this before trusting any older number
 
 ### 4.1 The eval configs were never equivalent
