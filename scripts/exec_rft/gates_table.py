@@ -26,6 +26,10 @@ FILES = {   # stored test.py results per run and gate
                  on_full=[str(RES / "results_qwen38_vllm_opcdc13c_on_20261017T200918Z.json")],
                  t40t42=[str(RES / "results_qwen38_vllm_opcdc13c_on_20261017T200316Z.json")],
                  t54=[str(RES / "results_qwen38_t54n20_c13c_off_20261021T163007Z.json")]),
+    "valprec2": dict(off_x9=sorted(glob.glob(str(RES / "results_qwen38_vp_v4_valprec2_off_2*.json"))),   # candidate since 10-30
+                     on_full=sorted(glob.glob(str(RES / "results_qwen38_vp_v4_valprec2_on_2*.json"))),
+                     t40t42=sorted(glob.glob(str(RES / "results_qwen38_vp_t40t42_valprec2_on_2*.json"))),
+                     t54=sorted(glob.glob(str(RES / "results_qwen38_vp_t54_valprec2_off_2*.json")))),
     "exec_rft1": dict(off_x9=sorted(glob.glob(str(RES / "results_qwen38_rft_v4_exec_rft1_off_2*.json"))),
                       on_full=sorted(glob.glob(str(RES / "results_qwen38_rft_v4_exec_rft1_on_2*.json"))),
                       t40t42=sorted(glob.glob(str(RES / "results_qwen38_rft_t40t42_exec_rft1_on_2*.json"))),
@@ -40,7 +44,8 @@ def tests(files):
 
 def gap_records(run):
     """{mode: [records]} of the 11 gap tests: c13c = the 10-17 run plus today's two; exec_rft1 = its two runs."""
-    recs = json.load(open(RES / f"exec_rft/gaps_{run}.json"))
+    p = RES / (f"validate_precision/gaps_{run}.json" if run.startswith("valprec") else f"exec_rft/gaps_{run}.json")
+    recs = json.load(open(p))
     if run == "c13c":
         recs += [r for r in json.load(open(RES / "exec/exec_scores.json")) if "v5gaps_c13c_" in r["results_file"]]
     return {m: [r for r in recs if f"_{m}_" in r["results_file"] and "v5gaps" in r["results_file"]] for m in ("off", "on")}

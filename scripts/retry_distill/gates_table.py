@@ -12,7 +12,7 @@ Differences carry a 95% CI (Newcombe for proportions, Welch for means); samples 
 
     ~/venv/bin/python scripts/retry_distill/gates_table.py [RUN [LAST]] > results/retry_distill/gates_retry1.md
 """
-import collections, glob, json, re, sys
+import collections, glob, json, os, re, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -23,8 +23,9 @@ from dpoiso_table import newcombe, welch, jr  # noqa: E402
 
 RES = ROOT / "results"
 RUN = sys.argv[1] if len(sys.argv) > 1 else "retry1"
+BASE = os.environ.get("BASELINE", "c13c")   # the comparison model: c13c (retry1's table) or valprec2 (the candidate since 10-30)
 LAST = sys.argv[2] if len(sys.argv) > 2 else "066"
-FILES = {"c13c": E.FILES["c13c"],
+FILES = {BASE: E.FILES[BASE],
          RUN: dict(off_x9=sorted(glob.glob(str(RES / f"results_qwen38_rd_v4_{RUN}_off_2*.json"))),
                    on_full=sorted(glob.glob(str(RES / f"results_qwen38_rd_v4_{RUN}_on_2*.json"))),
                    t40t42=sorted(glob.glob(str(RES / f"results_qwen38_rd_t40t42_{RUN}_on_2*.json"))),
@@ -34,8 +35,8 @@ CAUSES = ("reserved_time_unit", "regex_negation", "ternary_constant", "wrong_arg
 
 
 def gaps(run):
-    if run == "c13c":
-        return E.gap_records("c13c")
+    if run in E.FILES and run != RUN:
+        return E.gap_records(run)
     p = RES / f"retry_distill/gaps_{run}.json"
     recs = json.load(open(p)) if p.exists() else []
     return {m: [r for r in recs if f"_{m}_" in r["results_file"]] for m in ("off", "on")}
@@ -43,12 +44,15 @@ def gaps(run):
 
 def harness(run, pool):
     """{mode: [records]} of one pool; c13c's stored runs or the run's merged file."""
-    f = RES / f"agent_harness/{'c13c' if run == 'c13c' else run}_{pool}.jsonl"
+    fs = [RES / f"agent_harness/{run}_{pool}.jsonl"]
+    if run.startswith("valprec") and pool == "pool1":   # valprec2's pool 1 runs are stored per mode
+        fs = [RES / f"agent_harness/{run}_pool1_first_{m}.jsonl" for m in ("off", "on")]
     out = collections.defaultdict(list)
-    if f.exists():
-        for l in open(f):
-            r = json.loads(l)
-            out[r["mode"]].append(r)
+    for f in fs:
+        if f.exists():
+            for l in open(f):
+                r = json.loads(l)
+                out[r["mode"]].append(r)
     return out
 
 
@@ -60,7 +64,7 @@ def main():
     rows, P = [], {}
     G = {run: gaps(run) for run in FILES}
     for m in ("off", "on"):
-        a, b = G["c13c"][m], G[RUN][m]
+        a, b = G[BASE][m], G[RUN][m]
         if len(b) < 2:
             continue
         ka, kb = sum(r["status"] == "pass" for r in a), sum(r["status"] == "pass" for r in b)
@@ -78,7 +82,7 @@ def main():
     for pool in ("pool1", "pool_tweak"):
         H = {run: harness(run, pool) for run in FILES}
         for m in ("off", "on"):
-            a, b = H["c13c"][m], H[RUN][m]
+            a, b = H[BASE][m], H[RUN][m]
             if not a or not b:
                 continue
             fa, fb = [r["attempts"][0]["status"] for r in a], [r["attempts"][0]["status"] for r in b]
@@ -132,7 +136,7 @@ def main():
             if s == 3:
                 x["hard3_kind"] = {k: tuple(map(int, s_.split("/"))) for k, s_ in v.get("fail_by_kind", {}).items()}
         M[run] = x
-    A, B = M["c13c"], M[RUN]
+    A, B = M[BASE], M[RUN]
     for tid in ("T40", "T42"):
         if tid in B:
             rows.append((f"{tid} thinking on: below full score", E.fmt_p(*A[tid]), E.fmt_p(*B[tid]), E.fmt_d(newcombe(*B[tid], *A[tid]))))
@@ -158,7 +162,7 @@ def main():
             a, b = A[f"on_{ty}"], B[f"on_{ty}"]
             rows.append((f"thinking on, full v4 n5: {ty} mean (n)", f"{sum(a) / len(a):.3f} ({len(a)})", f"{sum(b) / len(b):.3f} ({len(b)})",
                          E.fmt_d(welch(b, a))))
-    print(f"| gate | c13c | {RUN} (round {int(LAST)}) | difference, 95% CI |")
+    print(f"| gate | {BASE} | {RUN} (round {int(LAST)}) | difference, 95% CI |")
     print("|---|---|---|---|")
     for r in rows:
         print("| " + " | ".join(r) + " |")

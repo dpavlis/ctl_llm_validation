@@ -5,6 +5,9 @@ on-policy context distillation (OPCD).
 
 ## Start here
 
+- **Current candidate: valprec2** (adopted 2026-10-30, findings §3.38): the rb1009 export
+  `/home/pavlisd/exports/qwen38_rb1009_sftdpo` plus the OPCD adapter `data/opcd/valprec2/round_155` (served name
+  `valprec2`). Deploy with thinking on and the compile-and-retry loop. New lanes compare against it, not c13c.
 - **`WORKLOG.md`:** the current state and dated decisions. Read it first. Add an entry when something worth recording
   happens (a result that changes the picture, a candidate or recipe decision, an owner ruling, a corrected fact, a corpus
   set accepted), and refresh "Where we are".
