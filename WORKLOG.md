@@ -68,6 +68,10 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   - Generate holds, so the adoption criterion from the 10-29 entry is met.
 - **valprec2 (`data/opcd/valprec2/round_155` on rb1009) replaces c13c as the ship candidate** (§3.38,
   `spec/validate_precision2_findings.md`).
+- **Weakness inventory for valprec2, both modes** (`spec/valprec2_weaknesses.md`): what neither thinking mode nor the
+  feedback loop fixes: reserved time-unit names / `!~` / constant ternaries even after the compiler error, try/catch
+  misuse: raiseError(ex), throw/raise, catch (Exception) (T67/T73), Rollup accumulator metadata and null-into-non-nullable (T57/T63/T22), Denormalizer
+  contract and invented sequences (T61), ERROR-vs-WARNING severity in validate. Thinking-off-only collapses listed apart.
 - **Disk cleanup:** I removed the valprec1 / valprec2 leftover weights and optimizer states, about 6.6 GB. The adapters
   of valprec1 round 122 and valprec2 round 155 are kept.
 
