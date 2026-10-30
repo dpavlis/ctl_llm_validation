@@ -2644,7 +2644,7 @@ recall, gap-test execution pass rate, harness first attempt, T40/T42, hard sets,
   clean / plain / off slot over-sampled, down-samples compile-type mutants, adds controls for the surviving claims and a
   teacher line naming [WARNING] for data-dependent nulls.
 
-### 3.38 Validate-precision OPCD, round 2 (valprec2): rebalanced to clean reviews (2026-10-28..29, successor candidate)
+### 3.38 Validate-precision OPCD, round 2 (valprec2): rebalanced to clean reviews (2026-10-28..30, adopted)
 
 Details: `spec/validate_precision2_findings.md` (brief `spec/validate_precision2_brief.md`). Same method as §3.37 on c13c,
 rebalanced:
@@ -2684,9 +2684,12 @@ rebalanced:
   - T40/T42, hard sets, T54 0/20 as c13c.
 
   The judge WRONG share is 2.6% (c13c 2.2%, gate 2.5%). Fix on n5 is 0.826 → 0.922.
-- **Decision:** successor candidate. Adopt if the fresh-domain harness (pool_tweak, `--runs 2`, both modes) confirms
-  generate within ±0.03 of c13c (§3.36). Leave the remaining thinking-off false alarms to the system prompt or the retry
-  loop rather than a third round.
+- **Generate confirmation:** fresh-domain harness, pool_tweak, 2 runs, paired by task with c13c (§3.36).
+  - First attempt: 0.730 / 0.815 vs 0.721 / 0.812 (+0.009 [−0.024, +0.042] / +0.003 [−0.036, +0.045]).
+  - After 2 feedback rounds: 0.818 / 0.882 vs 0.803 / 0.858.
+- **Decision: adopted as c13c's successor** (`data/opcd/valprec2/round_155` on rb1009). Leave the remaining thinking-off
+  false alarms (null as ERROR, initGroup state, DataIntersection `$out.0`) to the system prompt or the retry loop rather
+  than a third round.
 ---
 
 ## 4. Measurement — read this before trusting any older number

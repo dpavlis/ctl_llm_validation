@@ -2,10 +2,14 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-10-29)
+## Where we are (2026-10-30)
 
-- **Ship candidate: c13c**, the rb1009 base plus OPCD adapter `data/opcd/c13c/round_015`. Confirmed by 20-sample checks
-  and by running the generated code on the server.
+- **Ship candidate: valprec2** (since 2026-10-30, §3.38), the rb1009 base plus OPCD adapter
+  `data/opcd/valprec2/round_155`. It succeeds c13c (`data/opcd/c13c/round_015`), which was confirmed by 20-sample checks
+  and by running the generated code on the server. valprec2 is c13c plus validate-review OPCD:
+  - it matches c13c on generate (fresh-domain harness, paired);
+  - it is the best validate model measured.
+  The c13c numbers below remain the generate reference.
 - **Deploy with thinking on and a compile-and-retry loop.** In the agentic harness (§3.31) c13c passes 88% of 137
   execution-scored tasks thinking on with error feedback, 92% when the failing test rows are fed back too (28/30 real-world
   suite tests); thinking off 69% / 80%. It holds on 165 fresh-domain prompts nobody here wrote (§3.36): 86% / 91%
@@ -14,18 +18,32 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **Validate is gated on ground truth now** (§3.35, §4.8): planted server-confirmed defects, parser-scored, sets B1 and
   B1-tweak. Thinking-off validate flags 24–41% of clean code with an [ERROR]; c13c misses a removed Rollup lifecycle
   function 7 times in 10; the judge's 0.04 seed gaps are not reproduced.
-- **valprec2 (§3.38) is the validate successor candidate,** pending a generate check.
+- **valprec2 adopted (§3.38).**
   - **Method:** OPCD with the server's verdict in the teacher's context, rebalanced to 68% clean reviews.
   - **Thinking-off false alarm, format path:** B1 0.41 → 0.25, B1-tweak 0.24 → 0.15.
-  - **Plain path:** back at c13c's 0.30 (valprec1 had doubled it).
-  - **Thinking on:** the best reviewer so far: false alarm 0.00–0.03, recall 0.96; plain-path recall 0.29 → 0.87.
-  - **Generate:** every gate is inside its band, but all four point estimates are 0.02–0.04 below c13c.
-  - **Next:** a fresh-domain harness check (pool_tweak, `--runs 2`) decides adoption.
+  - **Plain path:** back at c13c's 0.30.
+  - **Thinking on:** false alarm 0.00–0.03, recall 0.96.
+  - **Generate:** the same as c13c on the fresh-domain harness (first attempt 0.73 / 0.82 vs 0.72 / 0.81, paired CIs
+    ±0.04).
+  - **Still open:** thinking-off false alarms (null as ERROR, initGroup state, DataIntersection `$out.0`). These are
+    left to the system prompt or the retry loop.
 - **Training on the model's own server-verified answers (exec-RFT) did not help** (§3.33): one round moved neither the
   gap-test pass rate nor a held-out pool, and pushed T54 thinking off back to `$out.1`. Not adopted.
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-10-30 — valprec2 adopted
+
+- **Fresh-domain harness on valprec2** (`scripts/validate_precision/harness_tweak.sh`, pool_tweak, 2 runs, both modes,
+  paired with c13c's §3.36 run):
+  - first attempt 0.730 / 0.815 vs 0.721 / 0.812 (+0.009 [−0.024, +0.042] / +0.003 [−0.036, +0.045]);
+  - after feedback 0.818 / 0.882 vs 0.803 / 0.858.
+  - Generate holds, so the adoption criterion from the 10-29 entry is met.
+- **valprec2 (`data/opcd/valprec2/round_155` on rb1009) replaces c13c as the ship candidate** (§3.38,
+  `spec/validate_precision2_findings.md`).
+- **Disk cleanup:** I removed the valprec1 / valprec2 leftover weights and optimizer states, about 6.6 GB. The adapters
+  of valprec1 round 122 and valprec2 round 155 are kept.
 
 ## 2026-10-29 — valprec2 gates
 

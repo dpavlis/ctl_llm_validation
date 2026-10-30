@@ -257,6 +257,32 @@ B1-tweak with the format, thinking off: any [ERROR] 24 → 23 → **15**; null "
      system prompt or the retry loop. A third round of the same method would buy little: the claim controls already
      targeted them.
 
+## Generate confirmation: fresh-domain harness (2026-10-29..30)
+
+`scripts/validate_precision/harness_tweak.sh` → `results/agent_harness/valprec2_pool_tweak.jsonl` (+ `.summary.md`).
+- **Setup:** pool_tweak (165 LLM-rewritten, server-verified tasks), both modes, 2 feedback rounds, `--runs 2`, errors-only
+  feedback, exactly as c13c in §3.36. Same vLLM path; rb1009 is served on GPU 2 :3014 with the round-155 adapter.
+- **Comparison:** paired by task / mode / run against `c13c_pool_tweak.jsonl`. The 95% CI is a task-cluster bootstrap.
+
+| mode | metric | c13c | valprec2 | difference |
+|---|---|---|---|---|
+| off (n 330) | first-attempt pass | 0.721 | 0.730 | +0.009 [−0.024, +0.042] |
+| off | pass after 2 feedback rounds | 0.803 | 0.818 | +0.015 [−0.018, +0.048] |
+| on (n 330) | first-attempt pass | 0.812 | 0.815 | +0.003 [−0.036, +0.045] |
+| on | pass after 2 feedback rounds | 0.858 | 0.882 | +0.024 [−0.006, +0.058] |
+
+- **First-attempt failure mix**, thinking off, valprec2 vs c13c:
+  - compile_error 47 vs 42;
+  - wrong_rows 26 vs 31;
+  - init_error 12 vs 17;
+  - runtime_error 4 vs 2.
+- **Thinking on:** the mix is the same as c13c's within ±2 per class.
+- **Generate holds.** Both first-attempt differences are inside ±0.03, and their CIs exclude a loss larger than 0.04.
+  - The small dips on the gap tests and pool 1 (Indication 4) do not show on these 660 paired runs.
+  - The criterion set in Indication 5 is met.
+
+**Decision: adopt valprec2 (`data/opcd/valprec2/round_155`, on the rb1009 base) as c13c's successor.**
+
 ## Files
 
 - **Brief and findings:** `spec/validate_precision2_brief.md`, this file.
@@ -273,5 +299,6 @@ B1-tweak with the format, thinking off: any [ERROR] 24 → 23 → **15**; null "
     - `prune_rounds.sh`;
     - `gates_table.py` (LAST argument);
     - `lenient_score.py` (format-independent re-score).
+- **Harness check:** `scripts/validate_precision/harness_tweak.sh`, `results/agent_harness/valprec2_pool_tweak*`.
 - **Results:** `results/validate_precision/{gates_valprec2.md, gt_*valprec2*, round_stats_valprec2.md, fact_probes_v2.json}`.
 - **Answers:** `results/agent_harness/validate_gt_*valprec2*`, `valprec2_pool1_first_*`.
