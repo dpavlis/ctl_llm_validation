@@ -67,6 +67,12 @@ components collapse without thinking. Not a deployment target.
 
 ## What this suggests
 
+**Tested 2026-10-31** (`spec/sysprompt_rules_findings.md`): the system-prompt route works thinking on. Seven rule lines
+(`data/sysprompt/rules_v1.txt`) remove the try/catch, reserved-name and null-accumulator errors; the four gap tests go
+0.53 → 0.73 execution pass, the syntax-pitfall pool 0.44 → 0.85. Left: T57 assigning input fields to the accumulator
+(halved), T67 port routing (untouched). Thinking off: syntax pool 0.31 → 0.67 but T73 regresses (new `!(… : null)` collapse).
+
+
 - Items 1–3 are small, enumerable CTL2 facts (reserved identifiers, `raiseError` takes a string and there is no
   `throw`/`raise`, `catch` takes `CTLException`, the accumulator is its own record whose non-nullable fields must be
   assigned) that the model holds wrong under both modes and under

@@ -1,0 +1,7 @@
+CTL2 facts to apply (all compiler-verified):
+- Reserved words: millisec, second, minute, hour, day, week, month, year and the type names cannot be used as variable names (a metadata field named month is fine). Use names like dayNo or monthIdx.
+- Regex: there is no !~ operator. Write !(x ~= re) or !matches(x, re).
+- Ternary: ALL, OK and SKIP cannot be ternary operands; return them from if/else.
+- String escapes: "\." and "\d" are invalid; write "\\." and "\\d", or use a single-quoted string.
+- Exceptions: catch takes CTLException: catch (CTLException ex) { ... }. There is no throw or raise statement. raiseError takes a string, never the exception: re-raise with raiseError(ex.message). Do not wrap a whole transform() or getOutputPort() body in try/catch unless the task asks for it.
+- Rollup accumulator: the accumulator is its own record defined by the accumulator metadata. Assign only fields that exist there; input and output fields that are not in the accumulator metadata do not exist on it. In initGroup assign every non-nullable accumulator field: a non-nullable field left null fails the component at runtime.

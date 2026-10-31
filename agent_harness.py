@@ -535,13 +535,17 @@ async def run_cmd(a):
                 for m in t["manifests"]:
                     await upload_inputs(call, m, uploaded)
             metas = {t["id"]: spec_metadata(t) for t in tasks}
+            extra = Path(a.system_extra).read_text().strip() if a.system_extra else ""
 
             async def one(t, run, mode):
                 async with sem:
                     think = mode == "on"
-                    msgs = [{"role": "system", "content": t.get("system") or SYSTEM}, {"role": "user", "content": t["prompt"]}]
+                    system = (t.get("system") or SYSTEM) + (("\n\n" + extra) if extra else "")
+                    msgs = [{"role": "system", "content": system}, {"role": "user", "content": t["prompt"]}]
                     rec = dict(task_id=t["id"], source=t["source"], component=t["component"], task=t["task"], run=run, mode=mode,
                                model=a.model, attempts=[])
+                    if extra:
+                        rec["system_extra"] = a.system_extra
                     t0 = time.monotonic()
                     for rnd in range(0, a.rounds + 1):
                         try:
@@ -683,6 +687,7 @@ if __name__ == "__main__":
     r.add_argument("--model", required=True)
     r.add_argument("--url", default="http://127.0.0.1:3012")
     r.add_argument("--load-adapter")
+    r.add_argument("--system-extra", help="text file appended to every task's system prompt (deployment rules test)")
     r.add_argument("--modes", nargs="+", default=["off", "on"])
     r.add_argument("--runs", type=int, default=1)
     r.add_argument("--rounds", type=int, default=2, help="feedback rounds after the first answer")

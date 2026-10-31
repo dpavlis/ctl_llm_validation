@@ -2,7 +2,7 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-10-30)
+## Where we are (2026-10-31)
 
 - **Ship candidate: valprec2** (since 2026-10-30, §3.38), the rb1009 base plus OPCD adapter
   `data/opcd/valprec2/round_155`. It succeeds c13c (`data/opcd/c13c/round_015`), which was confirmed by 20-sample checks
@@ -27,6 +27,9 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
     ±0.04).
   - **Still open:** thinking-off false alarms (null as ERROR, initGroup state, DataIntersection `$out.0`). These are
     left to the system prompt or the retry loop.
+  - **Deployment prompt rules (2026-10-31):** seven CTL2 fact lines (`data/sysprompt/rules_v1.txt`) lift the four
+    residual gap tests 0.53 → 0.73 thinking on and remove the try/catch / reserved-name / null-accumulator errors;
+    adopt them in the deployment system prompt (`spec/sysprompt_rules_findings.md`).
 - **Training on the model's own harness-corrected answers (retry1) did not help either** (§3.39): +0.10 first-attempt
   pass on the fresh-domain pool thinking off, but gap-test execution pass −0.06 off / −0.15 on, no-code answers thinking
   on, the accumulator belief back in hard set 2. Not adopted; the compile-and-retry loop at inference does the same job.
@@ -35,6 +38,23 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-10-31 — deployment rules prompt tested on valprec2's weaknesses
+
+- **Seven compiler-verified rule lines in the system prompt** (`data/sysprompt/rules_v1.txt`: reserved names, no `!~`,
+  no constant ternary, escapes, `catch (CTLException ex)` / `raiseError(ex.message)` / no throw, accumulator is its own
+  record with every non-nullable field assigned) tested on valprec2 without training (`spec/sysprompt_rules_findings.md`).
+- **Thinking on (the deployment mode):** gap tests T57/T63/T67/T73 execution pass 64/120 (0.53) → 88/120 (0.73),
+  +0.20 [+0.08, +0.31]; T73 0.60 → 0.97, T63 0.57 → 0.80, T57 0.27 → 0.47, T67 flat. The try/catch, reserved-name and
+  null-into-non-nullable compile errors disappear completely. Harness syntax-pitfall pool first attempt 0.44 → 0.85,
+  Rollup-accumulator pool unchanged (0.91 → 0.88, in band). **Adopt the rules in the deployment prompt.**
+- **Thinking off:** syntax pool 0.31 → 0.67, but T73 regresses 0.70 → 0.20 (n10): the `!(x ~= re)` example fuses with
+  the conditional-fail idiom into `!(str2date(…) : null)`. Not the deployment mode; noted.
+- **Left after the rules:** T57 still assigns input field names to the accumulator record in 12/30 thinking-on
+  answers (was 22/30); T67 port routing is untouched. Both are task-reading errors for the retry loop, not language
+  facts. No training lane follows.
+- Tooling: `agent_harness.py --system-extra <file>`, `scripts/sysprompt/run.sh`,
+  `configs/eval_sp_v5gaps_valprec2_rules_{on,off}.yaml`, `data/agent_harness/pool1_weak.jsonl` (52 tasks).
 
 ## 2026-10-30 — retry1 gates, disk and server cleanup
 
