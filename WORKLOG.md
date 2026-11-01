@@ -62,8 +62,14 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   section, rule teachers never mention DI. Both repos pushed.
 - **Re-judge check passed:** valprec2's stored T53/T54 answers (n30 per mode) judged against the rewritten reference:
   T53 identical on all 60 answers, T54 mean 0.971 → 0.974 off and 0.962 → 0.946 on (4 of 60 answers moved, judge
-  nondeterminism, CIs include 0). The reference change moves nothing on its own. Next: corpus brief, OPCD with §8.9 as
-  teacher.
+  nondeterminism, CIs include 0). The reference change moves nothing on its own.
+- **`spec/validate_falsealarm_brief.md` closed, not run (owner ruling):** a thinking-off review call will not ship; the
+  deployment validate call is thinking on (false alarm 0.02–0.03). The rules_v1 result (fact list raises false alarms) and
+  the DI port-number phrasing of its R3 line argued against arm R anyway; E/V stay unrun.
+- **Corpus brief written:** `spec/dataintersection_join_framing_brief.md` (DI set round 3: `return OK` everywhere,
+  explanations in the join framing with no port numbers, 6 DPO pairs re-targeted at the "ALL sends to all ports / $out.1
+  is the both port" explanation, prompt mix with port talk kept at about half, acceptance greps). Next: hand the brief
+  to the corpus authors; OPCD with §8.9 as teacher on valprec2.
 
 ## 2026-10-31 — deployment rules prompt tested on valprec2's weaknesses
 
