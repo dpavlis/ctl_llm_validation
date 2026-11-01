@@ -430,6 +430,8 @@ printErr("message", true);   // with source location
 | `STOP` | `-2` | Stop processing. It **aborts** the component (the graph fails); it is not a normal termination. DataGenerator `generate()` must return `OK` or `ALL` — returning `STOP` there is an ERROR; the component configuration sets the record count. |
 | `0`, `1`, `2`... | port index | Send to specific port. |
 
+DataIntersection is the exception: its transform has one output record and `OK` emits it (§8.9).
+
 ### 8.2 Map / Reformat (transformer)
 
 ```ctl
@@ -565,30 +567,26 @@ function boolean init() {
 
 ### 8.9 DataIntersection
 
-Compares two inputs **sorted** on the Join key (`$a_key=$b_key;…`): input 0 = flow A (e.g. the previous snapshot), input 1 = flow B (e.g. the new data).
+A join over two inputs **sorted** on the Join key (`$a_key=$b_key;…`). Input 0 is flow A (e.g. the previous snapshot), input 1 is flow B (e.g. the new data). There is no master or slave: for every key present on both sides the component pairs the A record with the B record and calls `transform()` once per pair.
 
-| Output port | Records | Produced by |
-|---|---|---|
-| 0 | key only in A | the component, unchanged (input-0 metadata) |
-| 1 | key in both A and B | the CTL `transform()` (its own metadata) |
-| 2 | key only in B | the component, unchanged (input-1 metadata) |
-
-- `transform()` uses the joiner template and sees **matched pairs only**: `$in.0` is the A record, `$in.1` the B record. A-only and B-only records never reach CTL, so INSERT / DELETE need no code.
-- **The transform writes `$out.0`**, and the component sends that record out on **port 1** (the port reserved for matches). CTL has only this one output record: writing `$out.1` or `$out.2` fails when the component initialises. Ports 0 and 2 are pass-through and are never written from CTL. Only `transform()` (and `transformOnError`) is called; functions such as `transformLeftOnly()` are never invoked.
-- **The return value never selects a port** (unlike §8.1): `OK`, `0`, `1` or `ALL` emit the record on port 1; `SKIP` drops it; `STOP` makes the component fail. Ports 0 and 2 are unaffected by it.
+- `transform()` sees **one matched pair**: `$in.0` is the A record, `$in.1` the B record. It fills **one output record, `$out.0`**, with the transform's own output metadata, and returns `OK` to emit it or `SKIP` to drop the pair. `STOP` makes the component fail.
+- Records whose key is on one side only never reach the CTL. The component passes them on by itself, unchanged, on its other outputs; which consumers are connected there is a graph matter and is not the CTL's business. INSERT / DELETE therefore need no code; the CTL only ever describes what a matched pair becomes.
+- The return value does not choose an output. `$out.1` and `$out.2` do not exist in this transform; writing them fails when the component initializes.
 - Defaults: *Equal NULL* = true (null key values match each other); *Allow key duplicates* = true (duplicate keys give the Cartesian product of pairs, A-major).
 
 ```ctl
 //#CTL2
 function integer transform() {
     if ($in.0.status == $in.1.status && $in.0.amount == $in.1.amount) {
-        return SKIP;              // unchanged pair: drop it
+        return SKIP;              // unchanged pair: nothing to emit
     }
-    $out.0.* = $in.1.*;          // goes out on port 1
+    $out.0.* = $in.1.*;           // the pair's result record
     $out.0.cdc_action = "UPDATE";
-    return ALL;                   // OK, 0 or 1 emit it on port 1 as well
+    return OK;
 }
 ```
+
+Older code returns `ALL`, `0` or `1` from this transform; all of them behave exactly like `OK` here and are not an error, but new code returns `OK`.
 
 ---
 
@@ -1364,7 +1362,7 @@ Facts settled by running graphs on CloverDX Server 7.4 (run ids in `data/suite_v
 | Rounding | `round(decimal, n)` rounds halves away from zero: `round(2.505D, 2) = 2.51`, `round(-2.505D, 2) = -2.51`. |
 | Graph parameters | `RUN_ID` is reserved by the server (it is replaced by the numeric execution id); use another name for business run ids. |
 | Strings | `length()` counts UTF-16 code units (`length("A😀") = 3`). `sort()` on a string list is case-sensitive, by UTF-16 code unit (upper case before lower case). |
-| DataIntersection | See §8.9: `$out.0`, emitted on port 1; `STOP` fails the component. |
+| DataIntersection | See §8.9: a join over matched pairs, one output record `$out.0`, `return OK`; `STOP` fails the component. |
 
 ## 14. Validation Checklist
 

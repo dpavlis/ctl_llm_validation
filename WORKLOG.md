@@ -55,6 +55,12 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **Next (owner):** rewrite §8.9 of `ctl2-basics.md` in this framing and propagate it (snapshots, rule teacher, corpus
   reference), corpus brief for the DI sets, then OPCD with the rewritten §8.9 as teacher. Open: whether the corpus
   idiom moves from `return ALL` to `return OK`.
+- **Owner rulings and reference change (same day):** DataIntersection is taught as a join-like transform, the idiom is
+  `return OK`. §8.9 of `resources/ctl2-basics.md` rewritten in that framing (no port numbers in the CTL explanation,
+  `$out.1`/`$out.2` fail at init, older `ALL`/`0`/`1` tolerated as OK), §13 line and a §8.1 note changed; applied to
+  the suite v5 snapshot and both corpus references (`spec/di_section_8_9_rewrite.md`). Suite v4 snapshot has no DI
+  section, rule teachers never mention DI. Next: re-judge stored T53/T54 with the new reference, corpus brief, OPCD
+  with §8.9 as teacher.
 
 ## 2026-10-31 — deployment rules prompt tested on valprec2's weaknesses
 
