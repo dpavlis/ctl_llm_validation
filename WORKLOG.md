@@ -2,7 +2,7 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-10-31)
+## Where we are (2026-11-01)
 
 - **Ship candidate: valprec2** (since 2026-10-30, §3.38), the rb1009 base plus OPCD adapter
   `data/opcd/valprec2/round_155`. It succeeds c13c (`data/opcd/c13c/round_015`), which was confirmed by 20-sample checks
@@ -27,9 +27,13 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
     ±0.04).
   - **Still open:** thinking-off false alarms (null as ERROR, initGroup state, DataIntersection `$out.0`). These are
     left to the system prompt or the retry loop.
-  - **Deployment prompt rules (2026-10-31):** seven CTL2 fact lines (`data/sysprompt/rules_v1.txt`) lift the four
-    residual gap tests 0.53 → 0.73 thinking on and remove the try/catch / reserved-name / null-accumulator errors;
-    adopt them in the deployment system prompt (`spec/sysprompt_rules_findings.md`).
+  - **Deployment prompt rules (2026-10-31/11-01):** seven CTL2 fact lines (`data/sysprompt/rules_v1.txt`) lift the
+    four residual gap tests 0.53 → 0.73 thinking on and remove the try/catch / reserved-name / null-accumulator errors,
+    but on the broad fresh-domain pool they cost DataIntersection (−0.03) and raise the validate false alarm (on 0.02 →
+    0.08, off 0.15 → 0.38) by priming the DataIntersection port belief with the word `ALL`. Not adopted as written.
+  - **DataIntersection framing (2026-11-01):** a join-like paragraph with no port numbers (`data/sysprompt/di_frame_v2.txt`)
+    takes the DI harness tasks 76 → 98/102 first attempt thinking on with validate false alarms flat. Next: rewrite
+    §8.9 of the reference in this framing, corpus brief, OPCD teacher (`spec/sysprompt_rules_findings.md`).
 - **Training on the model's own harness-corrected answers (retry1) did not help either** (§3.39): +0.10 first-attempt
   pass on the fresh-domain pool thinking off, but gap-test execution pass −0.06 off / −0.15 on, no-code answers thinking
   on, the accumulator belief back in hard set 2. Not adopted; the compile-and-retry loop at inference does the same job.
@@ -39,6 +43,19 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
 
+## 2026-11-01 — DataIntersection framing: one paragraph fixes the port confusion
+
+- **Owner idea:** stop teaching DataIntersection as three ports plus a `$out.0` rule; teach it as a join-like transform
+  (two input records, one output record `$out.0`, OK/SKIP, one-sided records never reach the CTL, no port numbers).
+- **Tested as a system-prompt paragraph on valprec2** (`data/sysprompt/di_frame_v2.txt`, `spec/sysprompt_rules_findings.md`):
+  harness pool_tweak DI tasks first attempt 76/102 → 98/102 (+0.216 [+0.137, +0.304], paired n102), after feedback
+  89 → 101/102; `$out.1` misses 21 → 2; T54 26/30 → 29/30. Validate DI controls false alarm thinking on 0.08 → 0.00,
+  recall flat. v1 of the text omitted that `ALL` is accepted and the reviewer flagged every `return ALL` control; v2
+  fixed that. Largest single-component move so far, on prompts that still describe three outputs.
+- **Next (owner):** rewrite §8.9 of `ctl2-basics.md` in this framing and propagate it (snapshots, rule teacher, corpus
+  reference), corpus brief for the DI sets, then OPCD with the rewritten §8.9 as teacher. Open: whether the corpus
+  idiom moves from `return ALL` to `return OK`.
+
 ## 2026-10-31 — deployment rules prompt tested on valprec2's weaknesses
 
 - **Seven compiler-verified rule lines in the system prompt** (`data/sysprompt/rules_v1.txt`: reserved names, no `!~`,
@@ -47,7 +64,15 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **Thinking on (the deployment mode):** gap tests T57/T63/T67/T73 execution pass 64/120 (0.53) → 88/120 (0.73),
   +0.20 [+0.08, +0.31]; T73 0.60 → 0.97, T63 0.57 → 0.80, T57 0.27 → 0.47, T67 flat. The try/catch, reserved-name and
   null-into-non-nullable compile errors disappear completely. Harness syntax-pitfall pool first attempt 0.44 → 0.85,
-  Rollup-accumulator pool unchanged (0.91 → 0.88, in band). **Adopt the rules in the deployment prompt.**
+  Rollup-accumulator pool unchanged (0.91 → 0.88, in band).
+- **Recipe check on the broad pool and on validate (11-01) says not as written.** pool_tweak thinking on, paired n330:
+  first attempt 0.815 → 0.785 (−0.030 [−0.079, +0.018]), after feedback 0.882 → 0.842 (−0.039 [−0.076, +0.000]); the
+  whole loss is DataIntersection (76 → 68/102, `$out.1` misses 21 → 32), the other components are flat. B1-tweak
+  validate: thinking-on false alarm 0.02 → 0.08 (+0.060 [+0.020, +0.110]), all six new alarms the same DataIntersection
+  "return ALL sends to all three ports" claim; thinking-off false alarm 0.15 → 0.38; recall on −0.05. The ternary line
+  names `ALL` and primes the DataIntersection port confusion; a prohibition list makes the thinking-off reviewer hunt.
+  **rules_v1 not adopted.** Next: rules_v2 without the `ALL` mention (or with the DataIntersection port fact stated),
+  in the generate/fix prompts only, measured the same way (`scripts/sysprompt/recipe_check.sh`).
 - **Thinking off:** syntax pool 0.31 → 0.67, but T73 regresses 0.70 → 0.20 (n10): the `!(x ~= re)` example fuses with
   the conditional-fail idiom into `!(str2date(…) : null)`. Not the deployment mode; noted.
 - **Left after the rules:** T57 still assigns input field names to the accumulator record in 12/30 thinking-on

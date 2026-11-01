@@ -29,6 +29,7 @@ FORMAT = ("\n\nOutput format:\n\nISSUES:\n  [severity] Description   (severity i
 
 async def main(a):
     recs = [json.loads(l) for f in a.records for l in Path(f).read_text().splitlines() if l.strip()]
+    extra = ("\n\n" + Path(a.system_extra).read_text().strip()) if a.system_extra else ""
     out = Path(a.out); out.parent.mkdir(parents=True, exist_ok=True)
     done = set()
     if out.exists():
@@ -47,7 +48,7 @@ async def main(a):
             nonlocal n
             async with sem:
                 body = dict(model=a.model, max_tokens=a.max_tokens, **SAMPLING,
-                            messages=[{"role": "system", "content": (rec.get("system") or SYSTEM) + (FORMAT if a.format else "")},
+                            messages=[{"role": "system", "content": (rec.get("system") or SYSTEM) + extra + (FORMAT if a.format else "")},
                                       {"role": "user", "content": rec["prompt"]}],
                             chat_template_kwargs={"enable_thinking": mode == "on", "reasoning_effort": "medium"})
                 t0 = time.monotonic()
@@ -89,5 +90,6 @@ if __name__ == "__main__":
     ap.add_argument("--max-tokens", type=int, default=12000)
     ap.add_argument("--concurrency", type=int, default=48)
     ap.add_argument("--format", action="store_true", help="append the suite's validate output-format instruction")
+    ap.add_argument("--system-extra", help="text file appended to the system prompt, before the format instruction (deployment rules)")
     ap.add_argument("--out", required=True)
     asyncio.run(main(ap.parse_args()))

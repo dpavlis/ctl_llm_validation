@@ -72,13 +72,90 @@ affected (29/30). n10 against n30, but the CI excludes zero. Thinking off is not
 2026-10-30), so this is a footnote; if thinking-off ever matters, the regex line should give the `!matches(x, re)` form
 only.
 
-## Verdict
+## Deployment recipe check: rules on the broad pool and on validate (2026-10-31/11-01)
 
-- **Thinking on, the deployment mode:** the seven rule lines remove the try/catch, reserved-name and null-accumulator
-  errors entirely and lift the four gap tests from 0.53 to 0.73 and the syntax-pitfall pool from 0.44 to 0.85, with no
-  loss on the Rollup-accumulator pool (−0.04 [−0.16, +0.09]). Adopt `rules_v1.txt` in the deployment system prompt.
-- **What remains in thinking on** is the T57 habit of assigning input fields to the accumulator record (12/30 still)
+`scripts/sysprompt/recipe_check.sh`: the same rules on (1) the fresh-domain pool_tweak harness, 165 tasks, thinking
+on, 2 runs, 2 feedback rounds, paired per task-run with valprec2's §3.38 run, and (2) the B1-tweak validate ground
+truth, both modes, 2 runs, format prompt, paired bootstrap against `validate_gt_tweak_valprec2_fmt`
+(`results/agent_harness/valprec2_rules_pool_tweak.jsonl`, `validate_gt_tweak_valprec2rules_fmt.jsonl`,
+`results/sysprompt/gt_tweak_valprec2_rules.md`).
+
+| measure | valprec2 | valprec2 + rules | paired diff [95% CI] |
+|---|---|---|---|
+| pool_tweak first attempt, thinking on (n330) | 269/330 (0.815) | 259/330 (0.785) | −0.030 [−0.079, +0.018] |
+| pool_tweak after 2 feedback rounds | 291/330 (0.882) | 278/330 (0.842) | −0.039 [−0.076, +0.000] |
+| B1-tweak defect recall, off | 0.88 | 0.86 | −0.024 [−0.065, +0.017] |
+| B1-tweak defect recall, on | 0.96 | 0.91 | −0.048 [−0.086, −0.014] |
+| B1-tweak clean-code false alarm, off | 0.15 | 0.38 | +0.230 [+0.110, +0.350] |
+| B1-tweak clean-code false alarm, on | 0.02 | 0.08 | +0.060 [+0.020, +0.110] |
+
+- **Generate:** the pool holds only inside the band, and the loss is one component. DataIntersection first attempt
+  76/102 → 68/102; its `Cannot write to output port '1'` misses go 21 → 32. Reformat, Normalizer, Rollup, Partition are
+  unchanged (74/75, 81/80, 32/32, 4/4). The syntax habits the rules target barely occur on this pool (valprec2 has 3
+  reserved-name and 1 regex miss in 330), so there was nothing to gain and the DataIntersection belief had room to
+  get worse.
+- **Validate, thinking on:** all 6 new false alarms are DataIntersection controls with the same claim: "`return ALL`
+  sends the matched record to all three ports / matched records belong on port 1" (owner fact §7: `ALL` or `OK` from a
+  DataIntersection transform routes to the *both* port and CTL writes `$out.0`). The ternary line of the rules names
+  `ALL`, and that mention appears to prime the model's DataIntersection port confusion (weakness A6) in both generate
+  and review.
+- **Validate, thinking off:** false alarms 15 → 38 across every component (Normalizer 13, DataIntersection 9,
+  Reformat 9, Rollup 5), mostly new "other" claims (null handling, lane logic, long-vs-decimal). A list of
+  prohibitions in the system prompt makes the thinking-off reviewer hunt for violations. Thinking off is not the
+  deployment mode, but this shows the rules must not be in a validate prompt served without thinking.
+
+## DataIntersection framing test (2026-11-01)
+
+Owner idea (2026-11-01): the DataIntersection confusion comes from teaching three output ports and then imposing
+"the CTL writes `$out.0`". Teach it instead as a join-like transform: two input records, one output record, no ports.
+Tested as a system-prompt paragraph on valprec2, DataIntersection subsets only (`scripts/sysprompt/di_frame.sh`,
+`di_frame2.sh`; text `data/sysprompt/di_frame_v1.txt`, `di_frame_v2.txt`). The paragraph names no port numbers: the
+transform is a joiner over matched pairs, `$in.0` the A record, `$in.1` the B record, one output record `$out.0`,
+return OK to emit or SKIP to drop, one-sided records never reach the CTL and the component's routing of them is not the
+CTL's business, the return value chooses no port, there is no `$out.1`/`$out.2`. v2 adds one sentence: ALL, 0 and 1
+are accepted and mean the same as OK.
+
+| measure (thinking on unless noted) | valprec2 | framing v1 | framing v2 |
+|---|---|---|---|
+| harness, 51 pool_tweak DI tasks, first attempt (paired, n102) | 76/102 | 99/102, +0.225 [+0.147, +0.314] | 98/102, +0.216 [+0.137, +0.304] |
+| same, after 2 feedback rounds | 89/102 | 99/102, +0.098 [+0.049, +0.157] | 101/102, +0.118 [+0.059, +0.186] |
+| first-attempt `Cannot write to output port` misses | 21 | 0 | 2 |
+| suite T54 execution pass (n30) | 26/30 | 29/30, +0.10 [−0.06, +0.27] | – |
+| suite T53 | 30/30 | 30/30 | – |
+| B1-tweak DI controls, any [ERROR], on (n24) | 0.08 | 0.42, +0.333 [+0.125, +0.583] | 0.00, −0.083 [−0.208, +0.000] |
+| B1-tweak DI controls, any [ERROR], off (n24) | 0.08 | 0.67, +0.583 [+0.333, +0.833] | 0.17, +0.083 [−0.167, +0.333] |
+| B1-tweak DI defect recall, on (n56) | 0.98 | 0.98 | 0.95, −0.036 [−0.125, +0.036] |
+
+- **Generate:** the largest single-component move measured in this project. 23 of the 51 prompts describe the three
+  outputs ("A-only on 0, both on 1, B-only on 2") and the paragraph still wins on them: the port talk in the prompt no
+  longer pulls the code to `$out.1`.
+- **Validate v1 false alarms were the text's omission, not the framing's.** All 12 clean controls use `return ALL`
+  (the corpus idiom); v1 said only "return OK", so the reviewer called `return ALL` invalid in 10 of 24 thinking-on
+  control answers. v2's one sentence removes them (0 of 24) and keeps the generate gain. The thinking-off +0.08 is two
+  answers inside the ±0.15 single-kind band.
+- **Compare with rules_v1 on the same component:** the three-port text plus the word `ALL` made DataIntersection worse
+  in both generate and review; the join-like paragraph without port numbers fixes it. The framing matters, not the
+  number of facts.
+
+**Verdict:** v2 is the proven wording. Next (owner's call, correctness rule "update every copy"): rewrite §8.9 of
+`resources/ctl2-basics.md` and its §13 line in this framing, propagate to both eval snapshots, the rule teacher and
+the corpus reference, write the corpus brief for the DI sets (join-like explanation, no port numbers in the CTL
+explanation, a share of prompts that still describe three outputs so the model stays robust to them), and run OPCD
+with the rewritten §8.9 as teacher context. Open question for the brief: whether the corpus idiom moves from
+`return ALL` to `return OK`; if it does, the clean controls of B1/B1-tweak change with it.
+
+## Verdict (rules_v1)
+
+- **rules_v1 is not adopted as written.** On the tests it targets it works (gap tests 0.53 → 0.73 thinking on, syntax
+  pool 0.44 → 0.85, try/catch, reserved-name and null-accumulator errors gone), but on the broad fresh-domain pool it
+  costs DataIntersection (−0.03 overall, [−0.08, +0.02]) and in validate it raises the thinking-on false alarm 0.02 →
+  0.08 with one new claim, all on DataIntersection, and doubles the thinking-off false alarm.
+- **Next:** rules_v2 that (a) drops `ALL`/`OK`/`SKIP` from the ternary line or states the DataIntersection port fact
+  outright (matched records are written to `$out.0`, `return OK`/`ALL` routes them to the *both* port; `$out.1` does not
+  exist in the transform), and (b) goes into the generate and fix prompts only, not the validate prompt. Measured the
+  same way: gap tests + syntax pool for the gain, pool_tweak paired + B1-tweak for the cost.
+- **What remains in thinking on** after the rules is the T57 habit of assigning input fields to the accumulator record (12/30 still)
   and the T67 port routing; both are task-reading errors, not language facts, and are the compile-and-retry loop's job
   (the harness fixes most of them after one feedback round, §3.31).
-- **No training lane follows from this.** A corpus brief for A1–A3 would buy what the prompt already gives; the
-  remaining failures need rows feedback, not facts.
+- **No training lane follows from this.** A corpus brief for A1–A3 would buy what a prompt can give; the remaining
+  failures need rows feedback, not facts.
