@@ -59,8 +59,11 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   `return OK`. §8.9 of `resources/ctl2-basics.md` rewritten in that framing (no port numbers in the CTL explanation,
   `$out.1`/`$out.2` fail at init, older `ALL`/`0`/`1` tolerated as OK), §13 line and a §8.1 note changed; applied to
   the suite v5 snapshot and both corpus references (`spec/di_section_8_9_rewrite.md`). Suite v4 snapshot has no DI
-  section, rule teachers never mention DI. Next: re-judge stored T53/T54 with the new reference, corpus brief, OPCD
-  with §8.9 as teacher.
+  section, rule teachers never mention DI. Both repos pushed.
+- **Re-judge check passed:** valprec2's stored T53/T54 answers (n30 per mode) judged against the rewritten reference:
+  T53 identical on all 60 answers, T54 mean 0.971 → 0.974 off and 0.962 → 0.946 on (4 of 60 answers moved, judge
+  nondeterminism, CIs include 0). The reference change moves nothing on its own. Next: corpus brief, OPCD with §8.9 as
+  teacher.
 
 ## 2026-10-31 — deployment rules prompt tested on valprec2's weaknesses
 
