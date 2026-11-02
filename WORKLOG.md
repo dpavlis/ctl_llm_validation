@@ -48,6 +48,19 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
 
+## 2026-11-02 — Rebuild how-to
+
+- **`spec/model_rebuild_howto.md`:** the step-by-step recipe from Qwen3.8-27B to valprec2, with Mermaid diagrams. It
+  covers the data build, rb1009 SFT + DPO, OPCD c13 → c13b → c13c → valprec2, reference numbers and serving. It lists
+  adopted stages only, so findings §5 (still written for rb1006 + c4) is no longer the place to look for the recipe.
+- **Fallout from the cleanup, fixed:** `data/build_sft_rebuild.py` loaded its tokenizer from the deleted fix6 export.
+  It now uses the rb1006 export, whose tokenizer is identical to rb1009's.
+- **Fallout from the cleanup, not fixed:** `logs/evals/opcd_vllm_serve.sh` (the old rb1006 sampler, not in git) points
+  at the deleted `vllm_check` adapter.
+- `scripts/validate_precision/vllm_sampler_3011.sh` now takes `NAME` for the served-model name.
+- **Inputs committed:** `data/self_distill/dpodef1/prompts.jsonl` and `dpodef3b_plain/prompts.jsonl`. Every OPCD
+  config reads them; they were the last OPCD inputs missing from git.
+
 ## 2026-11-02 — Lifecycle disk cleanup
 
 - **`scripts/cleanup_lifecycle.sh`** (supersedes `disk_cleanup.sh` and `cleanup_tier1.sh`) deleted 720 GB of weights,

@@ -33,7 +33,7 @@ for f in sorted(glob.glob(C+"*.json")):
     for i,r in enumerate(json.load(open(f))):
         sft.append({"id":f"{TAG}-{len(sft)+1}","messages":[{"role":m["role"],"content":m["content"]} for m in r["messages"]],"reviewed_date":r.get("reviewed_date"),"source_file":name,"source_index":i,"source_id":r.get("id")})
 n_corpus=len(sft)
-tok=AutoTokenizer.from_pretrained("/home/pavlisd/exports/qwen38_fix6_sftdpo",trust_remote_code=True)
+tok=AutoTokenizer.from_pretrained("/home/pavlisd/exports/qwen38_rb1006_sftdpo",trust_remote_code=True)
 tpl=get_template_and_fix_tokenizer(tok,DataArguments(template="qwen3_8",enable_thinking=None,reasoning_effort="medium"))
 stale=json.load(open("data/self_distill/sd_stale.json"))
 sd_kept=[]; dropped={"stale":[],"over_4096":[]}; reps=dict(SD_RUNS)

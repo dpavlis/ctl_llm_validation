@@ -17,6 +17,8 @@ on-policy context distillation (OPCD).
   - §5: the recommended pipeline;
   - §6: open questions;
   - §7: owner rulings and compiler-verified CTL2 facts.
+- **`spec/model_rebuild_howto.md`:** the step-by-step recipe that rebuilds the current model from Qwen3.8-27B (adopted
+  stages only). When a stage is adopted, update it (its §10).
 - **What is correct CTL2:**
   - `resources/ctl2-basics.md` (the judge's reference);
   - the frozen copies in `results/eval_snapshot_20261003/` (suite v4) and `results/eval_snapshot_20261013/` (suite v5),
