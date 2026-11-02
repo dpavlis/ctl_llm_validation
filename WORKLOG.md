@@ -66,6 +66,23 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   (samples, metrics, probes) and LlamaFactory run (trainer logs, training configs, loss plots). A run listed as gone
   needs a retrain from its config to be served again.
 
+## 2026-11-02 — DataIntersection round 4: the requests name three outputs, the answers now say the CTL sees one
+
+- **Owner ruling:** `return ALL` is valid in a DataIntersection transform; the only defect is writing `$out.1`/`$out.2`.
+- **Audit (where the "ALL broadcasts to three ports" belief is taught):** about a third of the corpus DI prompts say
+  "All outputs are connected: 0=A-only, 1=both, 2=B-only" (DI SFT 12/35, DI DPO 11/37, SCD2 6–7) and no rb1009-era
+  answer said the CTL has one output record; the compact reference had no DI section until 2026-11-01. Round 3 §3 had
+  put the false-alarm sentence itself into five DPO rejected rationales. The SCD2 sets (18 SFT, 16 DPO chosen `return
+  ALL` with port-number prose) were never revised. The eval prompts carry the same wording (pool_tweak_di 42/51,
+  di_frame_prompts 72/100, validate controls) and keep it on purpose.
+- **Brief** `spec/dataintersection_single_output_brief.md`, implemented in `ctl_lora_training` (uncommitted, checked by
+  `scripts/corpus_checks/di_round4_check.py`, all checks pass): prompts unchanged; 53 DI SFT and 25 DI DPO chosen
+  answers get a varied single-output sentence; 6 explanation-only rejected answers replaced by code defects (`$out.1`
+  ×3, `$out.2`, inverted test, wrong side); SCD2 DI rows moved to `return OK` and the join framing (19 SFT, 11 DPO
+  lines), downstream Reformat expanders untouched; 42 round-4 and 60 round-3 code blocks compile-checked (`$out.1`/
+  `$out.2` rejected answers fail, everything else passes); both validation logs now record rounds 3 and 4. Goes into
+  the next rebuild.
+
 ## 2026-11-02 — difr3: fixed DPO pairs (teacher's clean reviews vs the student's `return ALL` flags) — false alarm only partly down, DataIntersection generate gain lost
 
 - **Change** (`configs/opcd_difr3.yaml`, `scripts/opcd_difr3_run.sh`, `scripts/difr3/build_pairs.py`, `opcd.py`
