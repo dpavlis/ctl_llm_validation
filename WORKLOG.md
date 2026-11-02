@@ -2,7 +2,7 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-11-01)
+## Where we are (2026-11-02)
 
 - **Ship candidate: valprec2** (since 2026-10-30, §3.38), the rb1009 base plus OPCD adapter
   `data/opcd/valprec2/round_155`. It succeeds c13c (`data/opcd/c13c/round_015`), which was confirmed by 20-sample checks
@@ -32,8 +32,11 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
     but on the broad fresh-domain pool they cost DataIntersection (−0.03) and raise the validate false alarm (on 0.02 →
     0.08, off 0.15 → 0.38) by priming the DataIntersection port belief with the word `ALL`. Not adopted as written.
   - **DataIntersection framing (2026-11-01):** a join-like paragraph with no port numbers (`data/sysprompt/di_frame_v2.txt`)
-    takes the DI harness tasks 76 → 98/102 first attempt thinking on with validate false alarms flat. Next: rewrite
-    §8.9 of the reference in this framing, corpus brief, OPCD teacher (`spec/sysprompt_rules_findings.md`).
+    takes the DI harness tasks 76 → 98/102 first attempt thinking on with validate false alarms flat. §8.9 rewritten,
+    corpus round 3 in (`spec/dataintersection_join_framing_brief.md`). **OPCD difr1 with §8.9 as teacher (2026-11-02):**
+    DI generate 76 → 90/102 first attempt thinking on, but the reviewer learned to flag `return ALL` on clean code (DI
+    control false alarm 0.08 → 0.38 thinking on). Not adopted; the training signal does not carry the "ALL is accepted"
+    tolerance (see the 2026-11-02 entry).
 - **Training on the model's own harness-corrected answers (retry1) did not help either** (§3.39): +0.10 first-attempt
   pass on the fresh-domain pool thinking off, but gap-test execution pass −0.06 off / −0.15 on, no-code answers thinking
   on, the accumulator belief back in hard set 2. Not adopted; the compile-and-retry loop at inference does the same job.
@@ -42,6 +45,38 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-11-02 — difr1: OPCD with the join-framing §8.9 as teacher (not adopted as is)
+
+- **Run:** valprec2 `round_155` continued 40 rounds (`configs/opcd_difr1.yaml`, 19:32–23:47 on GPUs 0/1): the join
+  teacher (rulev6 + the rewritten §8.9) for the 100 revised corpus DI prompts (76 after holdout/duplicate exclusion, both
+  modes, weight 4) and the c13b_keep DI anchors; reviews `review_prompts_v3` with the DI fact in the join framing.
+  KL per token 0.010–0.015, probes belief 0.00 and unclosed thinking 0 throughout, quote rate 0.05 → 0.15 → 0.125.
+- **Round pick on the DI subsets, rounds 19 and 39 hot-loaded on rb1009, paired with valprec2**
+  (`scripts/difr1_di_check.sh`, `results/agent_harness/difr1_r{19,39}_pool_tweak_di.*`, `results/difr1/gt_tweak_di_*.md`):
+
+  | | valprec2 | difr1 r19 | difr1 r39 | prompt only (di_frame_v2) |
+  |---|---|---|---|---|
+  | DI harness first attempt, on (n102) | 76 | 90 (+0.137 [+0.030, +0.242]) | 85 (+0.088 [−0.024, +0.198]) | 98 |
+  | DI harness after 2 feedback rounds | 89 | 94 (+0.049 [−0.037, +0.136]) | 94 (+0.049) | 101 |
+  | `$out.1` compile errors, first attempt | 17 | 6 | 10 | 2 |
+  | DI validate controls, any [ERROR], on (n24) | 0.08 | 0.38 (+0.29 [+0.08, +0.50]) | 0.42 (+0.33 [+0.13, +0.54]) | 0.00 |
+  | DI validate controls, any [ERROR], off | 0.08 | 0.17 (+0.08 [0, +0.21]) | 0.17 | — |
+  | DI defect recall on / off | 0.98 / 0.93 | 1.00 / 0.93 | 0.98 / 0.93 | — |
+
+- **Verdict: not adoptable as is.** Generate moves half-way to what the prompt alone gives, but the reviewer now flags
+  `return ALL` on clean code: every one of the 9 (r19) / 10 (r39) thinking-on control false alarms says "`return ALL`
+  broadcasts the record to all three ports". All 12 B1-tweak DI controls return `ALL` (pre-round-3 corpus idiom), which
+  the ruling tolerates as OK. The student did this in 36 of 58 DI review samples with `return ALL` during training and the
+  review teacher let it pass (KL median ≈ 0 on those samples) although its fact sheet says "ALL, 0 and 1 behave like OK
+  and are not an error" — the server-verdict teacher does not push back on a wrong *reason* when the verdict line is
+  what it scores. Same failure as di_frame_v1 (2026-11-01), now learned instead of prompted.
+- **Full gates not run** (pool_tweak, B1-tweak, T40/T42, hard set 3): the validate precision gate is already failed on
+  the DI subset; the eval server on :3012 was stopped, GPUs 0–3 free.
+- **Options for difr2:** (a) drop or penalise review samples that put an [ERROR] on a return constant the server passed
+  (an explicit filter like `context_guard`, since the teacher's KL does not carry the correction); (b) add the "ALL is
+  accepted" sentence to the review teacher's *verdict* line, not only the fact sheet; (c) keep the generate half only:
+  train the DI generate prompts without the DI reviews and check the review false alarm does not move. Owner's call.
 
 ## 2026-11-01 — DataIntersection framing: one paragraph fixes the port confusion
 
