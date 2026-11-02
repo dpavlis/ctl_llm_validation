@@ -683,6 +683,7 @@ def tag_summary(smps: list[dict]) -> dict:
             d = out.setdefault(key, {"samples": 0, "trained": 0, "context_quote": 0, "cite_guarded": 0, "kl_tok": 0.0, "tok": 0})
             d["samples"] += 1
             d["context_quote"] += s.get("skipped") == "context_quote"
+            d["clean_false_alarm"] = d.get("clean_false_alarm", 0) + (s.get("skipped") == "clean_false_alarm")
             d["cite_guarded"] += bool(s.get("teacher_override"))
             if "kl_mean" in s:
                 d["trained"] += 1
@@ -703,7 +704,10 @@ def score_and_train(trainer: Trainer, smps: list[dict], steps: int) -> list[dict
     cfg, roles, model = trainer.cfg, trainer.roles, trainer.model
     tc = cfg["train"]
     keep = []
+    pairs = clean_guard_pairs(tc, smps)
     for s in smps:
+        if s.get("skipped"):  # clean_guard: a false alarm on clean code is not trained as an OPCD sample
+            continue
         s["prompt_ids"] = roles.ids("student", s)
         if s["set"] == "exec":  # fixed execution-verified sample: no teacher pass
             longest = max(len(s["completion_ids"]), len(s.get("rejected_ids") or []))
@@ -731,7 +735,18 @@ def score_and_train(trainer: Trainer, smps: list[dict], steps: int) -> list[dict
                                k=tc.get("topk_k", 64) if loss_mode(cfg, roles, s) == "topk" else None)
         s["loss"] = loss_mode(cfg, roles, s)
         keep.append(s)
+    for d in pairs:  # clean_guard on-policy DPO pairs: reference = the current policy, so the margin starts at 0
+        import torch
+        d["prompt_ids"] = roles.ids("student", d)
+        if len(d["prompt_ids"]) + max(len(d["completion_ids"]), len(d["rejected_ids"])) > tc["cutoff"]:
+            continue
+        model.eval()
+        with torch.no_grad():
+            d["ref"] = [float(completion_logps(model, d["prompt_ids"], d[k], grad=False, chunk=tc["logits_chunk"]).sum())
+                        for k in ("completion_ids", "rejected_ids")]
+        keep.append(d)
     random.Random(trainer.step).shuffle(keep)
+    trainer.last_keep = keep
     logs = []
     if not keep:  # every sample skipped (cutoff / truncated): no step this round
         return logs
@@ -740,6 +755,34 @@ def score_and_train(trainer: Trainer, smps: list[dict], steps: int) -> list[dict
         logs.append(trainer.train_minibatch(keep[i:i + per]))
         print(f"  step {logs[-1]}", flush=True)
     return logs
+
+
+def clean_guard_pairs(tc: dict, smps: list[dict]) -> list[dict]:
+    """train.clean_guard {tag_prefix, pattern}: a sample on a clean record (tag starts with tag_prefix, i.e. the server
+    passed the code under review) whose answer matches pattern (default: any [ERROR]) is a false alarm. It is not trained
+    as an OPCD sample (skipped "clean_false_alarm": the verdict teacher does not push back on a wrong reason, difr1
+    2026-11-02) and, when a sibling sample of the same prompt in this round is clean, the two become an on-policy DPO
+    pair (chosen = the clean sibling, rejected = the false alarm; loss "dpo", train.exec_dpo_beta / exec_dpo_weight)."""
+    cg = tc.get("clean_guard")
+    if not cg:
+        return []
+    pat = re.compile(cg.get("pattern", r"\[ERROR\]"))
+    by_pid: dict[str, list[dict]] = {}
+    for s in smps:
+        if s["set"] != "exec" and str(s.get("tag", "")).startswith(cg["tag_prefix"]):
+            by_pid.setdefault(s["prompt_id"], []).append(s)
+    pairs = []
+    for pid, group in by_pid.items():
+        bad = [s for s in group if pat.search(s["answer"] or "")]
+        good = [s for s in group if s not in bad and s["think_closed"] and not s["hit_cap"]]
+        for s in bad:
+            s["skipped"] = "clean_false_alarm"
+            if good:
+                c = good[len(pairs) % len(good)]
+                pairs.append({k: v for k, v in s.items() if k not in ("skipped", "completion_ids")}
+                             | {"completion_ids": c["completion_ids"], "rejected_ids": s["completion_ids"],
+                                "loss": "dpo", "clean_dpo": True, "sample_idx": f"{c['sample_idx']}-{s['sample_idx']}"})
+    return pairs
 
 
 def run_probe(sampler, probe: list[dict], k: int, max_new: int, seed: int) -> dict:
@@ -861,6 +904,7 @@ def cmd_train(cfg: dict, args) -> None:
                   f"{[s['new_tokens'] for s in got]} tok, {got[0]['gen_s']}s, belief {[int(s['belief']) for s in got]}", flush=True)
         t_s = time.monotonic() - t0
         logs = score_and_train(trainer, smps, tc["steps_per_round"])
+        smps += [s for s in trainer.last_keep if s.get("clean_dpo")]
         trainer.save(d)
         sampler.publish(d / "adapter", f"{cfg['run']}_r{rnd:03d}")
         write_samples(d / "samples.jsonl", smps)
@@ -868,6 +912,11 @@ def cmd_train(cfg: dict, args) -> None:
                "skipped_cutoff": sum(s.get("skipped") == "cutoff" for s in smps),
                "skipped_truncated": sum(s.get("skipped") == "truncated" for s in smps),
                "skipped_context_quote": sum(s.get("skipped") == "context_quote" for s in smps),
+               "clean_false_alarm": sum(s.get("skipped") == "clean_false_alarm" for s in smps),
+               "clean_dpo": {"pairs": sum(bool(s.get("clean_dpo")) for s in smps),
+                             "trained": sum(bool(s.get("clean_dpo")) and "dpo_margin" in s for s in smps),
+                             "margin": round(sum(s["dpo_margin"] for s in smps if s.get("clean_dpo") and "dpo_margin" in s)
+                                             / max(1, sum(bool(s.get("clean_dpo")) and "dpo_margin" in s for s in smps)), 4)},
                "by_tag": tag_summary(smps),
                "sample_min": round(t_s / 60, 1), "train_min": round((time.monotonic() - t0 - t_s) / 60, 1)}
         if probe and pcfg.get("every") and (rnd + 1) % pcfg["every"] == 0:

@@ -64,6 +64,40 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   (samples, metrics, probes) and LlamaFactory run (trainer logs, training configs, loss plots). A run listed as gone
   needs a retrain from its config to be served again.
 
+## 2026-11-02 — difr2: difr1 + clean_guard (false alarms on clean reviews dropped, on-policy DPO pairs) — generate up, thinking-on ALL false alarm stays
+
+- **Change** (`configs/opcd_difr2.yaml`, `opcd.py` train.clean_guard): a review sample on a clean record (tag review_clean*,
+  server PASS) with any [ERROR] is not trained as an OPCD sample; when the sibling sample of the round is clean the two
+  form an on-policy DPO pair (chosen = clean sibling, rejected = false alarm, reference = current policy, beta 0.1).
+  40 rounds, 08:58–13:23. Over the run: 31 false alarms removed, **only 9 pairs** (k = 2, both siblings usually flag).
+  Probes: belief 0.00 (one answer at round 36), unclosed thinking 0 after round 4, quote 0.05–0.15.
+- **Round check, DI subsets, paired with valprec2** (`results/agent_harness/difr2_r{19,39}_pool_tweak_di.*`,
+  `results/difr2/gt_tweak_di_*.md`):
+
+  | | valprec2 | difr2 r19 | difr2 r39 | difr1 r19 |
+  |---|---|---|---|---|
+  | DI harness first attempt, on (n102) | 76 | 91 (+0.147 [+0.041, +0.251]) | 89 (+0.127 [+0.019, +0.233]) | 90 |
+  | after 2 feedback rounds | 89 | 96 (+0.069 [−0.013, +0.153]) | 98 (+0.088 [+0.011, +0.170]) | 94 |
+  | `$out.1` compile errors, first attempt | 17 | 4 | 8 | 6 |
+  | DI validate controls any [ERROR], off (n24) | 0.08 | 0.00 (−0.08 [−0.25, 0]) | 0.00 | 0.17 |
+  | DI validate controls any [ERROR], on (n24) | 0.08 | 0.29 (+0.21 [0.00, +0.46]) | 0.38 (+0.29 [+0.08, +0.54]) | 0.38 |
+  | DI defect recall on / off | 0.98 / 0.93 | 0.98 / 0.91 | 0.96 / 0.93 | 1.00 / 0.93 |
+
+  Best DataIntersection generate from training so far (r39 final pass significant), thinking-off reviews clean, but the
+  thinking-on false alarm on `return ALL` controls (every flagged control says "ALL broadcasts to all three ports") is
+  unchanged from difr1. Full gates not run.
+- **The teacher is not the problem** (`scripts/difr2_teacher_all_probe.py`, `results/difr2/teacher_all_probe.json`): the
+  review teacher (rb1009 base, rulev6 validate prompt + format + teacher_context, thinking on) on 22 training DI
+  controls that return ALL: with its context 3/22 any [ERROR], **0 mention ALL**; without the context 15/22, all ALL
+  (three-port routing, "needs transformOnlyA"). So the context works for the teacher; what fails is the transfer: the
+  reverse-KL loss on a long review is dominated by shared tokens and the disagreement sits in a few decision tokens
+  (KL mean ≈ 0 on the flagged samples, difr1), and the DPO pairs were 9 in 40 rounds.
+- **Options for difr3:** (1) more samples per clean DI review (k 4–6 on review_clean DI rows, or an extra DI-control
+  prompt file with weight) so pairs form; (2) `loss_by_teacher: topk` for the review teacher on clean rows, option B
+  cross-entropy toward what the teacher would write at the decision token; (3) fixed DPO pairs from the teacher's clean
+  reviews (context removed, context-guard filtered) as chosen against the student's ALL flags as rejected, via the exec
+  set path. Owner's call.
+
 ## 2026-11-02 — difr1: OPCD with the join-framing §8.9 as teacher (not adopted as is)
 
 - **Run:** valprec2 `round_155` continued 40 rounds (`configs/opcd_difr1.yaml`, 19:32–23:47 on GPUs 0/1): the join
