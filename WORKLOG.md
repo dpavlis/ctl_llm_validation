@@ -46,6 +46,24 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
 
+## 2026-11-02 — Lifecycle disk cleanup
+
+- **`scripts/cleanup_lifecycle.sh`** (supersedes `disk_cleanup.sh` and `cleanup_tier1.sh`) deleted 720 GB of weights,
+  optimizer states and debris; `/home` used 1.6 TB → 890 GB. difr2 (training at the time) was excluded and kept running.
+- **Models left:**
+  - exports `qwen38_rb1009_sftdpo` and `qwen38_rb1006_sftdpo` (the path behind every `eval_rb1006_*` / rulev3
+    config) plus `qwen38_base`;
+  - OPCD adapters `valprec2/round_155`, `c13c/round_015`, `difr1/round_019`, and all of difr2;
+  - LlamaFactory final adapters of rb1009 and rb1006.
+- **Gone:** every OPCD `optimizer.pt`; all other round adapters (c4, c10, c13d, c14, s3b-rb1011, valprec1, retry1,
+  exec_rft1, difr1's other rounds, smoke tests, `vllm_check`); all LlamaFactory checkpoints; the weights of every other
+  rebuild and DPO / self-distill run (fix1–6, rb1003–1008, rb1009s2, rb1010–1012, dpoiso); the merged exports of fix6,
+  rb1009s2, rb1010a, rb1011/s2, rb1012/s2 and their dead symlinks; the May Qwen3.5-9B copy in `~/LlamaFactory/~`; the
+  `*.pre_rulings1004` backups and other debris.
+- **Kept everywhere:** results, logs, specs, configs, training data, and the small files of every OPCD round
+  (samples, metrics, probes) and LlamaFactory run (trainer logs, training configs, loss plots). A run listed as gone
+  needs a retrain from its config to be served again.
+
 ## 2026-11-02 — difr1: OPCD with the join-framing §8.9 as teacher (not adopted as is)
 
 - **Run:** valprec2 `round_155` continued 40 rounds (`configs/opcd_difr1.yaml`, 19:32–23:47 on GPUs 0/1): the join
