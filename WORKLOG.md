@@ -35,8 +35,10 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
     takes the DI harness tasks 76 → 98/102 first attempt thinking on with validate false alarms flat. §8.9 rewritten,
     corpus round 3 in (`spec/dataintersection_join_framing_brief.md`). **OPCD difr1 with §8.9 as teacher (2026-11-02):**
     DI generate 76 → 90/102 first attempt thinking on, but the reviewer learned to flag `return ALL` on clean code (DI
-    control false alarm 0.08 → 0.38 thinking on). Not adopted; the training signal does not carry the "ALL is accepted"
-    tolerance (see the 2026-11-02 entry).
+    control false alarm 0.08 → 0.38 thinking on). difr2 (false alarms dropped, on-policy pairs) keeps the generate gain
+    with the same false alarm; difr3 (fixed DPO pairs against the ALL flags) halves the false alarm at best and loses the
+    generate gain (79 vs 91/102). None adopted; the reviewer's and the generator's port belief move together, and the
+    deployment-prompt framing does the job without the trade-off (see the three 2026-11-02 entries).
 - **Training on the model's own harness-corrected answers (retry1) did not help either** (§3.39): +0.10 first-attempt
   pass on the fresh-domain pool thinking off, but gap-test execution pass −0.06 off / −0.15 on, no-code answers thinking
   on, the accumulator belief back in hard set 2. Not adopted; the compile-and-retry loop at inference does the same job.
@@ -63,6 +65,42 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **Kept everywhere:** results, logs, specs, configs, training data, and the small files of every OPCD round
   (samples, metrics, probes) and LlamaFactory run (trainer logs, training configs, loss plots). A run listed as gone
   needs a retrain from its config to be served again.
+
+## 2026-11-02 — difr3: fixed DPO pairs (teacher's clean reviews vs the student's `return ALL` flags) — false alarm only partly down, DataIntersection generate gain lost
+
+- **Change** (`configs/opcd_difr3.yaml`, `scripts/opcd_difr3_run.sh`, `scripts/difr3/build_pairs.py`, `opcd.py`
+  `prompts.exec_fixed`): difr2 plus 60 fixed DPO pairs through the exec-set path (beta 0.1, weight 0.02, drawn with
+  prompt weight 16 ≈ 4 pairs per round). Rejected = difr2_r39's thinking-on reviews with an [ERROR] on 22 training DI
+  controls that return ALL (54 of 60 are the "ALL broadcasts to all three ports" claim); chosen = the review teacher's
+  clean verdicts on the same prompts with the context removed and context quotes filtered (50 format, 10 plain). The
+  student starts from valprec2 round_155 as before. 40 rounds, 16:06–20:18.
+- **Training:** the pairs are learned at once — DPO margin 0.6 at round 0, 13–23 from round 3 on, accuracy 1.0. Yet the
+  on-policy clean_guard dropped 79 false alarms over the run (difr2: 31) and formed 15 on-policy pairs. Belief probe
+  0.00, quote rate 0.08–0.18, KL 0.007–0.010.
+- **Round check, DI subsets, paired with valprec2** (`results/agent_harness/difr3_r{19,39}_pool_tweak_di.*`,
+  `results/difr3/gt_tweak_di_*.md`):
+
+  | | valprec2 | difr3 r19 | difr3 r39 | difr2 r19 |
+  |---|---|---|---|---|
+  | DI harness first attempt, on (n102) | 76 | 71 (−0.049 [−0.170, +0.074]) | 79 (+0.029 [−0.088, +0.145]) | 91 |
+  | after 2 feedback rounds | 89 | 92 (+0.029 [−0.060, +0.119]) | 89 (0.00 [−0.094, +0.094]) | 96 |
+  | `$out.1` compile errors, first attempt | 17 | 25 | 16 | 4 |
+  | DI validate controls any [ERROR], off (n24) | 0.08 | 0.25 (+0.17 [−0.05, +0.37]) | 0.08 (0.00) | 0.00 |
+  | DI validate controls any [ERROR], on (n24) | 0.08 | 0.29 (+0.21 [−0.02, +0.42]) | 0.17 (+0.08 [−0.12, +0.28]) | 0.29 |
+  | DI defect recall on / off | 0.98 / 0.93 | 0.98 / 0.91 | 0.93 / 0.95 | 0.98 / 0.91 |
+
+  Every flagged thinking-on control still says `return ALL` broadcasts to three ports; the thinking-off flags at r19 are
+  the old `$out.1` port claim (gone again by r39). The fixed pairs reduce the ALL false alarm by half at best (0.17, not
+  separable from valprec2's 0.08 at n24) and at the same time take back the DataIntersection generate gain of difr1/difr2:
+  r39 first attempt 79 vs difr2 r19's 91 (−0.118 [−0.219, −0.015]), `$out.1` errors back at 16–25. Pushing the reviewer
+  away from "ALL goes to all ports" pushes the generator back toward writing `$out.1`: the two tasks share the port
+  belief, and the pairs move it in the wrong direction for generate.
+- **Not adopted; full gates not run.** The three difr lanes together: the join-framing teacher gives +0.13–0.15 DI
+  first-attempt pass thinking on but installs the ALL false alarm in the reviewer; dropping false alarms (difr2) and
+  fixed DPO against them (difr3) cannot remove it without losing the generate gain. The system-prompt framing
+  (`data/sysprompt/di_frame_v2.txt`, 76 → 98/102 with validate false alarms flat) does the same job at inference with
+  no trade-off, and the corpus round 3 goes into the next rebuild. Recommended: stop the difr OPCD lanes, keep valprec2,
+  take the DI framing from the deployment prompt and the rebuild.
 
 ## 2026-11-02 — difr2: difr1 + clean_guard (false alarms on clean reviews dropped, on-policy DPO pairs) — generate up, thinking-on ALL false alarm stays
 

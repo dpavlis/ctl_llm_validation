@@ -1,0 +1,26 @@
+{
+ "rows": 44,
+ "pairs": 60,
+ "by": {
+  "on:review_clean:fmt": {
+   "rows": 22,
+   "student": 176,
+   "student_flag": 61,
+   "teacher": 88,
+   "teacher_clean": 60,
+   "teacher_quote": 24,
+   "teacher_error": 4,
+   "pairs": 50
+  },
+  "on:review_clean:plain": {
+   "rows": 22,
+   "student": 176,
+   "student_flag": 10,
+   "teacher": 88,
+   "teacher_clean": 78,
+   "teacher_quote": 6,
+   "teacher_error": 5,
+   "pairs": 10
+  }
+ }
+}

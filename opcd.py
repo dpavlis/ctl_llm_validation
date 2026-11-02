@@ -111,6 +111,10 @@ def cmd_prepare(cfg: dict) -> None:
     sets["probe"] = read_prompts(pc["probe"])
     if pc.get("exec"):
         sets["exec"] = exec_rows(pc["exec"], cfg["train"]["seed"])
+    for ef in pc.get("exec_fixed") or []:  # prompts.exec_fixed: [{file, weight}]: ready-made exec rows (difr3: DPO pairs
+        rows = sd.read_jsonl(Path(ef["file"]))  # built by scripts/difr3/build_pairs.py: completion_ids / rejected_ids)
+        sets["exec"] = sets.get("exec", []) + [dict(r, weight=ef.get("weight", r.get("weight", 1))) for r in rows]
+        print(f"exec_fixed {ef['file']}: {len(rows)} rows, weight {ef.get('weight', 1)}")
     used = {p["prompt_id"] for k in ("target", "hard", "contrast", "probe") for p in sets[k]}
     assert not ({p["prompt_id"] for p in sets["probe"]} & {p["prompt_id"] for k in ("target", "hard", "contrast") for p in sets[k]}), \
         "probe prompts overlap the training prompts"
@@ -826,6 +830,9 @@ def exec_sample(roles: Roles, p: dict, dpo_ref: dict) -> dict:
          "mode": p["mode"], "sample_idx": 0, "teacher": "exec", "exec_kind": p["exec_kind"], "exec_status": p.get("exec_status"),
          "completion_ids": comp, "raw": raw, "thinking": thinking, "answer": answer, "think_closed": True, "hit_cap": False,
          "new_tokens": len(comp), "gen_s": 0.0, "user": p["user"]}
+    for f in ("system_extra", "tag"):  # exec_fixed rows carry the format instruction their samples were drawn under
+        if p.get(f):
+            s[f] = p[f]
     if p["exec_kind"] == "dpo":
         s["rejected_ids"], s["ref"] = p["rejected_ids"], dpo_ref.get(p["prompt_id"])  # None only past cutoff_exec
     s.update(scan(s))

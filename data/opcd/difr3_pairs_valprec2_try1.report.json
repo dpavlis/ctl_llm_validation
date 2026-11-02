@@ -1,0 +1,46 @@
+{
+ "rows": 88,
+ "pairs": 19,
+ "by": {
+  "on:review_clean:fmt": {
+   "rows": 22,
+   "student": 88,
+   "student_flag": 12,
+   "teacher": 44,
+   "teacher_clean": 30,
+   "teacher_quote": 13,
+   "teacher_error": 2,
+   "pairs": 12
+  },
+  "on:review_clean:plain": {
+   "rows": 22,
+   "student": 88,
+   "student_flag": 2,
+   "teacher": 44,
+   "teacher_clean": 39,
+   "teacher_quote": 4,
+   "teacher_error": 1,
+   "pairs": 2
+  },
+  "off:review_clean:fmt": {
+   "rows": 22,
+   "student": 88,
+   "student_flag": 49,
+   "teacher": 44,
+   "teacher_clean": 16,
+   "teacher_quote": 0,
+   "teacher_error": 28,
+   "pairs": 0
+  },
+  "off:review_clean:plain": {
+   "rows": 22,
+   "student": 88,
+   "student_flag": 63,
+   "teacher": 44,
+   "teacher_clean": 9,
+   "teacher_quote": 0,
+   "teacher_error": 35,
+   "pairs": 5
+  }
+ }
+}
