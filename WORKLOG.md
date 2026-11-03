@@ -42,6 +42,8 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   - **Deployment prompt decided (2026-11-03): `data/sysprompt/deploy_v1.txt`** = rules + DI paragraph. Thinking on:
     fresh-domain first attempt 0.815 → 0.918 (+0.10 [+0.05, +0.16]), DI 102/102, gap tests 64 → 85/120, validate false
     alarm 0.02 → 0.00, recall flat. The rules-only false-alarm rise is gone.
+    A severity paragraph on top (deploy_v2, 2026-11-03) was not adopted: severity labelling +0.03 (noise), mutant FAIL
+    verdicts −0.03 in both modes (CI excludes zero), generate −0.015/−0.030 (not significant).
   - **rb1013 rebuild on the round-3/4 DataIntersection corpus (2026-11-03): not adopted.** T53/T54 thinking off 0/10
     with `$out.1` in 10/10 (rb1011, same recipe on the old sets, is the same), thinking on unchanged, DI validate
     controls worse (false alarm 0.38 on), validate ×9 0.777 (T38 collapse). The port belief is not fixed by the DI
@@ -54,6 +56,33 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-11-03 — Severity paragraph in the deployment prompt (deploy_v2): not adopted, deploy_v1 stays
+
+- **What:** `data/sysprompt/severity_v1.txt`, one paragraph stating the §7 severity ruling (ERROR only for a compile
+  failure, a certain runtime failure or a violated stated requirement; data-dependent risk is WARNING; style is INFO;
+  verdict FAIL only with an ERROR), appended to deploy_v1 as `data/sysprompt/deploy_v2.txt`. valprec2, thinking on
+  and off, deploy_v1 vs deploy_v2 under the same server (`scripts/sysprompt/severity.sh`, configs
+  `configs/eval_sp_v4val_valprec2_deploy{1,2}_{on,off}.yaml`).
+- **Ground truth B1-tweak, format path, 2 runs** (`results/sysprompt/gt_tweak_valprec2_deploy2.md`, deploy2 − deploy1,
+  paired bootstrap):
+  - the "severity ok" column, the target, moves 0.91 → 0.94 thinking on and 0.91 → 0.93 off — inside the noise band;
+  - the mutant verdict FAIL rate drops in both modes and the CI excludes zero: on −0.027 [−0.055, −0.007],
+    off −0.034 [−0.062, −0.014]. The rule makes the model call a removed null guard "data-dependent" (null_guard_removed
+    named as WARNING 5/19 on, 2/18 off, versus 0 under deploy_v1) and drops missing_lifecycle recall 0.72 → 0.59 thinking
+    on, so a planted defect gets a PASS verdict;
+  - defect recall −0.014 both modes (CI touches zero); clean-code false alarm on 0.00 → 0.01, off 0.17 → 0.11
+    (−0.06 [−0.13, 0.00]), the only move in the right direction and still inside the ±0.08 band.
+- **Judge, suite v4 validate tests, n5:** mean on 0.821 → 0.829, off 0.799 → 0.777. Per test the moves are mixed and
+  individually inside seed noise except T22 on +0.33 (the severity-grading test) against T12 on −0.20 and T18 off −0.24.
+  WRONG rate (excl. T18/T22) on 0.141 → 0.116, off 0.047 → 0.069; both below the 0.04 judge noise.
+- **Generate guard, harness pool_tweak thinking on, 2 runs, paired against the deploy_v1 run:** first attempt 303 → 298/330
+  (−0.015 [−0.060, +0.029]), final 311 → 301/330 (−0.030 [−0.071, +0.010]); DataIntersection 102 → 99/102, Reformat
+  −0.06/−0.08. Nothing significant, but no gain anywhere to pay for a downward drift on the primary objective.
+- **Decision:** deploy_v1 stays the deployment prompt. The paragraph buys +0.03 on severity labelling, which is noise,
+  and costs mutant FAIL verdicts and T18 (a generation-time explanation test). The ruling is better applied by the judge
+  rubrics and by the corpus reviews than by the review prompt, where it reads as "downgrade when in doubt". Not in the
+  how-to; `severity_v1.txt` and `deploy_v2.txt` kept for the record.
 
 ## 2026-11-03 — rb1013: rebuild on the round-3/4 DataIntersection corpus — not adopted, the port belief is not in the DI sets
 

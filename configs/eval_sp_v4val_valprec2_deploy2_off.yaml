@@ -1,0 +1,158 @@
+# sp_v4val_valprec2_deploy2_off: valprec2 on vLLM :3012 with data/sysprompt/deploy_v2.txt appended to every system prompt, suite v4 validate tests, thinking OFF.
+# =============================================================================
+# CTL2 model evaluation config -- rb1006 (rb1005 recipe + fix-to-spec explained set), thinking OFF.
+# model_path is a symlink named qwen38_rb1006_off -> /home/pavlisd/exports/qwen38_rb1006_sftdpo.
+# Everything below the rule is identical to the baseline eval_T04_fix6_sftdpo_nothink.yaml.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Link to the training config (enables auto-discovery + shared run log)
+# ---------------------------------------------------------------------------
+# Point this at the same YAML you pass to train.py.
+training_config: configs/qwen38.yaml
+
+# ---------------------------------------------------------------------------
+# Model under test (MUT)
+# ---------------------------------------------------------------------------
+mut:
+  # "local"  — load exported safetensors directly via transformers (GPU required)
+  # "api"    — call an OpenAI-compatible endpoint (Ollama, OpenAI, vLLM, etc.)
+  mode: vllm                 # served by vLLM (test.py VllmMUTClient); model_path is used for the tokenizer only
+  vllm_url: http://127.0.0.1:3012
+  vllm_model: valprec2
+  run_label: qwen38_sp_v4val_valprec2_deploy2_off
+
+  # Path to the exported model directory produced by train.py.
+  # Leave null (or omit) to auto-discover from training_config paths.
+  # Set explicitly to test a specific export, e.g. after --skip-export:
+  #   model_path: saves/qwen3-clover/2026-05-10-12-00-00_export
+  model_path: /home/pavlisd/exports/qwen38_rb1006_off
+
+  # Data type for inference: float16 | bfloat16 | float32
+  # Use bfloat16 for Ampere+ (A100, RTX 30xx+), float16 for older GPUs
+  dtype: bfloat16
+
+  # HuggingFace device map: "auto" distributes across all available GPUs/CPU
+  device_map: auto
+
+  # Whether to allow the model to produce chain-of-thought <think> tokens.
+  # Set to false for models trained with a nothink template (qwen3_nothink etc.)
+  # — the tokenizer's built-in thinking scaffold is disabled so the model sees
+  # exactly the same prompt format it was trained on.
+  enable_thinking: false
+
+  # Handed to the chat template as `reasoning_effort` (thinking mode only).
+  # Qwen3.8 accepts low | medium | xhigh; null leaves the template's default
+  # (xhigh). A value the template does not accept fails at startup; a template
+  # that never reads it warns instead of failing quietly.
+  reasoning_effort: medium
+
+  # Maximum new tokens per response. Shared budget: thinking + answer. Raised
+  # from 8192 because reasoning now consumes part of it — a response with no
+  # </think> inside this budget is reported as an ERROR result, not scored 0.
+  max_new_tokens: 16384
+
+  # ---------------------------------------------------------------------------
+  # Per-type inference overrides (generate / validate).
+  # Each key is optional — omit or comment out to use the test suite defaults.
+  # ---------------------------------------------------------------------------
+  generate:
+     #nstruct (or non-thinking) mode: temperature=0.7, top_p=0.80, top_k=20, min_p=0.0, presence_penalty=1.5, repetition_penalty=1.0
+    # Suite default temperature: 0.1 -- per-test values now apply.
+    # Was 0.7. Sampling at 7x the suite temperature was the dominant source of
+    # run-to-run variance (individual tests sd 0.2-0.4), which made n=1 evaluation
+    # worthless and swamped the training effects being measured. The judge was
+    # NOT the cause: 19 byte-identical MUT responses scored identically, 19/19.
+    # Re-enable only for a production-realism run, never for an A/B comparison.
+    temperature: 0.4
+    top_p: 0.95
+    top_k: 20
+    system_prompt: |
+      You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+      Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+      Prefer correct, practical, minimal solutions.
+      CTL2 facts to apply (all compiler-verified):
+      - Reserved words: millisec, second, minute, hour, day, week, month, year and the type names cannot be used as variable names (a metadata field named month is fine). Use names like dayNo or monthIdx.
+      - Regex: there is no !~ operator. Write !(x ~= re) or !matches(x, re).
+      - Ternary: ALL, OK and SKIP cannot be ternary operands; return them from if/else.
+      - String escapes: "\." and "\d" are invalid; write "\\." and "\\d", or use a single-quoted string.
+      - Exceptions: catch takes CTLException: catch (CTLException ex) { ... }. There is no throw or raise statement. raiseError takes a string, never the exception: re-raise with raiseError(ex.message). Do not wrap a whole transform() or getOutputPort() body in try/catch unless the task asks for it.
+      - Rollup accumulator: the accumulator is its own record defined by the accumulator metadata. Assign only fields that exist there; input and output fields that are not in the accumulator metadata do not exist on it. In initGroup assign every non-nullable accumulator field: a non-nullable field left null fails the component at runtime.
+
+      DataIntersection, as seen from CTL: the transform is a joiner over the matched pairs of the two sorted inputs. In transform(), $in.0 is the record from input 0 (A) and $in.1 the record from input 1 (B) with the same key, and there is exactly one output record, $out.0, with the transform's own output metadata. Fill $out.0 from the two inputs and return OK to emit it, or return SKIP to drop the pair; ALL, 0 and 1 are accepted as well and mean the same as OK here, so none of them is an error. Records whose key is only on one side never reach the CTL; the component passes them on by itself, unchanged, on its other outputs, and that routing is not the CTL's business. The return value does not choose a port and there is no $out.1 or $out.2 in this transform.
+
+      Review severity (owner ruling): ERROR is only a compile failure, a certain runtime failure, or a violation of a requirement the task states. A risk that depends on the data (a nullable field that may be null, a lookup that may miss, a string that may not parse, a format letter that is valid but probably not what was meant) is WARNING, not ERROR, unless the task says the data makes it certain. Style, naming and optional improvements are INFO. The verdict is FAIL only when there is at least one ERROR.
+
+  validate:
+    # Suite default temperature: 0.05 -- per-test values now apply (was 0.7).
+    #official instruct (or non-thinking) mode: temperature=0.7, top_p=0.80, top_k=20, min_p=0.0, presence_penalty=1.5, repetition_penalty=1.0
+    temperature: 0.4
+    top_p: 0.95
+    top_k: 20
+    system_prompt: |
+      You are a CloverDX ETL expert specializing in transformation graphs, components, and CTL2. CTL and CTL2 mean the same language.
+      Help users write, debug, and explain CTL2 code and related concepts. Provide working code, explanation, or both as needed.
+      Prefer correct, practical, minimal solutions.
+      CTL2 facts to apply (all compiler-verified):
+      - Reserved words: millisec, second, minute, hour, day, week, month, year and the type names cannot be used as variable names (a metadata field named month is fine). Use names like dayNo or monthIdx.
+      - Regex: there is no !~ operator. Write !(x ~= re) or !matches(x, re).
+      - Ternary: ALL, OK and SKIP cannot be ternary operands; return them from if/else.
+      - String escapes: "\." and "\d" are invalid; write "\\." and "\\d", or use a single-quoted string.
+      - Exceptions: catch takes CTLException: catch (CTLException ex) { ... }. There is no throw or raise statement. raiseError takes a string, never the exception: re-raise with raiseError(ex.message). Do not wrap a whole transform() or getOutputPort() body in try/catch unless the task asks for it.
+      - Rollup accumulator: the accumulator is its own record defined by the accumulator metadata. Assign only fields that exist there; input and output fields that are not in the accumulator metadata do not exist on it. In initGroup assign every non-nullable accumulator field: a non-nullable field left null fails the component at runtime.
+
+      DataIntersection, as seen from CTL: the transform is a joiner over the matched pairs of the two sorted inputs. In transform(), $in.0 is the record from input 0 (A) and $in.1 the record from input 1 (B) with the same key, and there is exactly one output record, $out.0, with the transform's own output metadata. Fill $out.0 from the two inputs and return OK to emit it, or return SKIP to drop the pair; ALL, 0 and 1 are accepted as well and mean the same as OK here, so none of them is an error. Records whose key is only on one side never reach the CTL; the component passes them on by itself, unchanged, on its other outputs, and that routing is not the CTL's business. The return value does not choose a port and there is no $out.1 or $out.2 in this transform.
+
+      Review severity (owner ruling): ERROR is only a compile failure, a certain runtime failure, or a violation of a requirement the task states. A risk that depends on the data (a nullable field that may be null, a lookup that may miss, a string that may not parse, a format letter that is valid but probably not what was meant) is WARNING, not ERROR, unless the task says the data makes it certain. Style, naming and optional improvements are INFO. The verdict is FAIL only when there is at least one ERROR.
+  # --- api mode (switch mode: api and configure below) ---
+  # base_url: "http://localhost:11434/v1"   # Ollama default
+  # model: "qwen3-clover-merged"            # model name as registered in Ollama
+  # api_key: "ollama"                       # any non-empty string for Ollama
+
+# ---------------------------------------------------------------------------
+# Judge LLM
+# ---------------------------------------------------------------------------
+judge:
+  # "anthropic" — Anthropic SDK, recommended: claude-opus-4 or claude-sonnet-4
+  # "openai"    — OpenAI SDK (also works for any OpenAI-compatible self-hosted judge)
+  #provider: anthropic
+  #model: claude-opus-4-20250514
+
+  # API key — supports ${ENV_VAR} expansion
+  #api_key: ${ANTHROPIC_API_KEY}
+
+  # Uncomment to use OpenAI as judge:
+  provider: openai
+  model: gpt-6.1-sol  # local provider (was gpt-6-sol, 2026-10-09)
+  base_url: http://127.0.0.1:9001/v1
+  reasoning_effort: medium
+  api_key: local  # local provider needs no key
+  # Leave temperature unset for terra-tier models that only support default.
+  # temperature: 1.0
+  # OpenAI reasoning control (alias: effort).
+  # reasoning_effort: medium
+
+    #base_url: "http://localhost:3000/v1"
+
+  # Optional base_url override for self-hosted OpenAI-compatible judge endpoint:
+  # base_url: "http://localhost:11434/v1"
+
+# ---------------------------------------------------------------------------
+# Execution settings
+# ---------------------------------------------------------------------------
+
+# Repeat each test N times.  Use 1 for fast evaluation, 3 for statistics.
+runs_per_test: 1
+
+# Seconds to wait per MUT response before timeout (retried once).
+timeout_seconds: 240
+
+# Where to write results_*.json and summary_*.md.
+output_dir: ./results
+
+# Test subset filter.  null = run all 8 tests.
+# Can also be specified on the command line: --tests T4,T5,T7
+test_ids: null
+
+# Explicit path to the test suite JSON — auto-discovered from resources/ if omitted.
+suite_file: /home/pavlisd/llama_train/results/eval_snapshot_20261003/ctl2_test_suite_v4.json
