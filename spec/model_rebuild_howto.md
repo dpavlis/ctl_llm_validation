@@ -446,7 +446,7 @@ The environment variables are the ones `scripts/vllm_eval_serve_rb1009.sh` sets.
 
 | setting | value |
 |---|---|
-| system prompt | `inference.system_prompt` in `configs/eval_rb1006_on.yaml` (same text in `_off`) |
+| system prompt | `inference.system_prompt` in `configs/eval_rb1006_on.yaml` (same text in `_off`), **followed by `data/sysprompt/deploy_v1.txt`** (seven CTL2 rule lines + the DataIntersection join-like paragraph; decided 2026-11-03, WORKLOG). The combined text is in `configs/eval_sp_v5gaps_valprec2_deploy_on.yaml`. Thinking on, paired on 165 fresh-domain tasks: first attempt 0.815 → 0.918, DataIntersection 76 → 102/102, residual gap tests 64 → 85/120, validate recall and false alarm unchanged. |
 | thinking | **on**: `chat_template_kwargs: {"enable_thinking": true, "reasoning_effort": "medium"}` |
 | sampling | temperature 0.4, top_p 0.95 |
 | max tokens | 16384 |

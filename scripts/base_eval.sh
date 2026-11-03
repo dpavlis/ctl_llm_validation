@@ -4,10 +4,13 @@
 # suite v5 gap tests incl. T53/T54 n10 both modes, hard-case sets 1-3 k4. Stops both servers at the end.
 #   setsid nohup scripts/base_eval.sh /home/pavlisd/exports/qwen38_rb1010a_sftdpo rb1010a > logs/evals/rb1010a_eval.log 2>&1 &
 set -uo pipefail
-# one gate run at a time, on free GPUs (rebuilds may still be training on GPU 1 or 3)
+# GPUs: OFF_GPU serves :3011 (thinking off), ON_GPU serves :3012 (thinking on); defaults 3 and 1 as before.
+#   OFF_GPU=0 ON_GPU=1 setsid nohup scripts/base_eval.sh <export> <tag> > logs/evals/<tag>_eval.log 2>&1 &
+OFF_GPU=${OFF_GPU:-3}; ON_GPU=${ON_GPU:-1}
+# one gate run at a time, on free GPUs (rebuilds may still be training on them)
 exec 9>/home/pavlisd/llama_train/logs/evals/locks/base_eval.lock; flock 9
-until [ "$(nvidia-smi -i 1 --query-gpu=memory.used --format=csv,noheader,nounits)" -lt 1000 ] && \
-      [ "$(nvidia-smi -i 3 --query-gpu=memory.used --format=csv,noheader,nounits)" -lt 1000 ]; do sleep 60; done
+until [ "$(nvidia-smi -i $ON_GPU --query-gpu=memory.used --format=csv,noheader,nounits)" -lt 1000 ] && \
+      [ "$(nvidia-smi -i $OFF_GPU --query-gpu=memory.used --format=csv,noheader,nounits)" -lt 1000 ]; do sleep 60; done
 cd /home/pavlisd/llama_train
 BASE=$1; TAG=$2; PY=~/venv/bin/python; L=logs/evals
 export PATH=/home/pavlisd/venv/bin:$PATH
@@ -15,8 +18,8 @@ for m in on off; do for s in vllm v5gaps; do
   sed -e "s/rb1009/$TAG/g" -e "s#model_path: /home/pavlisd/exports/qwen38_${TAG}_sftdpo#model_path: $BASE#" \
       configs/eval_rb1009_${s}_$m.yaml > configs/eval_${TAG}_${s}_$m.yaml; done; done
 for p in 3011 3012; do
-  src=logs/evals/opcd_vllm_serve.sh; [ $p = 3012 ] && src=scripts/vllm_eval_serve.sh
-  sed -e "s#--model /home/pavlisd/exports/qwen38_rb1006_sftdpo --served-model-name rb1006#--model $BASE --served-model-name $TAG#" \
+  src=logs/evals/opcd_vllm_serve.sh; g=$OFF_GPU; [ $p = 3012 ] && { src=scripts/vllm_eval_serve.sh; g=$ON_GPU; }
+  sed -e "s/CUDA_VISIBLE_DEVICES=[0-9]/CUDA_VISIBLE_DEVICES=$g/" -e "s#--model /home/pavlisd/exports/qwen38_rb1006_sftdpo --served-model-name rb1006#--model $BASE --served-model-name $TAG#" \
       -e 's/ --lora-modules smoke=[^ ]*//' $src > $L/vllm_${p}_$TAG.sh
   grep -q "served-model-name $TAG" $L/vllm_${p}_$TAG.sh || { echo "serve script for $p not rewritten"; exit 1; }
   setsid nohup bash $L/vllm_${p}_$TAG.sh > $L/vllm_${p}_$TAG.log 2>&1 < /dev/null & disown

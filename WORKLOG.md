@@ -2,7 +2,7 @@
 
 Important progress and decisions, newest first. Details and numbers: `spec/ctl2_training_findings.md` (section in brackets).
 
-## Where we are (2026-11-02)
+## Where we are (2026-11-03)
 
 - **Ship candidate: valprec2** (since 2026-10-30, §3.38), the rb1009 base plus OPCD adapter
   `data/opcd/valprec2/round_155`. It succeeds c13c (`data/opcd/c13c/round_015`), which was confirmed by 20-sample checks
@@ -39,6 +39,13 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
     with the same false alarm; difr3 (fixed DPO pairs against the ALL flags) halves the false alarm at best and loses the
     generate gain (79 vs 91/102). None adopted; the reviewer's and the generator's port belief move together, and the
     deployment-prompt framing does the job without the trade-off (see the three 2026-11-02 entries).
+  - **Deployment prompt decided (2026-11-03): `data/sysprompt/deploy_v1.txt`** = rules + DI paragraph. Thinking on:
+    fresh-domain first attempt 0.815 → 0.918 (+0.10 [+0.05, +0.16]), DI 102/102, gap tests 64 → 85/120, validate false
+    alarm 0.02 → 0.00, recall flat. The rules-only false-alarm rise is gone.
+  - **rb1013 rebuild on the round-3/4 DataIntersection corpus (2026-11-03): not adopted.** T53/T54 thinking off 0/10
+    with `$out.1` in 10/10 (rb1011, same recipe on the old sets, is the same), thinking on unchanged, DI validate
+    controls worse (false alarm 0.38 on), validate ×9 0.777 (T38 collapse). The port belief is not fixed by the DI
+    sets; the prompt is the fix. rb1009 stays the base.
 - **Training on the model's own harness-corrected answers (retry1) did not help either** (§3.39): +0.10 first-attempt
   pass on the fresh-domain pool thinking off, but gap-test execution pass −0.06 off / −0.15 on, no-code answers thinking
   on, the accumulator belief back in hard set 2. Not adopted; the compile-and-retry loop at inference does the same job.
@@ -47,6 +54,65 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-11-03 — rb1013: rebuild on the round-3/4 DataIntersection corpus — not adopted, the port belief is not in the DI sets
+
+- **What:** rb1011 recipe (rb1009 SFT lr 5e-5 2 ep + DPO lr 5e-6 1 ep, seed 42, `--sd=c13c_belief:1`, rb1012 sets
+  excluded) on corpus 3de7b55: the first base trained on DataIntersection rounds 3 and 4 (answers say the CTL sees one
+  output record, `return OK`, rejected = wrong code) and the revised SCD2 DI rows. SFT 13433 / DPO 2083, same counts as
+  rb1011. Export `/home/pavlisd/exports/qwen38_rb1013_sftdpo`. Gates `scripts/base_eval.sh` (now `OFF_GPU`/`ON_GPU`),
+  DI subsets `scripts/base_di_check.sh`. Single seed; band ±0.07 on validate and the gap tests.
+- **The question it was built for: no.** T53/T54 thinking off, n10: judge 0/10 and 0/10, `$out.1` written in 10/10
+  and 10/10 (rb1009 10/10 pass with 0 `$out.1`, rb1011 — same recipe, old DI data — 0/10 with 10/10 `$out.1`, rb1012
+  5/10 and 7/10). Thinking on 3/10 and 4/10 with `$out.1` in 7 and 6, the same as rb1009 (2/10, 6/10; 6 and 3) and
+  rb1011 (4/10, 1/10). The only thing the new sets changed: `return ALL` is gone from the answers (0 of 40, rb1009 and
+  rb1011 10 of 10). The port habit is unmoved and thinking off is at the bad end of a seed band that already spans 0–10.
+  DI harness subset (102, thinking on, no prompt): first attempt 37/102 vs valprec2 76 (−0.38 [−0.50, −0.25]), 63
+  attempts hit `Cannot write to output port '1'`; after two feedback rounds 83 vs 89 (within CI). valprec2 is OPCD on
+  rb1009, so this pairing overstates the base difference; the rb1009 base was not run on the subset.
+- **DI validate controls (B1-tweak DI, 24 clean):** false alarm 0.25 off / 0.38 on vs valprec2 0.08 / 0.08; recall flat
+  (0.91 / 0.95 vs 0.93 / 0.98). `results/di_check/gt_tweak_di_rb1013.md`.
+- **Other gates vs rb1009:** suite v4 generate 0.950 off / 0.982 on (rb1009 0.966 off); validate thinking off ×9 mean
+  0.777 vs rb1009 0.861, rb1011 0.891, rb1012 0.854 — below the band. Most of it is T38 at 0.00 in 9 of 9 (answers
+  "No issues found" to updateGroup returning false; the rb1003 collapse again, run-specific) and T24 0.68 → 0.26
+  (date-pattern severity, "invalid pattern" wording). Gap tests thinking off exec 18/110 (base without OPCD or prompt;
+  T63 fails on a local named `month`). Belief on recipe: T40 18/20, T42 5/20 (rb1009 0/20, 0/20), hard set 2 trap
+  belief 0.55 (rb1011 0.57, rb1009 0.92).
+- **Decision:** not adopted; rb1009 stays the base under valprec2. The DataIntersection port belief is not fixed by the
+  DI sets, where the requests still name the three outputs; `deploy_v1` (DI paragraph in the prompt) remains the fix.
+  No Stage 3 on rb1013.
+- **Mishap, fixed:** at 03:28 `scripts/sysprompt/deploy.sh`'s cleanup killed every server of mine on :3012, including
+  the rb1013 thinking-on server; the first restart was killed by `base_eval.sh`'s substring match and my own kill hit
+  the thinking-off branch. Nothing ran 03:32–07:48. The prompt-test scripts now stop only the server they started
+  (`pkill -P $SERVER`) and wait only on their own jobs; the lost gates were rerun by `scripts/rb1013_gates_resume.sh`.
+  GPU 1 showed 100 % utilisation with 0 MiB afterwards: a stale counter, cleared by the first kernel launched.
+
+## 2026-11-03 — Deployment prompt deploy_v1 (rules + DataIntersection framing) holds on every gate; rb1013 rebuild started
+
+- **What:** `data/sysprompt/deploy_v1.txt` = the seven rule lines (`rules_v1.txt`) followed by the join-like
+  DataIntersection paragraph (`di_frame_v2.txt`). Measured on valprec2 thinking on against valprec2 without a prompt,
+  paired on the same prompts; the rules-only run of 2026-10-31 for the gap tests. Config
+  `configs/eval_sp_v5gaps_valprec2_deploy_on.yaml`, script `scripts/sysprompt/deploy.sh`.
+- **Fresh-domain harness (pool_tweak, 165 tasks × 2 runs, 2 feedback rounds):** first attempt 0.815 → 0.918
+  (+0.10 [+0.05, +0.16]), after feedback 0.882 → 0.942 (+0.06 [+0.02, +0.11]). DataIntersection 76 → 102/102 first
+  attempt, `$out.1` errors 21 → 0. Rollup 32 → 30/32, Normalizer 80 → 84/94, Reformat 75 → 81/96, all within their
+  CIs. First-attempt compile errors 35 → 13. Results `results/agent_harness/valprec2_deploy_pool_tweak.jsonl`.
+- **Residual gap tests T57/T63/T67/T73, execution-scored n30 each:** 64/120 no prompt, 88/120 rules only, 85/120
+  deploy_v1 (+0.18 [+0.05, +0.29] over no prompt; −0.02 [−0.14, +0.09] vs rules only). T57 8/30 vs 14/30 rules only
+  is inside the one-test band. `results/sysprompt/gaps_valprec2_deploy.json`.
+- **Validate ground truth B1-tweak (format path):** thinking on recall 0.96 → 0.95, clean-code false alarm 0.02 → 0.00;
+  thinking off recall 0.88 → 0.89, false alarm 0.15 → 0.17. All inside noise. The rules-only prompt's false-alarm rise
+  (on 0.08, off 0.38) is gone: the DI paragraph neutralises the `ALL` priming. `results/sysprompt/gt_tweak_valprec2_deploy.md`.
+- **Decision:** deploy_v1 is the deployment system prompt for valprec2 (thinking on, compile-and-retry loop). It costs
+  nothing measured and fixes the DataIntersection port habit and the try/catch, reserved-name and null-accumulator
+  errors at inference. The rebuild how-to serving section should carry it.
+- **rb1013 rebuild (running):** rb1011 recipe (rb1009 SFT + DPO + `--sd=c13c_belief:1`, seed 42, rb1012 sets excluded)
+  on corpus 3de7b55, i.e. the first base trained on DataIntersection rounds 3 and 4 and SCD2 rows that say the CTL sees
+  one output record. SFT 13433 (12275 corpus + 694 traces), DPO 2083, same counts as rb1011. Trained 22:08–03:10 on
+  GPU 1, export `/home/pavlisd/exports/qwen38_rb1013_sftdpo`; `scripts/base_eval.sh` gates started 03:17 on GPUs 0/1
+  (the script now takes `OFF_GPU`/`ON_GPU`, defaults unchanged). Question for its gates: does the DI port belief go
+  without the prompt (T53/T54 thinking on, DI harness subset, DI validate controls)? Config `configs/qwen38_rb1013.yaml`,
+  script `scripts/rb1013_run.sh`.
 
 ## 2026-11-02 — Rebuild how-to
 

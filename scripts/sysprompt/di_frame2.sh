@@ -11,7 +11,7 @@ GPU=${GPU:-0}; PORT=${PORT:-3012}; L=logs/sysprompt; FR=data/sysprompt/di_frame_
 ts() { date '+%m-%d %H:%M'; }
 sed -e "s/CUDA_VISIBLE_DEVICES=0/CUDA_VISIBLE_DEVICES=$GPU/" -e "s/--port 3012/--port $PORT/" $L/vllm_3012.sh > $L/vllm_diframe2.sh
 setsid nohup bash $L/vllm_diframe2.sh > $L/vllm_diframe2_$PORT.log 2>&1 < /dev/null &
-SERVER=$!
+SERVER=$!; PIDS=""
 until curl -sf 127.0.0.1:$PORT/v1/models >/dev/null; do sleep 10
   kill -0 $SERVER 2>/dev/null || { echo "$(ts) no server"; tail -20 $L/vllm_diframe2_$PORT.log; exit 1; }; done
 curl -s -X POST 127.0.0.1:$PORT/v1/load_lora_adapter -H 'Content-Type: application/json' \
@@ -23,6 +23,7 @@ PIDS=""
     --out results/agent_harness/valprec2_diframe2_pool_tweak_di.jsonl > $L/harness_di_frame2.log 2>&1
   echo "$(ts) harness DI done ($(grep -c . results/agent_harness/valprec2_diframe2_pool_tweak_di.jsonl) records)" ) &
 PIDS="$PIDS $!"
+PIDS="$PIDS $!"
 ( $PY -u scripts/harness_measurement/gen_answers.py data/agent_harness/validate_mutants_tweak_di.jsonl --model valprec2 \
     --url http://127.0.0.1:$PORT --modes off on --runs 2 --format --concurrency 8 --system-extra $FR \
     --out results/agent_harness/validate_gt_tweak_valprec2diframe2_fmt.jsonl > $L/gen_tweak_diframe2.log 2>&1
@@ -31,6 +32,8 @@ PIDS="$PIDS $!"
     --out results/sysprompt/gt_tweak_di_valprec2_frame2.md > /dev/null
   echo "$(ts) validate DI done ($(grep -c . results/agent_harness/validate_gt_tweak_valprec2diframe2_fmt.jsonl) lines)" ) &
 PIDS="$PIDS $!"
+PIDS="$PIDS $!"
 wait $PIDS
-for p in $(ps -eo pid,user,args | awk -v u=$USER -v port="--port $PORT" '$2==u && index($0, port) && /vllm.entrypoints/ {print $1}'); do kill $p; done
+# stop only the server this script started (a port-wide kill took down another lane's server on 2026-11-03)
+pkill -P $SERVER; kill $SERVER 2>/dev/null
 echo "$(ts) DI framing v2 test done"
