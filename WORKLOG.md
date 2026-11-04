@@ -58,6 +58,19 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
 
+## 2026-11-04 — Disk cleanup of not-adopted lanes (≈360 GB freed)
+
+- **Deleted:** `data/opcd/difr2` and `difr3` (192 GB, 52 rounds each with optimizer states), the rb1013 LlamaFactory
+  checkpoints (60 GB) and export `~/exports/qwen38_rb1013_sftdpo` (51 GB), the run folders `data/opcd/c1`, `c8`,
+  `exec_rft1`, `retry1`, `difr1` (1.3 GB each), and the rb1006 export `~/exports/qwen38_rb1006_sftdpo` (51 GB). The
+  measured numbers stay in `results/` and the findings; the rb1006 LoRA checkpoints in `~/LlamaFactory/saves/qwen38-27B-rb1006`
+  are kept, so the export can be rebuilt.
+- **`~/exports/qwen38_rb1006_sftdpo` is now a symlink to the rb1009 export**, and the 16 `qwen38_rb1006_*` symlinks
+  chain to it. `opcd.py` and the eval configs read those paths only for the tokenizer and the system prompt (identical in
+  rb1009). Consequence: a historical `configs/eval_rb1006_*` config run in HF mode now evaluates rb1009, not rb1006.
+- **Kept:** `c13c` and `valprec2` (the candidate chain), `valprec1`, `c2`–`c14` (small), the rb1009 export and the
+  deployable merged export, the Qwen base in the HF cache, `~/.cache/vllm` compile caches.
+
 ## 2026-11-03 — Deployable export: `~/exports/qwen38_ctl2_deploy_valprec2`
 
 - **What:** the valprec2 adapter (`data/opcd/valprec2/round_155`) merged into the rb1009 SFT+DPO export with
