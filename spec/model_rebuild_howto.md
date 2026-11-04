@@ -443,11 +443,12 @@ back in. The folder's `README.md` and `system_prompt.txt` carry the request sett
 ```bash
 ~/vllm-venv/bin/python3 -m vllm.entrypoints.openai.api_server --host 127.0.0.1 --port 3012 \
   --model /home/pavlisd/exports/qwen38_rb1009_sftdpo --served-model-name rb1009 --dtype bfloat16 \
-  --max-model-len 16384 --enable-prefix-caching --enable-lora --max-lora-rank 32 \
+  --max-model-len 16384 --max-num-seqs 64 --enable-prefix-caching --enable-lora --max-lora-rank 32 \
   --lora-modules valprec2=/home/pavlisd/llama_train/data/opcd/valprec2/round_155/adapter_vllm
 ```
 
-The environment variables are the ones `scripts/vllm_eval_serve_rb1009.sh` sets.
+The environment variables are the ones `scripts/vllm_eval_serve_rb1009.sh` sets. `--max-num-seqs` is required: vLLM's default of 1024
+exceeds the Mamba cache blocks of this hybrid architecture (656 at 0.92 memory utilization) and the engine refuses to start.
 
 **Request settings** (the ones the model was trained and measured with):
 
