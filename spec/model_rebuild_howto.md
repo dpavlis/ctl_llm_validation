@@ -1,7 +1,8 @@
 # Rebuilding the CTL2 model from Qwen3.8-27B: a step-by-step how-to
 
-**State as of 2026-11-02. Current model: valprec2.** It is the rb1009 SFT + DPO export plus the OPCD adapter
-`data/opcd/valprec2/round_155`.
+**State as of 2026-11-04. Current model: valprec2.** It is the rb1009 SFT + DPO export plus the OPCD adapter
+`data/opcd/valprec2/round_155`. It is deployed as one merged checkpoint (`~/exports/qwen38_ctl2_deploy_valprec2`) with
+the deployment system prompt `deploy_v1`, thinking on, and a compile-and-retry loop ([Step 6](#9-step-6--serve-and-deploy)).
 
 This document is the recipe for rebuilding today's model from the original Qwen weights. It lists only what is in the
 adopted model. Runs that were tried and not adopted are left out; they are in `spec/ctl2_training_findings.md` (§3.x),
@@ -34,7 +35,7 @@ and the reasons for each stage are in `spec/training_process_overview.md`.
 | rb1009 | knowledge of CTL2 and CloverDX components | LoRA SFT (mixed thinking) then LoRA DPO (thinking off), merged into the weights | `~/exports/qwen38_rb1009_sftdpo` |
 | c13 → c13b → c13c | correcting pretrained beliefs (declaration defaults, previous-record values), generate gaps per component, DataIntersection in both thinking modes | on-policy context distillation (OPCD), one LoRA continued over three runs: 40 + 16 + 16 rounds | `data/opcd/c13c/round_015` |
 | valprec2 | validate precision: fewer false alarms on clean code, higher defect recall | OPCD continued from c13c, 156 rounds, the CloverDX server's verdict in the teacher's context | `data/opcd/valprec2/round_155` |
-| deployment | thinking on, compile-and-retry loop | — | vLLM: rb1009 + the valprec2 LoRA |
+| deployment | the adapter merged into the weights; system prompt `deploy_v1` (seven CTL2 rule lines + a DataIntersection paragraph); thinking on; compile-and-retry loop | merge only (`opcd.py export`), no training | `~/exports/qwen38_ctl2_deploy_valprec2` (or vLLM: rb1009 + the valprec2 LoRA) |
 
 ```mermaid
 flowchart LR
@@ -51,9 +52,10 @@ flowchart LR
         C13C["c13c<br/>16 rounds<br/>rulev6 teacher"]
         VP2["valprec2<br/>156 rounds<br/>server-verdict reviews"]
     end
-    DEP["Deploy: vLLM<br/>rb1009 + valprec2 LoRA<br/>thinking on + compile-and-retry"]
+    MX["Step 6: merge<br/>export_deploy_valprec2.sh<br/>qwen38_ctl2_deploy_valprec2"]
+    DEP["Deploy: vLLM<br/>system prompt deploy_v1<br/>thinking on + compile-and-retry"]
     Q --> SFT
-    D --> SFT --> DPO --> M --> C13 --> C13B --> C13C --> VP2 --> DEP
+    D --> SFT --> DPO --> M --> C13 --> C13B --> C13C --> VP2 --> MX --> DEP
 ```
 
 Two kinds of training serve two purposes, and they are not interchangeable:
@@ -62,6 +64,11 @@ Two kinds of training serve two purposes, and they are not interchangeable:
 - **OPCD (Steps 3–4) moves beliefs the model already holds,** which SFT could not change. For example, "an
   uninitialised variable is null" is wrong in CTL2, and OPCD corrects it. OPCD also carries knowledge into the other
   thinking mode.
+
+A third lever is not training at all: **the deployment system prompt (Step 6).** One habit, writing DataIntersection's
+matched records to `$out.1`, survived the training aimed at it: new corpus sets with a rebuild left it in place, and
+OPCD removed it only by teaching the reviewer to raise false alarms on correct DataIntersection code. A paragraph in the system prompt fixes it at inference without either cost, so
+the prompt is part of the model as deployed.
 
 ---
 
@@ -212,10 +219,11 @@ CUDA_VISIBLE_DEVICES=<gpu> ~/venv/bin/python ~/llama_train/train.py ~/llama_trai
 - **Expected losses** (rb1009): SFT eval loss about 0.179; DPO eval loss about 0.120, eval reward accuracy about 96%.
 - `reasoning_effort: medium` must match between the training and evaluation configs; it does in the shipped configs.
 
-**2.3 Check the base before OPCD** (optional, about half a day):
+**2.3 Check the base before OPCD** (optional, about half a day). The script serves the export twice: thinking off on
+`OFF_GPU` (:3011) and thinking on on `ON_GPU` (:3012); the defaults are GPUs 3 and 1.
 
 ```bash
-setsid nohup scripts/base_eval.sh /home/pavlisd/exports/qwen38_rr1009_sftdpo rr1009 > logs/evals/rr1009_eval.log 2>&1 &
+OFF_GPU=<gpu> ON_GPU=<gpu> setsid nohup scripts/base_eval.sh /home/pavlisd/exports/qwen38_rr1009_sftdpo rr1009 > logs/evals/rr1009_eval.log 2>&1 &
 ```
 
 Compare the result with the rb1009 column in [Step 5](#8-step-5--check-the-rebuild-against-the-reference-numbers).
@@ -400,15 +408,25 @@ the gap tests (findings §4.7), so judge a rebuild by whether it lands inside th
 - Rank generate by the execution pass rate (`data/suite_v5/exec_score.py`), not by the judge score.
 - Gate validate on the planted-defect ground truth (findings §4.8).
 
-| gate | script | rb1009 | c13c | valprec2 |
-|---|---|---|---|---|
-| T53 DataIntersection, off / on | `scripts/base_eval.sh` / `scripts/validate_precision/gates.sh` | 1.00 / 0.75 | 1.00 / 1.00 | — |
-| T40 + T42 belief traps below full score (n20 each) | same | 40/40 | 8/40 | as c13c |
-| hard sets 1 / 2 / 3, belief claims | `data/opcd/eval_hard_cases.py` | 74% / 92% / 0% | 0 / 0 / 0 | 0 / 0 / 0 |
-| suite v5 gap tests, execution pass rate, off / on | `gates.sh` (gaps) | — | 0.403 / 0.761 | 0.382 / 0.736 |
-| agentic harness, fresh-domain pool_tweak, first attempt, off / on | `scripts/validate_precision/harness_tweak.sh` | — | 0.721 / 0.812 | 0.730 / 0.815 |
-| B1-tweak validate, format, thinking off: false alarm / recall | `gates.sh` (gt); `scripts/harness_measurement/{gen_answers.py --format, score_validate.py}` | — | 0.24 / 0.80 | 0.15 / 0.88 |
-| B1 validate, format, thinking on: false alarm / recall | same | — | 0.14 / 0.86 | 0.03 / 0.96 |
+The last column is the model as deployed: valprec2 with the `deploy_v1` system prompt (Step 6). It was measured
+thinking on only, the deployed mode, paired against valprec2 without the prompt on the same prompts.
+
+| gate | script | rb1009 | c13c | valprec2 | valprec2 + deploy_v1 (on) |
+|---|---|---|---|---|---|
+| T53 DataIntersection, off / on | `scripts/base_eval.sh` / `scripts/validate_precision/gates.sh` | 1.00 / 0.75 | 1.00 / 1.00 | — | — |
+| T40 + T42 belief traps below full score (n20 each) | same | 40/40 | 8/40 | as c13c | — |
+| hard sets 1 / 2 / 3, belief claims | `data/opcd/eval_hard_cases.py` | 74% / 92% / 0% | 0 / 0 / 0 | 0 / 0 / 0 | — |
+| suite v5 gap tests, execution pass rate, off / on | `gates.sh` (gaps) | — | 0.403 / 0.761 | 0.382 / 0.736 | — |
+| residual gap tests T57/T63/T67/T73, execution, n30 each, on | `test.py` with the deploy config (below) | — | — | 64/120 | 85/120 |
+| agentic harness, fresh-domain pool_tweak, first attempt, off / on | `scripts/validate_precision/harness_tweak.sh` | — | 0.721 / 0.812 | 0.730 / 0.815 | — / 0.918 |
+| same, after 2 feedback rounds, on | same | — | 0.858 | 0.882 | 0.942 |
+| pool_tweak DataIntersection tasks, first attempt, on | same | — | — | 76/102 | 102/102 |
+| B1-tweak validate, format, thinking off: false alarm / recall | `gates.sh` (gt); `scripts/harness_measurement/{gen_answers.py --format, score_validate.py}` | — | 0.24 / 0.80 | 0.15 / 0.88 | (0.17 / 0.89) |
+| B1-tweak validate, format, thinking on: false alarm / recall | same | — | — | 0.02 / 0.96 | 0.00 / 0.95 |
+| B1 validate, format, thinking on: false alarm / recall | same | — | 0.14 / 0.86 | 0.03 / 0.96 | — |
+
+The thinking-off B1-tweak figure for deploy_v1 is in brackets because thinking off is not the deployed mode; it shows
+that the prompt does not raise false alarms there either.
 
 **Commands:**
 
@@ -421,7 +439,17 @@ sed -e 's#qwen38_rb1009_sftdpo#qwen38_rr1009_sftdpo#' -e 's#--served-model-name 
 setsid nohup bash -l logs/evals/vllm_eval_rr.sh > logs/evals/vllm_eval_rr.log 2>&1 &
 SPORT=3011 PLAIN_MODES="off on" setsid nohup scripts/validate_precision/gates.sh rr-valprec2 155 > logs/validate_precision/gates_rr.log 2>&1 &
 RUN=rr-valprec2 LAST=155 GPU=<gpu> setsid nohup scripts/validate_precision/harness_tweak.sh > logs/validate_precision/harness_rr.log 2>&1 &
+# as deployed (after Step 6): the merged export served on :3012 as "ctl2", thinking on, deploy_v1 appended to the system prompt
+~/venv/bin/python -u agent_harness.py run data/agent_harness/pool_tweak.jsonl --model ctl2 --url http://127.0.0.1:3012 \
+  --modes on --runs 2 --rounds 2 --concurrency 6 --system-extra data/sysprompt/deploy_v1.txt \
+  --out results/agent_harness/rr_deploy_pool_tweak.jsonl
+sed 's/valprec2/ctl2/g' configs/eval_sp_v5gaps_valprec2_deploy_on.yaml > configs/eval_sp_v5gaps_rr_deploy_on.yaml   # vllm_model: ctl2; deploy_v1 is already in its system prompts
+~/venv/bin/python test.py configs/eval_sp_v5gaps_rr_deploy_on.yaml --tests T57,T63,T67,T73 --runs 10   # three times, then exec_score.py
 ```
+
+`scripts/sysprompt/deploy.sh` is the script that produced the deploy_v1 column (all three measurements on one GPU);
+it starts its server from an untracked serve script under `logs/sysprompt/`, so on a new machine use the commands
+above.
 
 `gates.sh` and `harness_tweak.sh` need the CloverDX server (localhost:8083, sandbox `MiscExamples`) and the judge.
 Check that each evaluation log shows `Verdict:` lines.
@@ -430,15 +458,46 @@ Check that each evaluation log shows `Verdict:` lines.
 
 ## 9. Step 6 — serve and deploy
 
-**Serving:** serve the base with the LoRA. Alternatively, `opcd.py export --config configs/opcd_rr-valprec2.yaml
---round 155 --out ~/exports/<name>` merges the adapter into a full HF model.
+```mermaid
+flowchart LR
+    B["qwen38_rr1009_sftdpo<br/>(Step 2)"] --> X["scripts/export_deploy_valprec2.sh<br/>opcd.py export --round 155<br/>+ restore base config.json<br/>and vision tensors"]
+    A["rr-valprec2/round_155<br/>(Step 4)"] --> X
+    X --> E["merged checkpoint<br/>~/exports/qwen38_ctl2_deploy_rr<br/>+ README.md, system_prompt.txt"]
+    S["system prompt =<br/>eval_rb1006_on base prompt<br/>+ data/sysprompt/deploy_v1.txt"] --> E
+    E --> V["vLLM, no LoRA flags<br/>thinking on"]
+```
 
-**Merged export for deployment (2026-11-03): `~/exports/qwen38_ctl2_deploy_valprec2`**, built by
-`scripts/export_deploy_valprec2.sh`. It is the base below with the valprec2 adapter merged in, so serve it with
-`--model ~/exports/qwen38_ctl2_deploy_valprec2` and without the `--enable-lora` / `--lora-modules` flags. Note that
-`opcd.py export` loads the text model only and writes a `Qwen3_5TextConfig`, which vLLM rejects; the script's
-follow-up copies the base `config.json` and the 333 untouched `model.visual.*` tensors (`model-visual.safetensors`)
-back in. The folder's `README.md` and `system_prompt.txt` carry the request settings of this table.
+**6.1 Merge the adapter into the base (recommended).** `scripts/export_deploy_valprec2.sh` runs `opcd.py export`
+(about one minute on one GPU) and produces a full HF checkpoint that needs no LoRA at serving time. `opcd.py export`
+loads the text model only and writes a `Qwen3_5TextConfig`, which vLLM rejects, so the script then copies the base
+`config.json` and the 333 untouched `model.visual.*` tensors (`model-visual.safetensors`) back in. The script names the
+original run and base, so for a rebuild point it at yours:
+
+```bash
+sed -e 's#configs/opcd_valprec2.yaml#configs/opcd_rr-valprec2.yaml#' -e 's#qwen38_rb1009_sftdpo#qwen38_rr1009_sftdpo#g' \
+    -e 's#qwen38_ctl2_deploy_valprec2#qwen38_ctl2_deploy_rr#' scripts/export_deploy_valprec2.sh > logs/evals/export_deploy_rr.sh
+GPU=<gpu> bash -l logs/evals/export_deploy_rr.sh
+```
+
+Then put the deployment system prompt next to the weights: the base prompt from `inference.system_prompt` of
+`configs/eval_rb1006_on.yaml` followed by `data/sysprompt/deploy_v1.txt` (the original export's `system_prompt.txt` is
+this text and can be copied as is; `agent_harness.py --system-extra` joins the two the same way at run time). Copy the original's `README.md` and change its names.
+
+The shipped checkpoint is `~/exports/qwen38_ctl2_deploy_valprec2` (2026-11-03). Its logits match rb1009 + the
+hot-loaded adapter to 0.009 mean |Δ logprob| per token (bf16 rounding).
+
+**6.2 Serve it.** Use the environment from `scripts/vllm_eval_serve_rb1009.sh` (`CUDA_HOME`, the cu13 library paths):
+
+```bash
+~/vllm-venv/bin/python3 -m vllm.entrypoints.openai.api_server --host 127.0.0.1 --port 3012 \
+  --model /home/pavlisd/exports/qwen38_ctl2_deploy_valprec2 --served-model-name ctl2 --dtype bfloat16 \
+  --max-model-len 16384 --max-num-seqs 64 --enable-prefix-caching
+```
+
+`--max-num-seqs` is required: vLLM's default of 1024 exceeds the Mamba cache blocks of this hybrid architecture (656 at
+0.92 memory utilization) and the engine refuses to start.
+
+**Alternative: the base plus the LoRA**, which is how every evaluation was run. It is the same model:
 
 ```bash
 ~/vllm-venv/bin/python3 -m vllm.entrypoints.openai.api_server --host 127.0.0.1 --port 3012 \
@@ -447,24 +506,26 @@ back in. The folder's `README.md` and `system_prompt.txt` carry the request sett
   --lora-modules valprec2=/home/pavlisd/llama_train/data/opcd/valprec2/round_155/adapter_vllm
 ```
 
-The environment variables are the ones `scripts/vllm_eval_serve_rb1009.sh` sets. `--max-num-seqs` is required: vLLM's default of 1024
-exceeds the Mamba cache blocks of this hybrid architecture (656 at 0.92 memory utilization) and the engine refuses to start.
-
-**Request settings** (the ones the model was trained and measured with):
+**6.3 Request settings** (the ones the model was measured with):
 
 | setting | value |
 |---|---|
-| system prompt | `inference.system_prompt` in `configs/eval_rb1006_on.yaml` (same text in `_off`), **followed by `data/sysprompt/deploy_v1.txt`** (seven CTL2 rule lines + the DataIntersection join-like paragraph; decided 2026-11-03, WORKLOG). The combined text is in `configs/eval_sp_v5gaps_valprec2_deploy_on.yaml`. Thinking on, paired on 165 fresh-domain tasks: first attempt 0.815 → 0.918, DataIntersection 76 → 102/102, residual gap tests 64 → 85/120, validate recall and false alarm unchanged. |
+| system prompt | `system_prompt.txt` from the export folder: the base CloverDX prompt (`inference.system_prompt` in `configs/eval_rb1006_on.yaml`) **followed by `data/sysprompt/deploy_v1.txt`**, i.e. `rules_v1.txt` (seven CTL2 rule lines) + `di_frame_v2.txt` (the DataIntersection join-like paragraph, no port numbers). Decided 2026-11-03 (WORKLOG). Use it verbatim for generate and review requests alike. The same text is in `configs/eval_sp_v5gaps_valprec2_deploy_on.yaml`. |
 | thinking | **on**: `chat_template_kwargs: {"enable_thinking": true, "reasoning_effort": "medium"}` |
-| sampling | temperature 0.4, top_p 0.95 |
+| sampling | temperature 0.4, top_p 0.95, top_k 20 |
 | max tokens | 16384 |
+
+What `deploy_v1` buys, thinking on, paired on the same prompts (§8): fresh-domain first attempt 0.815 → 0.918,
+DataIntersection 76 → 102/102, the residual gap tests 64 → 85/120, validate recall and false alarm unchanged. Each part
+is needed: the rule lines alone prime the DataIntersection port belief through the word `ALL` (false alarms rise), and
+the DataIntersection paragraph cancels that.
 
 **Deployment loop:** compile-and-retry. Validate the generated graph with `ctl_validate`, run it, and on an error send
 the server's message back as the next user turn. Up to 2 rounds, as `agent_harness.py run --rounds 2` does.
 
 ```mermaid
 flowchart LR
-    U["task prompt"] --> M["valprec2<br/>thinking on"]
+    U["task prompt<br/>+ system prompt with deploy_v1"] --> M["valprec2<br/>thinking on"]
     M --> C{"ctl_validate<br/>compiles?"}
     C -- "no" --> F["feed the compiler<br/>error back"]
     C -- "yes" --> R{"graph run<br/>succeeds?"}
@@ -474,8 +535,11 @@ flowchart LR
     F2 --> M
 ```
 
-With this loop, c13c passed 88% of 137 execution-scored tasks thinking on (§3.31), and 86% of the 165 fresh-domain
-tasks (§3.36). valprec2 matches c13c on generate (pool_tweak after feedback 0.882 vs 0.858 thinking on).
+With this loop and the deployment prompt, valprec2 passes 94% of the 165 fresh-domain tasks thinking on (0.942 after
+two feedback rounds, 0.918 at the first attempt). Without the prompt it is 0.882, level with c13c's 0.858 (§3.36).
+
+**Not part of the deployment** (tested and not adopted, see WORKLOG 2026-11-03): the severity paragraph
+(`data/sysprompt/severity_v1.txt`, `deploy_v2.txt`).
 
 ---
 
@@ -488,9 +552,12 @@ When a new training stage is **adopted** (a WORKLOG decision, findings §3.x mar
 2. **Diagram:** extend the lineage diagram in §1 and the table above it.
 3. **Reference numbers:** add a column for the new model to §8, and retire the oldest column when it is no longer
    compared against.
-4. **Header and §9:** change the "Current model" line and the serving command.
-5. **Gaps:** if the stage needs an input that is not in git, list it in §11 until it is.
-6. **New base:** if the stage changes the SFT/DPO base (a new rebuild rbNNNN), replace Steps 1–2. Re-run the OPCD
+4. **Header and §9:** change the "Current model" line, the merge script and the serving command. Rebuild the merged
+   export (6.1) and its `README.md` / `system_prompt.txt`.
+5. **Deployment prompt:** a prompt change adopted without retraining (like deploy_v1) goes into the §9 request
+   settings and gets its own column in §8, measured paired against the model without it.
+6. **Gaps:** if the stage needs an input that is not in git, list it in §11 until it is.
+7. **New base:** if the stage changes the SFT/DPO base (a new rebuild rbNNNN), replace Steps 1–2. Re-run the OPCD
    chain on the new base, either as here or with `scripts/opcd_stage3.sh`, and state which.
 
 Runs that were not adopted stay out of this document. Their record is in the findings and the WORKLOG.
@@ -508,12 +575,24 @@ Runs that were not adopted stay out of this document. Their record is in the fin
   sampling and GPU kernels are not deterministic, so check against the §8 bands.
 - **The eval-config names are historical.** `configs/eval_rb1006_*` point at `~/exports/qwen38_rb1006_on` and similar
   symlinks to the rb1006 export, and `opcd.py` uses them only for the system prompt and tokenizer. On a machine without
-  rb1006, set their `model_path` to the rb1009 export, whose `tokenizer.json` is identical.
+  rb1006, set their `model_path` to the rb1009 export, whose `tokenizer.json` is identical. On this machine the rb1006 export was deleted on 2026-11-04 and `~/exports/qwen38_rb1006_sftdpo` is a symlink to the rb1009
+  export, so those configs already resolve there.
 - **Corpus commits:** d80aaa5 for Steps 1–3; 23f616f was current at valprec2's `prepare`, and it affects only the
   replay draw.
 - **LlamaFactory:** the fork is one commit ahead of its GitHub remote (`dpo_logps_chunk_size`, not used here), and it
   has an uncommitted DDP-only eval change. Neither matters on one GPU.
-- **Hard-coded GPUs:** many scripts default to GPUs 1 and 3; override them (`GPU=`, `TGPU=`, `CUDA_VISIBLE_DEVICES`).
+- **Hard-coded GPUs:** many scripts default to GPUs 1 and 3; override them (`GPU=`, `TGPU=`, `OFF_GPU=` / `ON_GPU=`,
+  `CUDA_VISIBLE_DEVICES`).
+- **Serve scripts outside git:** `scripts/base_eval.sh` builds its thinking-off server from
+  `logs/evals/opcd_vllm_serve.sh`, and `scripts/sysprompt/deploy.sh` from `logs/sysprompt/vllm_3012.sh`. Both are
+  untracked. On a new machine, create them from the tracked serve scripts before running the gates:
+
+  ```bash
+  sed 's/--port 3012/--port 3011/' scripts/vllm_eval_serve.sh > logs/evals/opcd_vllm_serve.sh
+  sed 's/CUDA_VISIBLE_DEVICES=1/CUDA_VISIBLE_DEVICES=0/' scripts/vllm_eval_serve_rb1009.sh > logs/sysprompt/vllm_3012.sh
+  ```
+- **Hard-coded paths in the merge script:** `scripts/export_deploy_valprec2.sh` names the valprec2 config and the
+  rb1009 export; 6.1 shows the rewrite for a rebuild.
 - **Run artifacts are not in git:** exports, `~/LlamaFactory/saves`, `data/opcd/<run>/`, `results/` and `logs/`. Only
   configs, scripts, specs and inputs are.
 
@@ -537,6 +616,10 @@ Runs that were not adopted stay out of this document. Their record is in the fin
 | 3–4 | `scripts/validate_precision/vllm_sampler_3011.sh` | OPCD sampler (`GPU`, `PORT`, `NAME`) |
 | 5 | `scripts/validate_precision/{run.sh, gates.sh, harness_tweak.sh}` | full gates and the fresh-domain harness |
 | 5 | `data/suite_v5/exec_score.py`, `data/opcd/eval_hard_cases.py`, `test.py` | execution scoring, hard sets, suite |
+| 5 | `configs/eval_sp_v5gaps_valprec2_deploy_on.yaml`, `scripts/sysprompt/deploy.sh` | deploy_v1 gates (gap tests, harness, B1-tweak) |
+| 6 | `scripts/export_deploy_valprec2.sh` | merges the final adapter into the base; restores the config and vision tensors |
+| 6 | `data/sysprompt/deploy_v1.txt` (= `rules_v1.txt` + `di_frame_v2.txt`) | deployment system prompt, appended to the base prompt |
+| 6 | `~/exports/qwen38_ctl2_deploy_valprec2/{README.md, system_prompt.txt}` | serving command and request settings of the shipped checkpoint (not in git) |
 | 6 | `agent_harness.py`, `data/suite_v5/exec_retry.py` | the compile-and-retry loop |
 | — | `scripts/cleanup_lifecycle.sh` | prune weights and optimizer states after a run |
 | — | `spec/ctl2_training_findings.md`, `spec/training_process_overview.md`, `WORKLOG.md` | why each step exists, numbers, history |
