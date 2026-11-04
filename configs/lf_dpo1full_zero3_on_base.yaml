@@ -1,0 +1,66 @@
+# =============================================================================
+# dpo1-full on the fix6 SFT+DPO base (merged export of SFT ckpt-1972 + DPO ckpt-472), 2 GPUs, DeepSpeed ZeRO-3.
+#
+# The same DPO round as configs/qwen38_dpo1_on_base.yaml, but with 209 of the 211
+# pairs: on one GPU, DPO ran out of memory above ~3000 tokens per pair, so that run
+# kept 187. ZeRO-3 shards the weights over two GPUs, but the float32 full-vocabulary
+# logits of chosen+rejected are not sharded: the 7686-token pair still OOMs, while a
+# smoke test of the 12 longest pairs under 5200 tokens peaked at 97.1 of 97.9 GB.
+# Cap 5200 drops the two longest pairs (7686, 6638). A plain
+# LlamaFactory config (not a train.py config): ZeRO-3 cannot merge an adapter
+# chain at load ("Cannot use multiple adapters in DeepSpeed ZeRO-3"), so it
+# starts from the merged export and trains a fresh LoRA. Effective batch 2 GPUs
+# x 1 x GA 2 = 4, as in the single-GPU run. Runs from ~/venv-ds (DeepSpeed);
+# ~/venv stays untouched.
+#
+#   mkdir -p /home/pavlisd/venv-ds-tmp && cd ~/LlamaFactory && PATH=~/venv-ds/bin:$PATH TMPDIR=/home/pavlisd/venv-ds-tmp \
+#     FORCE_TORCHRUN=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True CUDA_VISIBLE_DEVICES=<a>,<b> \
+#     llamafactory-cli train ~/llama_train/configs/lf_dpo1full_zero3_on_base.yaml
+#   ~/venv-ds/bin/llamafactory-cli export ~/llama_train/configs/lf_dpo1full_zero3_on_base_export.yaml
+# =============================================================================
+model_name_or_path: /home/pavlisd/exports/qwen38_fix6_sftdpo
+trust_remote_code: true
+finetuning_type: lora
+template: qwen3_8
+flash_attn: auto
+preprocessing_num_workers: 16
+ddp_timeout: 180000000
+fp16: false
+bf16: true
+lora_target: q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj
+lora_dropout: 0.05
+seed: 42
+packing: false
+enable_thinking: true
+reasoning_effort: medium
+optim: adamw_torch_fused
+weight_decay: 0.05
+max_grad_norm: 1.0
+warmup_ratio: 0.1
+include_num_input_tokens_seen: true
+plot_loss: true
+report_to: wandb
+dataset_dir: data
+dataset: clover_dpo1_full_data
+cutoff_len: 5248
+learning_rate: 5.0e-06
+lr_scheduler_type: cosine
+num_train_epochs: 2.0
+max_samples: 150000
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 2
+lora_rank: 64
+lora_alpha: 64
+loraplus_lr_ratio: 1
+pref_beta: 0.1
+pref_ftx: 0.1
+pref_loss: sigmoid
+logging_steps: 2
+save_strategy: epoch
+save_total_limit: 4
+eval_strategy: 'no'
+load_best_model_at_end: false
+stage: dpo
+do_train: true
+output_dir: /home/pavlisd/LlamaFactory/saves/qwen38-27B-dpo1full-zero3-on-base/dpo
+deepspeed: /home/pavlisd/llama_train/configs/ds_z3_config.json

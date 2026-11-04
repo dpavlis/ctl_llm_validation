@@ -1,0 +1,11 @@
+# Diagnostic export: the fix6 (base) SFT adapter alone, checkpoint-1972 (final step), merged into the base model, no DPO.
+# Control for the rb1003 SFT-only diagnostic: does the base recipe also leave unclosed <think> before DPO?
+model_name_or_path: Qwen/Qwen3.8-27B
+adapter_name_or_path: /home/pavlisd/LlamaFactory/saves/qwen38-27B/2026-09-27-22-42-04_sft/checkpoint-1972
+template: qwen3_8
+finetuning_type: lora
+trust_remote_code: true
+export_dir: /home/pavlisd/exports/qwen38_fix6_sftonly/
+export_size: 5
+export_device: auto
+export_legacy_format: false

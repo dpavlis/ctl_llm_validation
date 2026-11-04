@@ -1,0 +1,11 @@
+# Export for lf_dpo1full_zero3_on_base.yaml: merged start model + the epoch-2 DPO checkpoint
+# (211 pairs / effective batch 4 = 53 steps per epoch -> checkpoint-106; check the step after training).
+model_name_or_path: /home/pavlisd/exports/qwen38_fix6_sftdpo
+adapter_name_or_path: /home/pavlisd/LlamaFactory/saves/qwen38-27B-dpo1full-zero3-on-base/dpo/checkpoint-53
+template: qwen3_8
+finetuning_type: lora
+trust_remote_code: true
+export_dir: /home/pavlisd/exports/qwen38_fix6_sftdpo_dpo1full/
+export_size: 5
+export_device: auto
+export_legacy_format: false

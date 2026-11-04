@@ -1,0 +1,127 @@
+# =============================================================================
+# Phase 3 on self-distilled reasoning — spec/self_distillation_spec.md, step 5
+#
+# Trains ONE new LoRA with thinking ON, on top of the fix6 SFT+DPO weights: the
+# same merge that sampled the traces (qwen38_fix6_sftdpo), so the traces are in
+# the model's own distribution. SFT and DPO are not retrained; their adapters
+# are merged in as the base of this phase.
+#
+#   cd ~/LlamaFactory
+#   python ~/llama_train/train.py ~/llama_train/configs/qwen38_selfdistill.yaml --skip-sft --skip-dpo
+#
+# --skip-sft takes the base chain from dpo.adapter_name_or_path below. --skip-dpo
+# finds no DPO run under this run_name, so the chain is used as given: base ->
+# SFT checkpoint-1972 -> DPO checkpoint-472 -> fresh phase-3 LoRA. Check the
+# resolved adapter chain first with --dry-run.
+#
+# Its own run_name, so the phase-3 output does not land in the fix6 run
+# (2026-09-27-22-42-04), which already holds the OLD phase 3 (authored traces).
+# =============================================================================
+
+run_name: qwen38-27B-selfdistill
+output_base: saves
+
+# --- Common parameters: identical to configs/qwen38.yaml -------------------
+model_name_or_path: Qwen/Qwen3.8-27B
+trust_remote_code: true
+
+finetuning_type: lora
+template: qwen3_8
+flash_attn: auto
+preprocessing_num_workers: 16
+ddp_timeout: 180000000
+fp16: false
+bf16: true
+
+lora_target: "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj"
+lora_dropout: 0.05
+seed: 42
+
+packing: false
+enable_thinking: false        # set per phase; phase 3 turns it on below
+
+# Must match the sampling config (configs/eval_T04_fix6_sftdpo_think.yaml,
+# mut.reasoning_effort) — the traces were drawn under "medium", which adds no
+# reasoning-effort sentence to the system prompt.
+reasoning_effort: medium
+optim: adamw_torch_fused
+weight_decay: 0.05
+max_grad_norm: 1.0
+warmup_ratio: 0.05
+include_num_input_tokens_seen: true
+plot_loss: true
+
+report_to: wandb
+dataset_dir: data
+
+# --- Base chain: the fix6 SFT+DPO merge that produced the traces -----------
+# Consumed only to resolve the SFT adapter under --skip-sft; DPO is not rerun.
+# These two checkpoints are exactly qwen38_fix6_sftdpo (findings §3.12).
+dpo:
+  adapter_name_or_path: /home/pavlisd/LlamaFactory/saves/qwen38-27B/2026-09-27-22-42-04_sft/checkpoint-1972,/home/pavlisd/LlamaFactory/saves/qwen38-27B/2026-09-27-22-42-04_dpo/checkpoint-472
+
+# =============================================================================
+# Phase 3 — self-distilled thinking SFT
+# =============================================================================
+post_dpo_sft:
+  - dataset: clover_ctl_selfdistill_data   # data/selfdistill_full1_train.json, 213 records
+    enable_thinking: true                  # <think> content is in the loss region
+
+    # Measured 2026-09-29 with the real tokenizer (Qwen/Qwen3.8-27B) through
+    # LlamaFactory's own Template.encode_multiturn (qwen3_8, thinking on, effort
+    # medium) — the exact sequence cutoff_len truncates, prompt plus response:
+    #
+    #     n=213   median 1602   p95 4022   p99 4596   max 6182
+    #     by task, max: fix 5177, validate 6182, generate 4177
+    #
+    # 6208 is the smallest multiple of 64 above the longest record, so nothing is
+    # truncated: a record cut inside its <think> block would teach the model not
+    # to close it (spec step 1). With packing: false the collator pads to the
+    # longest sequence in the batch, so a lower cutoff saves nothing on the other
+    # records. RE-MEASURE whenever the dataset file changes (another run, an audit
+    # reject): the longest record decides this value.
+    cutoff_len: 6208
+
+    learning_rate: 1.0e-5
+    lr_scheduler_type: cosine
+    num_train_epochs: 2          # spec: choose the dose by epochs, never by eval_loss
+    max_samples: 150000
+    # Effective batch 12, as in the old phase 3 (batch 2 x accumulation 6), but
+    # batch 1 x 12: sequences here run to 6182 tokens against 4096 before, and at
+    # batch 2 the longest pairs would need ~1.5x the activation memory.
+    per_device_train_batch_size: 1
+    gradient_accumulation_steps: 12
+
+    lora_rank: 32
+    lora_alpha: 32
+    loraplus_lr_ratio: 1
+
+    logging_steps: 2
+    # One checkpoint per epoch: epoch 1 and epoch 2 are the two doses the spec
+    # evaluates (~18 optimizer steps each on one GPU: 213 records / 12).
+    save_strategy: epoch
+    save_total_limit: 4
+
+    # No eval set. The only phase-3 eval set, clover_ctl_think_eval_data, holds
+    # the OLD authored traces (now orig_reasoning_content in its source), so its
+    # eval_loss would measure distance from exactly the style this phase replaces.
+    # Dose is chosen by suite score at epoch 1 vs epoch 2 (spec step 6).
+    eval_strategy: "no"
+    load_best_model_at_end: false
+
+# =============================================================================
+# Export — the epoch-2 (last) checkpoint, chained after SFT and DPO
+#
+# The epoch-1 dose is exported by hand after training, with the same chain and
+# the first checkpoint of saves/qwen38-27B-selfdistill/<ts>_postsft:
+#
+#   llamafactory-cli export <yaml with> model_name_or_path: Qwen/Qwen3.8-27B,
+#     adapter_name_or_path: <sft ckpt>,<dpo ckpt>,<postsft>/checkpoint-<epoch 1>,
+#     template: qwen3_8, finetuning_type: lora,
+#     export_dir: /home/pavlisd/exports/qwen38_fix6_sftdpo_sd1_ep1/
+# =============================================================================
+export:
+  export_size: 5
+  export_device: auto
+  export_legacy_format: false
+  export_dir: /home/pavlisd/exports/qwen38_fix6_sftdpo_sd1_ep2/

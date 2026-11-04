@@ -1,0 +1,94 @@
+# =============================================================================
+# dpo1 on sd1 ep2 (SFT checkpoint-1972 + DPO checkpoint-472 + sd1 phase 3 checkpoint-36).
+#
+# A second DPO round on on-policy pairs from self-distillation: for each prompt
+# with an accepted and a rejected own sample, the pair with the closest thinking
+# lengths (ratio in [0.67, 1.5]), each judge-dependent side confirmed by two
+# agreeing judgments. 187 pairs after the length cap below; both sides
+# carry <think> traces, so thinking is on and the loss covers trace + answer.
+# Built in data/self_distill/dpo1/ (pairs.jsonl has provenance, report.json counts).
+#
+# Hyperparameters mirror the phase-1 DPO in configs/qwen38.yaml (lr 5e-6 cosine,
+# warmup 0.1, beta 0.1, pref_ftx 0.1, sigmoid, LoRA 64/64, batch 1 x 4), with 2
+# epochs instead of 1 because 187 pairs make ~47 steps per epoch.
+#
+#   cd ~/LlamaFactory
+#   python ~/llama_train/train.py ~/llama_train/configs/qwen38_dpo1_on_sd1ep2.yaml --skip-sft
+#
+# --skip-sft takes the starting chain from dpo.adapter_name_or_path; train.py
+# merges it and trains a fresh DPO LoRA on top.
+# =============================================================================
+
+run_name: qwen38-27B-dpo1-on-sd1ep2
+output_base: saves
+
+# --- Common parameters: identical to configs/qwen38.yaml -------------------
+model_name_or_path: Qwen/Qwen3.8-27B
+trust_remote_code: true
+
+finetuning_type: lora
+template: qwen3_8
+flash_attn: auto
+preprocessing_num_workers: 16
+ddp_timeout: 180000000
+fp16: false
+bf16: true
+
+lora_target: "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj"
+lora_dropout: 0.05
+seed: 42
+
+packing: false
+enable_thinking: false        # set per phase; phase 3 turns it on below
+
+# Must match the sampling config (configs/eval_T04_fix6_sftdpo_think.yaml,
+# mut.reasoning_effort) — the traces were drawn under "medium", which adds no
+# reasoning-effort sentence to the system prompt.
+reasoning_effort: medium
+optim: adamw_torch_fused
+weight_decay: 0.05
+max_grad_norm: 1.0
+warmup_ratio: 0.05
+include_num_input_tokens_seen: true
+plot_loss: true
+
+report_to: wandb
+dataset_dir: data
+
+
+dpo:
+  adapter_name_or_path: /home/pavlisd/LlamaFactory/saves/qwen38-27B/2026-09-27-22-42-04_sft/checkpoint-1972,/home/pavlisd/LlamaFactory/saves/qwen38-27B/2026-09-27-22-42-04_dpo/checkpoint-472,/home/pavlisd/LlamaFactory/saves/qwen38-27B-selfdistill/2026-09-29-18-54-12_postsft/checkpoint-36
+  dataset: clover_dpo1_data
+  enable_thinking: true
+  # Pairs are capped at 3000 tokens (prompt + longer side) and cutoff_len sits
+  # just above, so nothing is truncated (a pair cut inside <think> teaches the
+  # model not to close it). DPO on one GPU ran out of memory at cutoff 7744 and
+  # again at 4160 — 92 GB allocated at ~4k tokens per side, because chosen and
+  # rejected are one batch and their full-vocabulary logits are upcast to
+  # float32. The 24 longer pairs are dropped: 187 remain (fix 24, validate 52,
+  # generate 111). Run with PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True.
+  cutoff_len: 3008
+  learning_rate: 5.0e-6
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.1
+  num_train_epochs: 2.0
+  max_samples: 150000
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 4
+  lora_rank: 64
+  lora_alpha: 64
+  loraplus_lr_ratio: 1
+  pref_beta: 0.1
+  pref_ftx: 0.1
+  pref_loss: sigmoid
+  logging_steps: 2
+  save_strategy: epoch
+  save_total_limit: 4
+  eval_strategy: "no"
+  load_best_model_at_end: false
+
+export:
+  export_size: 5
+  export_device: auto
+  export_legacy_format: false
+  export_dir: /home/pavlisd/exports/qwen38_sd1ep2_dpo1/
