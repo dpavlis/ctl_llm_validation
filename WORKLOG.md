@@ -5,7 +5,8 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 ## Where we are (2026-11-03)
 
 - **Ship candidate: valprec2** (since 2026-10-30, §3.38), the rb1009 base plus OPCD adapter
-  `data/opcd/valprec2/round_155`. It succeeds c13c (`data/opcd/c13c/round_015`), which was confirmed by 20-sample checks
+  `data/opcd/valprec2/round_155`. **Merged, deployable export (2026-11-03): `~/exports/qwen38_ctl2_deploy_valprec2`** (README and
+  system prompt inside). It succeeds c13c (`data/opcd/c13c/round_015`), which was confirmed by 20-sample checks
   and by running the generated code on the server. valprec2 is c13c plus validate-review OPCD:
   - it matches c13c on generate (fresh-domain harness, paired);
   - it is the best validate model measured.
@@ -56,6 +57,21 @@ Important progress and decisions, newest first. Details and numbers: `spec/ctl2_
 - **rb1012 not adopted** (§3.30). The two new corpus sets showed no gain in two seeds, and both seeds regressed on the
   Rollup accumulator explanation. Neither set is in the default rebuild recipe. The regression is in the SFT records (§3.32, §3.34), not in the DPO pairs
   (§3.32); rb1011 seed 7 shows it is the new SFT records, not seed luck (§3.34).
+
+## 2026-11-03 — Deployable export: `~/exports/qwen38_ctl2_deploy_valprec2`
+
+- **What:** the valprec2 adapter (`data/opcd/valprec2/round_155`) merged into the rb1009 SFT+DPO export with
+  `opcd.py export` (`scripts/export_deploy_valprec2.sh`, one minute on one GPU). Full HF checkpoint, 12 shards + the
+  base's vision tensors as `model-visual.safetensors`, base `config.json` (vLLM refuses the text-only
+  `Qwen3_5TextConfig` that `AutoModelForCausalLM` writes, so the export keeps the multimodal config and the untouched
+  vision tower: 52 GB, a drop-in replacement for the rb1009 folder). `README.md` and `system_prompt.txt` (base prompt +
+  deploy_v1) inside the folder give the serving command and request settings.
+- **Checked:** the LoRA target weights differ from the base, everything else is bit-identical. Teacher-forced on 12
+  pool_tweak prompts × 300 tokens (vLLM, merged vs rb1009 + hot-loaded adapter): mean |Δ logprob| 0.009 per token,
+  p95 0.055, max 0.26 (bf16 rounding); the plain rb1009 base is at 0.049 mean with gaps up to 3.1. Greedy outputs
+  identical on 4/12 prompts and divergent at near-ties on the rest, as expected across a merge.
+- **Serve:** `--model ~/exports/qwen38_ctl2_deploy_valprec2`, no `--enable-lora`; thinking on, the system prompt from
+  the folder, compile-and-retry loop (how-to §9).
 
 ## 2026-11-03 — Severity paragraph in the deployment prompt (deploy_v2): not adopted, deploy_v1 stays
 

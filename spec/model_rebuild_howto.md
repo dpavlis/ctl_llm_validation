@@ -433,6 +433,13 @@ Check that each evaluation log shows `Verdict:` lines.
 **Serving:** serve the base with the LoRA. Alternatively, `opcd.py export --config configs/opcd_rr-valprec2.yaml
 --round 155 --out ~/exports/<name>` merges the adapter into a full HF model.
 
+**Merged export for deployment (2026-11-03): `~/exports/qwen38_ctl2_deploy_valprec2`**, built by
+`scripts/export_deploy_valprec2.sh`. It is the base below with the valprec2 adapter merged in, so serve it with
+`--model ~/exports/qwen38_ctl2_deploy_valprec2` and without the `--enable-lora` / `--lora-modules` flags. Note that
+`opcd.py export` loads the text model only and writes a `Qwen3_5TextConfig`, which vLLM rejects; the script's
+follow-up copies the base `config.json` and the 333 untouched `model.visual.*` tensors (`model-visual.safetensors`)
+back in. The folder's `README.md` and `system_prompt.txt` carry the request settings of this table.
+
 ```bash
 ~/vllm-venv/bin/python3 -m vllm.entrypoints.openai.api_server --host 127.0.0.1 --port 3012 \
   --model /home/pavlisd/exports/qwen38_rb1009_sftdpo --served-model-name rb1009 --dtype bfloat16 \
