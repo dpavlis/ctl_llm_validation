@@ -1,0 +1,1936 @@
+[
+  {
+    "id": "opcd_hard2_01",
+    "compiler_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ninteger frames;\ndate previousPing;\nlong regressions;\nstring[] annotated;\nfunction integer append() {\n    boolean reversed = $in.0.ping_at < previousPing;\n    previousPing = $in.0.ping_at;\n    if (reversed) regressions++;\n    if ($in.0.annotation != null) append(annotated, $in.0.annotation);\n    if ($in.0.depth > 50.0) frames++;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.pass = $in.0.pass;\n    $out.0.regressions = regressions + 1L;\n    $out.0.deep_frames = frames;\n    $out.0.annotated = size(annotated);\n    return ALL;\n}\nfunction void clean() { frames = 0; regressions = 0L; clear(annotated); }",
+      "inputMetadata": [
+        "<Record name=\"Input1\" type=\"delimited\">\n  <Field name=\"pass\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"ping_at\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"annotation\" type=\"string\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"depth\" type=\"number\" nullable=\"true\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output1\" type=\"delimited\">\n  <Field name=\"pass\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"regressions\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"deep_frames\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"annotated\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ]
+    },
+    "first_use_default_walkthrough": "At the first append previousPing is the epoch and ping_at is after 2000, so ping_at<previousPing is false. frames/regressions start zero and annotated starts empty. The real date defect is carrying history across passes, fixed by reset, not by a first-use null guard.",
+    "defect_census": [
+      {
+        "category": "real_nullable_input",
+        "description": "Nullable depth is ordered-compared without treating null as not deep."
+      },
+      {
+        "category": "intended_compile_error",
+        "description": "size(annotated) is an undefined CTL2 function; use length for the annotation count."
+      },
+      {
+        "category": "non_null_semantics",
+        "description": "clean omits previousPing, so the first ping of the next pass can be falsely compared with the preceding pass."
+      },
+      {
+        "category": "non_null_semantics",
+        "description": "regressions adds one at output and falsely reports a regression in an ordered pass."
+      }
+    ],
+    "preserved_valid_null_guard": "The adjacent nullable field uses == null / != null before its use; this guard must remain valid and unchanged.",
+    "compile_only_probe_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ninteger frames;\ndate previousPing;\nlong regressions;\nstring[] annotated;\nfunction integer append() {\n    boolean reversed = $in.0.ping_at < previousPing;\n    previousPing = $in.0.ping_at;\n    if (reversed) regressions++;\n    if ($in.0.annotation != null) append(annotated, $in.0.annotation);\n    if ($in.0.depth > 50.0) frames++;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.pass = $in.0.pass;\n    $out.0.regressions = regressions + 1L;\n    $out.0.deep_frames = frames;\n    $out.0.annotated = length(annotated);\n    return ALL;\n}\nfunction void clean() { frames = 0; regressions = 0L; clear(annotated); }",
+      "inputMetadata": [
+        "<Record name=\"Input1\" type=\"delimited\">\n  <Field name=\"pass\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"ping_at\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"annotation\" type=\"string\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"depth\" type=\"number\" nullable=\"true\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output1\" type=\"delimited\">\n  <Field name=\"pass\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"regressions\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"deep_frames\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"annotated\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_probe_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "original_compile_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":18,\"column\":24,\"endLine\":18,\"endColumn\":38,\"message\":\"Function 'size' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 18,
+            "column": 24,
+            "endLine": 18,
+            "endColumn": 38,
+            "message": "Function 'size' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":18,\"column\":24,\"endLine\":18,\"endColumn\":38,\"message\":\"Function 'size' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 18,
+            "column": 24,
+            "endLine": 18,
+            "endColumn": 38,
+            "message": "Function 'size' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First ping in 2026 compares earlier-than(epoch) as false. PassA ending Jan10 then passB starting Jan5 reveals the missing history reset; +1 at output is separate from that correct first comparison. Annotation !=null guard correctly keeps empty non-null annotations.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-     $out.0.annotated = size(annotated);",
+      "+     $out.0.annotated = length(annotated);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_02",
+    "compiler_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ninteger packets;\ndate previousReceipt;\ndecimal ballots;\nlong backwardPackets;\nstring[] notes;\nfunction integer append() {\n    boolean backward = $in.0.received_at < previousReceipt;\n    if (backward) backwardPackets++;\n    if ($in.0.note != null) {\n        append(notes, $in.0.note);\n        previousReceipt = $in.0.received_at;\n    }\n    ballots = ballots + $in.0.ballots;\n    packets++;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.precinct = $in.0.precinct;\n    $out.0.packets = packets - 1;\n    $out.0.ballots = ballots;\n    $out.0.backward_packets = backwardPackets;\n    $out.0.note_count = notes.size();\n    return ALL;\n}\nfunction void clean() { packets = 0; previousReceipt = createDate(1970,1,1,\"UTC\"); ballots = 0D; backwardPackets = 0L; clear(notes); }",
+      "inputMetadata": [
+        "<Record name=\"Input2\" type=\"delimited\">\n  <Field name=\"precinct\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"received_at\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"note\" type=\"string\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"ballots\" type=\"decimal\" nullable=\"true\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output2\" type=\"delimited\">\n  <Field name=\"precinct\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"packets\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"ballots\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"backward_packets\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"note_count\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ]
+    },
+    "first_use_default_walkthrough": "previousReceipt starts at epoch, so the first received_at after 2000 is not backward. The unconditional comparison is safe. Updating history only inside the already-valid note null guard is the genuine non-null date bug; history must update for every packet while the note guard remains intact.",
+    "defect_census": [
+      {
+        "category": "real_nullable_input",
+        "description": "Nullable ballots is added without the required zero fallback."
+      },
+      {
+        "category": "intended_compile_error",
+        "description": "notes.size() resolves to an undefined CTL2 size function; length(notes) is required."
+      },
+      {
+        "category": "non_null_semantics",
+        "description": "previousReceipt is updated only on noted packets, so comparisons use an older annotated packet rather than the immediately preceding packet."
+      },
+      {
+        "category": "non_null_semantics",
+        "description": "Output packets subtracts one from the actual input count."
+      }
+    ],
+    "preserved_valid_null_guard": "The adjacent nullable field uses == null / != null before its use; this guard must remain valid and unchanged.",
+    "compile_only_probe_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ninteger packets;\ndate previousReceipt;\ndecimal ballots;\nlong backwardPackets;\nstring[] notes;\nfunction integer append() {\n    boolean backward = $in.0.received_at < previousReceipt;\n    if (backward) backwardPackets++;\n    if ($in.0.note != null) {\n        append(notes, $in.0.note);\n        previousReceipt = $in.0.received_at;\n    }\n    ballots = ballots + $in.0.ballots;\n    packets++;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.precinct = $in.0.precinct;\n    $out.0.packets = packets - 1;\n    $out.0.ballots = ballots;\n    $out.0.backward_packets = backwardPackets;\n    $out.0.note_count = length(notes);\n    return ALL;\n}\nfunction void clean() { packets = 0; previousReceipt = createDate(1970,1,1,\"UTC\"); ballots = 0D; backwardPackets = 0L; clear(notes); }",
+      "inputMetadata": [
+        "<Record name=\"Input2\" type=\"delimited\">\n  <Field name=\"precinct\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"received_at\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"note\" type=\"string\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"ballots\" type=\"decimal\" nullable=\"true\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output2\" type=\"delimited\">\n  <Field name=\"precinct\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"packets\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"ballots\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"backward_packets\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"note_count\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_probe_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "original_compile_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":23,\"column\":31,\"endLine\":23,\"endColumn\":36,\"message\":\"Function 'size' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 23,
+            "column": 31,
+            "endLine": 23,
+            "endColumn": 36,
+            "message": "Function 'size' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":23,\"column\":31,\"endLine\":23,\"endColumn\":36,\"message\":\"Function 'size' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 23,
+            "column": 31,
+            "endLine": 23,
+            "endColumn": 36,
+            "message": "Function 'size' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First receipt after2000 compared with epoch is not backward. A noted Jan1 packet, unnoted Jan5 packet, then Jan4 packet proves branch-only history updates miss a true regression. Bare decimal ballots starts0; nullable ballots is a separate operand.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-     $out.0.note_count = notes.size();",
+      "+     $out.0.note_count = length(notes);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_03",
+    "compiler_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ninteger sweeps;\ndate priorSweep;\nlong disruptions;\ndecimal exposure;\nstring[] flags;\nfunction integer append() {\n    boolean reverse = $in.0.swept_at < priorSweep;\n    priorSweep = $in.0.swept_at;\n    if (reverse) disruptions++;\n    if ($in.0.flag == null) append(flags, \"unflagged\");\n    else append(flags, $in.0.flag);\n    exposure = exposure + $in.0.exposure;\n    sweeps++;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.session = upperCase($in.0.session);\n    $out.0.disruptions = disruptions;\n    $out.0.mean_exposure = exposure / sweeps;\n    $out.0.flags = stringify(length(flags));\n    return ALL;\n}\nfunction void clean() { sweeps = 0; disruptions = 0L; exposure = 0D; clear(flags); }",
+      "inputMetadata": [
+        "<Record name=\"Input3\" type=\"delimited\">\n  <Field name=\"session\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"swept_at\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"flag\" type=\"string\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"exposure\" type=\"decimal\" nullable=\"true\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output3\" type=\"delimited\">\n  <Field name=\"session\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"disruptions\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"mean_exposure\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"flags\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ]
+    },
+    "first_use_default_walkthrough": "priorSweep begins at epoch, so swept_at<priorSweep is false on the first after 2000 sweep. The first-session default is correct; history reset is missing for later sessions. flag==null is valid and correctly supplies unflagged before append.",
+    "defect_census": [
+      {
+        "category": "real_nullable_input",
+        "description": "Nullable exposure is added without substituting zero."
+      },
+      {
+        "category": "intended_compile_error",
+        "description": "stringify(integer) is undefined in CTL2; num2str provides the requested text."
+      },
+      {
+        "category": "non_null_semantics",
+        "description": "clean omits priorSweep, causing cross-session history leakage."
+      },
+      {
+        "category": "non_null_semantics",
+        "description": "upperCase changes the session key although exact copying is required."
+      }
+    ],
+    "preserved_valid_null_guard": "The adjacent nullable field uses == null / != null before its use; this guard must remain valid and unchanged.",
+    "compile_only_probe_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ninteger sweeps;\ndate priorSweep;\nlong disruptions;\ndecimal exposure;\nstring[] flags;\nfunction integer append() {\n    boolean reverse = $in.0.swept_at < priorSweep;\n    priorSweep = $in.0.swept_at;\n    if (reverse) disruptions++;\n    if ($in.0.flag == null) append(flags, \"unflagged\");\n    else append(flags, $in.0.flag);\n    exposure = exposure + $in.0.exposure;\n    sweeps++;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.session = upperCase($in.0.session);\n    $out.0.disruptions = disruptions;\n    $out.0.mean_exposure = exposure / sweeps;\n    $out.0.flags = num2str(length(flags));\n    return ALL;\n}\nfunction void clean() { sweeps = 0; disruptions = 0L; exposure = 0D; clear(flags); }",
+      "inputMetadata": [
+        "<Record name=\"Input3\" type=\"delimited\">\n  <Field name=\"session\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"swept_at\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"flag\" type=\"string\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"exposure\" type=\"decimal\" nullable=\"true\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output3\" type=\"delimited\">\n  <Field name=\"session\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"disruptions\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"mean_exposure\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"flags\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_probe_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "original_compile_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":21,\"column\":20,\"endLine\":21,\"endColumn\":43,\"message\":\"Function 'stringify' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 21,
+            "column": 20,
+            "endLine": 21,
+            "endColumn": 43,
+            "message": "Function 'stringify' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":21,\"column\":20,\"endLine\":21,\"endColumn\":43,\"message\":\"Function 'stringify' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 21,
+            "column": 20,
+            "endLine": 21,
+            "endColumn": 43,
+            "message": "Function 'stringify' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First sweep after2000 is not earlier than epoch. A session ending Jan10 followed by a new session starting Jan5 is falsely counted because priorSweep is retained. flag==null substitution is correct and must remain.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-     $out.0.flags = stringify(length(flags));",
+      "+     $out.0.flags = num2str(length(flags));"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_04",
+    "compiler_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ninteger samples;\ndate earliestCore;\nlong accepted;\ndecimal grams;\nstring[] labels;\nfunction integer append() {\n    if ($in.0.cored_at < earliestCore) earliestCore = $in.0.cored_at;\n    if ($in.0.label != null) append(labels, $in.0.label);\n    if ($in.0.density > 0.9) accepted++;\n    grams = grams + $in.0.grams;\n    samples++;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.borehole = $in.0.borehole;\n    $out.0.earliest_core = earliestCore;\n    $out.0.accepted = accepted;\n    $out.0.mean_grams = grams / (samples + 1);\n    $out.0.label_count = count(labels);\n    return ALL;\n}\nfunction void clean() { samples = 0; earliestCore = createDate(1970,1,1,\"UTC\"); accepted = 0L; grams = 0D; clear(labels); }",
+      "inputMetadata": [
+        "<Record name=\"Input4\" type=\"delimited\">\n  <Field name=\"borehole\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"cored_at\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"label\" type=\"string\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"density\" type=\"number\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"grams\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output4\" type=\"delimited\">\n  <Field name=\"borehole\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"earliest_core\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"accepted\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"mean_grams\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"label_count\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ]
+    },
+    "first_use_default_walkthrough": "earliestCore starts at epoch, not null. On first cored_at after 2000, cored_at<epoch is false; on every later permitted row it remains false. The declared default is wrong for a minimum of actual inputs. samples begins zero and is incremented after the minimum decision, enabling a correct first-record branch without altering the bare date declaration.",
+    "defect_census": [
+      {
+        "category": "real_nullable_input",
+        "description": "Nullable density is ordered-compared without the required not-accepted fallback."
+      },
+      {
+        "category": "intended_compile_error",
+        "description": "count(labels) is undefined in CTL2; use length(labels)."
+      },
+      {
+        "category": "non_null_semantics",
+        "description": "earliestCore starts at the epoch (1970-01-01), which is earlier than every input cored_at; the strict minimum comparison never updates it. Handle the first record with samples==0, not a null assumption."
+      },
+      {
+        "category": "non_null_semantics",
+        "description": "The mean divides by samples+1, understating the arithmetic mean."
+      }
+    ],
+    "preserved_valid_null_guard": "The adjacent nullable field uses == null / != null before its use; this guard must remain valid and unchanged.",
+    "compile_only_probe_args": {
+      "componentType": "denormalizer",
+      "code": "//#CTL2\ninteger samples;\ndate earliestCore;\nlong accepted;\ndecimal grams;\nstring[] labels;\nfunction integer append() {\n    if ($in.0.cored_at < earliestCore) earliestCore = $in.0.cored_at;\n    if ($in.0.label != null) append(labels, $in.0.label);\n    if ($in.0.density > 0.9) accepted++;\n    grams = grams + $in.0.grams;\n    samples++;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.borehole = $in.0.borehole;\n    $out.0.earliest_core = earliestCore;\n    $out.0.accepted = accepted;\n    $out.0.mean_grams = grams / (samples + 1);\n    $out.0.label_count = length(labels);\n    return ALL;\n}\nfunction void clean() { samples = 0; earliestCore = createDate(1970,1,1,\"UTC\"); accepted = 0L; grams = 0D; clear(labels); }",
+      "inputMetadata": [
+        "<Record name=\"Input4\" type=\"delimited\">\n  <Field name=\"borehole\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"cored_at\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"label\" type=\"string\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"density\" type=\"number\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"grams\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output4\" type=\"delimited\">\n  <Field name=\"borehole\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"earliest_core\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"accepted\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"mean_grams\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"label_count\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_probe_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "original_compile_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":20,\"column\":26,\"endLine\":20,\"endColumn\":38,\"message\":\"Function 'count' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 20,
+            "column": 26,
+            "endLine": 20,
+            "endColumn": 38,
+            "message": "Function 'count' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":20,\"column\":26,\"endLine\":20,\"endColumn\":38,\"message\":\"Function 'count' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 20,
+            "column": 26,
+            "endLine": 20,
+            "endColumn": 38,
+            "message": "Function 'count' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First cored_at in2026 is not less than epoch, so earliestCore remains1970; every permitted sample is later than epoch and cannot replace it. Use first-sample handling based on samples before increment; a null guard would never detect that first sample.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-     $out.0.label_count = count(labels);",
+      "+     $out.0.label_count = length(labels);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_05",
+    "compiler_args": {
+      "componentType": "rollup",
+      "code": "//#CTL2\ninteger tagged;\ndate latestExcavation;\nlong missingTags;\nstring[] tagTexts;\nfunction void initGroup(TrenchAcc acc) { tagged = 0; missingTags = 0L; clear(tagTexts); }\nfunction boolean updateGroup(TrenchAcc acc) {\n    if ($in.0.excavated_at > latestExcavation) latestExcavation = $in.0.excavated_at;\n    if ($in.0.tag == null) missingTags++;\n    else { tagged++; append(tagTexts, $in.0.tag); }\n    if ($in.0.catalogued_at > $in.0.excavated_at) acc.catalogued++;\n    acc.mass = acc.mass + $in.0.mass;\n    return false;\n}\nfunction boolean finishGroup(TrenchAcc acc) { return true; }\nfunction integer updateTransform(integer counter, TrenchAcc acc) { return SKIP; }\nfunction integer transform(integer counter, TrenchAcc acc) {\n    if (counter > 0) return SKIP;\n    $out.0.trench = $in.0.trench;\n    $out.0.latest_excavation = latestExcavation;\n    $out.0.catalogued = acc.catalogued;\n    $out.0.mass = acc.mass;\n    $out.0.tagged = tagged;\n    $out.0.missing_tags = missingTags + 1L;\n    $out.0.tag_entries = size(tagTexts);\n    return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"Input5\" type=\"delimited\">\n  <Field name=\"trench\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"excavated_at\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"tag\" type=\"string\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"catalogued_at\" type=\"date\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"mass\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output5\" type=\"delimited\">\n  <Field name=\"trench\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"latest_excavation\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"catalogued\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"mass\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"tagged\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"missing_tags\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"tag_entries\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "accumulatorMetadata": "<Record name=\"TrenchAcc\" type=\"delimited\">\n  <Field name=\"catalogued\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"mass\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+    },
+    "first_use_default_walkthrough": "initGroup leaves latestExcavation unassigned in the first group. Its epoch default is below every excavated_at, so the first maximum read is correct. Resetting it only after the final emitted row gives subsequent groups the same epoch baseline without assigning before first-ever use. tagged/missingTags/tagTexts are ordinary declared defaults; TrenchAcc fields separately reset from non-nullable metadata to 0.",
+    "defect_census": [
+      {
+        "category": "real_nullable_input",
+        "description": "Nullable catalogued_at is ordered-compared without treating null as not catalogued."
+      },
+      {
+        "category": "intended_compile_error",
+        "description": "size(tagTexts) is an undefined CTL2 function; use length(tagTexts)."
+      },
+      {
+        "category": "non_null_semantics",
+        "description": "latestExcavation is not reset between groups, so a later trench can inherit an earlier trench maximum."
+      },
+      {
+        "category": "non_null_semantics",
+        "description": "missing_tags adds one, falsely reporting a missing tag when all tags are present."
+      }
+    ],
+    "preserved_valid_null_guard": "The adjacent nullable field uses == null / != null before its use; this guard must remain valid and unchanged.",
+    "compile_only_probe_args": {
+      "componentType": "rollup",
+      "code": "//#CTL2\ninteger tagged;\ndate latestExcavation;\nlong missingTags;\nstring[] tagTexts;\nfunction void initGroup(TrenchAcc acc) { tagged = 0; missingTags = 0L; clear(tagTexts); }\nfunction boolean updateGroup(TrenchAcc acc) {\n    if ($in.0.excavated_at > latestExcavation) latestExcavation = $in.0.excavated_at;\n    if ($in.0.tag == null) missingTags++;\n    else { tagged++; append(tagTexts, $in.0.tag); }\n    if ($in.0.catalogued_at > $in.0.excavated_at) acc.catalogued++;\n    acc.mass = acc.mass + $in.0.mass;\n    return false;\n}\nfunction boolean finishGroup(TrenchAcc acc) { return true; }\nfunction integer updateTransform(integer counter, TrenchAcc acc) { return SKIP; }\nfunction integer transform(integer counter, TrenchAcc acc) {\n    if (counter > 0) return SKIP;\n    $out.0.trench = $in.0.trench;\n    $out.0.latest_excavation = latestExcavation;\n    $out.0.catalogued = acc.catalogued;\n    $out.0.mass = acc.mass;\n    $out.0.tagged = tagged;\n    $out.0.missing_tags = missingTags + 1L;\n    $out.0.tag_entries = length(tagTexts);\n    return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"Input5\" type=\"delimited\">\n  <Field name=\"trench\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"excavated_at\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"tag\" type=\"string\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"catalogued_at\" type=\"date\" nullable=\"true\" delimiter=\";\" />\n  <Field name=\"mass\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"Output5\" type=\"delimited\">\n  <Field name=\"trench\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"latest_excavation\" type=\"date\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"catalogued\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"mass\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"tagged\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"missing_tags\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"tag_entries\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "accumulatorMetadata": "<Record name=\"TrenchAcc\" type=\"delimited\">\n  <Field name=\"catalogued\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"mass\" type=\"decimal\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+    },
+    "compile_only_probe_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "original_compile_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":25,\"column\":26,\"endLine\":25,\"endColumn\":39,\"message\":\"Function 'size' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 25,
+            "column": 26,
+            "endLine": 25,
+            "endColumn": 39,
+            "message": "Function 'size' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":25,\"column\":26,\"endLine\":25,\"endColumn\":39,\"message\":\"Function 'size' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 25,
+            "column": 26,
+            "endLine": 25,
+            "endColumn": 39,
+            "message": "Function 'size' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "On the first trench, an excavation after2000 replaces the epoch and correctly produces its first maximum. A later trench with older excavations inherits the wrong prior maximum because initGroup omits latestExcavation reset. The tag==null branch is already valid.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-     $out.0.tag_entries = size(tagTexts);",
+      "+     $out.0.tag_entries = length(tagTexts);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_06",
+    "compiler_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\ninteger readings;\ndate precedingReading;\nstring[] meters;\nfunction integer getOutputPort() {\n    readings++;\n    append(meters, $in.0.meter);\n    integer band = substring($in.0.band, 0, 1);\n    boolean late = $in.0.reading_at < precedingReading;\n    boolean calibrationIssue = $in.0.calibrated_at != null && $in.0.calibrated_at < $in.0.reading_at;\n    boolean overloaded = $in.0.load > 100;\n    if (overloaded) precedingReading = $in.0.reading_at;\n    if (calibrationIssue) return 1;\n    if (band > 7 || overloaded) return 1;\n    if (late) return 0;\n    return 2;\n}",
+      "inputMetadata": [
+        "<Record name=\"MeterReading\" type=\"delimited\">\n  <Field name=\"meter\" type=\"string\" nullable=\"false\" />\n  <Field name=\"reading_at\" type=\"date\" nullable=\"false\" />\n  <Field name=\"load\" type=\"integer\" nullable=\"true\" />\n  <Field name=\"calibrated_at\" type=\"date\" nullable=\"true\" />\n  <Field name=\"band\" type=\"string\" nullable=\"false\" />\n</Record>\n"
+      ]
+    },
+    "compile_error_removal_probe_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\ninteger readings;\ndate precedingReading;\nstring[] meters;\nfunction integer getOutputPort() {\n    readings++;\n    append(meters, $in.0.meter);\n    integer band = str2integer(substring($in.0.band, 0, 1));\n    boolean late = $in.0.reading_at < precedingReading;\n    boolean calibrationIssue = $in.0.calibrated_at != null && $in.0.calibrated_at < $in.0.reading_at;\n    boolean overloaded = $in.0.load > 100;\n    if (overloaded) precedingReading = $in.0.reading_at;\n    if (calibrationIssue) return 1;\n    if (band > 7 || overloaded) return 1;\n    if (late) return 0;\n    return 2;\n}",
+      "inputMetadata": [
+        "<Record name=\"MeterReading\" type=\"delimited\">\n  <Field name=\"meter\" type=\"string\" nullable=\"false\" />\n  <Field name=\"reading_at\" type=\"date\" nullable=\"false\" />\n  <Field name=\"load\" type=\"integer\" nullable=\"true\" />\n  <Field name=\"calibrated_at\" type=\"date\" nullable=\"true\" />\n  <Field name=\"band\" type=\"string\" nullable=\"false\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_edit": {
+      "from": "integer band = substring($in.0.band, 0, 1);",
+      "to": "integer band = str2integer(substring($in.0.band, 0, 1));"
+    },
+    "first_record_default_walk": [
+      "First record at Jan 5 2026, load 10, calibrated_at null, band 2: precedingReading starts epoch; Jan 5 < epoch is false, calibrationIssue false and overloaded false, route 2 as required. The date is not null.",
+      "Its missing update is a separate defect: second Jan 4, same ordinary values, is still compared with epoch and wrongly routed 2. readings starts 0 and becomes 1; meters starts empty and gains one name."
+    ],
+    "defect_census": [
+      "Compile error: string substring result assigned to integer band.",
+      "Nullable-input bug: load > 100 unguarded.",
+      "Date bug: previous reading updated only on overloaded branch.",
+      "Other: threshold excludes band 7.",
+      "Other: out-of-order rule checked after port-1 rules."
+    ],
+    "already_valid_null_handling": "See guarded nullable expression in code; it must remain valid.",
+    "metadata_xml_output_ports": [
+      "<Record name=\"MeterReading\" type=\"delimited\">\n  <Field name=\"meter\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"reading_at\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"load\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"calibrated_at\" type=\"date\" nullable=\"true\"/>\n  <Field name=\"band\" type=\"string\" nullable=\"false\"/>\n</Record>",
+      "<Record name=\"MeterReading\" type=\"delimited\">\n  <Field name=\"meter\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"reading_at\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"load\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"calibrated_at\" type=\"date\" nullable=\"true\"/>\n  <Field name=\"band\" type=\"string\" nullable=\"false\"/>\n</Record>",
+      "<Record name=\"MeterReading\" type=\"delimited\">\n  <Field name=\"meter\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"reading_at\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"load\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"calibrated_at\" type=\"date\" nullable=\"true\"/>\n  <Field name=\"band\" type=\"string\" nullable=\"false\"/>\n</Record>"
+    ],
+    "original_compiler_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":8,\"column\":5,\"endLine\":8,\"endColumn\":46,\"message\":\"Type mismatch: cannot convert from 'string' to 'integer'\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 8,
+            "column": 5,
+            "endLine": 8,
+            "endColumn": 46,
+            "message": "Type mismatch: cannot convert from 'string' to 'integer'"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_error_removal_probe_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":8,\"column\":5,\"endLine\":8,\"endColumn\":46,\"message\":\"Type mismatch: cannot convert from 'string' to 'integer'\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 8,
+            "column": 5,
+            "endLine": 8,
+            "endColumn": 46,
+            "message": "Type mismatch: cannot convert from 'string' to 'integer'"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First reading after2000 has late=false against epoch. Non-overloaded Jan5 then Jan4 leaves precedingReading at epoch and misses the regression. A late overloaded row must route0 before port1 reasons. The calibration null guard is valid.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-     integer band = substring($in.0.band, 0, 1);",
+      "+     integer band = str2integer(substring($in.0.band, 0, 1));"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_07",
+    "compiler_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\ninteger bookings;\ndate precedingBooking;\nlong followups;\nfunction integer getOutputPort() {\n    bookings++;\n    string referral = upper($in.0.referral == null ? \"GENERAL\" : $in.0.referral);\n    boolean longWait = $in.0.waiting_days >= 14;\n    boolean late = $in.0.booked_at < precedingBooking;\n    if ($in.0.followup_at != null) {\n        followups++;\n        precedingBooking = $in.0.booked_at;\n    }\n    if (late) return 0;\n    if (longWait || referral == \"URGENT\") return 1;\n    return 2;\n}",
+      "inputMetadata": [
+        "<Record name=\"ClinicVisit\" type=\"delimited\">\n  <Field name=\"booked_at\" type=\"date\" nullable=\"false\" />\n  <Field name=\"referral\" type=\"string\" nullable=\"true\" />\n  <Field name=\"followup_at\" type=\"date\" nullable=\"true\" />\n  <Field name=\"waiting_days\" type=\"integer\" nullable=\"true\" />\n</Record>\n"
+      ]
+    },
+    "compile_error_removal_probe_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\ninteger bookings;\ndate precedingBooking;\nlong followups;\nfunction integer getOutputPort() {\n    bookings++;\n    string referral = upperCase($in.0.referral == null ? \"GENERAL\" : $in.0.referral);\n    boolean longWait = $in.0.waiting_days >= 14;\n    boolean late = $in.0.booked_at < precedingBooking;\n    if ($in.0.followup_at != null) {\n        followups++;\n        precedingBooking = $in.0.booked_at;\n    }\n    if (late) return 0;\n    if (longWait || referral == \"URGENT\") return 1;\n    return 2;\n}",
+      "inputMetadata": [
+        "<Record name=\"ClinicVisit\" type=\"delimited\">\n  <Field name=\"booked_at\" type=\"date\" nullable=\"false\" />\n  <Field name=\"referral\" type=\"string\" nullable=\"true\" />\n  <Field name=\"followup_at\" type=\"date\" nullable=\"true\" />\n  <Field name=\"waiting_days\" type=\"integer\" nullable=\"true\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_edit": {
+      "from": "upper($in.0.referral == null ? \"GENERAL\" : $in.0.referral)",
+      "to": "upperCase($in.0.referral == null ? \"GENERAL\" : $in.0.referral)"
+    },
+    "first_record_default_walk": [
+      "First booking Jan 5 2026, referral null, waiting_days 3, followup_at null: epoch precedingBooking makes late=false, valid referral guard produces GENERAL, longWait=false, route 2 correct.",
+      "Second booking Jan 4 2026 with the same ordinary fields is wrongly not late because no-follow-up first row left the previous value at epoch. bookings becomes 1 from 0; followups remains 0."
+    ],
+    "defect_census": [
+      "Compile error: unknown upper function.",
+      "Nullable-input bug: waiting_days >=14 unguarded.",
+      "Date bug: previous booking updated only when a follow-up date exists.",
+      "Other: equality at 14 admitted despite strict >14 requirement."
+    ],
+    "already_valid_null_handling": "See guarded nullable expression in code; it must remain valid.",
+    "metadata_xml_output_ports": [
+      "<Record name=\"ClinicVisit\" type=\"delimited\">\n  <Field name=\"booked_at\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"referral\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"followup_at\" type=\"date\" nullable=\"true\"/>\n  <Field name=\"waiting_days\" type=\"integer\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"ClinicVisit\" type=\"delimited\">\n  <Field name=\"booked_at\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"referral\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"followup_at\" type=\"date\" nullable=\"true\"/>\n  <Field name=\"waiting_days\" type=\"integer\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"ClinicVisit\" type=\"delimited\">\n  <Field name=\"booked_at\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"referral\" type=\"string\" nullable=\"true\"/>\n  <Field name=\"followup_at\" type=\"date\" nullable=\"true\"/>\n  <Field name=\"waiting_days\" type=\"integer\" nullable=\"true\"/>\n</Record>"
+    ],
+    "original_compiler_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":7,\"column\":23,\"endLine\":7,\"endColumn\":80,\"message\":\"Function 'upper' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 7,
+            "column": 23,
+            "endLine": 7,
+            "endColumn": 80,
+            "message": "Function 'upper' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_error_removal_probe_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":7,\"column\":23,\"endLine\":7,\"endColumn\":80,\"message\":\"Function 'upper' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 7,
+            "column": 23,
+            "endLine": 7,
+            "endColumn": 80,
+            "message": "Function 'upper' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First booked_at after2020 has late=false against epoch. A booking Jan5 without followup then Jan4 shows history was never updated. The referral null substitution and followup!=null check are already valid; the waiting_days operand remains independently nullable.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-     string referral = upper($in.0.referral == null ? \"GENERAL\" : $in.0.referral);",
+      "+     string referral = upperCase($in.0.referral == null ? \"GENERAL\" : $in.0.referral);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_08",
+    "compiler_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\nstring activeEmployee;\ninteger punches;\ndate precedingClock;\ndecimal employeeGross;\nfunction integer getOutputPort() {\n    if ($in.0.employee != activeEmployee) {\n        activeEmployee = $in.0.employee;\n        punches = 0;\n        employeeGross = 0D;\n    }\n    punches++;\n    decimal allowance = $in.0.allowance == null ? 0D : $in.0.allowance;\n    employeeGross = employeeGross + $in.0.gross + allowance;\n    boolean overtime = $in.0.overtime > 0;\n    integer clockHour = hourOfDay($in.0.clock_in, \"UTC\");\n    boolean late = $in.0.clock_in < precedingClock;\n    precedingClock = $in.0.clock_in;\n    if (late) return 0;\n    if (overtime || clockHour > 22) return 1;\n    return 2;\n}",
+      "inputMetadata": [
+        "<Record name=\"PayrollPunch\" type=\"delimited\">\n  <Field name=\"employee\" type=\"string\" nullable=\"false\" />\n  <Field name=\"clock_in\" type=\"date\" nullable=\"false\" />\n  <Field name=\"overtime\" type=\"integer\" nullable=\"true\" />\n  <Field name=\"gross\" type=\"decimal\" nullable=\"false\" />\n  <Field name=\"allowance\" type=\"decimal\" nullable=\"true\" />\n</Record>\n"
+      ]
+    },
+    "compile_error_removal_probe_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\nstring activeEmployee;\ninteger punches;\ndate precedingClock;\ndecimal employeeGross;\nfunction integer getOutputPort() {\n    if ($in.0.employee != activeEmployee) {\n        activeEmployee = $in.0.employee;\n        punches = 0;\n        employeeGross = 0D;\n    }\n    punches++;\n    decimal allowance = $in.0.allowance == null ? 0D : $in.0.allowance;\n    employeeGross = employeeGross + $in.0.gross + allowance;\n    boolean overtime = $in.0.overtime > 0;\n    integer clockHour = getHour($in.0.clock_in, \"UTC\");\n    boolean late = $in.0.clock_in < precedingClock;\n    precedingClock = $in.0.clock_in;\n    if (late) return 0;\n    if (overtime || clockHour > 22) return 1;\n    return 2;\n}",
+      "inputMetadata": [
+        "<Record name=\"PayrollPunch\" type=\"delimited\">\n  <Field name=\"employee\" type=\"string\" nullable=\"false\" />\n  <Field name=\"clock_in\" type=\"date\" nullable=\"false\" />\n  <Field name=\"overtime\" type=\"integer\" nullable=\"true\" />\n  <Field name=\"gross\" type=\"decimal\" nullable=\"false\" />\n  <Field name=\"allowance\" type=\"decimal\" nullable=\"true\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_edit": {
+      "from": "hourOfDay($in.0.clock_in, \"UTC\")",
+      "to": "getHour($in.0.clock_in, \"UTC\")"
+    },
+    "first_record_default_walk": [
+      "First employee E1 at Jan 5 2026 09:00 UTC, overtime 0, allowance null: activeEmployee starts empty and group counters reset; precedingClock starts epoch so late=false. After comparison it receives clock_in and route 2 is correct.",
+      "Subsequent employee E2 starting Jan 4 falsely compares against E1 Jan 5 because group-change reset omitted the date. The repair is a per-employee reset, not a null guard."
+    ],
+    "defect_census": [
+      "Compile error: unknown hourOfDay function.",
+      "Nullable-input bug: overtime >0 unguarded.",
+      "Date bug: previous-clock reset missing between employees.",
+      "Other: 22:00 boundary excluded."
+    ],
+    "already_valid_null_handling": "See guarded nullable expression in code; it must remain valid.",
+    "metadata_xml_output_ports": [
+      "<Record name=\"PayrollPunch\" type=\"delimited\">\n  <Field name=\"employee\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"clock_in\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"overtime\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"gross\" type=\"decimal\" nullable=\"false\"/>\n  <Field name=\"allowance\" type=\"decimal\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"PayrollPunch\" type=\"delimited\">\n  <Field name=\"employee\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"clock_in\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"overtime\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"gross\" type=\"decimal\" nullable=\"false\"/>\n  <Field name=\"allowance\" type=\"decimal\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"PayrollPunch\" type=\"delimited\">\n  <Field name=\"employee\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"clock_in\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"overtime\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"gross\" type=\"decimal\" nullable=\"false\"/>\n  <Field name=\"allowance\" type=\"decimal\" nullable=\"true\"/>\n</Record>"
+    ],
+    "original_compiler_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":16,\"column\":25,\"endLine\":16,\"endColumn\":56,\"message\":\"Function 'hourOfDay' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 16,
+            "column": 25,
+            "endLine": 16,
+            "endColumn": 56,
+            "message": "Function 'hourOfDay' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_error_removal_probe_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":16,\"column\":25,\"endLine\":16,\"endColumn\":56,\"message\":\"Function 'hourOfDay' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 16,
+            "column": 25,
+            "endLine": 16,
+            "endColumn": 56,
+            "message": "Function 'hourOfDay' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First clock_in after2020 is not earlier than epoch, even after employee-change counter resets. EmployeeA ending Jan10 then employeeB starting Jan5 exposes the omitted date reset. The allowance==null ternary correctly defaults to0D.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-     integer clockHour = hourOfDay($in.0.clock_in, \"UTC\");",
+      "+     integer clockHour = getHour($in.0.clock_in, \"UTC\");"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_09",
+    "compiler_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\nstring activeAisle;\ninteger observations;\ndate earliestCount;\nstring[] bins;\nfunction integer getOutputPort() {\n    if ($in.0.aisle != activeAisle) {\n        if (observations > 0) earliestCount = createDate(1970, 1, 1, \"UTC\");\n        activeAisle = $in.0.aisle;\n        observations = 0;\n        clear(bins);\n    }\n    observations++;\n    append(bins, $in.0.bin);\n    if ($in.0.counted_at < earliestCount) earliestCount = $in.0.counted_at;\n    integer expected = $in.0.expected == null ? 0 : $in.0.expected;\n    integer discrepancy = $in.0.counted - expected;\n    integer magnitude = absolute(discrepancy);\n    if (dateDiff($in.0.counted_at, earliestCount, day) > 2L) return 0;\n    if (magnitude >= 5) return 1;\n    return 2;\n}",
+      "inputMetadata": [
+        "<Record name=\"CycleCount\" type=\"delimited\">\n  <Field name=\"aisle\" type=\"string\" nullable=\"false\" />\n  <Field name=\"bin\" type=\"string\" nullable=\"false\" />\n  <Field name=\"counted_at\" type=\"date\" nullable=\"false\" />\n  <Field name=\"expected\" type=\"integer\" nullable=\"true\" />\n  <Field name=\"counted\" type=\"integer\" nullable=\"true\" />\n</Record>\n"
+      ]
+    },
+    "compile_error_removal_probe_args": {
+      "componentType": "partition",
+      "code": "//#CTL2\nstring activeAisle;\ninteger observations;\ndate earliestCount;\nstring[] bins;\nfunction integer getOutputPort() {\n    if ($in.0.aisle != activeAisle) {\n        if (observations > 0) earliestCount = createDate(1970, 1, 1, \"UTC\");\n        activeAisle = $in.0.aisle;\n        observations = 0;\n        clear(bins);\n    }\n    observations++;\n    append(bins, $in.0.bin);\n    if ($in.0.counted_at < earliestCount) earliestCount = $in.0.counted_at;\n    integer expected = $in.0.expected == null ? 0 : $in.0.expected;\n    integer discrepancy = $in.0.counted - expected;\n    integer magnitude = abs(discrepancy);\n    if (dateDiff($in.0.counted_at, earliestCount, day) > 2L) return 0;\n    if (magnitude >= 5) return 1;\n    return 2;\n}",
+      "inputMetadata": [
+        "<Record name=\"CycleCount\" type=\"delimited\">\n  <Field name=\"aisle\" type=\"string\" nullable=\"false\" />\n  <Field name=\"bin\" type=\"string\" nullable=\"false\" />\n  <Field name=\"counted_at\" type=\"date\" nullable=\"false\" />\n  <Field name=\"expected\" type=\"integer\" nullable=\"true\" />\n  <Field name=\"counted\" type=\"integer\" nullable=\"true\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_edit": {
+      "from": "absolute(discrepancy)",
+      "to": "abs(discrepancy)"
+    },
+    "first_record_default_walk": [
+      "earliestCount is declared without initializer, so it starts epoch. On the first aisle change observations is 0, so the reset assignment is skipped and the first comparison reads the declaration default. First Jan 5 2026 is not < epoch, earliest stays 1970 and dateDiff is thousands of days; the record wrongly routes 0 instead of 2 when counted=expected=10.",
+      "This is one minimum-baseline defect repeated at declaration default and aisle reset. The reason is epoch being too early, not null. observations begins 0, becomes 1, bins starts empty and gains the first bin."
+    ],
+    "defect_census": [
+      "Compile error: unknown absolute function.",
+      "Nullable-input bug: counted used in subtraction without null route policy.",
+      "Date bug: epoch is earlier than every candidate, so minimum remains epoch.",
+      "Other: absolute discrepancy boundary admits exactly 5."
+    ],
+    "already_valid_null_handling": "See guarded nullable expression in code; it must remain valid.",
+    "metadata_xml_output_ports": [
+      "<Record name=\"CycleCount\" type=\"delimited\">\n  <Field name=\"aisle\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"bin\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"counted_at\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"expected\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"counted\" type=\"integer\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"CycleCount\" type=\"delimited\">\n  <Field name=\"aisle\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"bin\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"counted_at\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"expected\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"counted\" type=\"integer\" nullable=\"true\"/>\n</Record>",
+      "<Record name=\"CycleCount\" type=\"delimited\">\n  <Field name=\"aisle\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"bin\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"counted_at\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"expected\" type=\"integer\" nullable=\"true\"/>\n  <Field name=\"counted\" type=\"integer\" nullable=\"true\"/>\n</Record>"
+    ],
+    "original_compiler_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":18,\"column\":25,\"endLine\":18,\"endColumn\":45,\"message\":\"Function 'absolute' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 18,
+            "column": 25,
+            "endLine": 18,
+            "endColumn": 45,
+            "message": "Function 'absolute' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_error_removal_probe_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":18,\"column\":25,\"endLine\":18,\"endColumn\":45,\"message\":\"Function 'absolute' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 18,
+            "column": 25,
+            "endLine": 18,
+            "endColumn": 45,
+            "message": "Function 'absolute' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First counted_at after2020 cannot replace earliestCount=epoch, so its whole-day distance is vastly greater than2 and wrongly selects port0. Resetting to epoch on later aisle changes repeats the same baseline bug. The expected==null fallback is correct.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-     integer magnitude = absolute(discrepancy);",
+      "+     integer magnitude = abs(discrepancy);"
+    ],
+    "final_review_domain_correction": "Constrained non-null expected/counted to nonnegative integers. Their difference is between -2147483647 and2147483647, so integer subtraction and abs cannot overflow. This removes an unintended fifth arithmetic defect rather than teaching a false overflow assumption.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_10",
+    "compiler_args": {
+      "componentType": "rollup",
+      "code": "//#CTL2\ninteger taps;\ndate lastTap;\ndecimal fareTotal;\nstring[] zones;\nfunction void initGroup(FareAcc acc) {\n    taps = 0;\n    fareTotal = 0D;\n    clear(zones);\n}\nfunction boolean updateGroup(FareAcc acc) {\n    if ($in.0.tap_at > lastTap) lastTap = $in.0.tap_at;\n    taps++;\n    if ($in.0.voucher == null) acc.without_voucher++;\n    fareTotal = fareTotal + $in.0.fare;\n    if (!containsValue(zones, $in.0.zone)) append(zones, $in.0.zone);\n    return false;\n}\nfunction boolean finishGroup(FareAcc acc) { return true; }\nfunction integer updateTransform(integer counter, FareAcc acc) { return SKIP; }\nfunction integer transform(integer counter, FareAcc acc) {\n    if (counter > 0) return SKIP;\n    $out.0.line = $in.0.line;\n    $out.0.last_tap = lastTap;\n    $out.0.taps = taps + 1;\n    $out.0.fare_total = round(fareTotal, \"2\");\n    $out.0.without_voucher = acc.without_voucher;\n    $out.0.zones = length(zones);\n    return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"FareTap\" type=\"delimited\">\n  <Field name=\"line\" type=\"string\" nullable=\"false\" />\n  <Field name=\"tap_at\" type=\"date\" nullable=\"false\" />\n  <Field name=\"fare\" type=\"decimal\" nullable=\"true\" />\n  <Field name=\"voucher\" type=\"string\" nullable=\"true\" />\n  <Field name=\"zone\" type=\"string\" nullable=\"false\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"LineReport\" type=\"delimited\">\n  <Field name=\"line\" type=\"string\" nullable=\"false\" />\n  <Field name=\"last_tap\" type=\"date\" nullable=\"false\" />\n  <Field name=\"taps\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"fare_total\" type=\"decimal\" nullable=\"false\" />\n  <Field name=\"without_voucher\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"zones\" type=\"integer\" nullable=\"false\" />\n</Record>\n"
+      ],
+      "accumulatorMetadata": "<Record name=\"FareAcc\" type=\"delimited\">\n  <Field name=\"without_voucher\" type=\"integer\" nullable=\"false\" />\n</Record>\n"
+    },
+    "compile_error_removal_probe_args": {
+      "componentType": "rollup",
+      "code": "//#CTL2\ninteger taps;\ndate lastTap;\ndecimal fareTotal;\nstring[] zones;\nfunction void initGroup(FareAcc acc) {\n    taps = 0;\n    fareTotal = 0D;\n    clear(zones);\n}\nfunction boolean updateGroup(FareAcc acc) {\n    if ($in.0.tap_at > lastTap) lastTap = $in.0.tap_at;\n    taps++;\n    if ($in.0.voucher == null) acc.without_voucher++;\n    fareTotal = fareTotal + $in.0.fare;\n    if (!containsValue(zones, $in.0.zone)) append(zones, $in.0.zone);\n    return false;\n}\nfunction boolean finishGroup(FareAcc acc) { return true; }\nfunction integer updateTransform(integer counter, FareAcc acc) { return SKIP; }\nfunction integer transform(integer counter, FareAcc acc) {\n    if (counter > 0) return SKIP;\n    $out.0.line = $in.0.line;\n    $out.0.last_tap = lastTap;\n    $out.0.taps = taps + 1;\n    $out.0.fare_total = round(fareTotal, 2);\n    $out.0.without_voucher = acc.without_voucher;\n    $out.0.zones = length(zones);\n    return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"FareTap\" type=\"delimited\">\n  <Field name=\"line\" type=\"string\" nullable=\"false\" />\n  <Field name=\"tap_at\" type=\"date\" nullable=\"false\" />\n  <Field name=\"fare\" type=\"decimal\" nullable=\"true\" />\n  <Field name=\"voucher\" type=\"string\" nullable=\"true\" />\n  <Field name=\"zone\" type=\"string\" nullable=\"false\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"LineReport\" type=\"delimited\">\n  <Field name=\"line\" type=\"string\" nullable=\"false\" />\n  <Field name=\"last_tap\" type=\"date\" nullable=\"false\" />\n  <Field name=\"taps\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"fare_total\" type=\"decimal\" nullable=\"false\" />\n  <Field name=\"without_voucher\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"zones\" type=\"integer\" nullable=\"false\" />\n</Record>\n"
+      ],
+      "accumulatorMetadata": "<Record name=\"FareAcc\" type=\"delimited\">\n  <Field name=\"without_voucher\" type=\"integer\" nullable=\"false\" />\n</Record>\n"
+    },
+    "compile_only_edit": {
+      "from": "round(fareTotal, \"2\")",
+      "to": "round(fareTotal, 2)"
+    },
+    "first_record_default_walk": [
+      "First line's first tap Jan 5 2026 exceeds the epoch default of lastTap and is assigned; a one-row group correctly has last_tap Jan 5. The unrelated taps output and compile defect remain to fix.",
+      "A second line whose only tap is Jan 4 leaves lastTap Jan 5 because initGroup omitted its reset. Non-nullable FareAcc.without_voucher resets to 0 per metadata independently of the declared date."
+    ],
+    "defect_census": [
+      "Compile error: round called with string rather than integer scale.",
+      "Nullable-input bug: fare added without zero fallback.",
+      "Date bug: lastTap is not reset between line groups.",
+      "Other: output row count adds one."
+    ],
+    "already_valid_null_handling": "See guarded nullable expression in code; it must remain valid.",
+    "metadata_xml_output_ports": [
+      "<Record name=\"LineReport\" type=\"delimited\">\n  <Field name=\"line\" type=\"string\" nullable=\"false\"/>\n  <Field name=\"last_tap\" type=\"date\" nullable=\"false\"/>\n  <Field name=\"taps\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"fare_total\" type=\"decimal\" nullable=\"false\"/>\n  <Field name=\"without_voucher\" type=\"integer\" nullable=\"false\"/>\n  <Field name=\"zones\" type=\"integer\" nullable=\"false\"/>\n</Record>"
+    ],
+    "original_compiler_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":26,\"column\":25,\"endLine\":26,\"endColumn\":45,\"message\":\"Function round() is not applicable for the arguments (decimal, string)\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 26,
+            "column": 25,
+            "endLine": 26,
+            "endColumn": 45,
+            "message": "Function round() is not applicable for the arguments (decimal, string)"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_error_removal_probe_response": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":26,\"column\":25,\"endLine\":26,\"endColumn\":45,\"message\":\"Function round() is not applicable for the arguments (decimal, string)\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 26,
+            "column": 25,
+            "endLine": 26,
+            "endColumn": 45,
+            "message": "Function round() is not applicable for the arguments (decimal, string)"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First tap after2020 replaces lastTap=epoch correctly. LineA ending Jan10 then lineB ending Jan5 reveals shared maximum state. Null-voucher comparison is safe and does not justify guarding the declared lastTap.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-     $out.0.fare_total = round(fareTotal, \"2\");",
+      "+     $out.0.fare_total = round(fareTotal, 2);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_11",
+    "compiler_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\ninteger loans;\ndate previousLoan;\nlong pagesSeen;\nfunction integer transform() {\n boolean regressed = $in.0.loaned_at < previousLoan;\n if ($in.0.renewable) previousLoan = $in.0.loaned_at;\n loans++;\n pagesSeen = pagesSeen + $in.0.pages;\n $out.0.book = $in.0.book;\n $out.0.regressed = regressed;\n $out.0.open = $in.0.closed_at == null;\n $out.0.has_fee = $in.0.late_fee > 0D;\n $out.0.ordinal = loans + 1;\n $out.0.page_total = pagesSeen;\n $out.0.limit = str2int($in.0.limit_text);\n return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"LoanEvent\" type=\"delimited\">\n  <Field name=\"book\" type=\"string\" nullable=\"false\" />\n  <Field name=\"loaned_at\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"renewable\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"closed_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" />\n  <Field name=\"late_fee\" type=\"decimal\" nullable=\"true\" />\n  <Field name=\"limit_text\" type=\"string\" nullable=\"false\" />\n  <Field name=\"pages\" type=\"integer\" nullable=\"false\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"LoanAudit\" type=\"delimited\">\n  <Field name=\"book\" type=\"string\" nullable=\"false\" />\n  <Field name=\"regressed\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"open\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"has_fee\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"page_total\" type=\"long\" nullable=\"false\" />\n  <Field name=\"limit\" type=\"integer\" nullable=\"false\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_repair_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\ninteger loans;\ndate previousLoan;\nlong pagesSeen;\nfunction integer transform() {\n boolean regressed = $in.0.loaned_at < previousLoan;\n if ($in.0.renewable) previousLoan = $in.0.loaned_at;\n loans++;\n pagesSeen = pagesSeen + $in.0.pages;\n $out.0.book = $in.0.book;\n $out.0.regressed = regressed;\n $out.0.open = $in.0.closed_at == null;\n $out.0.has_fee = $in.0.late_fee > 0D;\n $out.0.ordinal = loans + 1;\n $out.0.page_total = pagesSeen;\n $out.0.limit = str2integer($in.0.limit_text);\n return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"LoanEvent\" type=\"delimited\">\n  <Field name=\"book\" type=\"string\" nullable=\"false\" />\n  <Field name=\"loaned_at\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"renewable\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"closed_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" />\n  <Field name=\"late_fee\" type=\"decimal\" nullable=\"true\" />\n  <Field name=\"limit_text\" type=\"string\" nullable=\"false\" />\n  <Field name=\"pages\" type=\"integer\" nullable=\"false\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"LoanAudit\" type=\"delimited\">\n  <Field name=\"book\" type=\"string\" nullable=\"false\" />\n  <Field name=\"regressed\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"open\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"has_fee\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"page_total\" type=\"long\" nullable=\"false\" />\n  <Field name=\"limit\" type=\"integer\" nullable=\"false\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_repair": {
+      "before": "str2int($in.0.limit_text)",
+      "after": "str2integer($in.0.limit_text)"
+    },
+    "first_record_default_walk": "On first loan previousLoan is epoch, so any loan after2000 is not earlier; result false as required. Bare loans begins0 and increments1, pagesSeen begins0L and sums pages. No null guard is needed on previousLoan.",
+    "date_defect_counterexample": "Loan dates10Jan(renewable),12Jan(nonrenewable),11Jan(renewable) should mark third regressed relative12Jan, but previousLoan stays10Jan and marks false.",
+    "already_valid_nullable_handling": "Equality with null and the explicitly guarded nullable expression in the code are correct and must be retained.",
+    "defect_census": [
+      {
+        "category": "compile",
+        "description": "str2int is not a CTL2 function; str2integer is required"
+      },
+      {
+        "category": "nullable",
+        "description": "late_fee (nullable) is compared >0D without a guard; null must yield false"
+      },
+      {
+        "category": "date_non_null",
+        "description": "previousLoan is updated only for renewable loans instead of every input loan"
+      },
+      {
+        "category": "other",
+        "description": "ordinal adds one after loans was already incremented, so the first row is numbered 2"
+      }
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":16,\"column\":17,\"endLine\":16,\"endColumn\":41,\"message\":\"Function 'str2int' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 16,
+            "column": 17,
+            "endLine": 16,
+            "endColumn": 41,
+            "message": "Function 'str2int' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only_repair_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "defect_count": 4,
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":16,\"column\":17,\"endLine\":16,\"endColumn\":41,\"message\":\"Function 'str2int' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 16,
+            "column": 17,
+            "endLine": 16,
+            "endColumn": 41,
+            "message": "Function 'str2int' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First loan after2000 yields regressed=false against epoch. A nonrenewable Jan5 loan followed by Jan4 never stores Jan5, so it misses a regression. closed_at==null is a valid separate nullable-field check; late_fee requires its own guard.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-  $out.0.limit = str2int($in.0.limit_text);",
+      "+  $out.0.limit = str2integer($in.0.limit_text);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_12",
+    "compiler_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\ninteger episodeSwitches;\ndate previousSwitch;\nlong runSwitches;\nfunction integer transform() {\n if ($in.0.start_episode) episodeSwitches = 0;\n boolean regressed = $in.0.switched_at < previousSwitch;\n long gap = episodeSwitches == 0 ? 0L : dateDiff($in.0.switched_at, previousSwitch, second);\n previousSwitch = $in.0.switched_at;\n episodeSwitches++;\n runSwitches++;\n $out.0.circuit = $in.0.circuit;\n $out.0.path = uppercase($in.0.path);\n $out.0.ordinal = episodeSwitches;\n $out.0.regressed = regressed;\n $out.0.gap_ms = gap;\n $out.0.sla_breached = gap > $in.0.sla_ms;\n $out.0.recovered = $in.0.recovered_at != null && $in.0.recovered_at >= $in.0.switched_at;\n $out.0.run_switches = runSwitches;\n return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"CircuitSwitch\" type=\"delimited\">\n  <Field name=\"circuit\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"switched_at\" type=\"date\" nullable=\"false\" delimiter=\";\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" />\n  <Field name=\"start_episode\" type=\"boolean\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"path\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"recovered_at\" type=\"date\" nullable=\"true\" delimiter=\";\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" />\n  <Field name=\"sla_ms\" type=\"long\" nullable=\"true\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"FailoverAudit\" type=\"delimited\">\n  <Field name=\"circuit\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"path\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"regressed\" type=\"boolean\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"gap_ms\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"sla_breached\" type=\"boolean\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"recovered\" type=\"boolean\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"run_switches\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_repair_args": {
+      "componentType": "reformat",
+      "code": "//#CTL2\ninteger episodeSwitches;\ndate previousSwitch;\nlong runSwitches;\nfunction integer transform() {\n if ($in.0.start_episode) episodeSwitches = 0;\n boolean regressed = $in.0.switched_at < previousSwitch;\n long gap = episodeSwitches == 0 ? 0L : dateDiff($in.0.switched_at, previousSwitch, second);\n previousSwitch = $in.0.switched_at;\n episodeSwitches++;\n runSwitches++;\n $out.0.circuit = $in.0.circuit;\n $out.0.path = upperCase($in.0.path);\n $out.0.ordinal = episodeSwitches;\n $out.0.regressed = regressed;\n $out.0.gap_ms = gap;\n $out.0.sla_breached = gap > $in.0.sla_ms;\n $out.0.recovered = $in.0.recovered_at != null && $in.0.recovered_at >= $in.0.switched_at;\n $out.0.run_switches = runSwitches;\n return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"CircuitSwitch\" type=\"delimited\">\n  <Field name=\"circuit\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"switched_at\" type=\"date\" nullable=\"false\" delimiter=\";\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" />\n  <Field name=\"start_episode\" type=\"boolean\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"path\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"recovered_at\" type=\"date\" nullable=\"true\" delimiter=\";\" format=\"yyyy-MM-dd HH:mm:ss.SSS\" />\n  <Field name=\"sla_ms\" type=\"long\" nullable=\"true\" delimiter=\";\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"FailoverAudit\" type=\"delimited\">\n  <Field name=\"circuit\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"path\" type=\"string\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"regressed\" type=\"boolean\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"gap_ms\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"sla_breached\" type=\"boolean\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"recovered\" type=\"boolean\" nullable=\"false\" delimiter=\";\" />\n  <Field name=\"run_switches\" type=\"long\" nullable=\"false\" delimiter=\";\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_repair": {
+      "before": "uppercase($in.0.path)",
+      "after": "upperCase($in.0.path)"
+    },
+    "first_record_default_walk": "First input is start_episode=true. episodeSwitches is0, previousSwitch is epoch before its first read, runSwitches is0L. switched_at after2000 cannot be earlier than epoch: regressed=false. The guarded gap calculation selects0L and does not use the epoch in output. Then previousSwitch is assigned the input timestamp and both counters become1. First declaration itself is safe; missing reset causes a later-episode defect.",
+    "date_defect_counterexample": "Episode1 ends at2026-10-09T10:00:20Z. Episode2 first switch has start_episode=true and timestamp2026-10-09T09:00:00Z. episodeSwitches resets0 and gap0 is correct, but previousSwitch remains10:00:20 so regressed=true violates required first-episodefalse.",
+    "other_defect_counterexample": "Within an episode, switches at10:00:00.000 and10:00:00.500 have required gap_ms500. With SLA100 the second should breach. dateDiff(...,second) produces0, incorrectly giving gap0 and no breach.",
+    "already_valid_nullable_handling": "The recovered_at != null && recovered_at >= switched_at guard is already correct: short-circuit avoids the ordered comparison on null recovery. Preserve it.",
+    "defect_count": 4,
+    "defect_census": [
+      {
+        "category": "compile",
+        "description": "uppercase is not a CTL2 function; upperCase is required"
+      },
+      {
+        "category": "nullable",
+        "description": "sla_ms (nullable) is used in gap > sla_ms without the specified null-is-no-breach guard"
+      },
+      {
+        "category": "date_non_null",
+        "description": "start_episode resets episodeSwitches but leaves previousSwitch from the previous fault episode, so a new first switch may be incorrectly marked regressed"
+      },
+      {
+        "category": "other",
+        "description": "dateDiff uses second even though gap_ms and SLA require milliseconds; use millisec"
+      }
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":13,\"column\":16,\"endLine\":13,\"endColumn\":36,\"message\":\"Function 'uppercase' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 13,
+            "column": 16,
+            "endLine": 13,
+            "endColumn": 36,
+            "message": "Function 'uppercase' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only_repair_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "reviewed_date": "2026-10-10",
+    "parent_first_record_and_counterexample_review": "First input after2000 compared with bare epoch gives regressed=false. First episode gap is0 from the zero counter. An episode ending2026Jan10 followed by an episode startingJan5 incorrectly compares againstJan10 because only the counter resets. Two switches1500ms apart produce1 second instead of1500ms; with SLA1000ms this also incorrectly clears the breach flag. Recovery null guard is already correct.",
+    "parent_semantic_review": "Replacement independently checked by a second subagent: four defects, safe first epoch use, correct short-circuit nullable recovery handling, meaningful compile function requirement for mixed-case path labels.",
+    "replacement_reason": "Previous record12 overlapped record08 payroll clock-in chronology. Replaced with telecom fault-episode events, signed millisecond gaps, SLA comparisons and explicit episode boundary state.",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":13,\"column\":16,\"endLine\":13,\"endColumn\":36,\"message\":\"Function 'uppercase' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 13,
+            "column": 16,
+            "endLine": 13,
+            "endColumn": 36,
+            "message": "Function 'uppercase' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "independent_compile_only_line_diff": [
+      "-  $out.0.path = uppercase($in.0.path);",
+      "+  $out.0.path = upperCase($in.0.path);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_13",
+    "compiler_args": {
+      "componentType": "normalizer",
+      "code": "//#CTL2\ninteger issueCount;\nlong requestedCopies;\ndate previousIssue;\nboolean regression;\nfunction integer count() {\n regression = $in.0.issued_at < previousIssue;\n if ($in.0.copies > 1) previousIssue = $in.0.issued_at;\n issueCount++;\n requestedCopies = requestedCopies + $in.0.copies;\n return $in.0.copies;\n}\nfunction integer transform(integer idx) {\n $out.0.title = $in.0.title;\n $out.0.copy_number = idx + 1;\n $out.0.issue_ordinal = issueCount + 1;\n $out.0.copies_text = num2string($in.0.copies);\n $out.0.regressed = regression;\n $out.0.active = $in.0.cancelled_at == null;\n $out.0.held = $in.0.hold_until > $in.0.issued_at;\n $out.0.run_copies = requestedCopies;\n return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"PrintIssue\" type=\"delimited\">\n  <Field name=\"title\" type=\"string\" nullable=\"false\" />\n  <Field name=\"issued_at\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"copies\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"cancelled_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" />\n  <Field name=\"hold_until\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"PrintCopy\" type=\"delimited\">\n  <Field name=\"title\" type=\"string\" nullable=\"false\" />\n  <Field name=\"copy_number\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"issue_ordinal\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"copies_text\" type=\"string\" nullable=\"false\" />\n  <Field name=\"regressed\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"active\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"held\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"run_copies\" type=\"long\" nullable=\"false\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_repair_args": {
+      "componentType": "normalizer",
+      "code": "//#CTL2\ninteger issueCount;\nlong requestedCopies;\ndate previousIssue;\nboolean regression;\nfunction integer count() {\n regression = $in.0.issued_at < previousIssue;\n if ($in.0.copies > 1) previousIssue = $in.0.issued_at;\n issueCount++;\n requestedCopies = requestedCopies + $in.0.copies;\n return $in.0.copies;\n}\nfunction integer transform(integer idx) {\n $out.0.title = $in.0.title;\n $out.0.copy_number = idx + 1;\n $out.0.issue_ordinal = issueCount + 1;\n $out.0.copies_text = num2str($in.0.copies);\n $out.0.regressed = regression;\n $out.0.active = $in.0.cancelled_at == null;\n $out.0.held = $in.0.hold_until > $in.0.issued_at;\n $out.0.run_copies = requestedCopies;\n return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"PrintIssue\" type=\"delimited\">\n  <Field name=\"title\" type=\"string\" nullable=\"false\" />\n  <Field name=\"issued_at\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"copies\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"cancelled_at\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" />\n  <Field name=\"hold_until\" type=\"date\" nullable=\"true\" format=\"yyyy-MM-dd\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"PrintCopy\" type=\"delimited\">\n  <Field name=\"title\" type=\"string\" nullable=\"false\" />\n  <Field name=\"copy_number\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"issue_ordinal\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"copies_text\" type=\"string\" nullable=\"false\" />\n  <Field name=\"regressed\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"active\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"held\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"run_copies\" type=\"long\" nullable=\"false\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_repair": {
+      "before": "num2string($in.0.copies)",
+      "after": "num2str($in.0.copies)"
+    },
+    "first_record_default_walk": "First count reads previousIssue epoch before any assignment; post2000 issued_at is not earlier and regressionfalse. issueCount starts0, requestedCopies0L; count invoked once per source, transform never advances date/counters again.",
+    "date_defect_counterexample": "Issue10Jan(copies2),issue12Jan(copies1),issue11Jan(copies2): third should regress relative12Jan but stored previousIssue remains10Jan.",
+    "already_valid_nullable_handling": "Equality with null and the explicitly guarded nullable expression in the code are correct and must be retained.",
+    "defect_census": [
+      {
+        "category": "compile",
+        "description": "num2string is not a CTL2 function; num2str is required"
+      },
+      {
+        "category": "nullable",
+        "description": "hold_until (nullable) is compared>issued_at without guard; null means false"
+      },
+      {
+        "category": "date_non_null",
+        "description": "previousIssue is updated only for two-copy issues instead of every source issue"
+      },
+      {
+        "category": "other",
+        "description": "issue_ordinal adds1 after increment, so the first issue is numbered 2"
+      }
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":17,\"column\":23,\"endLine\":17,\"endColumn\":46,\"message\":\"Function 'num2string' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 17,
+            "column": 23,
+            "endLine": 17,
+            "endColumn": 46,
+            "message": "Function 'num2string' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only_repair_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "defect_count": 4,
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":17,\"column\":23,\"endLine\":17,\"endColumn\":46,\"message\":\"Function 'num2string' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 17,
+            "column": 23,
+            "endLine": 17,
+            "endColumn": 46,
+            "message": "Function 'num2string' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First issue after2000 compares false against epoch; all generated copies correctly share that computed regression flag. A one-copy Jan5 issue followed by Jan4 misses a regression because previousIssue was not updated. cancelled_at==null is safe.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-  $out.0.copies_text = num2string($in.0.copies);",
+      "+  $out.0.copies_text = num2str($in.0.copies);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_14",
+    "compiler_args": {
+      "componentType": "normalizer",
+      "code": "//#CTL2\ninteger finds;\ndate earliestExcavation;\ndecimal costs;\nfunction integer count() {\n if ($in.0.excavated_at < earliestExcavation) earliestExcavation = $in.0.excavated_at;\n finds++;\n costs = costs + $in.0.cost;\n return 1;\n}\nfunction integer transform(integer idx) {\n $out.0.site_length = strLength($in.0.site);\n $out.0.earliest = earliestExcavation;\n $out.0.artifact_missing = $in.0.artifact == null;\n $out.0.deep = $in.0.depth > 3.0;\n $out.0.ordinal = finds - 1;\n $out.0.cost_total = costs;\n return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"Find\" type=\"delimited\">\n  <Field name=\"site\" type=\"string\" nullable=\"false\" />\n  <Field name=\"excavated_at\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"artifact\" type=\"string\" nullable=\"true\" />\n  <Field name=\"depth\" type=\"number\" nullable=\"true\" />\n  <Field name=\"cost\" type=\"decimal\" nullable=\"false\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"FindCard\" type=\"delimited\">\n  <Field name=\"site_length\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"earliest\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"artifact_missing\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"deep\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"cost_total\" type=\"decimal\" nullable=\"false\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_repair_args": {
+      "componentType": "normalizer",
+      "code": "//#CTL2\ninteger finds;\ndate earliestExcavation;\ndecimal costs;\nfunction integer count() {\n if ($in.0.excavated_at < earliestExcavation) earliestExcavation = $in.0.excavated_at;\n finds++;\n costs = costs + $in.0.cost;\n return 1;\n}\nfunction integer transform(integer idx) {\n $out.0.site_length = length($in.0.site);\n $out.0.earliest = earliestExcavation;\n $out.0.artifact_missing = $in.0.artifact == null;\n $out.0.deep = $in.0.depth > 3.0;\n $out.0.ordinal = finds - 1;\n $out.0.cost_total = costs;\n return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"Find\" type=\"delimited\">\n  <Field name=\"site\" type=\"string\" nullable=\"false\" />\n  <Field name=\"excavated_at\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"artifact\" type=\"string\" nullable=\"true\" />\n  <Field name=\"depth\" type=\"number\" nullable=\"true\" />\n  <Field name=\"cost\" type=\"decimal\" nullable=\"false\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"FindCard\" type=\"delimited\">\n  <Field name=\"site_length\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"earliest\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"artifact_missing\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"deep\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"ordinal\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"cost_total\" type=\"decimal\" nullable=\"false\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_repair": {
+      "before": "strLength($in.0.site)",
+      "after": "length($in.0.site)"
+    },
+    "first_record_default_walk": "First count reads earliestExcavation epoch in < comparison. An excavation after2000 cannot be earlier; variable stays epoch and output is wrong. This is a real minimum-baseline defect because epoch is too early, not because declaration is null. finds0 increments1 and costs0D accumulates first cost correctly.",
+    "date_defect_counterexample": "Firstfind2026-05-10 emits epoch instead of2026-05-10; later2026-04-01 still cannot displace epoch.",
+    "already_valid_nullable_handling": "Equality with null and the explicitly guarded nullable expression in the code are correct and must be retained.",
+    "defect_census": [
+      {
+        "category": "compile",
+        "description": "strLength is not a CTL2 function; length is required"
+      },
+      {
+        "category": "nullable",
+        "description": "depth (nullable) is compared>3 without guard; null means false"
+      },
+      {
+        "category": "date_non_null",
+        "description": "earliestExcavation starts at the epoch 1970-01-01, earlier than every input date, so the < condition never selects an actual find; establish the minimum using the first input, not a null guard"
+      },
+      {
+        "category": "other",
+        "description": "ordinal subtracts1 after increment, so numbering starts 0"
+      }
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":12,\"column\":23,\"endLine\":12,\"endColumn\":43,\"message\":\"Function 'strLength' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 12,
+            "column": 23,
+            "endLine": 12,
+            "endColumn": 43,
+            "message": "Function 'strLength' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only_repair_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "defect_count": 4,
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":12,\"column\":23,\"endLine\":12,\"endColumn\":43,\"message\":\"Function 'strLength' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 12,
+            "column": 23,
+            "endLine": 12,
+            "endColumn": 43,
+            "message": "Function 'strLength' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First excavation after2000 cannot satisfy excavated_at<earliestExcavation when earliestExcavation=epoch. First and subsequent outputs retain1970 rather than an input minimum. First-find handling must establish the actual baseline; testing null would be false.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-  $out.0.site_length = strLength($in.0.site);",
+      "+  $out.0.site_length = length($in.0.site);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  },
+  {
+    "id": "opcd_hard2_15",
+    "compiler_args": {
+      "componentType": "joiner",
+      "code": "//#CTL2\nstring previousLeague;\ninteger matchCount;\ndate latestPlayed;\nfunction integer transform() {\n if (matchCount == 0 || $in.0.league != previousLeague) {\n  matchCount = 0;\n  previousLeague = $in.0.league;\n }\n if ($in.0.played_at > latestPlayed) latestPlayed = $in.0.played_at;\n matchCount++;\n $out.0.match_id = $in.0.match_id;\n $out.0.league = upper($in.0.league);\n $out.0.latest_played = latestPlayed;\n $out.0.matches = matchCount;\n $out.0.unassigned = $in.1.referee_id == null;\n $out.0.penalized = $in.1.penalty > 0;\n $out.0.bonus = $in.0.score >= 50;\n return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"Match\" type=\"delimited\">\n  <Field name=\"match_id\" type=\"string\" nullable=\"false\" />\n  <Field name=\"league\" type=\"string\" nullable=\"false\" />\n  <Field name=\"played_at\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"score\" type=\"integer\" nullable=\"false\" />\n</Record>\n",
+        "<Record name=\"Referee\" type=\"delimited\">\n  <Field name=\"match_id\" type=\"string\" nullable=\"true\" />\n  <Field name=\"referee_id\" type=\"string\" nullable=\"true\" />\n  <Field name=\"penalty\" type=\"integer\" nullable=\"true\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"MatchAudit\" type=\"delimited\">\n  <Field name=\"match_id\" type=\"string\" nullable=\"false\" />\n  <Field name=\"league\" type=\"string\" nullable=\"false\" />\n  <Field name=\"latest_played\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"matches\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"unassigned\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"penalized\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"bonus\" type=\"boolean\" nullable=\"false\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_repair_args": {
+      "componentType": "joiner",
+      "code": "//#CTL2\nstring previousLeague;\ninteger matchCount;\ndate latestPlayed;\nfunction integer transform() {\n if (matchCount == 0 || $in.0.league != previousLeague) {\n  matchCount = 0;\n  previousLeague = $in.0.league;\n }\n if ($in.0.played_at > latestPlayed) latestPlayed = $in.0.played_at;\n matchCount++;\n $out.0.match_id = $in.0.match_id;\n $out.0.league = upperCase($in.0.league);\n $out.0.latest_played = latestPlayed;\n $out.0.matches = matchCount;\n $out.0.unassigned = $in.1.referee_id == null;\n $out.0.penalized = $in.1.penalty > 0;\n $out.0.bonus = $in.0.score >= 50;\n return ALL;\n}",
+      "inputMetadata": [
+        "<Record name=\"Match\" type=\"delimited\">\n  <Field name=\"match_id\" type=\"string\" nullable=\"false\" />\n  <Field name=\"league\" type=\"string\" nullable=\"false\" />\n  <Field name=\"played_at\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"score\" type=\"integer\" nullable=\"false\" />\n</Record>\n",
+        "<Record name=\"Referee\" type=\"delimited\">\n  <Field name=\"match_id\" type=\"string\" nullable=\"true\" />\n  <Field name=\"referee_id\" type=\"string\" nullable=\"true\" />\n  <Field name=\"penalty\" type=\"integer\" nullable=\"true\" />\n</Record>\n"
+      ],
+      "outputMetadata": [
+        "<Record name=\"MatchAudit\" type=\"delimited\">\n  <Field name=\"match_id\" type=\"string\" nullable=\"false\" />\n  <Field name=\"league\" type=\"string\" nullable=\"false\" />\n  <Field name=\"latest_played\" type=\"date\" nullable=\"false\" format=\"yyyy-MM-dd\" />\n  <Field name=\"matches\" type=\"integer\" nullable=\"false\" />\n  <Field name=\"unassigned\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"penalized\" type=\"boolean\" nullable=\"false\" />\n  <Field name=\"bonus\" type=\"boolean\" nullable=\"false\" />\n</Record>\n"
+      ]
+    },
+    "compile_only_repair": {
+      "before": "upper($in.0.league)",
+      "after": "upperCase($in.0.league)"
+    },
+    "first_record_default_walk": "First input matchCount0 enters league setup. latestPlayed epoch remains until first ordered comparison; played_at after2000 exceeds epoch and selects correct maximum. Empty previousLeague plus count0 safely identifies first league.",
+    "date_defect_counterexample": "LeagueA latest20Jan then leagueB first10Jan incorrectly outputs20Jan; must reset max baseline for new league.",
+    "already_valid_nullable_handling": "Equality with null and the explicitly guarded nullable expression in the code are correct and must be retained.",
+    "defect_census": [
+      {
+        "category": "compile",
+        "description": "upper is not a CTL2 function; upperCase is required"
+      },
+      {
+        "category": "nullable",
+        "description": "penalty (nullable outer-join slave) is compared>0 without guard; null means false"
+      },
+      {
+        "category": "date_non_null",
+        "description": "latestPlayed is not reset when the driver league changes, so an earlier new league retains the preceding league watermark"
+      },
+      {
+        "category": "other",
+        "description": "bonus admits score50 even though only scores strictly greater than 50 qualify"
+      }
+    ],
+    "compiler_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":13,\"column\":18,\"endLine\":13,\"endColumn\":36,\"message\":\"Function 'upper' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 13,
+            "column": 18,
+            "endLine": 13,
+            "endColumn": 36,
+            "message": "Function 'upper' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only_repair_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "defect_count": 4,
+    "reviewed_date": "2026-10-10",
+    "independent_compile_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":13,\"column\":18,\"endLine\":13,\"endColumn\":36,\"message\":\"Function 'upper' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 13,
+            "column": 18,
+            "endLine": 13,
+            "endColumn": 36,
+            "message": "Function 'upper' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "independent_compile_only_result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    },
+    "parent_first_record_and_counterexample_review": "First league match after2000 replaces latestPlayed=epoch. LeagueA ending Jan10 then leagueB starting Jan5 retains Jan10 because the key-change branch omits the date reset. Reading unmatched referee fields is valid; referee_id==null is correct while penalty>0 needs a guard.",
+    "parent_semantic_review": "Confirmed 4–5 independent defects, already-valid nullable handling, declaration default reasoning, feature claims, and component lifecycle.",
+    "independent_compile_only_line_diff": [
+      "-  $out.0.league = upper($in.0.league);",
+      "+  $out.0.league = upperCase($in.0.league);"
+    ],
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "ctl2_assumptions": "Checked independently by two subagents against source prompts and authoritative references.",
+      "scenario_review": "Compared against all40 round1 prompts and all15 round2 prompts.",
+      "status": "PASS after correcting09 domain and replacing12 duplicated payroll scenario."
+    }
+  }
+]

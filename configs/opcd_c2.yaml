@@ -29,7 +29,7 @@ lora: {r: 32, alpha: 32, dropout: 0.0, target: [q_proj, k_proj, v_proj, o_proj, 
 
 train:
   seed: 0
-  rounds: 24
+  rounds: 40                  # 24, continued to 40 on 2026-10-10 (T40/T42 FP 9/20, 15/20 at round 24)
   prompts_per_round: 32
   k: 2
   steps_per_round: 2          # optimizer steps per sampled batch (keeps it on-policy)

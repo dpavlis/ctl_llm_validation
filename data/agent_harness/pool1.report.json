@@ -1,0 +1,44 @@
+{
+ "tasks": 156,
+ "by_source": {
+  "suite_v5": 30,
+  "scd2_runtime": 34,
+  "syntax_pitfalls_runtime": 30,
+  "rollup_acc_runtime": 38,
+  "normalizer_multi_runtime": 24
+ },
+ "by_component": {
+  "Reformat": 9,
+  "Normalizer": 2,
+  "DataIntersection": 2,
+  "ExtMergeJoin": 1,
+  "Denormalizer (deduplication winner)": 1,
+  "Rollup": 3,
+  "Denormalizer": 1,
+  "Reformat (SCD type 2)": 1,
+  "Normalizer (basket array extraction)": 1,
+  "Normalizer (variant map observations)": 1,
+  "Partition (payment priority with date defects)": 1,
+  "Partition (refrigeration history routing)": 1,
+  "Standalone / pure function (invoice pricing library)": 1,
+  "Standalone / pure function (meter parsing library)": 1,
+  "DataGenerator (order fixture subtotals)": 1,
+  "DataGenerator (reservoir state recurrence)": 1,
+  "Reformat (receipt audit digest)": 1,
+  "Reformat (dictionary claims audit history)": 1,
+  "DATA_INTERSECTION": 13,
+  "NORMALIZER": 35,
+  "REFORMAT": 39,
+  "PARTITION": 1,
+  "ROLLUP": 38
+ },
+ "by_task": {
+  "generate": 92,
+  "fix": 64
+ },
+ "rejected": {
+  "no_prompt_or_code": 271,
+  "reference_init_error": 15,
+  "reference_wrong_rows": 2
+ }
+}

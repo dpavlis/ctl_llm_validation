@@ -15,7 +15,7 @@ statement into a false one**:
 | correct, qualified | what it becomes when truncated | now false because |
 |---|---|---|
 | `isNull()` requires two arguments, a record and a field index or name; the one-argument call is an arity error | "`isNull()` is not a CTL2 function" | `isNull` exists; only this call is wrong |
-| The conditional-fail expression (` : `) is not available in `//#CTL2:COMPILE` mode | "conditional-fail is not valid CTL2" | it is valid, in interpreted mode |
+| `variant2record()` may omit `template` only in interpreted `//#CTL2`; under `//#CTL2:COMPILE` it is required when the target list is empty | "`variant2record()` needs three arguments" | the two-argument call is valid in interpreted mode, and in compiled mode whenever the target already holds a record |
 | `dd` is day-of-month; `DD` is day-of-year, so this pattern is probably not what was meant | "`DD` is invalid" | `DD` is a valid pattern letter |
 
 The reviewer that writes the short version gives the *right fix* for the *wrong reason*.
@@ -115,6 +115,8 @@ answer line must keep it. Treat these as the shape to watch for:
   imaginary. Say which overload was expected.
 - **Constructs whose validity depends on the compilation mode.** A construct available in
   interpreted `//#CTL2` but not `//#CTL2:COMPILE` is not "invalid CTL2" — name the mode.
+  Do not add constructs to this category without verifying them: the conditional-fail
+  expression (` : `) works identically in both modes and is not mode-dependent.
 - **Format-pattern letters.** A pattern letter with the wrong case usually denotes a real but
   different field (day-of-year rather than day-of-month, week-based year rather than calendar
   year, minutes rather than month). It is a misuse, not a syntax error — say what it actually

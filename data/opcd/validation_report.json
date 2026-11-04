@@ -1,5 +1,5 @@
 {
-  "reviewed_date": "2026-10-09",
+  "reviewed_date": "2026-10-10",
   "output": "/Users/david/git/ctl_lora_training/data/opcd/hard_cases.jsonl",
   "requested_remote_destination": "/home/pavlisd/llama_train/data/opcd/hard_cases.jsonl",
   "coverage": {
@@ -26,9 +26,8 @@
       "string[]": 8,
       "string": 10,
       "decimal": 2,
-      "map[string, integer]": 1,
-      "integer": 1,
-      "map[string,integer]": 1
+      "map[string, integer]": 2,
+      "integer": 1
     },
     "container_prompts": 10,
     "two_trap_prompts": 10
@@ -61,5 +60,54 @@
     "onpolicy_context_distillation_spec": "Referenced file not available in this checkout; explicit attached schema used.",
     "scope": "Only current 40-prompt request executed; unrelated generation/commit/push instructions from the owner-reference document were not executed."
   },
-  "training_followup": "Teacher sampling/filtering from internal tracking was not run; model/config/harness are absent from this checkout."
+  "training_followup": "Teacher sampling/filtering from internal tracking was not run; model/config/harness are absent from this checkout.",
+  "final_review": {
+    "reviewed_date": "2026-10-10",
+    "independent_subagent_reviewers": 3,
+    "issues_fixed": [
+      {
+        "id": "opcd_hard_21",
+        "issue": "Empty station names permitted by metadata were incorrectly included in the specified distinct non-empty count.",
+        "fix": "State input station names are always non-empty."
+      },
+      {
+        "id": "opcd_hard_27",
+        "issue": "Unbounded nonnegative electrician/plumber counts can make the declaration-default sum overflow and the requested integer output unrepresentable.",
+        "fix": "Bound each input count to0..10000."
+      },
+      {
+        "id": "opcd_hard_30",
+        "issue": "Signed capacity/usage allow required subtraction outside the integer output range.",
+        "fix": "State capacity and non-null used are nonnegative."
+      },
+      {
+        "id": "opcd_hard_03",
+        "issue": "Near-template repetition of01 totals/count/first-label aggregation.",
+        "fix": "Replace with ordered text-fragment reassembly, final terminal flag and nullable declared length."
+      },
+      {
+        "id": "opcd_hard_34",
+        "issue": "Near-template repetition of32 quantity-driven label expansion and ordinal errors.",
+        "fix": "Replace with geographic bounds expanded into four corner coordinates; reset prepared state before early rejection."
+      },
+      {
+        "id": "opcd_hard_37",
+        "issue": "Near-template repetition of35 indexed synthetic dates, ID offsets and extra-day offsets.",
+        "fix": "Replace with equipment subsystem inspections, per-asset deduplication and optional duration fixtures."
+      }
+    ],
+    "original_compiler_runs": 40,
+    "compiler_passes": 40,
+    "unexpected_diagnostics": 0,
+    "all_first_uses_reviewed": true,
+    "all_replacements_reviewed_by_another_subagent": true,
+    "remaining_correctness_findings": 0,
+    "remaining_substantial_scenario_duplicates": 0,
+    "placement_measure": "20 prompts have exclusively global traps;20 have exclusively local traps. Placement quota is interpreted per prompt.",
+    "scope_by_variable": {
+      "global": 26,
+      "local": 24
+    }
+  },
+  "sha256": "b60c9f74ed31d4eeea0bb4b8a3af33f2e2614316c0f70dc978a4fd82ec730e8b"
 }

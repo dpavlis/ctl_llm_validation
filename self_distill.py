@@ -1891,6 +1891,9 @@ KNOWN_FALSE_BELIEFS: dict[str, re.Pattern] = {
         r" (?:defaults? to|starts? as|(?:is|are) initiali[sz]ed to) `?null\b"
         r"|\bno initiali[sz]er\b[^\n.]{0,12}(?:→|->|so|, so|means)\s*`?null\b"
         r"|`[^`\n]*;` (?:defaults? to|starts? as) `?null\b"
+        r"|\b(?:bare|plain) declaration\b" + _GAP + r"\b(?:starts?|begins?|is|would (?:start|be))(?: out)?(?: as)?\s*`?null\b"
+        r"|\bwithout (?:the|an|its|this|that) initiali[sz]er\b[^\n.]{0,80}?\bwould (?:start|be)(?: out)?(?: as)?\s*`?null\b"
+        r"|\bwithout `[^`\n]*=[^`\n]*;`[^\n.]{0,80}?\bwould (?:start|be)(?: out)?(?: as)?\s*`?null\b"
         r"|\b(?:is|are) `?null`? by default\b"
         r"|\bdefaults? to `?null`?(?: by default)?\b(?=[^\n]{0,40}(?:declar|initiali[sz]er|module|global))", re.I),
     # Owner rulings 2026-10-02/03 (spec/corpus_ruling_corrections_spec.md, _round2_spec.md).
@@ -1929,14 +1932,16 @@ KNOWN_FALSE_BELIEFS: dict[str, re.Pattern] = {
 _BELIEF_TRUE_CONTEXT: dict[str, re.Pattern] = {
     "declared variables start null": re.compile(
         r"accumulator|\bacc\.\w|\bgroup\.\w|variant|\bc?byte\b|lookup|map key|missing key", re.I),
-    "infix `in` operator": re.compile(
-        r"not (?:valid|allowed|supported|a CTL2)|invalid|no infix|not an? (?:infix )?operator|"
-        r"(?:does not|doesn't|won't|will not) (?:compile|parse)|syntax error|parser error", re.I),
     "STOP is a normal termination": re.compile(
         r"(?i:\babort|\bnot (?:a )?normal|not (?:allowed|valid)|do not use it|don't use it)|\bERROR\b"),
     "OnError returns OK without logging": re.compile(r"without logging|silently|suppress|no log", re.I),
     # Unassigned Rollup accumulator fields and nullable output fields ARE null.
     "unset output fields are null": re.compile(r"accumulator|initGroup|\bacc\.\w|(?<!non-)(?<!non )\bnullable\b", re.I),
+    "infix `in` operator": re.compile(
+        r"not (?:valid|allowed|supported|defined|a CTL2)|invalid|unsupported|no infix|no such (?:infix )?operator|"
+        r"no operator with that syntax|not an? (?:infix )?operator|does not define|doesn't define|"
+        r"(?:does not|doesn't|won't|will not) (?:compile|parse)|syntax error|parser error|"
+        r"(?:provides|requires|defines|uses|is the function|call)[^\n]{0,40}`!?in\(|membership is the function", re.I),
 }
 # A negation just before the match, in the same clause: "`=` does not alias the
 # list" is a correct statement. Punctuation ends the clause, so a heading such as
@@ -1955,7 +1960,14 @@ def belief_hits(text: str) -> list[str]:
         for m in pattern.finditer(text):
             if _NEGATION_RE.search(text[max(0, m.start() - 40):m.start()]):
                 continue
-            if true_context and true_context.search(text[max(0, m.start() - 200):m.end() + 60]):
+            # The context runs 200 characters back and 60 forward. For infix `in` it
+            # runs to the end of the match's line: a finding names the construct first
+            # and says why it is wrong a sentence later.
+            after = m.end() + 60
+            if name == "infix `in` operator":
+                line_end = text.find("\n", m.end())
+                after = max(after, min(line_end if line_end >= 0 else len(text), m.end() + 400))
+            if true_context and true_context.search(text[max(0, m.start() - 200):after]):
                 continue
             hits.append(name)
             break

@@ -31,7 +31,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -45,7 +45,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "A first epoch-or-later event produces the group maximum; appending one label to the empty list gives one label. Correct resets preserve this across groups."
+    "parent_first_use_review": "A first epoch-or-later event produces the group maximum; appending one label to the empty list gives one label. Correct resets preserve this across groups.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_02",
@@ -79,7 +85,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -93,27 +99,47 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "A scan at UTC epoch+2 days replaces newest; equal epoch remains correct. Group reset uses explicit UTC epoch."
+    "parent_first_use_review": "A scan at UTC epoch+2 days replaces newest; equal epoch remains correct. Group reset uses explicit UTC epoch.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_03",
     "compiler_args": {
       "componentType": "denormalizer",
-      "code": "//#CTL2\ndate peak;\nnumber total = 0.0;\ninteger rows = 0;\nstring firstLabel = \"\";\nstring joined;\nfunction integer append() {\n    if ($in.0.event_at > peak) peak = $in.0.event_at;\n    if (rows == 0) joined = joined + $in.0.label;\n    else joined = joined + \"|\" + $in.0.label;\n    firstLabel = $in.0.label;\n    total = total - $in.0.amount;\n    rows = rows + 1;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.group_key = $in.0.group_key;\n    $out.0.latest_at = peak;\n    $out.0.total = total;\n    $out.0.rows = rows;\n    $out.0.label = firstLabel;\n    $out.0.joined = joined;\n    return ALL;\n}\nfunction void clean() { peak = createDate(1970, 1, 1,\"UTC\"); total = 0.0; rows = 0; firstLabel = \"\"; joined = \"\"; }",
+      "code": "//#CTL2\ndate latestFragment;\nstring payload;\nfunction integer append() {\n    if ($in.0.received_at > latestFragment) latestFragment = $in.0.received_at;\n    payload = payload + $in.0.fragment;\n    return OK;\n}\nfunction integer transform() {\n    $out.0.message_id = $in.0.message_id;\n    $out.0.payload = upperCase(payload);\n    $out.0.last_received = latestFragment;\n    $out.0.oversized = length(payload) > $in.0.declared_length;\n    $out.0.sealed = !$in.0.terminal;\n    return ALL;\n}\nfunction void clean() {\n    latestFragment = createDate(1970, 1, 1, \"UTC\");\n    payload = \"\";\n}",
       "inputMetadata": [
-        "<Record name=\"Input3\" type=\"delimited\"><Field name=\"group_key\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"event_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"amount\" type=\"number\" nullable=\"true\" delimiter=\";\"/><Field name=\"label\" type=\"string\" nullable=\"false\" delimiter=\";\"/></Record>"
+        "<Record name=\"MessageFragment\" type=\"delimited\"><Field name=\"message_id\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"received_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"fragment\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"declared_length\" type=\"integer\" nullable=\"true\" delimiter=\";\"/><Field name=\"terminal\" type=\"boolean\" nullable=\"false\" delimiter=\";\"/></Record>"
       ],
       "outputMetadata": [
-        "<Record name=\"Output3\" type=\"delimited\"><Field name=\"group_key\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"latest_at\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"total\" type=\"number\" nullable=\"false\" delimiter=\";\"/><Field name=\"rows\" type=\"integer\" nullable=\"false\" delimiter=\";\"/><Field name=\"label\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"joined\" type=\"string\" nullable=\"false\" delimiter=\";\"/></Record>"
+        "<Record name=\"ReassembledMessage\" type=\"delimited\"><Field name=\"message_id\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"payload\" type=\"string\" nullable=\"false\" delimiter=\";\"/><Field name=\"last_received\" type=\"date\" nullable=\"false\" delimiter=\";\"/><Field name=\"oversized\" type=\"boolean\" nullable=\"false\" delimiter=\";\"/><Field name=\"sealed\" type=\"boolean\" nullable=\"false\" delimiter=\";\"/></Record>"
       ]
     },
-    "first_use_walkthrough": "On the first append, peak is the epoch; a nonnegative event timestamp compares correctly and the maximum is correct, including equality at the epoch. clean() resets it for later groups. On the first row joined is empty and rows is zero, so concatenation emits the label with no separator.",
-    "defect_review": [
-      "Nullable amount is used in arithmetic without the required zero fallback.",
-      "Subtracting amount yields the negative of the required sum for positive amounts.",
-      "firstLabel is overwritten by every record, so the last label replaces the required first label."
+    "first_use_default_walkthrough": "On the first append latestFragment is the UTC epoch; received_at after 2000 compares greater and correctly establishes the maximum. payload starts as the empty string, so its first read in empty-string+fragment yields exactly the first fragment, including an empty fragment. Both traps are correctly reset after each group; no trap change is necessary.",
+    "defect_census": [
+      {
+        "category": "nullable_input",
+        "description": "Nullable declared_length is used in an ordered comparison without the required no-size-limit guard."
+      },
+      {
+        "category": "business_semantics",
+        "description": "upperCase(payload) changes the assembled fragment text instead of preserving its exact case."
+      },
+      {
+        "category": "business_semantics",
+        "description": "sealed negates the final fragment terminal flag rather than copying it."
+      }
     ],
-    "compile_result": {
+    "counterexamples": [
+      "Fragments aB and cD must produce aBcD; upperCase emits ABCD.",
+      "A final terminal=true must emit sealed=true, but negation emits false.",
+      "declared_length=null denotes no size limit; the ordered comparison throws instead of emitting oversized=false."
+    ],
+    "compiler_response": {
       "content": [
         {
           "type": "text",
@@ -126,7 +152,10 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "replacement_reason": "Replaced sum/count/first-label template shared with01 by fragment reassembly.",
+    "parent_first_use_review": "First latestFragment=epoch is less than all post2000 receipt dates; empty payload concatenates first ASCII fragment exactly. clean resets both between messages. Last-input reads are legal and group-common declaration/final terminal justify them.",
+    "independent_replacement_review": "Reviewed by parent and a subagent other than the replacement author; no remaining correctness or substantial scenario duplication findings.",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -140,7 +169,12 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Empty joined concatenated with the first label gives that label; rows=0 chooses no separator. Subsequent rows use | and clean resets both traps."
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_04",
@@ -174,7 +208,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -188,7 +222,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "First picked_at replaces epoch; a later group with an older date deliberately keeps the run maximum."
+    "parent_first_use_review": "First picked_at replaces epoch; a later group with an older date deliberately keeps the run maximum.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_05",
@@ -221,7 +261,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -235,7 +275,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "An epoch measured_at leaves candidate equal epoch; later timestamps replace it. Empty rowTokens plus instrument yields one distinct value, then identical control adds none."
+    "parent_first_use_review": "An epoch measured_at leaves candidate equal epoch; later timestamps replace it. Empty rowTokens plus instrument yields one distinct value, then identical control adds none.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_06",
@@ -268,7 +314,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -282,7 +328,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "joined_at=UTC epoch+2 days gives age=2 from origin before origin assignment; this is the specified epoch tenure."
+    "parent_first_use_review": "joined_at=UTC epoch+2 days gives age=2 from origin before origin assignment; this is the specified epoch tenure.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_07",
@@ -313,7 +365,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -327,7 +379,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "The first scan at or after epoch sets or preserves the required run highWater before independent nullable-expiry routing."
+    "parent_first_use_review": "The first scan at or after epoch sets or preserves the required run highWater before independent nullable-expiry routing.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_08",
@@ -358,7 +416,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -372,7 +430,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "dateAdd on the initial epoch produces the required first scheduling boundary epoch+1 day; each call advances one day."
+    "parent_first_use_review": "dateAdd on the initial epoch produces the required first scheduling boundary epoch+1 day; each call advances one day.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_09",
@@ -403,7 +467,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -417,7 +481,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "floorDate starts epoch and becomes imported_at; owners starts empty, then holds one or two distinct names. Routing defects are separate from these values."
+    "parent_first_use_review": "floorDate starts epoch and becomes imported_at; owners starts empty, then holds one or two distinct names. Routing defects are separate from these values.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_10",
@@ -447,7 +517,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -461,7 +531,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "dateAdd reads the initial epoch and produces the specified epoch+30-day campaign cutoff before assignment."
+    "parent_first_use_review": "dateAdd reads the initial epoch and produces the specified epoch+30-day campaign cutoff before assignment.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_11",
@@ -492,7 +568,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -506,7 +582,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "An observation exactly 365 days after epoch yields age=365; the incorrect <= routing boundary is separate from the correct epoch operand."
+    "parent_first_use_review": "An observation exactly 365 days after epoch yields age=365; the incorrect <= routing boundary is separate from the correct epoch operand.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_12",
@@ -537,7 +619,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -551,7 +633,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "dateAdd reads the epoch and creates the specified epoch+7-day windowEnd."
+    "parent_first_use_review": "dateAdd reads the epoch and creates the specified epoch+7-day windowEnd.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_13",
@@ -585,7 +673,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -599,7 +687,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "First measured_at sets runLatest; an older timestamp in another group intentionally preserves the earlier run maximum."
+    "parent_first_use_review": "First measured_at sets runLatest; an older timestamp in another group intentionally preserves the earlier run maximum.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_14",
@@ -633,7 +727,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -647,7 +741,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "First spent_at sets latestSpend; subsequent groups intentionally preserve the run maximum. Extra update output and mean calculation are independent defects."
+    "parent_first_use_review": "First spent_at sets latestSpend; subsequent groups intentionally preserve the run maximum. Extra update output and mean calculation are independent defects.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_15",
@@ -743,7 +843,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -757,7 +857,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "First taken after epoch sets newest; subsequent older samples retain the specified run maximum."
+    "parent_first_use_review": "First taken after epoch sets newest; subsequent older samples retain the specified run maximum.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_16",
@@ -852,7 +958,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -866,7 +972,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Each function call creates baseline at epoch; inspection after epoch replaces it and baseline equals inspection."
+    "parent_first_use_review": "Each function call creates baseline at epoch; inspection after epoch replaces it and baseline equals inspection.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_17",
@@ -961,7 +1073,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -975,7 +1087,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "The first checked date sets latestCheck; empty routeTrace has length0, so the first code is appended without slash. Later codes get one separator."
+    "parent_first_use_review": "The first checked date sets latestCheck; empty routeTrace has length0, so the first code is appended without slash. Later codes get one separator.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_18",
@@ -1065,7 +1183,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -1079,7 +1197,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Empty label plus department, colon and code yields the specified per-row label."
+    "parent_first_use_review": "Empty label plus department, colon and code yields the specified per-row label.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_19",
@@ -1164,7 +1288,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -1178,7 +1302,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Empty speciesSeen has no species; first append gives distinct count1, repeated species leaves the count unchanged."
+    "parent_first_use_review": "Empty speciesSeen has no species; first append gives distinct count1, repeated species leaves the count unchanged.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_20",
@@ -1263,7 +1393,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -1277,7 +1407,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Local anchor at epoch becomes this row recorded date; corrupt news/duration outputs do not affect the trap."
+    "parent_first_use_review": "Local anchor at epoch becomes this row recorded date; corrupt news/duration outputs do not affect the trap.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_21",
@@ -1372,7 +1508,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -1386,7 +1522,14 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "First finish sets newestFinish; empty stations admits the first station and reports distinct count1."
+    "parent_first_use_review": "First finish sets newestFinish; empty stations admits the first station and reports distinct count1.",
+    "final_review_domain_correction": "Input station names are now explicitly non-empty, so the list trap cannot append an unpermitted empty identifier.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_22",
@@ -1476,7 +1619,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -1490,7 +1633,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Local gross starts decimal0; base25 plus fee2 builds27. The extra fee in output is a separate defect and leaves both trap accumulation lines correct."
+    "parent_first_use_review": "Local gross starts decimal0; base25 plus fee2 builds27. The extra fee in output is a separate defect and leaves both trap accumulation lines correct.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_23",
@@ -1596,7 +1745,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -1610,7 +1759,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "First driver visit after epoch sets newestVisit; an unmatched slave has nullable fields, leaving the driver-derived watermark safe."
+    "parent_first_use_review": "First driver visit after epoch sets newestVisit; an unmatched slave has nullable fields, leaving the driver-derived watermark safe.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_24",
@@ -1711,7 +1866,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -1725,7 +1880,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Empty permitLabel plus district N and number7 builds N-7; substring output corrupts this correct value independently."
+    "parent_first_use_review": "Empty permitLabel plus district N and number7 builds N-7; substring output corrupts this correct value independently.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_25",
@@ -1826,7 +1987,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -1840,7 +2001,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Empty appTrace produces first id without comma; containsKey on empty seenApps is false, so inserting first id yields distinct count1. Repeat ids preserve distinct count."
+    "parent_first_use_review": "Empty appTrace produces first id without comma; containsKey on empty seenApps is false, so inserting first id yields distinct count1. Repeat ids preserve distinct count.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_26",
@@ -1941,7 +2108,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -1955,7 +2122,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Empty path plus park, slash and segment yields the specified path; the extra output slash is independent."
+    "parent_first_use_review": "Empty path plus park, slash and segment yields the specified path; the extra output slash is independent.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_27",
@@ -2056,7 +2229,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2070,7 +2243,14 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Local headcount starts0; electricians3 plus plumbers2 yields5 before the output incorrectly subtracts plumbers."
+    "parent_first_use_review": "Local headcount starts0; electricians3 plus plumbers2 yields5 before the output incorrectly subtracts plumbers.",
+    "final_review_domain_correction": "Bounded each input crew count to0..10000, so the zero-baseline headcount accumulation is safe and the specified output is representable.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_28",
@@ -2172,7 +2352,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2186,7 +2366,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Empty global label produces SKU:<sku> and resets after output; first sale after2000 replaces epoch peakSale. Nullable expiry is a different field."
+    "parent_first_use_review": "Empty global label produces SKU:<sku> and resets after output; first sale after2000 replaces epoch peakSale. Nullable expiry is a different field.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_29",
@@ -2289,7 +2475,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2303,7 +2489,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Local badgeFloor starts epoch and becomes this row issued date, independently of nullable slave score."
+    "parent_first_use_review": "Local badgeFloor starts epoch and becomes this row issued date, independently of nullable slave score.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_30",
@@ -2387,7 +2579,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2401,7 +2593,14 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Empty label builds bin:<ID> preserving case; uppercase output is an independent defect."
+    "parent_first_use_review": "Empty label builds bin:<ID> preserving case; uppercase output is an independent defect.",
+    "final_review_domain_correction": "Nonnegative capacity and used make mathematical capacity-used representable as integer, avoiding an unintended overflow after repairing the planted addition defect.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_31",
@@ -2481,7 +2680,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2495,7 +2694,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "First sampled date replaces epoch peakSample; both expanded rows share that correct run watermark."
+    "parent_first_use_review": "First sampled date replaces epoch peakSample; both expanded rows share that correct run watermark.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_32",
@@ -2563,7 +2768,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2577,7 +2782,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "length of the initial labels list is0; empty prefix becomes meal:. Positive servings appends exactly one meal label; nonpositive servings keeps labels empty. The +1 output count is separate."
+    "parent_first_use_review": "length of the initial labels list is0; empty prefix becomes meal:. Positive servings appends exactly one meal label; nonpositive servings keeps labels empty. The +1 output count is separate.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_33",
@@ -2652,7 +2863,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2666,58 +2877,93 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Each local appointmentBase begins epoch and becomes the appointment date; the incorrect positive reminder offset is a separate use defect."
+    "parent_first_use_review": "Each local appointmentBase begins epoch and becomes the appointment date; the incorrect positive reminder offset is a separate use defect.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_34",
     "compiler_args": {
       "componentType": "normalizer",
-      "code": "//#CTL2\nstring[] prepared = [];\nfunction integer count() {\n string[] markers;\n integer emptyCount = length(markers);\n if ($in.0.copies > 0) {\n  for (integer i = 0; i < $in.0.copies; i++) append(markers, $in.0.name);\n  prepared = markers;\n  return length(markers);\n }\n prepared = markers;\n return emptyCount + 1;\n}\nfunction integer transform(integer idx) {\n $out.0.name = lowerCase(prepared[idx]);\n $out.0.ordinal = idx;\n return ALL;\n}",
-      "outputMetadata": [
+      "code": "//#CTL2\nstring[] prepared = [];\nfunction integer count() {\n    string[] corners;\n    integer emptyCount = length(corners);\n    prepared = corners;\n    if ($in.0.north < $in.0.south || $in.0.west > $in.0.east) return emptyCount;\n    append(corners, \"NW\");\n    append(corners, \"NE\");\n    append(corners, \"SE\");\n    append(corners, \"SW\");\n    prepared = corners;\n    return length(corners);\n}\nfunction integer transform(integer idx) {\n    string corner = prepared[idx];\n    $out.0.rectangle = upperCase($in.0.rectangle);\n    $out.0.corner = corner;\n    if (corner == \"NW\") {\n        $out.0.latitude = $in.0.north;\n        $out.0.longitude = $in.0.west;\n    } else if (corner == \"NE\") {\n        $out.0.latitude = $in.0.north;\n        $out.0.longitude = $in.0.west;\n    } else if (corner == \"SE\") {\n        $out.0.latitude = $in.0.south;\n        $out.0.longitude = $in.0.east;\n    } else {\n        $out.0.latitude = $in.0.south;\n        $out.0.longitude = $in.0.west;\n    }\n    return ALL;\n}",
+      "inputMetadata": [
         {
-          "name": "ExhibitLabel",
+          "name": "GeoBounds",
           "type": "delimited",
           "fields": [
             {
-              "name": "name",
+              "name": "rectangle",
               "type": "string",
-              "nullable": "false"
+              "nullable": false
             },
             {
-              "name": "ordinal",
-              "type": "integer",
-              "nullable": "false"
+              "name": "north",
+              "type": "number",
+              "nullable": true
+            },
+            {
+              "name": "south",
+              "type": "number",
+              "nullable": false
+            },
+            {
+              "name": "east",
+              "type": "number",
+              "nullable": false
+            },
+            {
+              "name": "west",
+              "type": "number",
+              "nullable": false
             }
           ]
         }
       ],
-      "inputMetadata": [
+      "outputMetadata": [
         {
-          "name": "Exhibit",
+          "name": "Corner",
           "type": "delimited",
           "fields": [
             {
-              "name": "name",
+              "name": "rectangle",
               "type": "string",
-              "nullable": "false"
+              "nullable": false
             },
             {
-              "name": "copies",
-              "type": "integer",
-              "nullable": "true"
+              "name": "corner",
+              "type": "string",
+              "nullable": false
+            },
+            {
+              "name": "latitude",
+              "type": "number",
+              "nullable": false
+            },
+            {
+              "name": "longitude",
+              "type": "number",
+              "nullable": false
             }
           ]
         }
       ]
     },
-    "first_record_default_walk": "Local markers starts empty and length reads 0 before assignment on every source, including the first. For positive copies the loop appends exactly copies label names, and prepared is assigned that list; length is correct. For nonpositive copies emptyCount remains0, so +1 is the independent wrong row count.",
-    "defect_review": [
-      "copies (nullable) compared>0 without guard",
-      "nonpositive copies return1 instead0",
-      "name lowercased",
-      "ordinal is idx rather than idx+1"
+    "first_record_default_walk": [
+      "First valid boundary north=5,south=1,west=10,east=20: local corners starts empty, length(corners)=0 is read before any append or assignment. Four appends produce [NW,NE,SE,SW], count() returns 4, and idx 0..3 are valid.",
+      "First invalid inverted boundary north=0,south=1: the same empty-list length is the correct zero output count. No initializer or null guard belongs on corners.",
+      "Every count() invocation creates its own empty local corners. Valid input overwrites prepared; invalid input emits zero rows and never reads stale prepared."
     ],
-    "compiler_result": {
+    "defect_census": [
+      "Nullable-input defect: north ordered comparison without null policy.",
+      "Other defect: rectangle case altered.",
+      "Other defect: NE east/west coordinate operand wrong."
+    ],
+    "scenario_novelty": "Coordinate boundary expansion and corner mapping, rather than quantity-driven printable labels or ordinals.",
+    "compiler_response": {
       "content": [
         {
           "type": "text",
@@ -2730,7 +2976,11 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "parent_state_review": "Prepared state now copies the new empty local list before the invalid-bounds early return, so all records have current-source state. The first length(corners) still reads the uninitialized empty default before any assignment.",
+    "replacement_reason": "Replaced nullable quantity/label expansion template shared with32 by geographic corner expansion.",
+    "parent_first_use_review": "First local corners is empty, so emptyCount=0 correctly suppresses invalid bounds. Valid bounds append4 corner labels. Prepared is reset before any early return and copied again after appending valid corners. No null guard or initializer is needed for corners.",
+    "independent_replacement_review": "Reviewed by parent and a subagent other than the replacement author; no remaining correctness or substantial scenario duplication findings.",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2744,7 +2994,12 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Initial markers length is0. Positive copies builds exactly that many labels; the nonpositive branch still has empty markers. The extra emitted row and output ordinal/case errors are independent."
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_35",
@@ -2795,7 +3050,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2809,7 +3064,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "First synthetic candidate replaces epoch peakIssued; missing premium keys on later calls remain genuine nulls requiring an independent guard."
+    "parent_first_use_review": "First synthetic candidate replaces epoch peakIssued; missing premium keys on later calls remain genuine nulls requiring an independent guard.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_36",
@@ -2864,7 +3125,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2878,36 +3139,42 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "First append to empty emitted list gives cumulative count1; later calls increment the list count once each."
+    "parent_first_use_review": "First append to empty emitted list gives cumulative count1; later calls increment the list count once each.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_37",
     "compiler_args": {
       "componentType": "generic",
-      "code": "//#CTL2\ninteger ix = 0;\nmap[integer, integer] ranks = {0 -> 9};\nfunction integer generate() {\n date arrivalBase;\n map[string, integer] markers;\n date base = dateAdd(createDate(2026, 6, 1), ix, day);\n if (base > arrivalBase) arrivalBase = base;\n if (!containsKey(markers, \"seed\")) markers[\"seed\"] = 1;\n $out.0.id = ix;\n $out.0.arrival = dateAdd(arrivalBase, 2, day);\n $out.0.marker_count = length(markers);\n $out.0.priority = ranks[ix] >= 8;\n ix++;\n return ALL;\n}",
+      "code": "//#CTL2\ninteger fixtureRow = 0;\nstring[] assets = [\"pump-A\", \"compressor-B\", \"valve-C\"];\nmap[string, string] parts = {\n \"pump-A\" -> \"motor,seal,motor\",\n \"compressor-B\" -> \"filter,belt\",\n \"valve-C\" -> \"actuator\"\n};\nmap[string, date] checked = {\n \"pump-A:motor\" -> createDate(2026, 1, 5, \"UTC\"),\n \"pump-A:seal\" -> createDate(2026, 1, 8, \"UTC\"),\n \"compressor-B:filter\" -> createDate(2026, 2, 1, \"UTC\"),\n \"compressor-B:belt\" -> createDate(2026, 2, 3, \"UTC\"),\n \"valve-C:actuator\" -> createDate(2026, 1, 9, \"UTC\")\n};\nmap[string, integer] cycles = {\"pump-A\" -> 7, \"compressor-B\" -> 14, \"valve-C\" -> 30};\nmap[string, integer] minutes = {\"pump-A\" -> 45, \"valve-C\" -> 90};\nfunction integer generate() {\n string asset = assets[fixtureRow];\n string[] configured = split(parts[asset], \",\");\n date serviceAnchor;\n map[string, integer] countedSubsystems;\n foreach (string part : configured) {\n  if (!containsKey(countedSubsystems, part)) countedSubsystems[part] = 1;\n  date inspection = checked[asset + \":\" + part];\n  if (inspection > serviceAnchor) serviceAnchor = inspection;\n }\n $out.0.asset = asset;\n $out.0.next_service = dateAdd(serviceAnchor, cycles[asset], week);\n $out.0.subsystem_count = length(countedSubsystems) + 1;\n $out.0.long_job = minutes[asset] > 60;\n fixtureRow++;\n return ALL;\n}",
       "outputMetadata": [
         {
-          "name": "Reservation",
+          "name": "Maintenance",
           "type": "delimited",
           "fields": [
             {
-              "name": "id",
-              "type": "integer",
+              "name": "asset",
+              "type": "string",
               "nullable": "false"
             },
             {
-              "name": "arrival",
+              "name": "next_service",
               "type": "date",
               "nullable": "false",
               "format": "yyyy-MM-dd"
             },
             {
-              "name": "marker_count",
+              "name": "subsystem_count",
               "type": "integer",
               "nullable": "false"
             },
             {
-              "name": "priority",
+              "name": "long_job",
               "type": "boolean",
               "nullable": "false"
             }
@@ -2915,11 +3182,26 @@
         }
       ]
     },
-    "first_record_default_walk": "Local arrivalBase epoch overwritten by June2026 base; empty markers has no seed then insertion gives size1.",
-    "defect_review": [
-      "ranks[ix] missing-key map lookup ordered>=8 without guard",
-      "id is0-based",
-      "arrival offset2 rather than1"
+    "first_record_default_walk": "First configured asset is pump-A. Local countedSubsystems starts empty. containsKey(motor) is false before the first insertion, motor and seal are inserted, and duplicate motor is ignored, so length2 is correct. serviceAnchor starts at UTC epoch before its first comparison; Jan5 inspection exceeds it, then Jan8 supersedes Jan5. Required next_service is Jan15 (Jan8+7days), subsystem_count2, long_jobfalse for45minutes. Traps themselves need no null check or explicit initializer. Fresh locals naturally restart for the next asset.",
+    "real_null_counterexample": "Second call uses compressor-B. minutes lacks this key, so lookup is genuinely null; the unguarded>60 comparison is unsafe. The required long_job isfalse.",
+    "other_defect_counterexamples": [
+      "pump-A interval7days should give2026-01-15; current week unit gives2026-02-26.",
+      "pump-A motor,seal,motor has2distinct subsystems; current output adds1 and emits3."
+    ],
+    "defect_count": 3,
+    "defect_census": [
+      {
+        "category": "nullable",
+        "description": "minutes[asset] is a missing-key map lookup for compressor-B and is compared>60 without the required absent-duration guard"
+      },
+      {
+        "category": "other",
+        "description": "next_service adds cycles in weeks instead of days, overstating the maintenance interval"
+      },
+      {
+        "category": "other",
+        "description": "subsystem_count adds one to the actual distinct subsystem count"
+      }
     ],
     "compiler_result": {
       "content": [
@@ -2934,7 +3216,10 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "replacement_reason": "Replaced indexed synthetic-date/ID-offset template shared with35 by per-asset subsystem inspection and deduplication fixtures.",
+    "parent_first_use_review": "First local date=epoch is earlier than all guaranteed inspections; first containsKey on empty countedSubsystems is false. pump-A motor/seal/motor deduplicates to2; per-call locals isolate assets. All date/cycles/parts keys exist; only the absent duration is a real null.",
+    "independent_replacement_review": "Reviewed by parent and a subagent other than the replacement author; no remaining correctness or substantial scenario duplication findings.",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -2948,7 +3233,12 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Local arrivalBase becomes the synthetic base; containsKey on empty markers is false and inserting seed gives marker_count1. This happens independently each call."
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_38",
@@ -3003,7 +3293,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -3017,7 +3307,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Empty local label becomes bill:1 on first call and uses the current id on later calls; the missing amount key is independently nullable."
+    "parent_first_use_review": "Empty local label becomes bill:1 on first call and uses the current id on later calls; the missing amount key is independently nullable.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_39",
@@ -3113,7 +3409,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -3127,7 +3423,13 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "First measured after2000 sets peakMeasured; later older groups keep the specified run watermark. Non-null accumulator fields reset per metadata and are not designated traps."
+    "parent_first_use_review": "First measured after2000 sets peakMeasured; later older groups keep the specified run watermark. Non-null accumulator fields reset per metadata and are not designated traps.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   },
   {
     "id": "opcd_hard_40",
@@ -3221,7 +3523,7 @@
       },
       "isError": false
     },
-    "reviewed_date": "2026-10-09",
+    "reviewed_date": "2026-10-10",
     "independent_compile_result": {
       "content": [
         {
@@ -3235,6 +3537,12 @@
       },
       "isError": false
     },
-    "parent_first_use_review": "Global pledgedSoFar starts decimal0; first pledged10 produces10 and later groups retain cumulative run total. Accumulator counters reset independently per metadata."
+    "parent_first_use_review": "Global pledgedSoFar starts decimal0; first pledged10 produces10 and later groups retain cumulative run total. Accumulator counters reset independently per metadata.",
+    "final_peer_review": {
+      "reviewed_date": "2026-10-10",
+      "source_review": "CTL2 assumptions, real null defects, uninitialized first-use semantics, lifecycle contracts and planted defect census independently reviewed.",
+      "scenario_review": "Full40-prompt semantic comparison, including excluded T40/T42 scenarios. Three near-template repetitions replaced.",
+      "status": "PASS after input-domain corrections and independent replacement review."
+    }
   }
 ]

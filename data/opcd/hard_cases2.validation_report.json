@@ -1,0 +1,97 @@
+{
+  "reviewed_date": "2026-10-10",
+  "source_brief": "/Users/david/Downloads/opcd_hard_cases2_brief.md",
+  "output": "/Users/david/git/ctl_lora_training/data/opcd/hard_cases2.jsonl",
+  "requested_remote_destination": "/home/pavlisd/llama_train/data/opcd/hard_cases2.jsonl",
+  "coverage": {
+    "records": 15,
+    "tasks": {
+      "fix": 12,
+      "validate": 3
+    },
+    "components": {
+      "DENORMALIZER": 4,
+      "ROLLUP": 2,
+      "PARTITION": 4,
+      "REFORMAT": 2,
+      "NORMALIZER": 2,
+      "JOIN": 1
+    },
+    "date_trap_kinds": {
+      "prev_record": 9,
+      "min_tracker_real_bug": 3,
+      "max_tracker": 3
+    },
+    "feature_coverage": {
+      "1": 15,
+      "2": 15,
+      "3": 9,
+      "4": 15,
+      "5": 15
+    },
+    "local_date_prompt_count": 0,
+    "isolated_compile_errors": 15
+  },
+  "compiler_checks": {
+    "tool": "mcp__cloverserverlocal__ctl_validate",
+    "original_runs": 15,
+    "originals_with_exactly_one_intended_error": 15,
+    "compile_only_repair_runs": 15,
+    "compile_only_repair_passes": 15,
+    "unexpected_diagnostics": 0,
+    "compile_only_repairs_change_one_line_each": true,
+    "prompt_metadata_matches_compiler_metadata": true
+  },
+  "semantic_review": {
+    "all_first_records_walked": true,
+    "all_date_defects_have_counterexamples": true,
+    "min_trackers_fail_because_epoch_precedes_every_input_date": true,
+    "valid_null_guards_preserved": true,
+    "real_defects_per_prompt": "4–5",
+    "round1_exact_prompt_or_code_duplicates": 0,
+    "excluded_T40_T42_defects_present": false,
+    "answers_in_dataset": false
+  },
+  "review_corrections": [
+    "Replaced receiver-style length as a proposed compile defect: it actually compiles. Final undefined size calls verified by compiler.",
+    "Removed irrelevant filler declaration and cleaned prose spacing.",
+    "Checked compile-only probes retain every semantic defect and differ by exactly one source line.",
+    "Final peer review constrained09 counts to prevent an unplanted integer overflow defect.",
+    "Final peer review replaced12 payroll audit with materially different telecom fault-episode/SLA audit."
+  ],
+  "internal_tracking": "Teacher sampling, c2 model evaluation, OPCD loader changes and training were not requested or executed; referenced training harness/config is not present here.",
+  "sha256": "149cdc03f473c2fa1e7c9123b481a6f8bc8f4f3a8dc28907991d937d151a7476",
+  "final_review": {
+    "reviewed_date": "2026-10-10",
+    "independent_subagent_reviewers": 3,
+    "scope": "CTL2 assumptions, component lifecycle, declaration defaults, nullable arithmetic, brief coverage, and semantic scenario duplication within both rounds.",
+    "issues_fixed": [
+      {
+        "id": "opcd_hard2_09",
+        "issue": "Unconstrained signed integer counts allowed an unintended subtraction/abs overflow defect.",
+        "fix": "Non-null expected and counted are now explicitly nonnegative, making their difference and abs representable as integer."
+      },
+      {
+        "id": "opcd_hard2_12",
+        "issue": "Payroll clock-in scenario repeated08 closely despite different component outputs.",
+        "fix": "Replaced with a telecom failover audit using explicit fault-episode starts, signed millisecond gaps and nullable SLA checks; independently reviewed again."
+      }
+    ],
+    "retained_domain_overlap": [
+      {
+        "ids": [
+          "opcd_hard2_05",
+          "opcd_hard2_14"
+        ],
+        "reason": "Shared archaeology domain, but different jobs: per-trench aggregate maximum/catalogue/tag counts versus a running expedition minimum and a card per find. These are not duplicate scenarios."
+      }
+    ],
+    "remaining_correctness_findings": 0,
+    "remaining_substantial_scenario_duplicates": 0,
+    "original_compiler_runs": 15,
+    "single_intended_error_results": 15,
+    "compile_only_repair_runs": 15,
+    "compile_only_pass_results": 15,
+    "source_metadata_reconstructed_from_final_prompts": true
+  }
+}

@@ -1,0 +1,587 @@
+[
+  {
+    "id": "opcd_hard2_01",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":18,\"column\":24,\"endLine\":18,\"endColumn\":38,\"message\":\"Function 'size' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 18,
+            "column": 24,
+            "endLine": 18,
+            "endColumn": 38,
+            "message": "Function 'size' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_02",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":23,\"column\":31,\"endLine\":23,\"endColumn\":36,\"message\":\"Function 'size' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 23,
+            "column": 31,
+            "endLine": 23,
+            "endColumn": 36,
+            "message": "Function 'size' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_03",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":21,\"column\":20,\"endLine\":21,\"endColumn\":43,\"message\":\"Function 'stringify' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 21,
+            "column": 20,
+            "endLine": 21,
+            "endColumn": 43,
+            "message": "Function 'stringify' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_04",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":20,\"column\":26,\"endLine\":20,\"endColumn\":38,\"message\":\"Function 'count' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 20,
+            "column": 26,
+            "endLine": 20,
+            "endColumn": 38,
+            "message": "Function 'count' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_05",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":25,\"column\":26,\"endLine\":25,\"endColumn\":39,\"message\":\"Function 'size' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 25,
+            "column": 26,
+            "endLine": 25,
+            "endColumn": 39,
+            "message": "Function 'size' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_06",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":8,\"column\":5,\"endLine\":8,\"endColumn\":46,\"message\":\"Type mismatch: cannot convert from 'string' to 'integer'\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 8,
+            "column": 5,
+            "endLine": 8,
+            "endColumn": 46,
+            "message": "Type mismatch: cannot convert from 'string' to 'integer'"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_07",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":7,\"column\":23,\"endLine\":7,\"endColumn\":80,\"message\":\"Function 'upper' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 7,
+            "column": 23,
+            "endLine": 7,
+            "endColumn": 80,
+            "message": "Function 'upper' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_08",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":16,\"column\":25,\"endLine\":16,\"endColumn\":56,\"message\":\"Function 'hourOfDay' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 16,
+            "column": 25,
+            "endLine": 16,
+            "endColumn": 56,
+            "message": "Function 'hourOfDay' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_09",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":18,\"column\":25,\"endLine\":18,\"endColumn\":45,\"message\":\"Function 'absolute' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 18,
+            "column": 25,
+            "endLine": 18,
+            "endColumn": 45,
+            "message": "Function 'absolute' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_10",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":26,\"column\":25,\"endLine\":26,\"endColumn\":45,\"message\":\"Function round() is not applicable for the arguments (decimal, string)\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 26,
+            "column": 25,
+            "endLine": 26,
+            "endColumn": 45,
+            "message": "Function round() is not applicable for the arguments (decimal, string)"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_11",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":16,\"column\":17,\"endLine\":16,\"endColumn\":41,\"message\":\"Function 'str2int' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 16,
+            "column": 17,
+            "endLine": 16,
+            "endColumn": 41,
+            "message": "Function 'str2int' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_12",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":13,\"column\":16,\"endLine\":13,\"endColumn\":36,\"message\":\"Function 'uppercase' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 13,
+            "column": 16,
+            "endLine": 13,
+            "endColumn": 36,
+            "message": "Function 'uppercase' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_13",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":17,\"column\":23,\"endLine\":17,\"endColumn\":46,\"message\":\"Function 'num2string' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 17,
+            "column": 23,
+            "endLine": 17,
+            "endColumn": 46,
+            "message": "Function 'num2string' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_14",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":12,\"column\":23,\"endLine\":12,\"endColumn\":43,\"message\":\"Function 'strLength' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 12,
+            "column": 23,
+            "endLine": 12,
+            "endColumn": 43,
+            "message": "Function 'strLength' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  },
+  {
+    "id": "opcd_hard2_15",
+    "original": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"FAIL\",\"problems\":[{\"severity\":\"ERROR\",\"stage\":\"compile\",\"line\":13,\"column\":18,\"endLine\":13,\"endColumn\":36,\"message\":\"Function 'upper' is not declared\"}]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "FAIL",
+        "problems": [
+          {
+            "severity": "ERROR",
+            "stage": "compile",
+            "line": 13,
+            "column": 18,
+            "endLine": 13,
+            "endColumn": 36,
+            "message": "Function 'upper' is not declared"
+          }
+        ]
+      },
+      "isError": false
+    },
+    "compile_only": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"overall\":\"PASS\",\"problems\":[]}"
+        }
+      ],
+      "structuredContent": {
+        "overall": "PASS",
+        "problems": []
+      },
+      "isError": false
+    }
+  }
+]

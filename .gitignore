@@ -16,3 +16,12 @@ data/opcd/retry1/
 data/opcd/difr1/
 data/opcd/difr2/
 data/opcd/difr3/
+# OPCD run folders and intermediate data (adapters, samples, pilot outputs)
+data/opcd/valprec*/
+data/opcd/s3a-rb1011/
+data/opcd/s3b-rb1011/
+data/self_distill/
+data/agent_harness/tweak/
+data/agent_harness/tweak_retry/
+data/suite_v5/agent_harness/
+data/retry_distill/

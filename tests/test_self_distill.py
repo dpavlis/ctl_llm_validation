@@ -138,7 +138,9 @@ class TestNormalisationAndSelection(unittest.TestCase):
         pool, _ = sd.build_pool(excluded)
         chosen, summary = sd.select_prompts(pool, seed=0)
         self.assertEqual(summary["shortfall"], {})
-        self.assertEqual(summary["selected"], {"fix": 124, "validate": 150, "generate": 100})
+        # validate was 150 until the corpus corrections of October 2026 removed records from
+        # the validate pool (corpus 3de7b55 gives 139 with no shortfall).
+        self.assertEqual(summary["selected"], {"fix": 124, "validate": 139, "generate": 100})
         groups = {p["selection_group"] for p in chosen}
         self.assertFalse(groups & set(sd.FULL_EXCLUDED_GROUPS))
         self.assertEqual(summary["by_group"]["fix_tier2"], 20)
@@ -539,8 +541,14 @@ class TestKnownFalseBeliefs(unittest.TestCase):
                      "abv_percent must be non-null and in [0, 96].", "The rules are evaluated in order):",
                      "Capture $in.0.sensor_id in append? Or in transform?", 'if (!in($in.0.cur, ["SEK"])) {',
                      '2. **`$in.0.status in ["BACKORDER", "PARTIAL"]` is not valid CTL2 syntax.** Use in().',
-                     '[ERROR] `$in.0.cur in ["SEK", "NOK"]` - CTL2 has no infix `in` operator, so this does not compile.'):
+                     '[ERROR] `$in.0.cur in ["SEK", "NOK"]` - CTL2 has no infix `in` operator, so this does not compile.',
+                     # the correction a sentence after the quote, past the 60-character window
+                     '[ERROR] `$in.0.zone !in ["LAB", "COLD"]` uses an infix membership test. CTL2 has no infix membership operator.',
+                     '1. `$in.0.session in ["NIGHT", "LATE"]` uses the unsupported infix membership form.'):
             self.assertEqual(sd.belief_hits(text), [], text)
+        # a use the answer presents as fine is still a hit, even with "infix" on the line
+        self.assertEqual(sd.belief_hits('`$in.0.zone in ["LAB", "COLD"]` is a valid infix membership test.'),
+                         ["infix `in` operator"])
 
     def test_negated_and_true_statements_pass(self):
         for text in ("`=` makes a deep copy; it does not alias the list.",
